@@ -1,0 +1,29 @@
+{
+  "name": "PPServer (.NET 8)",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "workspaceFolder": "/workspaces/Server",
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/Server,type=bind,consistency=cached",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-dotnettools.csharp",
+        "ms-dotnettools.csdevkit"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash"
+      }
+    }
+  },
+  "forwardPorts": [7000],
+  "portsAttributes": {
+    "7000": {
+      "label": "TCP Echo",
+      "onAutoForward": "notify"
+    }
+  },
+  "postCreateCommand": "dotnet restore PPServer/PPServer.csproj",
+  "remoteUser": "vscode"
+}
