@@ -5,6 +5,7 @@ public class GameManager : Singleton<GameManager>
 {
     private void Start()
     {
-        FindFirstObjectByType<Image>().sprite = ResourceManager.GetInstance().Load<Sprite>("Keyboard_F");
+        FindAnyObjectByType<Image>().sprite = ResourceManager.GetInstance().Load<Sprite>("Keyboard_F");
     }
 }
+ 
