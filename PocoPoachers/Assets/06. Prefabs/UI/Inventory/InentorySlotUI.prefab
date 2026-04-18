@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5716066768571258880}
+  - component: {fileID: 7612342290374880186}
   m_Layer: 5
   m_Name: InentorySlotUI
   m_TagString: Untagged
@@ -34,8 +35,24 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 100, y: 1}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &7612342290374880186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 861106329415925472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4666f60fbaeea64f96fd0f441b39925, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ItemSlotUI
+  _icon: {fileID: 575279559070787536}
+  _nameText: {fileID: 7590587628231208667}
+  _amountText: {fileID: 5096541468357526179}
+  _emptyOverlay: {fileID: 0}
 --- !u!1 &864971980617541441
 GameObject:
   m_ObjectHideFlags: 0

@@ -4,18 +4,26 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
+    [SerializeField] private int _maxCapacity = 50;
     [SerializeField] private int _initialCapacity = 20;
 
     private List<ItemSlot> _slots = new List<ItemSlot>();
+    private int _currentCapacity;
     private int _itemCount = 0;
 
+    public event Action ChangeInventory;
+
     public IReadOnlyList<ItemSlot> Slots => _slots;
-    public int Capacity => _slots.Count;
+    public int MaxCapacity => _maxCapacity;
+    public int CurrentCapacity => _currentCapacity;
     public int ItemCount => _itemCount;
 
     private void Awake()
     {
-        for (int i = 0; i < _initialCapacity; i++)
+        _currentCapacity = _initialCapacity;
+
+        // 최대 용량만큼 슬롯 미리 생성
+        for (int i = 0; i < _maxCapacity; i++)
             _slots.Add(new ItemSlot());
     }
 
@@ -31,20 +39,20 @@ public class Inventory : MonoBehaviour
             {
                 remaining = _slots[i].AddAmount(remaining);
                 if (remaining <= 0)
-                {
                     return true;
-                }
             }
         }
 
-        // 빈 슬롯(_itemCount 위치부터)에 추가
-        while (remaining > 0 && _itemCount < _slots.Count)
+        // 빈 슬롯(_itemCount 위치부터) 현재 용량 내에서만 추가
+        while (remaining > 0 && _itemCount < _currentCapacity)
         {
             int toAdd = Mathf.Min(remaining, item.Data.MaxStack);
-            _slots[_itemCount].Set(new Item(item.Data), toAdd);
+            _slots[_itemCount].Set(item, toAdd);
             _itemCount++;
             remaining -= toAdd;
         }
+
+        ChangeInventory.Invoke();
 
         return remaining <= 0;
     }
@@ -97,11 +105,10 @@ public class Inventory : MonoBehaviour
         _itemCount = writeIndex;
     }
 
-    // 슬롯 수 확장
-    public void ExpandSlots(int count)
+    // 현재 용량 확장 (최대 용량 초과 불가)
+    public void ExpandCapacity(int count)
     {
-        for (int i = 0; i < count; i++)
-            _slots.Add(new ItemSlot());
+        _currentCapacity = Mathf.Min(_currentCapacity + count, _maxCapacity);
     }
 
     public bool HasItem(ItemData itemData, int amount = 1)
