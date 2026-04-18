@@ -7,7 +7,7 @@
       "type": "process",
       "args": [
         "build",
-        "${workspaceFolder}/PPServer/PPServer.csproj",
+        "${workspaceFolder}/GameServer/GameServer.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary;ForceNoAlign"
       ],
@@ -27,11 +27,11 @@
       "type": "process",
       "args": [
         "publish",
-        "${workspaceFolder}/PPServer/PPServer.csproj",
+        "${workspaceFolder}/GameServer/GameServer.csproj",
         "-c",
         "Release",
         "-o",
-        "${workspaceFolder}/PPServer/bin/Release/publish"
+        "${workspaceFolder}/GameServer/bin/Release/publish"
       ],
       "group": "build",
       "presentation": {

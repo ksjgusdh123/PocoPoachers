@@ -1,0 +1,23 @@
+namespace Packets;
+
+union PacketBody {
+  LoginBody,
+  ChatBody,
+  LogoutBody,
+}
+
+table LoginBody {
+  name:string (required);
+}
+
+table ChatBody {
+  text:string (required);
+}
+
+table LogoutBody {}
+
+table RootPacket {
+  body:PacketBody;
+}
+
+root_type RootPacket;

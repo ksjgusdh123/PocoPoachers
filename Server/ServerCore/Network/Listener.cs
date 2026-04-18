@@ -1,8 +1,8 @@
 using System.Net;
 using System.Net.Sockets;
-using PPServer.Managers;
+using ServerCore.Managers;
 
-namespace PPServer.Network;
+namespace ServerCore.Network;
 
 public sealed class Listener
 {
@@ -19,7 +19,7 @@ public sealed class Listener
     {
         using var tcpListener = new TcpListener(_endPoint);
         tcpListener.Start();
-        Console.WriteLine($"서버 시작: tcp://{_endPoint.Address}:{_endPoint.Port} (Ctrl+C 종료)");
+        Console.WriteLine($"tcp://{_endPoint.Address}:{_endPoint.Port}");
 
         try
         {
@@ -36,7 +36,7 @@ public sealed class Listener
         finally
         {
             tcpListener.Stop();
-            Console.WriteLine("서버 종료.");
+            Console.WriteLine("중지");
         }
     }
 }

@@ -1,11 +1,11 @@
 {
-  "name": "PPServer (.NET 8)",
+  "name": "GameServer (.NET 8)",
   "build": {
     "dockerfile": "Dockerfile",
     "context": ".."
   },
-  "workspaceFolder": "/workspaces/Server",
-  "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/Server,type=bind,consistency=cached",
+  "workspaceFolder": "/workspaces/repo/Server",
+  "workspaceMount": "source=${localWorkspaceFolder}/..,target=/workspaces/repo,type=bind,consistency=cached",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -24,6 +24,6 @@
       "onAutoForward": "notify"
     }
   },
-  "postCreateCommand": "dotnet restore PPServer/PPServer.csproj",
+  "postCreateCommand": "dotnet restore Server.sln",
   "remoteUser": "vscode"
 }

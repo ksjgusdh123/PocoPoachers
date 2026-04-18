@@ -1,8 +1,7 @@
 using System.Collections.Concurrent;
-using PPServer.Network;
-using PPServer.Protocols;
+using ServerCore.Network;
 
-namespace PPServer.Managers;
+namespace ServerCore.Managers;
 
 public sealed class RoomManager
 {
@@ -12,7 +11,8 @@ public sealed class RoomManager
 
     public void Unregister(ClientSession session) => _sessions.TryRemove(session.Id, out _);
 
-    public async Task BroadcastAsync(Packet packet, ClientSession? except, CancellationToken cancellationToken)
+    public async Task BroadcastAsync(ReadOnlyMemory<byte> framedWire, ClientSession? except,
+        CancellationToken cancellationToken)
     {
         foreach (var kv in _sessions)
         {
@@ -21,7 +21,7 @@ public sealed class RoomManager
 
             try
             {
-                await kv.Value.SendAsync(packet, cancellationToken).ConfigureAwait(false);
+                await kv.Value.SendAsync(framedWire, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
