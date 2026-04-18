@@ -1,23 +1,28 @@
 namespace Packets;
 
-union PacketBody {
-  LoginBody,
-  ChatBody,
-  LogoutBody,
+union EPacketType {
+  C_LoginReq,
+  C_ChatReq,
+  C_LogoutReq,
+  S_ChatRes,
 }
 
-table LoginBody {
+table C_LoginReq {
   name:string (required);
 }
 
-table ChatBody {
+table C_ChatReq {
   text:string (required);
 }
 
-table LogoutBody {}
+table C_LogoutReq {}
+
+table S_ChatRes {
+  text:string (required);
+}
 
 table RootPacket {
-  body:PacketBody;
+  payload: EPacketType;
 }
 
 root_type RootPacket;

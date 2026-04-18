@@ -133,6 +133,7 @@ internal static class Program
         }
 
         Directory.CreateDirectory(outputDir);
+        Console.WriteLine($"out: {outputDir}");
         var failed = 0;
         foreach (var fbs in selected.Distinct(StringComparer.OrdinalIgnoreCase))
         {
@@ -143,8 +144,6 @@ internal static class Program
                 Console.Error.WriteLine($"fail {code}");
                 failed++;
             }
-            else
-                Console.WriteLine(outputDir);
         }
 
         return failed > 0 ? 1 : 0;
@@ -173,21 +172,10 @@ internal static class Program
 
     private static string ResolveFlatc(string repoRoot)
     {
-        var generatorDir = Path.Combine(repoRoot, "Tools", "PacketGenerator");
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            var bundled = Path.Combine(generatorDir, "flatc.exe");
-            if (File.Exists(bundled))
-                return bundled;
-        }
-        else
-        {
-            var bundled = Path.Combine(generatorDir, "flatc");
-            if (File.Exists(bundled))
-                return bundled;
-        }
-
-        return "flatc";
+        var toolDir = Path.Combine(repoRoot, "Tools", "PacketGenerator");
+        var bundled = Path.Combine(toolDir,
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "flatc.exe" : "flatc");
+        return File.Exists(bundled) ? bundled : "flatc";
     }
 
     private static List<string> PromptSelection(List<string> fbsList, string schemasDir)

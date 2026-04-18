@@ -11,7 +11,7 @@ internal static class Program
 
     private static async Task Main()
     {
-        FlatPacketCodec.EnsureRuntimeMatchesSchema();
+        PacketHandler.ValidateSchema();
 
         using var cts = new CancellationTokenSource();
         Console.CancelKeyPress += (_, e) =>
@@ -20,8 +20,8 @@ internal static class Program
             cts.Cancel();
         };
 
-        var rooms = new RoomManager();
-        var listener = new Listener(new IPEndPoint(IPAddress.Any, ListenPort), rooms);
+        var sessions = new SessionManager();
+        var listener = new Listener(new IPEndPoint(IPAddress.Any, ListenPort), sessions);
         await listener.RunAsync(cts.Token).ConfigureAwait(false);
     }
 }

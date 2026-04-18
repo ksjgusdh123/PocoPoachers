@@ -20,24 +20,25 @@ public struct RootPacket : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public RootPacket __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public Packets.PacketBody BodyType { get { int o = __p.__offset(4); return o != 0 ? (Packets.PacketBody)__p.bb.Get(o + __p.bb_pos) : Packets.PacketBody.NONE; } }
-  public TTable? Body<TTable>() where TTable : struct, IFlatbufferObject { int o = __p.__offset(6); return o != 0 ? (TTable?)__p.__union<TTable>(o + __p.bb_pos) : null; }
-  public Packets.LoginBody BodyAsLoginBody() { return Body<Packets.LoginBody>().Value; }
-  public Packets.ChatBody BodyAsChatBody() { return Body<Packets.ChatBody>().Value; }
-  public Packets.LogoutBody BodyAsLogoutBody() { return Body<Packets.LogoutBody>().Value; }
+  public Packets.EPacketType PayloadType { get { int o = __p.__offset(4); return o != 0 ? (Packets.EPacketType)__p.bb.Get(o + __p.bb_pos) : Packets.EPacketType.NONE; } }
+  public TTable? Payload<TTable>() where TTable : struct, IFlatbufferObject { int o = __p.__offset(6); return o != 0 ? (TTable?)__p.__union<TTable>(o + __p.bb_pos) : null; }
+  public Packets.C_LoginReq PayloadAsC_LoginReq() { return Payload<Packets.C_LoginReq>().Value; }
+  public Packets.C_ChatReq PayloadAsC_ChatReq() { return Payload<Packets.C_ChatReq>().Value; }
+  public Packets.C_LogoutReq PayloadAsC_LogoutReq() { return Payload<Packets.C_LogoutReq>().Value; }
+  public Packets.S_ChatRes PayloadAsS_ChatRes() { return Payload<Packets.S_ChatRes>().Value; }
 
   public static Offset<Packets.RootPacket> CreateRootPacket(FlatBufferBuilder builder,
-      Packets.PacketBody body_type = Packets.PacketBody.NONE,
-      int bodyOffset = 0) {
+      Packets.EPacketType payload_type = Packets.EPacketType.NONE,
+      int payloadOffset = 0) {
     builder.StartTable(2);
-    RootPacket.AddBody(builder, bodyOffset);
-    RootPacket.AddBodyType(builder, body_type);
+    RootPacket.AddPayload(builder, payloadOffset);
+    RootPacket.AddPayloadType(builder, payload_type);
     return RootPacket.EndRootPacket(builder);
   }
 
   public static void StartRootPacket(FlatBufferBuilder builder) { builder.StartTable(2); }
-  public static void AddBodyType(FlatBufferBuilder builder, Packets.PacketBody bodyType) { builder.AddByte(0, (byte)bodyType, 0); }
-  public static void AddBody(FlatBufferBuilder builder, int bodyOffset) { builder.AddOffset(1, bodyOffset, 0); }
+  public static void AddPayloadType(FlatBufferBuilder builder, Packets.EPacketType payloadType) { builder.AddByte(0, (byte)payloadType, 0); }
+  public static void AddPayload(FlatBufferBuilder builder, int payloadOffset) { builder.AddOffset(1, payloadOffset, 0); }
   public static Offset<Packets.RootPacket> EndRootPacket(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<Packets.RootPacket>(o);
@@ -52,8 +53,8 @@ static public class RootPacketVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*BodyType*/, 1 /*Packets.PacketBody*/, 1, false)
-      && verifier.VerifyUnion(tablePos, 4, 6 /*Body*/, Packets.PacketBodyVerify.Verify, false)
+      && verifier.VerifyField(tablePos, 4 /*PayloadType*/, 1 /*Packets.EPacketType*/, 1, false)
+      && verifier.VerifyUnion(tablePos, 4, 6 /*Payload*/, Packets.EPacketTypeVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

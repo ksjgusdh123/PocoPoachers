@@ -9,15 +9,15 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct ChatBody : IFlatbufferObject
+public struct C_ChatReq : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
   public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_24_3_25(); }
-  public static ChatBody GetRootAsChatBody(ByteBuffer _bb) { return GetRootAsChatBody(_bb, new ChatBody()); }
-  public static ChatBody GetRootAsChatBody(ByteBuffer _bb, ChatBody obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public static C_ChatReq GetRootAsC_ChatReq(ByteBuffer _bb) { return GetRootAsC_ChatReq(_bb, new C_ChatReq()); }
+  public static C_ChatReq GetRootAsC_ChatReq(ByteBuffer _bb, C_ChatReq obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public ChatBody __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public C_ChatReq __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public string Text { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
@@ -27,24 +27,24 @@ public struct ChatBody : IFlatbufferObject
 #endif
   public byte[] GetTextArray() { return __p.__vector_as_array<byte>(4); }
 
-  public static Offset<Packets.ChatBody> CreateChatBody(FlatBufferBuilder builder,
+  public static Offset<Packets.C_ChatReq> CreateC_ChatReq(FlatBufferBuilder builder,
       StringOffset textOffset = default(StringOffset)) {
     builder.StartTable(1);
-    ChatBody.AddText(builder, textOffset);
-    return ChatBody.EndChatBody(builder);
+    C_ChatReq.AddText(builder, textOffset);
+    return C_ChatReq.EndC_ChatReq(builder);
   }
 
-  public static void StartChatBody(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void StartC_ChatReq(FlatBufferBuilder builder) { builder.StartTable(1); }
   public static void AddText(FlatBufferBuilder builder, StringOffset textOffset) { builder.AddOffset(0, textOffset.Value, 0); }
-  public static Offset<Packets.ChatBody> EndChatBody(FlatBufferBuilder builder) {
+  public static Offset<Packets.C_ChatReq> EndC_ChatReq(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     builder.Required(o, 4);  // text
-    return new Offset<Packets.ChatBody>(o);
+    return new Offset<Packets.C_ChatReq>(o);
   }
 }
 
 
-static public class ChatBodyVerify
+static public class C_ChatReqVerify
 {
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {

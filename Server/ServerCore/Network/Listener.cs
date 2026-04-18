@@ -6,13 +6,13 @@ namespace ServerCore.Network;
 
 public sealed class Listener
 {
-    private readonly IPEndPoint _endPoint;
-    private readonly RoomManager _rooms;
+    private readonly IPEndPoint       _endPoint;
+    private readonly SessionManager   _sessionManager;
 
-    public Listener(IPEndPoint endPoint, RoomManager rooms)
+    public Listener(IPEndPoint endPoint, SessionManager sessionManager)
     {
-        _endPoint = endPoint;
-        _rooms = rooms;
+        _endPoint       = endPoint;
+        _sessionManager = sessionManager;
     }
 
     public async Task RunAsync(CancellationToken cancellationToken)
@@ -26,7 +26,7 @@ public sealed class Listener
             while (!cancellationToken.IsCancellationRequested)
             {
                 var client = await tcpListener.AcceptTcpClientAsync(cancellationToken).ConfigureAwait(false);
-                var session = new ClientSession(client, _rooms);
+                var session = new Session(client, _sessionManager);
                 _ = Task.Run(() => session.RunAsync(cancellationToken), cancellationToken);
             }
         }

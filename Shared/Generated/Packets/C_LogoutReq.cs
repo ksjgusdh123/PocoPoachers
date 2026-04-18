@@ -9,26 +9,26 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct LogoutBody : IFlatbufferObject
+public struct C_LogoutReq : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
   public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_24_3_25(); }
-  public static LogoutBody GetRootAsLogoutBody(ByteBuffer _bb) { return GetRootAsLogoutBody(_bb, new LogoutBody()); }
-  public static LogoutBody GetRootAsLogoutBody(ByteBuffer _bb, LogoutBody obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public static C_LogoutReq GetRootAsC_LogoutReq(ByteBuffer _bb) { return GetRootAsC_LogoutReq(_bb, new C_LogoutReq()); }
+  public static C_LogoutReq GetRootAsC_LogoutReq(ByteBuffer _bb, C_LogoutReq obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public LogoutBody __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public C_LogoutReq __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
 
-  public static void StartLogoutBody(FlatBufferBuilder builder) { builder.StartTable(0); }
-  public static Offset<Packets.LogoutBody> EndLogoutBody(FlatBufferBuilder builder) {
+  public static void StartC_LogoutReq(FlatBufferBuilder builder) { builder.StartTable(0); }
+  public static Offset<Packets.C_LogoutReq> EndC_LogoutReq(FlatBufferBuilder builder) {
     int o = builder.EndTable();
-    return new Offset<Packets.LogoutBody>(o);
+    return new Offset<Packets.C_LogoutReq>(o);
   }
 }
 
 
-static public class LogoutBodyVerify
+static public class C_LogoutReqVerify
 {
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {

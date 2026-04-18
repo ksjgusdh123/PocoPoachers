@@ -1,4 +1,3 @@
-using System.Buffers.Binary;
 using System.Net.Sockets;
 using Packets;
 
@@ -6,13 +5,13 @@ namespace DummyClient;
 
 internal static class Program
 {
-    private const string Host = "127.0.0.1";
+    private const string HostAddr = "127.0.0.1";
     private const int Port = 7000;
     private const string DisplayName = "dummy";
 
     private static async Task Main()
     {
-        FlatPacketCodec.EnsureRuntimeMatchesSchema();
+        PacketHandler.ValidateSchema();
 
         using var cts = new CancellationTokenSource();
         Console.CancelKeyPress += (_, e) =>
@@ -24,7 +23,7 @@ internal static class Program
         using var client = new TcpClient();
         try
         {
-            await client.ConnectAsync(Host, Port, cts.Token).ConfigureAwait(false);
+            await client.ConnectAsync(HostAddr, Port, cts.Token).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -32,11 +31,11 @@ internal static class Program
             Environment.Exit(1);
         }
 
-        Console.WriteLine($"연결 {Host}:{Port} {DisplayName}");
+        Console.WriteLine($"연결 {HostAddr}:{Port} {DisplayName}");
 
         await using var stream = client.GetStream();
 
-        await SendFramedAsync(stream, FlatPacketCodec.BuildLogin(DisplayName), cts.Token).ConfigureAwait(false);
+        await PacketHandler.SendAsync(stream, PacketHandler.Login(DisplayName), cts.Token).ConfigureAwait(false);
 
         var receive = Task.Run(async () =>
         {
@@ -44,16 +43,16 @@ internal static class Program
             {
                 while (!cts.Token.IsCancellationRequested)
                 {
-                    var body = await ReadFramedAsync(stream, cts.Token).ConfigureAwait(false);
+                    var body = await PacketHandler.ReadBodyAsync(stream, cts.Token).ConfigureAwait(false);
                     if (body is null)
                         break;
-                    if (!FlatPacketCodec.TryParseRoot(body, out var root))
+                    if (!PacketHandler.TryReadRoot(body, out var root))
                         break;
-                    var text = FlatPacketCodec.DescribeForClientLog(root);
+                    var text = PacketHandler.Format(root);
                     if (text is not null)
                         Console.WriteLine($"< {text}");
                     else
-                        Console.WriteLine($"< [{root.BodyType}]");
+                        Console.WriteLine($"< [{root.PayloadType}]");
                 }
             }
             catch (OperationCanceledException) when (cts.Token.IsCancellationRequested)
@@ -77,7 +76,7 @@ internal static class Program
 
             try
             {
-                await SendFramedAsync(stream, FlatPacketCodec.BuildChat(line), cts.Token).ConfigureAwait(false);
+                await PacketHandler.SendAsync(stream, PacketHandler.Chat(line), cts.Token).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (cts.Token.IsCancellationRequested)
             {
@@ -92,25 +91,5 @@ internal static class Program
         catch
         {
         }
-    }
-
-    private static async Task SendFramedAsync(NetworkStream stream, ReadOnlyMemory<byte> framed,
-        CancellationToken cancellationToken)
-    {
-        await stream.WriteAsync(framed, cancellationToken).ConfigureAwait(false);
-        await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
-    }
-
-    private static async Task<byte[]?> ReadFramedAsync(NetworkStream stream, CancellationToken cancellationToken)
-    {
-        var lenBuf = new byte[FlatPacketCodec.FrameHeaderSize];
-        await stream.ReadExactlyAsync(lenBuf.AsMemory(0, lenBuf.Length), cancellationToken).ConfigureAwait(false);
-        var len = BinaryPrimitives.ReadUInt16LittleEndian(lenBuf);
-        if (len is 0 or > FlatPacketCodec.MaxFrameBodyLength)
-            return null;
-
-        var body = new byte[len];
-        await stream.ReadExactlyAsync(body.AsMemory(0, len), cancellationToken).ConfigureAwait(false);
-        return body;
     }
 }

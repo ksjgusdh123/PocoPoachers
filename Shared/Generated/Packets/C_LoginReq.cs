@@ -9,15 +9,15 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct LoginBody : IFlatbufferObject
+public struct C_LoginReq : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
   public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_24_3_25(); }
-  public static LoginBody GetRootAsLoginBody(ByteBuffer _bb) { return GetRootAsLoginBody(_bb, new LoginBody()); }
-  public static LoginBody GetRootAsLoginBody(ByteBuffer _bb, LoginBody obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public static C_LoginReq GetRootAsC_LoginReq(ByteBuffer _bb) { return GetRootAsC_LoginReq(_bb, new C_LoginReq()); }
+  public static C_LoginReq GetRootAsC_LoginReq(ByteBuffer _bb, C_LoginReq obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public LoginBody __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public C_LoginReq __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public string Name { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
 #if ENABLE_SPAN_T
@@ -27,24 +27,24 @@ public struct LoginBody : IFlatbufferObject
 #endif
   public byte[] GetNameArray() { return __p.__vector_as_array<byte>(4); }
 
-  public static Offset<Packets.LoginBody> CreateLoginBody(FlatBufferBuilder builder,
+  public static Offset<Packets.C_LoginReq> CreateC_LoginReq(FlatBufferBuilder builder,
       StringOffset nameOffset = default(StringOffset)) {
     builder.StartTable(1);
-    LoginBody.AddName(builder, nameOffset);
-    return LoginBody.EndLoginBody(builder);
+    C_LoginReq.AddName(builder, nameOffset);
+    return C_LoginReq.EndC_LoginReq(builder);
   }
 
-  public static void StartLoginBody(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void StartC_LoginReq(FlatBufferBuilder builder) { builder.StartTable(1); }
   public static void AddName(FlatBufferBuilder builder, StringOffset nameOffset) { builder.AddOffset(0, nameOffset.Value, 0); }
-  public static Offset<Packets.LoginBody> EndLoginBody(FlatBufferBuilder builder) {
+  public static Offset<Packets.C_LoginReq> EndC_LoginReq(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     builder.Required(o, 4);  // name
-    return new Offset<Packets.LoginBody>(o);
+    return new Offset<Packets.C_LoginReq>(o);
   }
 }
 
 
-static public class LoginBodyVerify
+static public class C_LoginReqVerify
 {
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
