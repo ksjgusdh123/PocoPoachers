@@ -5,8 +5,9 @@ using UnityEngine.EventSystems;
 public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public static ItemSlotUI SelectedItemSlot { get; private set; }
-    public static CanvasGroup _canvasGroup;
+    public static CanvasGroup SelectedCanvasGroup;
 
+    private CanvasGroup _canvasGroup;
     private ItemSlotUI _slotUI;
 
     public static void RemovedSelectedItemSlot()
@@ -15,8 +16,8 @@ public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         DragIcon.Instance.Hide();
         SelectedItemSlot = null;
 
-        if (_canvasGroup != null)
-            _canvasGroup.alpha = 1f;
+        if (SelectedCanvasGroup != null)
+            SelectedCanvasGroup.alpha = 1f;
     }
 
     private void Awake()
@@ -30,6 +31,7 @@ public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
         if (_slotUI.IsSettedItem == false) return;
 
         SelectedItemSlot = _slotUI;
+        SelectedCanvasGroup = _canvasGroup;
         DragIcon.Instance.Show(SelectedItemSlot.SlotItemData.Icon, eventData.position);
 
         if (_canvasGroup != null)
@@ -49,7 +51,7 @@ public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
         DragIcon.Instance.Hide();
         SelectedItemSlot = null;
-
+        SelectedCanvasGroup = null;
         if (_canvasGroup != null)
             _canvasGroup.alpha = 1f;
     }
