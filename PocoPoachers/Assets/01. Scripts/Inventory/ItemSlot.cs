@@ -26,6 +26,13 @@ public class ItemSlot
         OnCleared?.Invoke();
     }
 
+    // 이벤트 없이 초기화 (정렬 내부용)
+    public void ClearSilent()
+    {
+        _itemData = null;
+        _amount = 0;
+    }
+
     // amount만큼 추가, 최대 스택 초과분 반환
     public int AddAmount(int value)
     {

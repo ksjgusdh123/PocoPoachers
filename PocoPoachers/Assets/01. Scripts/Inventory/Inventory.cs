@@ -103,6 +103,23 @@ public class Inventory : MonoBehaviour
         return count >= amount;
     }
 
+    // 아이템 타입 → 이름 순으로 정렬
+    public void Sort()
+    {
+        // 빈 슬롯은 뒤로, 아이템 타입 → 이름 순 정렬
+        _slots.Sort(0, _currentCapacity, Comparer<ItemSlot>.Create((a, b) =>
+        {
+            if (a.IsEmpty && b.IsEmpty) return 0;
+            if (a.IsEmpty) return 1;
+            if (b.IsEmpty) return -1;
+
+            int typeCompare = a.ItemData.ItemType.CompareTo(b.ItemData.ItemType);
+            return typeCompare != 0 ? typeCompare : string.Compare(a.ItemData.ItemName, b.ItemData.ItemName);
+        }));
+
+        ChangeInventory?.Invoke();
+    }
+
     private int CountItems()
     {
         int count = 0;

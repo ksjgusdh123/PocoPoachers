@@ -1,18 +1,26 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InventoryUI : MonoBehaviour
 {
     [SerializeField] private Inventory _inventory;
     [SerializeField] private ItemSlotUI _slotPrefab;
     [SerializeField] private Transform _slotParent;
+    [SerializeField] private Button _sortButton;
 
     private ItemSlotUI[] _slotUIs;
 
     private void Start()
     {
         _inventory.ChangeInventory += Refresh;
+        _sortButton.onClick.AddListener(OnClickSort);
         GenerateSlots();
         Refresh();
+    }
+
+    private void OnClickSort()
+    {
+        _inventory.Sort();
     }
 
     // 최대 용량만큼 슬롯 UI 생성
