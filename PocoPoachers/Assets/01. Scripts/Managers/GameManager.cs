@@ -5,7 +5,13 @@ public class GameManager : Singleton<GameManager>
 {
     private void Start()
     {
-        FindAnyObjectByType<Inventory>().AddItem(FindAnyObjectByType<Item>());
+        var inventory = FindAnyObjectByType<Inventory>();
+
+        Item[] items =FindObjectsByType<Item>();
+        foreach (var item in items)
+        {
+            inventory.AddItem(item.Data, 1);
+        }
     }
 }
  

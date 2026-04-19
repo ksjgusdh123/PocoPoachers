@@ -1,3 +1,4 @@
+using System.Data;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -9,15 +10,19 @@ public class DropSlotUI : MonoBehaviour, IDropHandler
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _text;
 
+    private ItemData _droppedItemData;
+
     public void OnDrop(PointerEventData eventData)
     {
         if (DragHandler.SelectedItemSlot == null) return;
+        ItemData prev = _droppedItemData;
         OnItemDropped(DragHandler.SelectedItemSlot.SlotItemData);
-        DragHandler.SelectedItemSlot.EquipItem();
+        DragHandler.SelectedItemSlot.EquipItem(prev);
     }
 
     protected virtual void OnItemDropped(ItemData data)
     {
+        _droppedItemData = data;
         _text.text = data.ItemName;
         _text.enabled = true;
         _icon.sprite = data.Icon;

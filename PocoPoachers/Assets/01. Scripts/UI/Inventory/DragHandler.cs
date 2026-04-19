@@ -5,10 +5,19 @@ using UnityEngine.EventSystems;
 public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
 {
     public static ItemSlotUI SelectedItemSlot { get; private set; }
+    public static CanvasGroup _canvasGroup;
 
     private ItemSlotUI _slotUI;
-    private CanvasGroup _canvasGroup;
 
+    public static void RemovedSelectedItemSlot()
+    {
+        // 선택된 아이템 슬롯이 장착되면
+        DragIcon.Instance.Hide();
+        SelectedItemSlot = null;
+
+        if (_canvasGroup != null)
+            _canvasGroup.alpha = 1f;
+    }
 
     private void Awake()
     {
@@ -43,6 +52,6 @@ public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
         if (_canvasGroup != null)
             _canvasGroup.alpha = 1f;
-
     }
+
 }

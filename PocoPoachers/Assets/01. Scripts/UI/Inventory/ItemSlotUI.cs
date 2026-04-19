@@ -10,9 +10,9 @@ public class ItemSlotUI : MonoBehaviour
     [SerializeField] private GameObject _emptyOverlay;
 
     public bool IsSettedItem { get; private set; }
-    public ItemData SlotItemData => settedSlot.Item.Data;
+    public ItemData SlotItemData => _settedSlot.ItemData;
 
-    private ItemSlot settedSlot;
+    private ItemSlot _settedSlot;
 
     public void SetSlot(ItemSlot slot)
     {
@@ -22,8 +22,8 @@ public class ItemSlotUI : MonoBehaviour
             return;
         }
 
-        settedSlot = slot;
-        ItemData slotItemData = slot.Item.Data;
+        _settedSlot = slot;
+        ItemData slotItemData = slot.ItemData;
 
         _icon.sprite = slotItemData.Icon;
         _icon.enabled = true;
@@ -47,7 +47,9 @@ public class ItemSlotUI : MonoBehaviour
             _emptyOverlay.SetActive(true);
     }
 
-    public void EquipItem()
+    public void EquipItem(ItemData prevData)
     {
+        _settedSlot.ChangeByDragDrop(prevData);
+        DragHandler.RemovedSelectedItemSlot();
     }
 }
