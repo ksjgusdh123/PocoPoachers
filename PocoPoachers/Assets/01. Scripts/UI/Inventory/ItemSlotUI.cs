@@ -7,7 +7,12 @@ public class ItemSlotUI : MonoBehaviour
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private TextMeshProUGUI _amountText;
-    [SerializeField] private GameObject _emptyOverlay; // 빈 슬롯 표시용
+    [SerializeField] private GameObject _emptyOverlay;
+
+    public bool IsSettedItem { get; private set; }
+    public ItemData SlotItemData => settedSlot.Item.Data;
+
+    private ItemSlot settedSlot;
 
     public void SetSlot(ItemSlot slot)
     {
@@ -17,10 +22,14 @@ public class ItemSlotUI : MonoBehaviour
             return;
         }
 
-        _icon.sprite = slot.Item.Data.Icon;
+        settedSlot = slot;
+        ItemData slotItemData = slot.Item.Data;
+
+        _icon.sprite = slotItemData.Icon;
         _icon.enabled = true;
-        _nameText.text = slot.Item.Data.ItemName;
+        _nameText.text = slotItemData.ItemName;
         _amountText.text = slot.Amount >= 1 ? slot.Amount.ToString() : "";
+        IsSettedItem = true;
 
         if (_emptyOverlay != null)
             _emptyOverlay.SetActive(false);
@@ -29,11 +38,16 @@ public class ItemSlotUI : MonoBehaviour
     private void SetEmpty()
     {
         _icon.sprite = null;
+        IsSettedItem = false;
         //_icon.enabled = false;
         _nameText.text = "";
         _amountText.text = "";
 
         if (_emptyOverlay != null)
             _emptyOverlay.SetActive(true);
+    }
+
+    public void EquipItem()
+    {
     }
 }
