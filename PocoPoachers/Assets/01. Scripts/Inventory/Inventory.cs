@@ -4,48 +4,65 @@ using UnityEngine;
 
 public class Inventory : MonoBehaviour
 {
+    [SerializeField] private int _maxCapacity = 50;
     [SerializeField] private int _initialCapacity = 20;
 
     private List<ItemSlot> _slots = new List<ItemSlot>();
-    private int _itemCount = 0;
+    private int _currentCapacity;
+
+    public event Action ChangeInventory;
 
     public IReadOnlyList<ItemSlot> Slots => _slots;
-    public int Capacity => _slots.Count;
-    public int ItemCount => _itemCount;
+    public int MaxCapacity => _maxCapacity;
+    public int CurrentCapacity => _currentCapacity;
+
+    // 현재 사용 중인 슬롯 수 (갭 포함)
+    public int ItemCount => CountItems();
 
     private void Awake()
     {
-        for (int i = 0; i < _initialCapacity; i++)
-            _slots.Add(new ItemSlot());
+        _currentCapacity = _initialCapacity;
+
+        // 최대 용량만큼 슬롯 미리 생성
+        for (int i = 0; i < _maxCapacity; i++)
+        {
+            var slot = new ItemSlot();
+            slot.OnCleared += () => ChangeInventory?.Invoke();
+            _slots.Add(slot);
+        }
     }
 
     // 아이템 추가, 성공 여부 반환
-    public bool AddItem(Item item, int amount = 1)
+    public bool AddItem(ItemData itemData, int amount = 1)
     {
         int remaining = amount;
 
-        // 채워진 슬롯만 순회하여 스택 추가
-        for (int i = 0; i < _itemCount; i++)
+        // 같은 아이템 슬롯에 스택 추가
+        for (int i = 0; i < _currentCapacity; i++)
         {
-            if (_slots[i].Item.Data == item.Data)
+            if (!_slots[i].IsEmpty && _slots[i].ItemData == itemData)
             {
                 remaining = _slots[i].AddAmount(remaining);
                 if (remaining <= 0)
                 {
+                    ChangeInventory?.Invoke();
                     return true;
                 }
             }
         }
 
-        // 빈 슬롯(_itemCount 위치부터)에 추가
-        while (remaining > 0 && _itemCount < _slots.Count)
+        // 첫 번째 빈 슬롯에 추가
+        for (int i = 0; i < _currentCapacity && remaining > 0; i++)
         {
-            int toAdd = Mathf.Min(remaining, item.Data.MaxStack);
-            _slots[_itemCount].Set(new Item(item.Data), toAdd);
-            _itemCount++;
-            remaining -= toAdd;
+            if (_slots[i].IsEmpty)
+            {
+                int toAdd = Mathf.Min(remaining, itemData.MaxStack);
+                _slots[i].Set(itemData, toAdd);
+                remaining -= toAdd;
+            }
         }
 
+        ChangeInventory?.Invoke();
         return remaining <= 0;
     }
 
@@ -53,65 +70,63 @@ public class Inventory : MonoBehaviour
     public int RemoveItem(ItemData itemData, int amount = 1)
     {
         int remaining = amount;
-        int firstEmptyIndex = -1;
 
-        for (int i = _itemCount - 1; i >= 0; i--)
+        for (int i = _currentCapacity - 1; i >= 0; i--)
         {
-            if (_slots[i].Item.Data == itemData)
+            if (!_slots[i].IsEmpty && _slots[i].ItemData == itemData)
             {
                 remaining -= _slots[i].RemoveAmount(remaining);
-                if (_slots[i].IsEmpty)
-                    firstEmptyIndex = i;
-
                 if (remaining <= 0)
                     break;
             }
         }
 
-        int removed = amount - remaining;
-        if (removed > 0)
-        {
-            if (firstEmptyIndex >= 0)
-                Compact(firstEmptyIndex);
-        }
-
-        return removed;
+        ChangeInventory?.Invoke();
+        return amount - remaining;
     }
 
-    // startIndex부터 빈 슬롯을 뒤로 몰고 앞쪽을 채움
-    private void Compact(int startIndex = 0)
+    // 현재 용량 확장 (최대 용량 초과 불가)
+    public void ExpandCapacity(int count)
     {
-        int writeIndex = startIndex;
-        for (int i = startIndex; i < _itemCount; i++)
-        {
-            if (!_slots[i].IsEmpty)
-            {
-                if (i != writeIndex)
-                {
-                    _slots[writeIndex].Set(_slots[i].Item, _slots[i].Amount);
-                    _slots[i].Clear();
-                }
-                writeIndex++;
-            }
-        }
-        _itemCount = writeIndex;
-    }
-
-    // 슬롯 수 확장
-    public void ExpandSlots(int count)
-    {
-        for (int i = 0; i < count; i++)
-            _slots.Add(new ItemSlot());
+        _currentCapacity = Mathf.Min(_currentCapacity + count, _maxCapacity);
+        ChangeInventory?.Invoke();
     }
 
     public bool HasItem(ItemData itemData, int amount = 1)
     {
         int count = 0;
-        for (int i = 0; i < _itemCount; i++)
+        for (int i = 0; i < _currentCapacity; i++)
         {
-            if (_slots[i].Item.Data == itemData)
+            if (!_slots[i].IsEmpty && _slots[i].ItemData == itemData)
                 count += _slots[i].Amount;
         }
         return count >= amount;
+    }
+
+    // 아이템 타입 → 이름 순으로 정렬
+    public void Sort()
+    {
+        // 빈 슬롯은 뒤로, 아이템 타입 → 이름 순 정렬
+        _slots.Sort(0, _currentCapacity, Comparer<ItemSlot>.Create((a, b) =>
+        {
+            if (a.IsEmpty && b.IsEmpty) return 0;
+            if (a.IsEmpty) return 1;
+            if (b.IsEmpty) return -1;
+
+            int typeCompare = a.ItemData.ItemType.CompareTo(b.ItemData.ItemType);
+            return typeCompare != 0 ? typeCompare : string.Compare(a.ItemData.ItemName, b.ItemData.ItemName);
+        }));
+
+        ChangeInventory?.Invoke();
+    }
+
+    private int CountItems()
+    {
+        int count = 0;
+        for (int i = 0; i < _currentCapacity; i++)
+        {
+            if (!_slots[i].IsEmpty) count++;
+        }
+        return count;
     }
 }

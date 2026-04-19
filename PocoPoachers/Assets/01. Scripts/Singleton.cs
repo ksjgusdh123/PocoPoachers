@@ -20,6 +20,7 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 
     protected virtual void Awake()
     {
+            
     }
 
     private void OnDestroy()

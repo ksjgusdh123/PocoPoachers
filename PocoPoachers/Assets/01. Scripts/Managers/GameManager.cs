@@ -5,7 +5,13 @@ public class GameManager : Singleton<GameManager>
 {
     private void Start()
     {
-        FindAnyObjectByType<Image>().sprite = ResourceManager.GetInstance().Load<Sprite>("Keyboard_F");
+        var inventory = FindAnyObjectByType<Inventory>();
+
+        Item[] items =FindObjectsByType<Item>();
+        foreach (var item in items)
+        {
+            inventory.AddItem(item.Data, 1);
+        }
     }
 }
  

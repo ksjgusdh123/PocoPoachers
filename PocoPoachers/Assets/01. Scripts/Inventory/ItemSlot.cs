@@ -1,31 +1,42 @@
+using System;
 using UnityEngine;
 
 [System.Serializable]
 public class ItemSlot
 {
-    [SerializeField] private Item _item;
+    [SerializeField] private ItemData _itemData;
     [SerializeField] private int _amount;
 
-    public Item Item => _item;
-    public int Amount => _amount;
-    public bool IsEmpty => _item == null;
+    public event Action OnCleared;
 
-    public void Set(Item newItem, int newAmount)
+    public ItemData ItemData => _itemData;
+    public int Amount => _amount;
+    public bool IsEmpty => _itemData == null;
+        
+    public void Set(ItemData newItemData, int newAmount)
     {
-        _item = newItem;
+        _itemData = newItemData;
         _amount = newAmount;
     }
 
     public void Clear()
     {
-        _item = null;
+        _itemData = null;
+        _amount = 0;
+        OnCleared?.Invoke();
+    }
+
+    // 이벤트 없이 초기화 (정렬 내부용)
+    public void ClearSilent()
+    {
+        _itemData = null;
         _amount = 0;
     }
 
     // amount만큼 추가, 최대 스택 초과분 반환
     public int AddAmount(int value)
     {
-        int maxStack = _item.Data.MaxStack;
+        int maxStack = _itemData.MaxStack;
         int overflow = Mathf.Max(0, _amount + value - maxStack);
         _amount = Mathf.Min(_amount + value, maxStack);
         return overflow;
@@ -39,5 +50,18 @@ public class ItemSlot
         if (_amount <= 0)
             Clear();
         return removed;
+    }
+
+    public void ChangeByDragDrop(ItemData changedData)
+    {
+        if(changedData == null)
+        {
+            RemoveAmount(1);
+        }
+        else
+        {
+            Set(changedData, 1);
+            OnCleared.Invoke();
+        }
     }
 }
