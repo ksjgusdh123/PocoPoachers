@@ -15,7 +15,7 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public event Action<ItemSlotUI> OnHoverExit;
 
     public bool IsSettedItem { get; private set; }
-    public ItemData SlotItemData => _settedSlot.ItemData;
+    public ItemData SlotItemData => _settedSlot?.ItemData;
     public int SavedAmountItem => _settedSlot.Amount;
 
     private ItemSlot _settedSlot;
