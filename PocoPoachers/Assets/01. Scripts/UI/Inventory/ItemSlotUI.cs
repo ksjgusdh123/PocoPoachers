@@ -1,18 +1,27 @@
+using System;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ItemSlotUI : MonoBehaviour
+public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private TextMeshProUGUI _amountText;
-    [SerializeField] private GameObject _emptyOverlay;
+    [SerializeField] private GameObject _itemVisual;
+
+    public event Action<ItemSlotUI> OnHoverEnter;
+    public event Action<ItemSlotUI> OnHoverExit;
 
     public bool IsSettedItem { get; private set; }
     public ItemData SlotItemData => _settedSlot.ItemData;
+    public int SavedAmountItem => _settedSlot.Amount;
 
     private ItemSlot _settedSlot;
+
+    public void OnPointerEnter(PointerEventData eventData) => OnHoverEnter?.Invoke(this);
+    public void OnPointerExit(PointerEventData eventData) => OnHoverExit?.Invoke(this);
 
     public void SetSlot(ItemSlot slot)
     {
@@ -26,25 +35,23 @@ public class ItemSlotUI : MonoBehaviour
         ItemData slotItemData = slot.ItemData;
 
         _icon.sprite = slotItemData.Icon;
-        _icon.enabled = true;
         _nameText.text = slotItemData.ItemName;
         _amountText.text = slot.Amount >= 1 ? slot.Amount.ToString() : "";
         IsSettedItem = true;
 
-        if (_emptyOverlay != null)
-            _emptyOverlay.SetActive(false);
+        if (_itemVisual != null)
+            _itemVisual.SetActive(true);
     }
 
     private void SetEmpty()
     {
         _icon.sprite = null;
         IsSettedItem = false;
-        //_icon.enabled = false;
         _nameText.text = "";
         _amountText.text = "";
 
-        if (_emptyOverlay != null)
-            _emptyOverlay.SetActive(true);
+        if (_itemVisual != null)
+            _itemVisual.SetActive(false);
     }
 
     public void EquipItem(ItemData prevData)
