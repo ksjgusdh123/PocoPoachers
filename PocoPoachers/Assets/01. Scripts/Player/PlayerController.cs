@@ -1,10 +1,10 @@
 using System.Linq;
 using UnityEngine;
 
-// �μ����� �÷��̾� ���� Ŭ����
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private GameObject PlayerBagUI;
+    [SerializeField] private GameObject boxUI;
     private Inventory _inventory;
     private DropQuickSlotUI[] _quickSlots;
     private GameObject _interactObject;
@@ -34,12 +34,20 @@ public class PlayerController : MonoBehaviour
 
     void Interaction()
     {
-        // temp
         if (_interactObject.TryGetComponent<Inventory>(out var inven))
         {
             ShowInventory();
-            _inventory._interactionInventory = inven;
-            inven._interactionInventory = _inventory;
+            boxUI.SetActive(!boxUI.activeSelf);
+            if (boxUI.activeSelf)
+            {
+                _inventory._interactionInventory = inven;
+                inven._interactionInventory = _inventory;
+            }
+            else
+            {
+                _inventory._interactionInventory = null;
+                inven._interactionInventory = null;
+            }
         }
     }
 
