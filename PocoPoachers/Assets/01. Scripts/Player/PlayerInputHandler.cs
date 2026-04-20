@@ -8,6 +8,7 @@ public class PlayerInputHandler : MonoBehaviour
     public Vector2 MoveInput { get; private set; }
 
     public event Action GoInventory;
+    public event Action StartInteraction;
     public event Action<int> ItemNumberKey;
 
     private readonly Key[] _numberKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5 };
@@ -20,7 +21,12 @@ public class PlayerInputHandler : MonoBehaviour
      
     void OnGoInventory(InputValue value)
     {
-        if (value.isPressed) GoInventory.Invoke();
+        if (value.isPressed) GoInventory?.Invoke();
+    }
+
+    void OnInteraction(InputValue value)
+    {
+        if (value.isPressed) StartInteraction?.Invoke();
     }
 
     void OnItemNumberKey(InputValue value)

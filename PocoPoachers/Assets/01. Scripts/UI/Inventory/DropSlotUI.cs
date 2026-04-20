@@ -12,10 +12,14 @@ public class DropSlotUI : MonoBehaviour, IDropHandler
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private GameObject _itemVisual;
 
+    public ItemType ItemType => _itemType;
+
     protected ItemData _droppedItemData;
     private RectTransform _rectTransform;
+    private const float DoubleClickThreshold = 0.3f;
+    private float _lastClickTime;
 
-    private void Awake()
+    protected virtual void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
     }

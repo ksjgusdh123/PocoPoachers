@@ -12,6 +12,7 @@ public class Inventory : MonoBehaviour
 
     public event Action ChangeInventory;
 
+    public Inventory _interactionInventory {  get; set; }
     public IReadOnlyList<ItemSlot> Slots => _slots;
     public int MaxCapacity => _maxCapacity;
     public int CurrentCapacity => _currentCapacity;
