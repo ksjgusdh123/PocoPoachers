@@ -8,6 +8,9 @@ public class PlayerInputHandler : MonoBehaviour
     public Vector2 MoveInput { get; private set; }
 
     public event Action GoInventory;
+    public event Action<int> ItemNumberKey;
+
+    private readonly Key[] _numberKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5 };
 
     // PlayerInput 컴포넌트가 Move 액션 발생 시 자동으로 호출
     private void OnMove(InputValue value)
@@ -18,5 +21,20 @@ public class PlayerInputHandler : MonoBehaviour
     void OnGoInventory(InputValue value)
     {
         if (value.isPressed) GoInventory.Invoke();
+    }
+
+    void OnItemNumberKey(InputValue value)
+    {
+        var keyboard = Keyboard.current;
+        if (null == keyboard) return;
+
+        for (int i = 0; i < _numberKeys.Length; i++)
+        {
+            if (keyboard[_numberKeys[i]].wasPressedThisFrame)
+            {
+                ItemNumberKey?.Invoke(i);
+                break;
+            }
+        }
     }
 }

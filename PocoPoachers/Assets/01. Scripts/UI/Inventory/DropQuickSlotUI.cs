@@ -17,4 +17,20 @@ public class DropQuickSlotUI : DropSlotUI
         }
         return false;
     }
+
+    public bool TryRegisterItem()
+    {
+        SlotInteractionManager manager = SlotInteractionManager.GetInstance();
+        ItemSlotUI slotUI = manager.HoveredSlot;
+        if (slotUI == null || !slotUI.IsSettedItem) return false;
+
+        ItemData prev = _droppedItemData;  
+        if (!OnItemDropped(slotUI.SlotItemData, slotUI.SavedAmountItem)) 
+        {
+            return false;
+        }
+
+        slotUI.EquipItem(prev);
+        return true;
+    }
 }
