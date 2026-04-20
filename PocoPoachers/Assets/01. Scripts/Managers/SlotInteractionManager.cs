@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class SlotInteractionManager : Singleton<SlotInteractionManager>
 {
+
     // 호버 상태
     public ItemSlotUI HoveredSlot { get; private set; }
     public event Action<ItemSlotUI> OnHoverEnter;
@@ -56,6 +57,7 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
 
     public void ClearDragged()
     {
+        DragIcon.Instance.Hide();
         DraggedSlot = null;
         DraggedCanvasGroup = null;
         OnDragEnd?.Invoke();

@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 [RequireComponent(typeof(PlayerInput))]
 public class PlayerInputHandler : MonoBehaviour
 {
+    public const float DoubleClickThreshold = 0.3f;
     public Vector2 MoveInput { get; private set; }
 
     public event Action GoInventory;
@@ -13,7 +14,6 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action DoubleClick;
 
     private readonly Key[] _numberKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5 };
-    private const float DoubleClickThreshold = 0.3f;
     private float _lastClickTime;
 
     // PlayerInput 컴포넌트가 Move 액션 발생 시 자동으로 호출

@@ -55,7 +55,6 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public void EquipItem(ItemData prevData)
     {
         _settedSlot.ChangeByDragDrop(prevData);
-        DragIcon.Instance.Hide();
         SlotInteractionManager.GetInstance().ClearDragged();
     }
 }

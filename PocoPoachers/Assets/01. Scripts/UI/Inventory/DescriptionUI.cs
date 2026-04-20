@@ -18,8 +18,8 @@ public class DescriptionUI : MonoBehaviour
 
     public void HideDescription(ItemSlotUI slot)
     {
-        _name.text = null;
-        _description.text = null;
+        _name.text = "";
+        _description.text = "";
         gameObject.SetActive(false);
     }
 }

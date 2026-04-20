@@ -35,7 +35,6 @@ public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     {
         if (_slotUI.IsSettedItem == false) return;
 
-        DragIcon.Instance.Hide();
         SlotInteractionManager.GetInstance().ClearDragged();
 
         if (_canvasGroup != null)

@@ -16,9 +16,6 @@ public class DropSlotUI : MonoBehaviour, IDropHandler
 
     protected ItemData _droppedItemData;
     private RectTransform _rectTransform;
-    private const float DoubleClickThreshold = 0.3f;
-    private float _lastClickTime;
-
     protected virtual void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
@@ -53,7 +50,7 @@ public class DropSlotUI : MonoBehaviour, IDropHandler
     public virtual void Unequip()
     {
         _droppedItemData = null;
-        _nameText.text = null;
+        _nameText.text = "";
         _icon.sprite = null;
         if (_itemVisual != null)
             _itemVisual.SetActive(false);
