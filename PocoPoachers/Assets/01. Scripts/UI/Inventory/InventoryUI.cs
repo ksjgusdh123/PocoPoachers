@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,13 +10,36 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Button _sortButton;
 
     private ItemSlotUI[] _slotUIs;
+    private HashSet<ItemSlotUI> _slotSet;
+    private DescriptionUI _descriptionUI;
 
     private void Start()
     {
+        _descriptionUI = FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
         _inventory.ChangeInventory += Refresh;
-        _sortButton.onClick.AddListener(OnClickSort);
+        if(_sortButton) _sortButton.onClick.AddListener(OnClickSort);
         GenerateSlots();
         Refresh();
+
+        var manager = SlotInteractionManager.GetInstance();
+        manager.OnHoverEnter += _descriptionUI.ShowDescription;
+        manager.OnHoverExit += _descriptionUI.HideDescription;
+        manager.OnDoubleClick += OnSlotDoubleClicked;
+    }
+
+    private void OnSlotDoubleClicked()
+    {
+        var targetSlot = SlotInteractionManager.GetInstance().HoveredSlot;
+        if (targetSlot == null) return;
+
+        if (!_slotSet.Contains(targetSlot)) return;
+
+        var target = _inventory._interactionInventory;
+        if (target == null) return;
+
+
+        if (target.AddItem(targetSlot.SlotItemData, targetSlot.SavedAmountItem))
+            targetSlot.ClearSlot();
     }
 
     private void OnClickSort()
@@ -27,11 +51,15 @@ public class InventoryUI : MonoBehaviour
     private void GenerateSlots()
     {
         _slotUIs = new ItemSlotUI[_inventory.MaxCapacity];
+        _slotSet = new HashSet<ItemSlotUI>();
 
         for (int i = 0; i < _inventory.MaxCapacity; i++)
         {
             _slotUIs[i] = Instantiate(_slotPrefab, _slotParent);
+            _slotSet.Add(_slotUIs[i]);
         }
+
+        _descriptionUI.HideDescription(null);
     }
 
     // 인벤토리 데이터 기반으로 전체 UI 갱신

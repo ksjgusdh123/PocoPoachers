@@ -5,13 +5,20 @@ public class GameManager : Singleton<GameManager>
 {
     private void Start()
     {
-        var inventory = FindAnyObjectByType<Inventory>();
+        // Temp
+        var inventory = GameObject.Find("Cube").GetComponent<Inventory>();
 
-        Item[] items =FindObjectsByType<Item>();
+        Item[] items = FindObjectsByType<Item>();
         foreach (var item in items)
         {
             inventory.AddItem(item.Data, 1);
         }
+
+        var otherInven = GameObject.Find("Box").GetComponent<Inventory>();
+
+        foreach (var item in items)
+        {
+            otherInven.AddItem(item.Data, 1);
+        }
     }
 }
- 
