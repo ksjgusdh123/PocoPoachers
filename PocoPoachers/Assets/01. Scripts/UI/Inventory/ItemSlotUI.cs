@@ -1,4 +1,3 @@
-using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -11,17 +10,14 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     [SerializeField] private TextMeshProUGUI _amountText;
     [SerializeField] private GameObject _itemVisual;
 
-    public event Action<ItemSlotUI> OnHoverEnter;
-    public event Action<ItemSlotUI> OnHoverExit;
-
     public bool IsSettedItem { get; private set; }
     public ItemData SlotItemData => _settedSlot?.ItemData;
     public int SavedAmountItem => _settedSlot.Amount;
 
     private ItemSlot _settedSlot;
 
-    public void OnPointerEnter(PointerEventData eventData) => OnHoverEnter?.Invoke(this);
-    public void OnPointerExit(PointerEventData eventData) => OnHoverExit?.Invoke(this);
+    public void OnPointerEnter(PointerEventData eventData) => SlotInteractionManager.GetInstance().SetHovered(this);
+    public void OnPointerExit(PointerEventData eventData) => SlotInteractionManager.GetInstance().ClearHovered(this);
 
     public void SetSlot(ItemSlot slot)
     {
@@ -57,6 +53,7 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public void EquipItem(ItemData prevData)
     {
         _settedSlot.ChangeByDragDrop(prevData);
-        DragHandler.RemovedSelectedItemSlot();
+        DragIcon.Instance.Hide();
+        SlotInteractionManager.GetInstance().ClearDragged();
     }
 }

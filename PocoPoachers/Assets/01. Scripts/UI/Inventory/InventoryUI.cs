@@ -9,15 +9,19 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Button _sortButton;
 
     private ItemSlotUI[] _slotUIs;
+    private DescriptionUI _descriptionUI;
 
     private void Start()
     {
+        _descriptionUI = FindAnyObjectByType<DescriptionUI>();
         _inventory.ChangeInventory += Refresh;
         _sortButton.onClick.AddListener(OnClickSort);
         GenerateSlots();
         Refresh();
 
-
+        var manager = SlotInteractionManager.GetInstance();
+        manager.OnHoverEnter += _descriptionUI.ShowDescription;
+        manager.OnHoverExit += _descriptionUI.HideDescription;
     }
 
     private void OnClickSort()
@@ -30,16 +34,10 @@ public class InventoryUI : MonoBehaviour
     {
         _slotUIs = new ItemSlotUI[_inventory.MaxCapacity];
 
-        var ui = FindAnyObjectByType<DescriptionUI>();
         for (int i = 0; i < _inventory.MaxCapacity; i++)
-        {
             _slotUIs[i] = Instantiate(_slotPrefab, _slotParent);
 
-            // Test
-            _slotUIs[i].OnHoverEnter += ui.ShowDescription;
-            _slotUIs[i].OnHoverExit += ui.HideDescription;
-        }
-        ui.HideDescription(null);
+        _descriptionUI.HideDescription(null);
     }
 
     // 인벤토리 데이터 기반으로 전체 UI 갱신

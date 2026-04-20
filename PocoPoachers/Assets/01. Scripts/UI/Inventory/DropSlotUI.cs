@@ -1,4 +1,3 @@
-using System.Data;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -23,15 +22,16 @@ public class DropSlotUI : MonoBehaviour, IDropHandler
 
     public void OnDrop(PointerEventData eventData)
     {
-        if (DragHandler.SelectedItemSlot == null) return;
+        var manager = SlotInteractionManager.GetInstance();
+        if (manager.DraggedSlot == null) return;
         ItemData prev = _droppedItemData;
-        if (!OnItemDropped(DragHandler.SelectedItemSlot.SlotItemData, DragHandler.SelectedItemSlot.SavedAmountItem))
+        if (!OnItemDropped(manager.DraggedSlot.SlotItemData, manager.DraggedSlot.SavedAmountItem))
         {
             _rectTransform.DOKill();
             _rectTransform.DOShakeAnchorPos(0.4f, strength: new Vector2(10f, 0f), vibrato: 20, randomness: 0);
             return;
         }
-        DragHandler.SelectedItemSlot.EquipItem(prev);
+        manager.DraggedSlot.EquipItem(prev);
     }
 
     protected virtual bool OnItemDropped(ItemData data, int amount)
