@@ -3,15 +3,12 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private TextMeshProUGUI _amountText;
     [SerializeField] private GameObject _itemVisual;
-
-    private const float DoubleClickThreshold = 0.3f;
-    private float _lastClickTime;
 
     public bool IsSettedItem { get; private set; }
     public ItemData SlotItemData => _settedSlot?.ItemData;
@@ -21,13 +18,6 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
 
     public void OnPointerEnter(PointerEventData eventData) => SlotInteractionManager.GetInstance().SetHovered(this);
     public void OnPointerExit(PointerEventData eventData) => SlotInteractionManager.GetInstance().ClearHovered(this);
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        if (Time.time - _lastClickTime < DoubleClickThreshold)
-            SlotInteractionManager.GetInstance().InvokeDoubleClick();
-        _lastClickTime = Time.time;
-    }
 
     public void SetSlot(ItemSlot slot)
     {

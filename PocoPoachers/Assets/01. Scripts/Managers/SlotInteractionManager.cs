@@ -31,7 +31,7 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
 
     public void InvokeDoubleClick()
     {
-        if (!HoveredSlot.IsSettedItem) return;
+        if (HoveredSlot == null || !HoveredSlot.IsSettedItem) return;
         OnDoubleClick?.Invoke();
     }
 

@@ -1,7 +1,7 @@
 using System.Linq;
 using UnityEngine;
 
-// ºÎ¼öÀûÀÎ ÇÃ·¹ÀÌ¾î °ü¸® Å¬·¡½º
+// ï¿½Î¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private GameObject PlayerBagUI;
@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
         inputHandler.GoInventory += ShowInventory;
         inputHandler.ItemNumberKey += RegisterItem;
         inputHandler.StartInteraction += Interaction;
+        inputHandler.DoubleClick += () => SlotInteractionManager.GetInstance().InvokeDoubleClick();
     }
 
     private void OnTriggerEnter(Collider other)
