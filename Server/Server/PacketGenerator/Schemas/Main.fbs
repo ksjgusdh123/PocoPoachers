@@ -1,0 +1,15 @@
+﻿include "Common.fbs";
+include "Game.fbs";
+
+union PacketType
+{ 
+    C_MoveReq, 
+    S_MoveNtf,
+}
+
+table FlatPacket
+{
+    type: PacketType; 
+}
+
+root_type FlatPacket;
