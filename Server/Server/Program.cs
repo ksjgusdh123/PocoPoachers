@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -13,7 +13,7 @@ namespace Server
             LOG();
 
             byte[] sendBuff = Encoding.UTF8.GetBytes("hello");
-            Send(sendBuff);
+            Send(new ArraySegment<byte>(sendBuff));
             Thread.Sleep(1000);
             Disconnect();
         }
@@ -23,10 +23,11 @@ namespace Server
             LOG();
         }
 
-        public override void OnRecv(ArraySegment<byte> buffer)
+        public override int OnRecv(ArraySegment<byte> buffer)
         {
             string data = Encoding.UTF8.GetString(buffer.Array!, buffer.Offset, buffer.Count);
             LOG($"{data}");
+            return buffer.Count;
         }
 
         public override void OnSend(int numOfBytes)
