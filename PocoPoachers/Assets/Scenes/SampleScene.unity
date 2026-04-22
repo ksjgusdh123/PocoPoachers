@@ -146,9 +146,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f830809a3b7b3584f92eba7202389553, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::InventoryUI
-  _inventory: {fileID: 703348146}
-  _slotPrefab: {fileID: 7612342290374880186, guid: f5780edad0cb0d04ea453ab79c152a65, type: 3}
-  _slotParent: {fileID: 1622669711}
+  _inventory: {fileID: 0}
+  _slotPrefab: {fileID: 0}
+  _slotParent: {fileID: 0}
   _sortButton: {fileID: 0}
 --- !u!1 &158327924
 GameObject:
@@ -1212,6 +1212,7 @@ GameObject:
   - component: {fileID: 1170366753}
   - component: {fileID: 1170366761}
   - component: {fileID: 1170366762}
+  - component: {fileID: 1170366763}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -1232,6 +1233,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   _moveSpeed: 5
+  _sendInterval: 0.1
+  _minMoveSqrEpsilon: 0.0004
+  _minYawDelta: 0.5
 --- !u!114 &1170366754
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1418,8 +1422,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d1e187094beec14d834d59acaaf43f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  PlayerBagUI: {fileID: 1005074529}
-  boxUI: {fileID: 132055516}
+  PlayerBagUI: {fileID: 0}
+  boxUI: {fileID: 0}
+--- !u!114 &1170366763
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1170366752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1d904b4570199c4eb875dccfcc6c9a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkMoveTest
+  intervalSec: 0.5
+  sendOnSpace: 1
+  origin: {x: 0, y: 0, z: 0}
+  _nextSend: 0
 --- !u!224 &1254024095 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 675318234951171247, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
@@ -1595,11 +1615,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!224 &1622669711 stripped
-RectTransform:
-  m_CorrespondingSourceObject: {fileID: 1732129200971910290, guid: c909ae7c8eb0930458f7566ffc208136, type: 3}
-  m_PrefabInstance: {fileID: 2739443247384875763}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1865596047
 GameObject:
   m_ObjectHideFlags: 0
@@ -1726,6 +1741,67 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Item
   _data: {fileID: 11400000, guid: 68133f5b74a45f54398dc0675d4efa6d, type: 2}
+--- !u!1 &2117736434
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2117736437}
+  - component: {fileID: 2117736436}
+  - component: {fileID: 2117736435}
+  m_Layer: 0
+  m_Name: GameNetwork
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2117736435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117736434}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 690bf875b6f75cb48b87f7fe987cfbdd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MainThreadDispatcher
+--- !u!114 &2117736436
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117736434}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 995fbfdaa90f5e74ba259e931265253f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkManager
+  host: 127.0.0.1
+  port: 7000
+  userName: Player
+  autoLogin: 1
+--- !u!4 &2117736437
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117736434}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1583378957473919322
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2698,3 +2774,4 @@ SceneRoots:
   - {fileID: 1620712968}
   - {fileID: 760293999}
   - {fileID: 703348150}
+  - {fileID: 2117736437}

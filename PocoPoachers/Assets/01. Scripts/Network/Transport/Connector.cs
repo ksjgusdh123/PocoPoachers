@@ -1,7 +1,7 @@
 using System;
 using System.Net;
 using System.Net.Sockets;
-using static NetLog;
+using UnityEngine;
 
 public class Connector
 {
@@ -40,7 +40,7 @@ public class Connector
         }
         else
         {
-            LOG_W($"{args.SocketError}");
+            Debug.LogWarning($"[Net] {args.SocketError}");
         }
     }
 }

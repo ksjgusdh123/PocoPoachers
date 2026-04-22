@@ -1,14 +1,46 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using static NetLog;
+using Google.FlatBuffers;
+using UnityEngine;
 
-public abstract class PacketSession : Session
+public class Session
 {
     public static readonly int HeaderSize = 2;
-    public sealed override int OnRecv(ArraySegment<byte> buffer)
+
+    readonly Action<FlatPacket> _handlePacket;
+
+    Socket _socket = null!;
+    int _disconnected = 0;
+
+    RecvBuffer _recvBuffer = new RecvBuffer(1024);
+
+    object _lock = new object();
+    Queue<ArraySegment<byte>> _sendQueue = new Queue<ArraySegment<byte>>();
+    List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
+    SocketAsyncEventArgs _sendArgs = new SocketAsyncEventArgs();
+    SocketAsyncEventArgs _recvArgs = new SocketAsyncEventArgs();
+
+    public Session(Action<FlatPacket> handlePacket)
+    {
+        _handlePacket = handlePacket;
+    }
+
+    public void OnConnected(EndPoint endPoint)
+    {
+        MainThreadDispatcher.Enqueue(() => NetworkManager.Instance?.NotifySessionConnected());
+    }
+
+    public void OnDisconnected(EndPoint endPoint)
+    {
+        MainThreadDispatcher.Enqueue(() => NetworkManager.Instance?.NotifySessionDisconnected());
+    }
+
+    public virtual void OnSend(int numOfBytes) { }
+
+    public int OnRecv(ArraySegment<byte> buffer)
     {
         int processLen = 0;
 
@@ -21,7 +53,7 @@ public abstract class PacketSession : Session
             if (buffer.Count < dataSize)
                 break;
 
-            OnRecvPacket(new ArraySegment<byte>(buffer.Array!, buffer.Offset, dataSize));
+            ProcessPacket(new ArraySegment<byte>(buffer.Array!, buffer.Offset, dataSize));
 
             processLen += dataSize;
             buffer = new ArraySegment<byte>(buffer.Array!, buffer.Offset + dataSize, buffer.Count - dataSize);
@@ -30,26 +62,23 @@ public abstract class PacketSession : Session
         return processLen;
     }
 
-    public abstract void OnRecvPacket(ArraySegment<byte> buffer);
-}
+    void ProcessPacket(ArraySegment<byte> buffer)
+    {
+        if (buffer.Array == null || buffer.Count <= HeaderSize) return;
 
-public abstract class Session
-{
-    Socket _socket = null!;
-    int _disconnected = 0;
-
-    RecvBuffer _recvBuffer = new RecvBuffer(1024);
-
-    object _lock = new object();
-    Queue<ArraySegment<byte>> _sendQueue = new Queue<ArraySegment<byte>>();
-    List<ArraySegment<byte>> _pendingList = new List<ArraySegment<byte>>();
-    SocketAsyncEventArgs _sendArgs = new SocketAsyncEventArgs();
-    SocketAsyncEventArgs _recvArgs = new SocketAsyncEventArgs();
-
-    public abstract void OnConnected(EndPoint endPoint);
-    public abstract int OnRecv(ArraySegment<byte> buffer);
-    public abstract void OnSend(int numOfBytes);
-    public abstract void OnDisconnected(EndPoint endPoint);
+        try
+        {
+            int bodyOffset = buffer.Offset + HeaderSize;
+            var bb = new ByteBuffer(buffer.Array, bodyOffset);
+            var root = FlatPacket.GetRootAsFlatPacket(bb);
+            _handlePacket?.Invoke(root);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"OnRecvPacket error: {e}");
+            Disconnect();
+        }
+    }
 
     public void Start(Socket socket)
     {
@@ -113,7 +142,7 @@ public abstract class Session
                 }
                 catch (Exception e)
                 {
-                    LOG_E($"Send Failed: {e}");
+                    Debug.LogError($"[Net] Send Failed: {e}");
                 }
             }
             else
@@ -163,7 +192,7 @@ public abstract class Session
             }
             catch (Exception e)
             {
-                LOG_E($"Recv Failed: {e}");
+                Debug.LogError($"[Net] Recv Failed: {e}");
                 RegisterRecv();
             }
         }

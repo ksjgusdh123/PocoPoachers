@@ -10,13 +10,13 @@ public static class PacketBuilder
 
         byte[] payload = builder.SizedByteArray();
 
-        int totalSize = payload.Length + PacketSession.HeaderSize;
+        int totalSize = payload.Length + Session.HeaderSize;
         if (totalSize > ushort.MaxValue)
             throw new InvalidOperationException($"Packet too large: {totalSize} bytes (type={type}).");
 
         byte[] sendBuffer = new byte[totalSize];
         BitConverter.GetBytes((ushort)totalSize).CopyTo(sendBuffer, 0);
-        Buffer.BlockCopy(payload, 0, sendBuffer, PacketSession.HeaderSize, payload.Length);
+        Buffer.BlockCopy(payload, 0, sendBuffer, Session.HeaderSize, payload.Length);
 
         return new ArraySegment<byte>(sendBuffer);
     }

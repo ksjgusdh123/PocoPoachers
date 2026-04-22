@@ -1,33 +1,43 @@
 using System;
+using System.Collections.Generic;
 using System.Net;
+using Google.FlatBuffers;
 using UnityEngine;
 
 public class NetworkManager : MonoBehaviour
 {
     public static NetworkManager Instance { get; private set; }
 
-    [Header("Server")]
-    [SerializeField] string host = "127.0.0.1";
-    [SerializeField] int port = 7000;
+    string host = "127.0.0.1";
+    int port = 7000;
 
-    [Header("Login")]
-    [SerializeField] string userName = "Player";
-    [SerializeField] bool autoLogin = true;
+    string userName = "Player";
+    bool autoLogin = true;
 
-    public ServerSession Session { get; private set; }
+    public Session Session { get; private set; }
     public int MyPlayerId { get; private set; }
     public bool IsLoggedIn { get; private set; }
 
-    public event Action OnConnected;
-    public event Action OnDisconnected;
-    public event Action<LoginResultData> OnLogin;
-    public event Action<MoveUpdateData> OnOtherPlayerMove;
+    NetObjectManager _netObjects;
+
+    readonly Dictionary<PacketType, Action<FlatPacket>> _packetHandlers = new Dictionary<PacketType, Action<FlatPacket>>();
 
     void Awake()
     {
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
         DontDestroyOnLoad(gameObject);
+        if (GetComponent<NetObjectManager>() == null)
+            gameObject.AddComponent<NetObjectManager>();
+        _netObjects = GetComponent<NetObjectManager>();
+
+        RegisterPacketHandlers();
+    }
+
+    void RegisterPacketHandlers()
+    {
+        _packetHandlers[PacketType.S_LoginRes] = HandleLoginResult;
+        _packetHandlers[PacketType.S_MoveNtf] = HandleMoveUpdate;
     }
 
     void Start()
@@ -49,56 +59,72 @@ public class NetworkManager : MonoBehaviour
         Connector connector = new Connector();
         connector.Connect(endPoint, () =>
         {
-            Session = new ServerSession();
-            Session.OnConnectedEvent += HandleConnected;
-            Session.OnDisconnectedEvent += HandleDisconnected;
-            Session.OnLoginResult += HandleLoginResult;
-            Session.OnMoveUpdate += HandleMoveUpdate;
+            Session = new Session(HandleFlatPacket);
             return Session;
         });
     }
 
-    void HandleConnected()
+    public void NotifySessionConnected()
     {
         Debug.Log("[NetworkManager] Connected");
-        OnConnected?.Invoke();
-        if (autoLogin) SendLogin(userName);
+        if (autoLogin)
+        {
+            if (Session == null) { Debug.LogWarning("[NetworkManager] auto login: no session"); return; }
+            Session.Send(MakePacket.CLoginReq(userName));
+        }
     }
 
-    void HandleDisconnected()
+    public void NotifySessionDisconnected()
     {
         Debug.Log("[NetworkManager] Disconnected");
         IsLoggedIn = false;
         MyPlayerId = 0;
-        OnDisconnected?.Invoke();
+        _netObjects.ClearRemotePlayers();
     }
 
-    void HandleLoginResult(LoginResultData data)
+    void HandleFlatPacket(FlatPacket root)
     {
-        Debug.Log($"[NetworkManager] Login: success={data.Success}, id={data.PlayerId}, name='{data.UserName}', level={data.Level}");
-        if (data.Success)
+        if (!_packetHandlers.TryGetValue(root.TypeType, out var handler))
         {
-            IsLoggedIn = true;
-            MyPlayerId = data.PlayerId;
+            Debug.LogWarning($"Unknown packet type: {root.TypeType}");
+            return;
         }
-        OnLogin?.Invoke(data);
+
+        handler(root);
     }
 
-    void HandleMoveUpdate(MoveUpdateData data)
+    void HandleLoginResult(FlatPacket root)
     {
-        OnOtherPlayerMove?.Invoke(data);
+        var res = root.TypeAsS_LoginRes();
+        var ui = res.UserInfo;
+        bool success = res.Success;
+        int playerId = ui?.Id ?? 0;
+        string userName = ui?.Name ?? string.Empty;
+        int level = ui?.Level ?? 0;
+
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            Debug.Log($"[NetworkManager] Login: success={success}, id={playerId}, name='{userName}', level={level}");
+            if (success)
+            {
+                IsLoggedIn = true;
+                MyPlayerId = playerId;
+            }
+        });
     }
 
-    public void SendLogin(string name)
+    void HandleMoveUpdate(FlatPacket root)
     {
-        if (Session == null) { Debug.LogWarning("[NetworkManager] SendLogin: no session"); return; }
-        Session.SendLoginReq(name);
-    }
+        var ntf = root.TypeAsS_MoveNtf();
+        float x = ntf.Pos?.X ?? 0f;
+        float y = ntf.Pos?.Y ?? 0f;
+        float z = ntf.Pos?.Z ?? 0f;
+        int playerId = ntf.PlayerId;
+        Vector3 pos = new Vector3(x, y, z);
+        float rotation = ntf.Rotation;
+        sbyte moveType = ntf.MoveType;
 
-    public void SendMove(Vector3 pos, float rotation, sbyte moveType = 0)
-    {
-        if (Session == null || !IsLoggedIn) return;
-        Session.SendMoveReq(pos, rotation, moveType);
+        MainThreadDispatcher.Enqueue(() => _netObjects.ApplyRemotePlayerMove(playerId, pos, rotation, moveType));
     }
 
     void OnApplicationQuit()
