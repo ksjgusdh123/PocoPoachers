@@ -11,4 +11,12 @@
     <ProjectReference Include="..\ServerCore\ServerCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Google.FlatBuffers" Version="24.3.25" />
+  </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="call &quot;$(ProjectDir)PacketGenerator\generate.bat&quot;" />
+  </Target>
+
 </Project>

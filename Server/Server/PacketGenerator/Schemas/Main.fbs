@@ -1,8 +1,12 @@
 ﻿include "Common.fbs";
+include "Auth.fbs";
 include "Game.fbs";
 
 union PacketType
-{ 
+{
+    C_LoginReq,
+    S_LoginRes,
+
     C_MoveReq, 
     S_MoveNtf,
 }

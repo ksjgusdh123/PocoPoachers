@@ -1,5 +1,3 @@
-﻿using System.Runtime.CompilerServices;
-
 namespace ServerCore
 {
     public enum LogLevel
@@ -19,13 +17,13 @@ namespace ServerCore
             _ => "[LOG]",
         };
 
-        static void Write(LogLevel level, string msg, string member)
+        static void Write(LogLevel level, string msg)
         {
             var ts = DateTime.Now.ToString("HH:mm:ss");
             var tag = Tag(level);
             var line = string.IsNullOrEmpty(msg)
-                ? $"[{ts}] {tag} {member}"
-                : $"[{ts}] {tag} {member} | {msg}";
+                ? $"[{ts}] {tag}"
+                : $"[{ts}] {tag} {msg}";
 
             var prev = Console.ForegroundColor;
             if (level == LogLevel.Warn)
@@ -37,13 +35,8 @@ namespace ServerCore
             Console.ForegroundColor = prev;
         }
 
-        public static void LOG(string msg = "", [CallerMemberName] string member = "")
-            => Write(LogLevel.Log, msg, member);
-
-        public static void LOG_W(string msg = "", [CallerMemberName] string member = "")
-            => Write(LogLevel.Warn, msg, member);
-
-        public static void LOG_E(string msg = "", [CallerMemberName] string member = "")
-            => Write(LogLevel.Error, msg, member);
+        public static void LOG(string msg = "") => Write(LogLevel.Log, msg);
+        public static void LOG_W(string msg = "") => Write(LogLevel.Warn, msg);
+        public static void LOG_E(string msg = "") => Write(LogLevel.Error, msg);
     }
 }

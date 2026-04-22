@@ -5,8 +5,10 @@
 public enum PacketType : byte
 {
   NONE = 0,
-  C_MoveReq = 1,
-  S_MoveNtf = 2,
+  C_LoginReq = 1,
+  S_LoginRes = 2,
+  C_MoveReq = 3,
+  S_MoveNtf = 4,
 };
 
 
@@ -18,6 +20,12 @@ static public class PacketTypeVerify
     bool result = true;
     switch((PacketType)typeId)
     {
+      case PacketType.C_LoginReq:
+        result = C_LoginReqVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_LoginRes:
+        result = S_LoginResVerify.Verify(verifier, tablePos);
+        break;
       case PacketType.C_MoveReq:
         result = C_MoveReqVerify.Verify(verifier, tablePos);
         break;

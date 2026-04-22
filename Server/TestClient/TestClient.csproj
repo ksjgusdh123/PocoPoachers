@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -9,6 +9,16 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ServerCore\ServerCore.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.FlatBuffers" Version="24.3.25" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Server\PacketGenerator\Generated\*.cs">
+      <Link>Generated\%(Filename)%(Extension)</Link>
+    </Compile>
   </ItemGroup>
 
 </Project>

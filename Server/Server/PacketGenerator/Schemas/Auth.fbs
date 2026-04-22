@@ -1,0 +1,12 @@
+﻿include "Common.fbs";
+
+table C_LoginReq
+{
+	username : string;
+}
+
+table S_LoginRes
+{
+	success : bool;
+	user_info : UserInfo;
+}

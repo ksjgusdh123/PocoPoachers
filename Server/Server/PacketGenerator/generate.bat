@@ -1,6 +1,6 @@
 @echo off
-chcp 65001 >nul
 setlocal enabledelayedexpansion
+echo.
 
 set "HERE=%~dp0"
 set "SCHEMAS=%HERE%Schemas"
@@ -12,6 +12,9 @@ if not exist "%FLATC_EXE%" (
     pause
     exit /b 1
 )
+
+
+echo Run FlatBuffers Generator...
 
 if not exist "%OUT%" mkdir "%OUT%"
 
@@ -29,6 +32,4 @@ for /r %%f in (*.fbs) do (
 popd
 
 echo ==================================
-
-pause
 exit /b 0

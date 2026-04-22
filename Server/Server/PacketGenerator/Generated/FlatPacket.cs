@@ -19,6 +19,8 @@ public struct FlatPacket : IFlatbufferObject
 
   public PacketType TypeType { get { int o = __p.__offset(4); return o != 0 ? (PacketType)__p.bb.Get(o + __p.bb_pos) : PacketType.NONE; } }
   public TTable? Type<TTable>() where TTable : struct, IFlatbufferObject { int o = __p.__offset(6); return o != 0 ? (TTable?)__p.__union<TTable>(o + __p.bb_pos) : null; }
+  public C_LoginReq TypeAsC_LoginReq() { return Type<C_LoginReq>().Value; }
+  public S_LoginRes TypeAsS_LoginRes() { return Type<S_LoginRes>().Value; }
   public C_MoveReq TypeAsC_MoveReq() { return Type<C_MoveReq>().Value; }
   public S_MoveNtf TypeAsS_MoveNtf() { return Type<S_MoveNtf>().Value; }
 

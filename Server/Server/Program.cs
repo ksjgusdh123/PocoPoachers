@@ -1,56 +1,22 @@
-using System;
-using System.Net;
-using System.Net.Sockets;
-using System.Text;
+﻿using System.Net;
 using ServerCore;
 
 namespace Server
 {
-    class GameSession : Session
-    {
-        public override void OnConnected(EndPoint endPoint)
-        {
-            LOG();
-
-            byte[] sendBuff = Encoding.UTF8.GetBytes("hello");
-            Send(new ArraySegment<byte>(sendBuff));
-            Thread.Sleep(1000);
-            Disconnect();
-        }
-
-        public override void OnDisconnected(EndPoint endPoint)
-        {
-            LOG();
-        }
-
-        public override int OnRecv(ArraySegment<byte> buffer)
-        {
-            string data = Encoding.UTF8.GetString(buffer.Array!, buffer.Offset, buffer.Count);
-            LOG($"{data}");
-            return buffer.Count;
-        }
-
-        public override void OnSend(int numOfBytes)
-        {
-            LOG();
-        }
-    }
-
     class Program
     {
         static Listener _listener = new Listener();
 
         static void Main(string[] args)
         {
-            string host = Dns.GetHostName();
-            IPHostEntry ipHost = Dns.GetHostEntry(host);
-            IPAddress ipAddr = ipHost.AddressList[0];
-            IPEndPoint endPoint = new IPEndPoint(ipAddr, 7000);
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 7000);
 
-            _listener.Init(endPoint, () => { return new GameSession(); });
+            _listener.Init(endPoint, () => { return new ClientSession(); });
+            LOG($"Listening on {endPoint}");
 
             while (true)
             {
+                Thread.Sleep(100);
             }
         }
     }

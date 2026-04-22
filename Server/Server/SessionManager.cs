@@ -1,0 +1,82 @@
+﻿using Google.FlatBuffers;
+
+namespace Server;
+
+public class SessionManager
+{
+    public static SessionManager Instance { get; } = new SessionManager();
+
+    private readonly object _lock = new();
+    private readonly Dictionary<int, ClientSession> _sessions = new();
+    private int _nextPlayerId = 0;
+
+    private SessionManager() { }
+
+    public int GenerateId() => Interlocked.Increment(ref _nextPlayerId);
+
+    public void Add(ClientSession session)
+    {
+        if (session.PlayerId == 0) return;
+
+        int count;
+        lock (_lock)
+        {
+            _sessions[session.PlayerId] = session;
+            count = _sessions.Count;
+        }
+        LOG($"SessionManager.Add: PlayerId={session.PlayerId} (total={count})");
+    }
+
+    public void Remove(ClientSession session)
+    {
+        if (session.PlayerId == 0) return;
+
+        bool removed;
+        int count;
+        lock (_lock)
+        {
+            removed = _sessions.Remove(session.PlayerId);
+            count = _sessions.Count;
+        }
+        if (removed)
+            LOG($"SessionManager.Remove: PlayerId={session.PlayerId} (total={count})");
+    }
+
+    public ClientSession? Find(int playerId)
+    {
+        lock (_lock)
+        {
+            return _sessions.TryGetValue(playerId, out var s) ? s : null;
+        }
+    }
+
+    public int Count
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return _sessions.Count;
+            }
+        }
+    }
+
+    public List<ClientSession> Snapshot()
+    {
+        lock (_lock)
+        {
+            return _sessions.Values.ToList();
+        }
+    }
+
+    public void Broadcast(FlatBufferBuilder builder, PacketType type, int innerOffset, ClientSession? except = null)
+    {
+        ArraySegment<byte> segment = PacketBuilder.Build(builder, type, innerOffset);
+        List<ClientSession> snapshot = Snapshot();
+        foreach (var s in snapshot)
+        {
+            if (s != except)
+                s.Send(segment);
+        }
+    }
+}
