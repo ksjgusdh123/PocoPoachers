@@ -13,12 +13,9 @@ public class PacketHandler
 
         if (success)
         {
-            session.PlayerId = SessionManager.Instance.GenerateId();
-            session.UserName = userName;
+            int playerId = SessionManager.Instance.GenerateId();
+            session.Player = PlayerManager.Instance.CreatePlayer(playerId, userName);
             SessionManager.Instance.Add(session);
-
-            var player = PlayerManager.Instance.CreatePlayer(session.PlayerId, userName);
-            session.Player = player;
 
             LOG($"Login OK: PlayerId={session.PlayerId}, UserName='{session.UserName}'");
         }
@@ -49,7 +46,7 @@ public class PacketHandler
 
     public void OnC_MoveReq(ClientSession session, C_MoveReq req)
     {
-        if (session.PlayerId == 0)
+        if (session.Player == null)
         {
             LOG_W("MoveReq from unauthenticated session, ignoring");
             return;

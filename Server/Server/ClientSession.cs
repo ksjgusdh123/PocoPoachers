@@ -5,9 +5,10 @@ namespace Server
 {
     public class ClientSession : PacketSession
     {
-        public int PlayerId { get; set; }
-        public string? UserName { get; set; }
         public Player? Player { get; set; }
+
+        public int PlayerId => Player?.PlayerId ?? 0;
+        public string UserName => Player?.UserName ?? string.Empty;
 
         public override void OnConnected(EndPoint endPoint)
         {
