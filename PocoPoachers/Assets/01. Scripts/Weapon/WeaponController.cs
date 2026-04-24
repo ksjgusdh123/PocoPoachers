@@ -1,9 +1,16 @@
 using UnityEngine;
-using UnityEngine.InputSystem;
 
 public class WeaponController : MonoBehaviour
 {
     [SerializeField] private GunBase _currentGun;
+
+    private PlayerInputHandler _inputHandler;
+    private bool _wasFirePressed;
+
+    private void Awake()
+    {
+        _inputHandler = GetComponent<PlayerInputHandler>();
+    }
 
     private void Update()
     {
@@ -15,16 +22,22 @@ public class WeaponController : MonoBehaviour
     {
         if (_currentGun == null) return;
 
+        bool isFirePressed = _inputHandler.IsFirePressed;
+
         bool fireInput = _currentGun.GunData.fireMode == FireMode.Auto
-            ? Mouse.current.leftButton.isPressed
-            : Mouse.current.leftButton.wasPressedThisFrame;
+            ? isFirePressed
+            : isFirePressed && !_wasFirePressed;
 
         if (fireInput) _currentGun.TryShoot();
+
+        _wasFirePressed = isFirePressed;
     }
 
     private void HandleReloadInput()
     {
-        if (Keyboard.current.rKey.wasPressedThisFrame)
+        if (_inputHandler.IsReloadPressed)
+        {
             _currentGun?.StartReload();
+        }
     }
 }
