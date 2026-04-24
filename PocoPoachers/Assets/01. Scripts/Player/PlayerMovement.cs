@@ -80,9 +80,7 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        var session = nm.Session;
-        if (session == null) return;
-        session.Send(MakePacket.CMoveReq(pos, yaw, moveType));
+        PacketSender.CMoveReq(pos, yaw, moveType);
         _lastSentPos = pos;
         _lastSentYaw = yaw;
         _lastMoveType = moveType;

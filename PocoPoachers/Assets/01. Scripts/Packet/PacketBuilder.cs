@@ -20,4 +20,9 @@ public static class PacketBuilder
 
         return new ArraySegment<byte>(sendBuffer);
     }
+
+    public static void Send(Session session, FlatBufferBuilder builder, PacketType type, int innerOffset)
+    {
+        session.Send(Build(builder, type, innerOffset));
+    }
 }

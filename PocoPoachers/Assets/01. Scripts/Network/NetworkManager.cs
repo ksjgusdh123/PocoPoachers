@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using Google.FlatBuffers;
@@ -62,10 +62,7 @@ public class NetworkManager : Singleton<NetworkManager>
     {
         Debug.Log("[NetworkManager] Connected");
         if (autoLogin)
-        {
-            if (Session == null) { Debug.LogWarning("[NetworkManager] auto login: no session"); return; }
-            Session.Send(MakePacket.CLoginReq(userName));
-        }
+            PacketSender.CLoginReq(userName);
     }
 
     public void NotifySessionDisconnected()
@@ -121,8 +118,4 @@ public class NetworkManager : Singleton<NetworkManager>
         NetObjectManager.Instance?.QueueRemotePlayerMove(playerId, pos, rotation, moveType);
     }
 
-    void OnApplicationQuit()
-    {
-        try { Session?.Disconnect(); } catch { }
-    }
 }
