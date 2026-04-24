@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float _moveSpeed = 5f;
+    [SerializeField] private float _sprintSpeed = 8f;
 
     [SerializeField] private float _sendInterval = 0.1f;
     [SerializeField] private float _minMoveSqrEpsilon = 0.0004f;
@@ -28,6 +29,7 @@ public class PlayerMovement : MonoBehaviour
     private void Update()
     {
         Move();
+        
     }
 
     private void LateUpdate()
@@ -39,7 +41,9 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector2 input = _inputHandler.MoveInput;
         Vector3 moveDir = new Vector3(input.x, 0f, input.y);
-        _characterController.Move(moveDir * _moveSpeed * Time.deltaTime);
+        float speed = _inputHandler.IsSprintPressed ? _sprintSpeed : _moveSpeed;
+        
+        _characterController.Move(moveDir * speed * Time.deltaTime);
     }
 
     private void SendMoveToServer()

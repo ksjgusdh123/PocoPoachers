@@ -7,6 +7,7 @@ public class PlayerInputHandler : MonoBehaviour
 {
     public const float DoubleClickThreshold = 0.3f;
     public Vector2 MoveInput { get; private set; }
+    public bool IsSprintPressed { get; private set; }
 
     public event Action GoInventory;
     public event Action StartInteraction;
@@ -20,6 +21,11 @@ public class PlayerInputHandler : MonoBehaviour
     private void OnMove(InputValue value)
     {
         MoveInput = value.Get<Vector2>();
+    }
+
+    private void OnSprint(InputValue value)
+    {
+        IsSprintPressed = value.isPressed;
     }
      
     void OnGoInventory(InputValue value)
