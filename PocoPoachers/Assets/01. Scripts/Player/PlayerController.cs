@@ -5,6 +5,7 @@ public class PlayerController : MonoBehaviour
 {
     [SerializeField] private GameObject PlayerBagUI;
     [SerializeField] private GameObject boxUI;
+    [SerializeField] private CameraController _cameraController;
     private Inventory _inventory;
     private DropQuickSlotUI[] _quickSlots;
     private GameObject _interactObject;
@@ -51,9 +52,15 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public void LockCamera(bool locked) 
+    { 
+        _cameraController.SetLocked(locked);
+    }
+
     void ShowInventory()
     {
         PlayerBagUI.SetActive(!PlayerBagUI.activeSelf);
+        LockCamera(PlayerBagUI.activeSelf);
     }
 
     void RegisterItem(int index)

@@ -8,6 +8,12 @@ public class CameraController : MonoBehaviour
 
     private ICameraEffect[] _effects;
     private Vector3 _velocity;
+    private bool _isLocked;
+
+    public void SetLocked(bool locked) 
+    { 
+        _isLocked = locked;
+    }
 
     private void Awake()
     {
@@ -20,8 +26,11 @@ public class CameraController : MonoBehaviour
 
         Vector3 targetPos = _target.position + _baseOffset;
 
-        foreach (var effect in _effects)
-            targetPos += effect.PositionOffset;
+        if (!_isLocked)
+        {
+            foreach (var effect in _effects)
+                targetPos += effect.PositionOffset;
+        }
 
         transform.position = Vector3.SmoothDamp(transform.position, targetPos, ref _velocity, _smoothTime);
     }
