@@ -9,6 +9,11 @@ public enum PacketType : byte
   S_LoginRes = 2,
   C_MoveReq = 3,
   S_MoveNtf = 4,
+  C_AddItemReq = 5,
+  S_AddItemRes = 6,
+  C_RemoveItemReq = 7,
+  S_RemoveItemRes = 8,
+  S_InventoryNtf = 9,
 };
 
 
@@ -31,6 +36,21 @@ static public class PacketTypeVerify
         break;
       case PacketType.S_MoveNtf:
         result = S_MoveNtfVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.C_AddItemReq:
+        result = C_AddItemReqVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_AddItemRes:
+        result = S_AddItemResVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.C_RemoveItemReq:
+        result = C_RemoveItemReqVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_RemoveItemRes:
+        result = S_RemoveItemResVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_InventoryNtf:
+        result = S_InventoryNtfVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

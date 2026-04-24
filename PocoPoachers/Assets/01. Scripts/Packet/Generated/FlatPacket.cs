@@ -23,6 +23,11 @@ public struct FlatPacket : IFlatbufferObject
   public S_LoginRes TypeAsS_LoginRes() { return Type<S_LoginRes>().Value; }
   public C_MoveReq TypeAsC_MoveReq() { return Type<C_MoveReq>().Value; }
   public S_MoveNtf TypeAsS_MoveNtf() { return Type<S_MoveNtf>().Value; }
+  public C_AddItemReq TypeAsC_AddItemReq() { return Type<C_AddItemReq>().Value; }
+  public S_AddItemRes TypeAsS_AddItemRes() { return Type<S_AddItemRes>().Value; }
+  public C_RemoveItemReq TypeAsC_RemoveItemReq() { return Type<C_RemoveItemReq>().Value; }
+  public S_RemoveItemRes TypeAsS_RemoveItemRes() { return Type<S_RemoveItemRes>().Value; }
+  public S_InventoryNtf TypeAsS_InventoryNtf() { return Type<S_InventoryNtf>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,

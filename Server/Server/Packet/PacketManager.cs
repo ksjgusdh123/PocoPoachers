@@ -15,8 +15,10 @@ public class PacketManager
 
     private static void Register()
     {
-        _onRecv.Add(PacketType.C_LoginReq, (session, root) => _handler.OnC_LoginReq(session, root.TypeAsC_LoginReq()));
-        _onRecv.Add(PacketType.C_MoveReq, (session, root) => _handler.OnC_MoveReq(session, root.TypeAsC_MoveReq()));
+        _onRecv.Add(PacketType.C_LoginReq,      (session, root) => _handler.OnC_LoginReq(session, root.TypeAsC_LoginReq()));
+        _onRecv.Add(PacketType.C_MoveReq,       (session, root) => _handler.OnC_MoveReq(session, root.TypeAsC_MoveReq()));
+        _onRecv.Add(PacketType.C_AddItemReq,    (session, root) => _handler.OnC_AddItemReq(session, root.TypeAsC_AddItemReq()));
+        _onRecv.Add(PacketType.C_RemoveItemReq, (session, root) => _handler.OnC_RemoveItemReq(session, root.TypeAsC_RemoveItemReq()));
     }
 
     public static void HandlePacket(ClientSession session, ArraySegment<byte> buffer)

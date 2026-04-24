@@ -6,8 +6,6 @@ public static class PacketSender
     private static readonly FlatBufferBuilder _builder = new FlatBufferBuilder(1024);
 
     // C_* 패킷 생성 시 아래 추가
-    // - TODO: 추후 자동 함수수 생성 스크립트 제작
-
     public static void CLoginReq(string userName)
     {
         if (!TryGetSession(out Session session)) return;
@@ -31,6 +29,24 @@ public static class PacketSender
         var bodyOff = C_MoveReq.EndC_MoveReq(_builder);
 
         PacketBuilder.Send(session, _builder, PacketType.C_MoveReq, bodyOff.Value);
+    }
+
+    public static void CAddItemReq(int itemId, int amount = 1)
+    {
+        if (!TryGetSession(out Session session)) return;
+        _builder.Clear();
+
+        var bodyOff = C_AddItemReq.CreateC_AddItemReq(_builder, itemId, amount);
+        PacketBuilder.Send(session, _builder, PacketType.C_AddItemReq, bodyOff.Value);
+    }
+
+    public static void CRemoveItemReq(int itemId, int amount = 1)
+    {
+        if (!TryGetSession(out Session session)) return;
+        _builder.Clear();
+
+        var bodyOff = C_RemoveItemReq.CreateC_RemoveItemReq(_builder, itemId, amount);
+        PacketBuilder.Send(session, _builder, PacketType.C_RemoveItemReq, bodyOff.Value);
     }
 
     static bool TryGetSession(out Session session)

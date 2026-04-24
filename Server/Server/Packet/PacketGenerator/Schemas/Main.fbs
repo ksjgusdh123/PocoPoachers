@@ -1,19 +1,26 @@
-﻿include "Common.fbs";
+include "Common.fbs";
 include "Auth.fbs";
 include "Game.fbs";
+include "Inventory.fbs";
 
 union PacketType
 {
     C_LoginReq,
     S_LoginRes,
 
-    C_MoveReq, 
+    C_MoveReq,
     S_MoveNtf,
+
+    C_AddItemReq,
+    S_AddItemRes,
+    C_RemoveItemReq,
+    S_RemoveItemRes,
+    S_InventoryNtf,
 }
 
 table FlatPacket
 {
-    type: PacketType; 
+    type: PacketType;
 }
 
 root_type FlatPacket;

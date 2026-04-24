@@ -14,8 +14,11 @@ public static class PacketManager
 
     static void Register()
     {
-        _onRecv.Add(PacketType.S_LoginRes, PacketHandlers.OnS_LoginRes);
-        _onRecv.Add(PacketType.S_MoveNtf, PacketHandlers.OnS_MoveNtf);
+        _onRecv.Add(PacketType.S_LoginRes,      PacketHandlers.OnS_LoginRes);
+        _onRecv.Add(PacketType.S_MoveNtf,       PacketHandlers.OnS_MoveNtf);
+        _onRecv.Add(PacketType.S_AddItemRes,    PacketHandlers.OnS_AddItemRes);
+        _onRecv.Add(PacketType.S_RemoveItemRes, PacketHandlers.OnS_RemoveItemRes);
+        _onRecv.Add(PacketType.S_InventoryNtf,  PacketHandlers.OnS_InventoryNtf);
     }
 
     public static void HandlePacket(ArraySegment<byte> buffer)

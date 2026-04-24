@@ -1,0 +1,38 @@
+include "Common.fbs";
+
+table InventoryItem
+{
+    item_id: int;
+    amount: int;
+}
+
+table C_AddItemReq
+{
+    item_id: int;
+    amount: int;
+}
+
+table S_AddItemRes
+{
+    success: bool;
+    item_id: int;
+    amount: int;
+}
+
+table C_RemoveItemReq
+{
+    item_id: int;
+    amount: int;
+}
+
+table S_RemoveItemRes
+{
+    success: bool;
+    item_id: int;
+    amount: int;
+}
+
+table S_InventoryNtf
+{
+    items: [InventoryItem];
+}
