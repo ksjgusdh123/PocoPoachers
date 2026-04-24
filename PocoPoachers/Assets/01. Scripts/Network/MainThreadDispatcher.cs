@@ -2,21 +2,20 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MainThreadDispatcher : MonoBehaviour
+public class MainThreadDispatcher : Singleton<MainThreadDispatcher>
 {
-    static MainThreadDispatcher _instance;
     static readonly Queue<Action> _queue = new Queue<Action>();
 
     public static void Enqueue(Action action)
     {
         if (action == null) return;
+        _ = Instance;
         lock (_queue) _queue.Enqueue(action);
     }
 
-    void Awake()
+    protected override void Awake()
     {
-        if (_instance != null && _instance != this) { Destroy(gameObject); return; }
-        _instance = this;
+        base.Awake();
         DontDestroyOnLoad(gameObject);
     }
 

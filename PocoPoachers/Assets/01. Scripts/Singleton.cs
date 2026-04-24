@@ -1,30 +1,51 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 {
-    protected static T instance;
-    private static bool bIsDestroy = false;
+    protected static T _instance;
+    private static bool _isQuitting;
+
+    public static T Instance => GetInstance();
+
     public static T GetInstance()
     {
-        if (bIsDestroy) return null;
+        if (_isQuitting)
+            return null;
 
-        if (instance == null)
+        if (_instance == null)
+            _instance = FindAnyObjectByType<T>(FindObjectsInactive.Exclude);
+
+        if (_instance == null)
         {
-            GameObject go = GameObject.Find("[Managers]");
-            if (null == go) go = new GameObject("[Managers]");
-            instance = go.AddComponent<T>();
+            GameObject go = new GameObject($"[{typeof(T).Name}]");
+            _instance = go.AddComponent<T>();
             DontDestroyOnLoad(go);
         }
-        return instance;
+        return _instance;
     }
 
     protected virtual void Awake()
     {
-            
+        if (_isQuitting)
+            return;
+
+        if (_instance != null && _instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+
+        _instance = this as T;
     }
 
-    private void OnDestroy()
+    protected virtual void OnApplicationQuit()
     {
-        bIsDestroy = true;
+        _isQuitting = true;
+    }
+
+    protected virtual void OnDestroy()
+    {
+        if (_instance == this)
+            _instance = null;
     }
 }

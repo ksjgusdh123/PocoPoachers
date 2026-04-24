@@ -4,10 +4,8 @@ using System.Net;
 using Google.FlatBuffers;
 using UnityEngine;
 
-public class NetworkManager : MonoBehaviour
+public class NetworkManager : Singleton<NetworkManager>
 {
-    public static NetworkManager Instance { get; private set; }
-
     string host = "127.0.0.1";
     int port = 7000;
 
@@ -18,18 +16,14 @@ public class NetworkManager : MonoBehaviour
     public int MyPlayerId { get; private set; }
     public bool IsLoggedIn { get; private set; }
 
-    NetObjectManager _netObjects;
-
     readonly Dictionary<PacketType, Action<FlatPacket>> _packetHandlers = new Dictionary<PacketType, Action<FlatPacket>>();
 
-    void Awake()
+    protected override void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
+        base.Awake();
         DontDestroyOnLoad(gameObject);
         if (GetComponent<NetObjectManager>() == null)
             gameObject.AddComponent<NetObjectManager>();
-        _netObjects = GetComponent<NetObjectManager>();
 
         RegisterPacketHandlers();
     }
@@ -79,7 +73,7 @@ public class NetworkManager : MonoBehaviour
         Debug.Log("[NetworkManager] Disconnected");
         IsLoggedIn = false;
         MyPlayerId = 0;
-        _netObjects.ClearRemotePlayers();
+        NetObjectManager.Instance?.ClearRemotePlayers();
     }
 
     void HandleFlatPacket(FlatPacket root)
@@ -124,7 +118,7 @@ public class NetworkManager : MonoBehaviour
         float rotation = ntf.Rotation;
         sbyte moveType = ntf.MoveType;
 
-        MainThreadDispatcher.Enqueue(() => _netObjects.ApplyRemotePlayerMove(playerId, pos, rotation, moveType));
+        NetObjectManager.Instance?.QueueRemotePlayerMove(playerId, pos, rotation, moveType);
     }
 
     void OnApplicationQuit()

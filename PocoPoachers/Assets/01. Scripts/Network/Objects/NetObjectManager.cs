@@ -1,11 +1,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NetObjectManager : MonoBehaviour
+struct PendingRemoteMove
+{
+    public int PlayerId;
+    public Vector3 Pos;
+    public float Rotation;
+    public sbyte MoveType;
+}
+
+public class NetObjectManager : Singleton<NetObjectManager>
 {
     [SerializeField] NetObject _playerRemotePrefab;
 
     readonly Dictionary<(NetObjectKind kind, int id), NetObject> _netObjects = new Dictionary<(NetObjectKind, int), NetObject>();
+
+    readonly object _pendingMovesLock = new object();
+    readonly List<PendingRemoteMove> _pendingMoves = new List<PendingRemoteMove>();
+    readonly List<PendingRemoteMove> _drainBuffer = new List<PendingRemoteMove>();
 
     public bool TryGet(NetObjectKind kind, int netId, out NetObject netObject)
     {
@@ -21,7 +33,40 @@ public class NetObjectManager : MonoBehaviour
         _netObjects.Remove(key);
     }
 
-    public void ApplyRemotePlayerMove(int playerId, Vector3 pos, float rotation, sbyte moveType)
+    void Update()
+    {
+        _drainBuffer.Clear();
+        lock (_pendingMovesLock)
+        {
+            if (_pendingMoves.Count == 0)
+                return;
+            _drainBuffer.AddRange(_pendingMoves);
+            _pendingMoves.Clear();
+        }
+
+        for (int i = 0; i < _drainBuffer.Count; i++)
+        {
+            PendingRemoteMove m = _drainBuffer[i];
+            ApplyRemotePlayerMove(m.PlayerId, m.Pos, m.Rotation, m.MoveType);
+        }
+    }
+
+    /// <summary>Recv 스레드에서도 호출 가능. 실제 반영은 <see cref="Update"/>에서 수행.</summary>
+    public void QueueRemotePlayerMove(int playerId, Vector3 pos, float rotation, sbyte moveType)
+    {
+        lock (_pendingMovesLock)
+        {
+            _pendingMoves.Add(new PendingRemoteMove
+            {
+                PlayerId = playerId,
+                Pos = pos,
+                Rotation = rotation,
+                MoveType = moveType,
+            });
+        }
+    }
+
+    void ApplyRemotePlayerMove(int playerId, Vector3 pos, float rotation, sbyte moveType)
     {
         var nm = NetworkManager.Instance;
         if (nm != null && playerId == nm.MyPlayerId)
@@ -40,6 +85,9 @@ public class NetObjectManager : MonoBehaviour
 
     public void ClearRemotePlayers()
     {
+        lock (_pendingMovesLock)
+            _pendingMoves.Clear();
+
         foreach (var kv in _netObjects)
         {
             if (kv.Value != null)
