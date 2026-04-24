@@ -4,10 +4,13 @@ using UnityEngine;
 public static class PacketSender
 {
     private static readonly FlatBufferBuilder _builder = new FlatBufferBuilder(1024);
-    #region C_* 패킷 생성 시 아래 추가 // - TODO: 추후 자동 생성 스크립트 제작
+
+    // C_* 패킷 생성 시 아래 추가
+    // - TODO: 추후 자동 함수수 생성 스크립트 제작
+
     public static void CLoginReq(string userName)
     {
-        if (!TryGetSession(nameof(CLoginReq), out Session session)) return;
+        if (!TryGetSession(out Session session)) return;
         _builder.Clear();
         
         var nameOff = _builder.CreateString(userName ?? string.Empty);
@@ -18,7 +21,7 @@ public static class PacketSender
 
     public static void CMoveReq(Vector3 pos, float rotation, sbyte moveType)
     {
-        if (!TryGetSession(nameof(CMoveReq), out Session session)) return;
+        if (!TryGetSession(out Session session)) return;
         _builder.Clear();
         
         C_MoveReq.StartC_MoveReq(_builder);
@@ -29,15 +32,11 @@ public static class PacketSender
 
         PacketBuilder.Send(session, _builder, PacketType.C_MoveReq, bodyOff.Value);
     }
-    #endregion
-    static bool TryGetSession(string operation, out Session session)
+
+    static bool TryGetSession(out Session session)
     {
         session = NetworkManager.Instance?.Session;
-        if (session == null)
-        {
-            Debug.LogWarning($"[PacketSender] {operation}: no session");
-            return false;
-        }
+        if (session == null) return false;
         return true;
     }
 }

@@ -1,11 +1,11 @@
-@echo off
+﻿@echo off
 setlocal enabledelayedexpansion
 echo.
 
 set "HERE=%~dp0"
 set "SCHEMAS=%HERE%Schemas"
 set "OUT=%HERE%Generated"
-set "CLIENT_OUT=%HERE%..\..\..\PocoPoachers\Assets\01. Scripts\Packet\Generated"
+set "CLIENT_OUT=%HERE%..\..\..\..\PocoPoachers\Assets\01. Scripts\Packet\Generated"
 set "FLATC_EXE=%HERE%flatc.exe"
 
 if not exist "%FLATC_EXE%" (
