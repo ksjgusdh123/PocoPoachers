@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Net;
 using Google.FlatBuffers;
@@ -22,16 +22,16 @@ public class NetworkManager : Singleton<NetworkManager>
     {
         base.Awake();
         DontDestroyOnLoad(gameObject);
-        if (GetComponent<NetObjectManager>() == null)
-            gameObject.AddComponent<NetObjectManager>();
+        if (GetComponent<ObjectManager>() == null)
+            gameObject.AddComponent<ObjectManager>();
 
         RegisterPacketHandlers();
     }
 
     void RegisterPacketHandlers()
     {
-        _packetHandlers[PacketType.S_LoginRes] = HandleLoginResult;
-        _packetHandlers[PacketType.S_MoveNtf] = HandleMoveUpdate;
+        _packetHandlers[PacketType.S_LoginRes] = PacketHandlers.S_LoginRes;
+        _packetHandlers[PacketType.S_MoveNtf] = PacketHandlers.S_MoveNtf;
     }
 
     void Start()
@@ -70,7 +70,7 @@ public class NetworkManager : Singleton<NetworkManager>
         Debug.Log("[NetworkManager] Disconnected");
         IsLoggedIn = false;
         MyPlayerId = 0;
-        NetObjectManager.Instance?.ClearRemotePlayers();
+        ObjectManager.Instance?.Clear();
     }
 
     void HandleFlatPacket(FlatPacket root)
@@ -84,38 +84,13 @@ public class NetworkManager : Singleton<NetworkManager>
         handler(root);
     }
 
-    void HandleLoginResult(FlatPacket root)
+    public void OnLoginResult(bool success, int playerId, string userName, int level)
     {
-        var res = root.TypeAsS_LoginRes();
-        var ui = res.UserInfo;
-        bool success = res.Success;
-        int playerId = ui?.Id ?? 0;
-        string userName = ui?.Name ?? string.Empty;
-        int level = ui?.Level ?? 0;
-
-        MainThreadDispatcher.Enqueue(() =>
+        Debug.Log($"[NetworkManager] Login: success={success}, id={playerId}, name='{userName}', level={level}");
+        if (success)
         {
-            Debug.Log($"[NetworkManager] Login: success={success}, id={playerId}, name='{userName}', level={level}");
-            if (success)
-            {
-                IsLoggedIn = true;
-                MyPlayerId = playerId;
-            }
-        });
+            IsLoggedIn = true;
+            MyPlayerId = playerId;
+        }
     }
-
-    void HandleMoveUpdate(FlatPacket root)
-    {
-        var ntf = root.TypeAsS_MoveNtf();
-        float x = ntf.Pos?.X ?? 0f;
-        float y = ntf.Pos?.Y ?? 0f;
-        float z = ntf.Pos?.Z ?? 0f;
-        int playerId = ntf.PlayerId;
-        Vector3 pos = new Vector3(x, y, z);
-        float rotation = ntf.Rotation;
-        sbyte moveType = ntf.MoveType;
-
-        NetObjectManager.Instance?.QueueRemotePlayerMove(playerId, pos, rotation, moveType);
-    }
-
 }

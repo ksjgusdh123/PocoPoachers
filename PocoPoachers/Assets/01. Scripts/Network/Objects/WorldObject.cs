@@ -1,27 +1,27 @@
 using UnityEngine;
 
-public enum NetObjectKind
+public enum ObjectKind
 {
     Player,
     Npc,
     WorldItem,
 }
 
-public class NetObject : MonoBehaviour
+public class WorldObject : MonoBehaviour
 {
     [SerializeField] float _smooth = 14f;
 
-    public int NetId { get; private set; }
-    public NetObjectKind Kind { get; private set; }
+    public int Id { get; private set; }
+    public ObjectKind Kind { get; private set; }
 
     Vector3 _targetPos;
     float _targetYaw;
     bool _hasTarget;
 
-    public void Initialize(NetObjectKind kind, int netId)
+    public void Initialize(ObjectKind kind, int id)
     {
         Kind = kind;
-        NetId = netId;
+        Id = id;
     }
 
     public void SetMoveTarget(Vector3 worldPos, float yawDegrees)

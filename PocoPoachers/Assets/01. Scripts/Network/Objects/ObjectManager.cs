@@ -1,0 +1,170 @@
+using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+struct PendingMove
+{
+    public ObjectKind Kind;
+    public int Id;
+    public Vector3 Pos;
+    public float Rotation;
+    public sbyte MoveType;
+}
+
+public class ObjectManager : Singleton<ObjectManager>
+{
+    [Serializable]
+    sealed class Entry
+    {
+        public ObjectKind Kind;
+        public WorldObject Prefab;
+    }
+
+    [SerializeField] Entry[] _entries;
+
+    readonly Dictionary<(ObjectKind kind, int id), WorldObject> _objects = new Dictionary<(ObjectKind, int), WorldObject>();
+    readonly Dictionary<ObjectKind, WorldObject> _prefabs = new Dictionary<ObjectKind, WorldObject>();
+
+    readonly object _moveLock = new object();
+    readonly List<PendingMove> _pending = new List<PendingMove>();
+    readonly List<PendingMove> _drain = new List<PendingMove>();
+
+    protected override void Awake()
+    {
+        base.Awake();
+        CachePrefabs();
+    }
+
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        CachePrefabs();
+    }
+#endif
+
+    void CachePrefabs()
+    {
+        _prefabs.Clear();
+        if (_entries == null)
+            return;
+
+        for (int i = 0; i < _entries.Length; i++)
+        {
+            Entry e = _entries[i];
+            if (e == null || e.Prefab == null)
+                continue;
+            _prefabs[e.Kind] = e.Prefab;
+        }
+    }
+
+    public bool TryGet(ObjectKind kind, int id, out WorldObject obj)
+    {
+        return _objects.TryGetValue((kind, id), out obj);
+    }
+
+    public void Despawn(ObjectKind kind, int id)
+    {
+        var key = (kind, id);
+        if (!_objects.TryGetValue(key, out var obj) || obj == null)
+            return;
+        Destroy(obj.gameObject);
+        _objects.Remove(key);
+    }
+
+    void Update()
+    {
+        _drain.Clear();
+        lock (_moveLock)
+        {
+            if (_pending.Count == 0)
+                return;
+            _drain.AddRange(_pending);
+            _pending.Clear();
+        }
+
+        for (int i = 0; i < _drain.Count; i++)
+        {
+            PendingMove m = _drain[i];
+            ApplyMove(m.Kind, m.Id, m.Pos, m.Rotation);
+        }
+    }
+
+    public void QueueMove(ObjectKind kind, int id, Vector3 pos, float rotation, sbyte moveType)
+    {
+        lock (_moveLock)
+        {
+            _pending.Add(new PendingMove
+            {
+                Kind = kind,
+                Id = id,
+                Pos = pos,
+                Rotation = rotation,
+                MoveType = moveType,
+            });
+        }
+    }
+
+    void ApplyMove(ObjectKind kind, int id, Vector3 pos, float rotation)
+    {
+        if (IsLocalPlayer(kind, id))
+            return;
+
+        var key = (kind, id);
+        if (!_objects.TryGetValue(key, out var obj))
+        {
+            obj = Spawn(kind, id);
+            obj.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, rotation, 0f));
+            _objects.Add(key, obj);
+        }
+
+        obj.SetMoveTarget(pos, rotation);
+    }
+
+    static bool IsLocalPlayer(ObjectKind kind, int id)
+    {
+        if (kind != ObjectKind.Player)
+            return false;
+
+        var nm = NetworkManager.Instance;
+        return nm != null && id == nm.MyPlayerId;
+    }
+
+    public void Clear()
+    {
+        lock (_moveLock)
+            _pending.Clear();
+
+        foreach (var kv in _objects)
+        {
+            if (kv.Value != null)
+                Destroy(kv.Value.gameObject);
+        }
+        _objects.Clear();
+    }
+
+    WorldObject Spawn(ObjectKind kind, int id)
+    {
+        GameObject go;
+        WorldObject obj;
+
+        if (_prefabs.TryGetValue(kind, out WorldObject prefab) && prefab != null)
+        {
+            go = Instantiate(prefab.gameObject);
+            obj = go.GetComponent<WorldObject>();
+            if (obj == null)
+                obj = go.AddComponent<WorldObject>();
+        }
+        else
+        {
+            go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            var col = go.GetComponent<Collider>();
+            if (col != null)
+                Destroy(col);
+            obj = go.AddComponent<WorldObject>();
+        }
+
+        go.name = $"{kind}_{id}";
+        obj.Initialize(kind, id);
+        return obj;
+    }
+}
