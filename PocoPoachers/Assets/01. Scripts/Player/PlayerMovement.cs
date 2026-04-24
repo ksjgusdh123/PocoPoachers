@@ -6,6 +6,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float _moveSpeed = 5f;
     [SerializeField] private float _sprintSpeed = 8f;
+    [SerializeField] private float _acceleration = 10f;
 
     [SerializeField] private float _sendInterval = 0.1f;
     [SerializeField] private float _minMoveSqrEpsilon = 0.0004f;
@@ -13,6 +14,8 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController _characterController;
     private PlayerInputHandler _inputHandler;
+
+    private float _currentSpeed;
 
     private float _nextSendTime;
     private Vector3 _lastSentPos;
@@ -24,6 +27,7 @@ public class PlayerMovement : MonoBehaviour
     {
         _characterController = GetComponent<CharacterController>();
         _inputHandler = GetComponent<PlayerInputHandler>();
+        _currentSpeed = _moveSpeed;
     }
 
     private void Update()
@@ -41,9 +45,11 @@ public class PlayerMovement : MonoBehaviour
     {
         Vector2 input = _inputHandler.MoveInput;
         Vector3 moveDir = new Vector3(input.x, 0f, input.y);
-        float speed = _inputHandler.IsSprintPressed ? _sprintSpeed : _moveSpeed;
-        
-        _characterController.Move(moveDir * speed * Time.deltaTime);
+
+        float targetSpeed = _inputHandler.IsSprintPressed ? _sprintSpeed : _moveSpeed;
+        _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, _acceleration * Time.deltaTime);
+
+        _characterController.Move(moveDir * _currentSpeed * Time.deltaTime);
     }
 
     private void SendMoveToServer()
