@@ -9,6 +9,12 @@ public class Bullet : MonoBehaviour
     private float _traveledDistance;
     private Vector3 _direction;
     private Action _onRelease;
+    private TrailRenderer _trail;
+
+    private void Awake()
+    {
+        _trail = GetComponent<TrailRenderer>();
+    }
 
     public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease)
     {
@@ -40,6 +46,7 @@ public class Bullet : MonoBehaviour
 
     private void Release()
     {
+        _trail?.Clear();
         _onRelease?.Invoke();
     }
 }
