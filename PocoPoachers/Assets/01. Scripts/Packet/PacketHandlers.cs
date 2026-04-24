@@ -3,9 +3,10 @@ using UnityEngine;
 
 public static class PacketHandlers
 {
-    #region S_* 패킷 수신 시 아래 추가 // - TODO: 추후 자동 생성 스크립트 제작
+    #region S_* 패킷 수신 시 아래 추가
+    // - TODO: 추후 자동 함수형태(로직은 직접 구현..) 생성 스크립트 제작
 
-    public static void S_LoginRes(FlatPacket root)
+    public static void OnS_LoginRes(FlatPacket root)
     {
         var res = root.TypeAsS_LoginRes();
         var ui = res.UserInfo;
@@ -20,7 +21,7 @@ public static class PacketHandlers
         });
     }
 
-    public static void S_MoveNtf(FlatPacket root)
+    public static void OnS_MoveNtf(FlatPacket root)
     {
         var ntf = root.TypeAsS_MoveNtf();
         float x = ntf.Pos?.X ?? 0f;

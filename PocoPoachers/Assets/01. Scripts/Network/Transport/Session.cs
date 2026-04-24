@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using Google.FlatBuffers;
 using UnityEngine;
 
 public class Session
 {
     public static readonly int HeaderSize = 2;
 
-    readonly Action<FlatPacket> _handlePacket;
+    readonly Action<ArraySegment<byte>> _handlePacket;
 
     Socket _socket = null!;
     int _disconnected = 0;
@@ -23,7 +22,7 @@ public class Session
     SocketAsyncEventArgs _sendArgs = new SocketAsyncEventArgs();
     SocketAsyncEventArgs _recvArgs = new SocketAsyncEventArgs();
 
-    public Session(Action<FlatPacket> handlePacket)
+    public Session(Action<ArraySegment<byte>> handlePacket)
     {
         _handlePacket = handlePacket;
     }
@@ -68,10 +67,7 @@ public class Session
 
         try
         {
-            int bodyOffset = buffer.Offset + HeaderSize;
-            var bb = new ByteBuffer(buffer.Array, bodyOffset);
-            var root = FlatPacket.GetRootAsFlatPacket(bb);
-            _handlePacket?.Invoke(root);
+            _handlePacket?.Invoke(buffer);
         }
         catch (Exception e)
         {
