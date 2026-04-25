@@ -14,6 +14,7 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController _characterController;
     private PlayerInputHandler _inputHandler;
+    private Animator _animator;
 
     private float _currentSpeed;
 
@@ -27,6 +28,7 @@ public class PlayerMovement : MonoBehaviour
     {
         _characterController = GetComponent<CharacterController>();
         _inputHandler = GetComponent<PlayerInputHandler>();
+        _animator = GetComponentInChildren<Animator>();
         _currentSpeed = _moveSpeed;
     }
 
@@ -46,8 +48,11 @@ public class PlayerMovement : MonoBehaviour
         Vector2 input = _inputHandler.MoveInput;
         Vector3 moveDir = new Vector3(input.x, 0f, input.y);
 
-        float targetSpeed = _inputHandler.IsSprintPressed ? _sprintSpeed : _moveSpeed;
+        float targetSpeed = moveDir == Vector3.zero ? 0f : (_inputHandler.IsSprintPressed ? _sprintSpeed :_moveSpeed);
         _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, _acceleration * Time.deltaTime);
+
+        float animationSpeed = _currentSpeed / _sprintSpeed;
+        _animator.SetFloat("Speed", animationSpeed);
 
         _characterController.Move(moveDir * _currentSpeed * Time.deltaTime);
     }
