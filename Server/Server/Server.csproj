@@ -16,7 +16,8 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
-    <Exec Command="call &quot;$(ProjectDir)Packet\PacketGenerator\generate.bat&quot;" />
+    <Exec Command="call &quot;$(ProjectDir)..\Tools\PacketGenerator\generate.bat&quot;" />
+    <Exec Command="call &quot;$(ProjectDir)..\Tools\TableGenerator\generate.bat&quot;" />
   </Target>
 
 </Project>
