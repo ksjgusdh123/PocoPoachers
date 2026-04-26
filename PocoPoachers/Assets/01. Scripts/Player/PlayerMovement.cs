@@ -51,8 +51,13 @@ public class PlayerMovement : MonoBehaviour
         float targetSpeed = moveDir == Vector3.zero ? 0f : (_inputHandler.IsSprintPressed ? _sprintSpeed :_moveSpeed);
         _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, _acceleration * Time.deltaTime);
 
-        float animationSpeed = _currentSpeed / _sprintSpeed;
-        _animator.SetFloat("Speed", animationSpeed);
+        // 캐릭터 로컬 방향 기준으로 속도 분해 (조준 방향이 캐릭터 forward)
+        Vector3 localMove = transform.InverseTransformDirection(moveDir * _currentSpeed);
+        float normalizedX = localMove.x / _sprintSpeed;
+        float normalizedZ = localMove.z / _sprintSpeed;
+
+        _animator.SetFloat("VelocityX", normalizedX, 0.1f, Time.deltaTime);
+        _animator.SetFloat("VelocityZ", normalizedZ, 0.1f, Time.deltaTime);
 
         _characterController.Move(moveDir * _currentSpeed * Time.deltaTime);
     }
