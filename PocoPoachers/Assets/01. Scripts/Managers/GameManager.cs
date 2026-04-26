@@ -11,14 +11,14 @@ public class GameManager : Singleton<GameManager>
         Item[] items = FindObjectsByType<Item>();
         foreach (var item in items)
         {
-            inventory.AddItem(item.Data, 1);
+            if (item.Data != null) inventory.AddItem(item.Data, 1);
         }
 
         var otherInven = GameObject.Find("Box").GetComponent<Inventory>();
 
         foreach (var item in items)
         {
-            otherInven.AddItem(item.Data, 1);
+            if (item.Data != null) otherInven.AddItem(item.Data, 1);
         }
     }
 }

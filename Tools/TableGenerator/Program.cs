@@ -13,7 +13,7 @@ int Run(string[] args)
     string serverCsOut    = Path.Combine("..", "..", "Server", "Server", "Generated", "DataTable");
     string clientCsOut    = Path.Combine("..", "..", "PocoPoachers", "Assets", "01. Scripts", "Generated", "DataTable");
     string serverJsonOut  = Path.Combine("..", "..", "Server", "Server", "Generated", "JsonData");
-    string clientJsonOut  = Path.Combine("..", "..", "PocoPoachers", "Assets", "01. Scripts", "Generated", "DataTable", "JsonData");
+    string clientJsonOut  = Path.Combine("..", "..", "PocoPoachers", "Assets", "Resources", "JsonData");
 
     if (!Directory.Exists(dataDir) && Directory.Exists("DataTable"))
         dataDir = "DataTable";
@@ -145,7 +145,7 @@ void ProcessCsv(
     RegisterAndWriteEnums(enumColumns.Values, generatedEnums, serverCsOut, clientCsOut);
 
     WriteServerCs(serverCsOut, className, headers, types);
-    WriteClientCs(clientCsOut, className, headers, types);
+    WriteClientCs(clientCsOut, fileName, className, headers, types);
     WriteJson(fileName, headers, types, rows, enumColumns, serverJsonOut, clientJsonOut);
 
     Console.WriteLine($"[{ToolName}] table: {Path.GetFileName(csvPath)}");
@@ -326,12 +326,12 @@ void WriteServerCs(string outDir, string className, string[] headers, string[] t
 }
 
 // ── Unity 클라이언트용 C# 코드 생성 ──────────────
-void WriteClientCs(string outDir, string className, string[] headers, string[] types)
+void WriteClientCs(string outDir, string fileName, string className, string[] headers, string[] types)
 {
     int keyIdx      = Array.FindIndex(types, t => t == "int" || IsEnumType(t));
     string keyType  = keyIdx >= 0 ? types[keyIdx] : "string";
     string keyField = keyIdx >= 0 ? headers[keyIdx] : headers[0];
-    string resPath  = $"Data/{className.ToLower()}";  // Resources/Data/items
+    string resPath  = $"JsonData/{fileName}";  // Resources/JsonData/{fileName}
 
     // *Data.cs
     var sb = new StringBuilder();
@@ -427,11 +427,13 @@ void WriteClientCs(string outDir, string className, string[] headers, string[] t
     sb.AppendLine($"    static {className}Table Load()");
     sb.AppendLine("    {");
     sb.AppendLine($"        var asset = Resources.Load<TextAsset>(\"{resPath}\");");
-    sb.AppendLine($"        if (asset == null) {{ Debug.LogError(\"[{className}Table] Resources/{resPath}.json not found\"); return new {className}Table(); }}");
+    sb.AppendLine($"        if (asset == null) {{ Debug.LogError(\"[{className}Table] not found: Resources/{resPath}.json\"); return new {className}Table(); }}");
     sb.AppendLine($"        var table = new {className}Table();");
     sb.AppendLine($"        string wrapped = \"{{\\\"items\\\":\" + asset.text + \"}}\";");
     sb.AppendLine($"        var wrapper = JsonUtility.FromJson<Wrapper>(wrapped);");
+    sb.AppendLine($"        if (wrapper == null || wrapper.items == null) {{ Debug.LogError(\"[{className}Table] JSON 파싱 실패\"); return table; }}");
     sb.AppendLine($"        foreach (var d in wrapper.items) table._map[d.{keyField}] = d;");
+    sb.AppendLine($"        Debug.Log($\"[{className}Table] {{table._map.Count}}개 로드 완료\");");
     sb.AppendLine("        return table;");
     sb.AppendLine("    }");
     sb.AppendLine();

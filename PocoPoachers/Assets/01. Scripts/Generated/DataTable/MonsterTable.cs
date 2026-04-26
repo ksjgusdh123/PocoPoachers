@@ -11,12 +11,14 @@ public class MonsterTable
 
     static MonsterTable Load()
     {
-        var asset = Resources.Load<TextAsset>("Data/monster");
-        if (asset == null) { Debug.LogError("[MonsterTable] Resources/Data/monster.json not found"); return new MonsterTable(); }
+        var asset = Resources.Load<TextAsset>("JsonData/monster");
+        if (asset == null) { Debug.LogError("[MonsterTable] not found: Resources/JsonData/monster.json"); return new MonsterTable(); }
         var table = new MonsterTable();
         string wrapped = "{\"items\":" + asset.text + "}";
         var wrapper = JsonUtility.FromJson<Wrapper>(wrapped);
+        if (wrapper == null || wrapper.items == null) { Debug.LogError("[MonsterTable] JSON 파싱 실패"); return table; }
         foreach (var d in wrapper.items) table._map[d.id] = d;
+        Debug.Log($"[MonsterTable] {table._map.Count}개 로드 완료");
         return table;
     }
 

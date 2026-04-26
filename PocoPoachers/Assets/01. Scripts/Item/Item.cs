@@ -1,9 +1,8 @@
 using UnityEngine;
 
-//[System.Serializable]
 public class Item : MonoBehaviour
 {
-    [SerializeField] private ItemData _data;
+    [SerializeField] private int _itemId;
 
-    public ItemData Data => _data;
+    public ItemData Data => ItemTable.Instance.Get(_itemId);
 }

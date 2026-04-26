@@ -3,6 +3,5 @@ public enum ItemType : int
 {
     None = 0,
     Consumable = 1,
-    Material = 2,
-    Quest = 3,
+    Weapon = 2,
 }

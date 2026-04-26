@@ -9,4 +9,5 @@ public record ItemData
     [JsonPropertyName("type")] public ItemType Type { get; init; }
     [JsonPropertyName("max_stack")] public int MaxStack { get; init; }
     [JsonPropertyName("icon")] public string Icon { get; init; } = "";
+    [JsonPropertyName("prefab")] public string Prefab { get; init; } = "";
 }

@@ -11,12 +11,14 @@ public class ItemTable
 
     static ItemTable Load()
     {
-        var asset = Resources.Load<TextAsset>("Data/item");
-        if (asset == null) { Debug.LogError("[ItemTable] Resources/Data/item.json not found"); return new ItemTable(); }
+        var asset = Resources.Load<TextAsset>("JsonData/item");
+        if (asset == null) { Debug.LogError("[ItemTable] not found: Resources/JsonData/item.json"); return new ItemTable(); }
         var table = new ItemTable();
         string wrapped = "{\"items\":" + asset.text + "}";
         var wrapper = JsonUtility.FromJson<Wrapper>(wrapped);
+        if (wrapper == null || wrapper.items == null) { Debug.LogError("[ItemTable] JSON 파싱 실패"); return table; }
         foreach (var d in wrapper.items) table._map[d.id] = d;
+        Debug.Log($"[ItemTable] {table._map.Count}개 로드 완료");
         return table;
     }
 

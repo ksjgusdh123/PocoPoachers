@@ -11,6 +11,7 @@ public class ItemData
     public ItemType type;
     public int max_stack;
     public string icon = "";
+    public string prefab = "";
 
     public int Id
     {
@@ -61,5 +62,11 @@ public class ItemData
     }
 
     public Sprite Icon => string.IsNullOrWhiteSpace(icon) ? null : Resources.Load<Sprite>(icon);
+
+    public string Prefab
+    {
+        get => prefab;
+        set => prefab = value;
+    }
 
 }
