@@ -1,5 +1,6 @@
-using System.Collections.Generic;
 using Google.FlatBuffers;
+using System;
+using System.Collections.Generic;
 
 namespace Server;
 
@@ -38,6 +39,19 @@ public static class PacketSender
         S_MoveNtf.AddMoveType(fb, moveType);
         Offset<S_MoveNtf> bodyOff = S_MoveNtf.EndS_MoveNtf(fb);
         SessionManager.Instance.Broadcast(fb, PacketType.S_MoveNtf, bodyOff.Value, except);
+    }
+
+    public static void SSpawnItemBoxNtfBroadcast(int typeId, float x, float y, float z, float rotation, int[] itemIds)
+    {
+        var fb = new FlatBufferBuilder(BufferSize);
+        var itemVec = S_SpawnItemBoxNtf.CreateItemIdsVector(fb, itemIds);
+        S_SpawnItemBoxNtf.StartS_SpawnItemBoxNtf(fb);
+        S_SpawnItemBoxNtf.AddTypeId(fb, typeId);
+        S_SpawnItemBoxNtf.AddPos(fb, Vec3.CreateVec3(fb, x, y, z));
+        S_SpawnItemBoxNtf.AddRotation(fb, rotation);
+        S_SpawnItemBoxNtf.AddItemIds(fb, itemVec);
+        var bodyOff = S_SpawnItemBoxNtf.EndS_SpawnItemBoxNtf(fb);
+        PacketBuilder.Broadcast(SessionManager.Instance.Snapshot(), fb, PacketType.S_SpawnItemBoxNtf, bodyOff.Value);
     }
 
     public static void SAddItemRes(ClientSession session, bool success, int itemId, int amount)

@@ -16,6 +16,8 @@ public enum PacketType : byte
   S_InventoryNtf = 9,
   S_WorldItemSpawnNtf = 10,
   S_WorldItemDespawnNtf = 11,
+  S_SpawnItemBoxNtf = 12,
+  C_OpenBox = 13,
 };
 
 
@@ -59,6 +61,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.S_WorldItemDespawnNtf:
         result = S_WorldItemDespawnNtfVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_SpawnItemBoxNtf:
+        result = S_SpawnItemBoxNtfVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.C_OpenBox:
+        result = C_OpenBoxVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

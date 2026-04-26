@@ -62,6 +62,24 @@ public static class PacketHandlers
         });
     }
 
+    public static void OnS_SpawnItemBoxNtf(FlatPacket root)
+    {
+        var pkt = root.TypeAsS_SpawnItemBoxNtf();
+        int typeId = pkt.TypeId;
+        float x = pkt.Pos?.X ?? 0f;
+        float y = pkt.Pos?.Y ?? 0f;
+        float z = pkt.Pos?.Z ?? 0f;
+        Vector3 pos = new Vector3(x, y, z);
+        float rotation = pkt.Rotation;
+        int[] item_ids = pkt.GetItemIdsArray();
+
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            var box = ObjectManager.Instance?.SpawnItemBox(0, typeId, pos, rotation);
+            box?.Initialize(item_ids);
+        });
+    }
+
     public static void OnS_AddItemRes(FlatPacket root)
     {
         var pkt = root.TypeAsS_AddItemRes();

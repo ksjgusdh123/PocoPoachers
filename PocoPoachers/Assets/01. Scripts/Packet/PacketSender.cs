@@ -1,5 +1,6 @@
 ﻿using Google.FlatBuffers;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 public static class PacketSender
 {
@@ -47,6 +48,15 @@ public static class PacketSender
 
         var bodyOff = C_RemoveItemReq.CreateC_RemoveItemReq(_builder, itemId, amount);
         PacketBuilder.Send(session, _builder, PacketType.C_RemoveItemReq, bodyOff.Value);
+    }
+
+    public static void COpenBox()
+    {
+        if (!TryGetSession(out Session session)) return;
+        _builder.Clear();
+
+        var bodyOff = C_OpenBox.EndC_OpenBox(_builder);
+        PacketBuilder.Send(session, _builder, PacketType.C_OpenBox, bodyOff.Value);
     }
 
     static bool TryGetSession(out Session session)

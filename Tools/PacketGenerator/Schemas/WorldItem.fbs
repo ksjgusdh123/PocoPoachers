@@ -12,3 +12,16 @@ table S_WorldItemDespawnNtf
 {
     uid: int;
 }
+
+table S_SpawnItemBoxNtf
+{
+    type_id: int;
+    pos: Vec3;
+    rotation: float;
+    item_ids: [int];
+}
+
+table C_OpenBox
+{
+
+}

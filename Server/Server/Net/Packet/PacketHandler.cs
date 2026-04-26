@@ -94,4 +94,15 @@ public class PacketHandler
 
         PacketSender.SRemoveItemRes(session, success, itemId, success ? amount : 0);
     }
+
+    public void OnC_OpenBox(ClientSession session, C_OpenBox req)
+    {
+        if (session.Player == null)
+        {
+            LOG_W("RemoveItemReq from unauthenticated session, ignoring");
+            return;
+        }
+
+
+    }
 }

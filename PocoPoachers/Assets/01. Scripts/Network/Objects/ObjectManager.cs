@@ -162,6 +162,17 @@ public class ObjectManager : Singleton<ObjectManager>
         _objects.Clear();
     }
 
+    public ItemBox SpawnItemBox(int uid, int typeId, Vector3 pos, float rotation)
+    {
+        var obj = Spawn(ObjectKind.ItemBox, uid, typeId);
+        obj.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, rotation, 0f));
+        _objects[(ObjectKind.ItemBox, uid)] = obj;
+        var box = obj.GetComponent<ItemBox>();
+        if (box == null)
+            box = obj.gameObject.AddComponent<ItemBox>();
+        return box;
+    }
+
     WorldObject Spawn(ObjectKind kind, int id, int typeId = 0)
     {
         GameObject go;

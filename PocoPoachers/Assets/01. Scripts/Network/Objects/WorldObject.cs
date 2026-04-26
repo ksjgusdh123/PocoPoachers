@@ -5,6 +5,7 @@ public enum ObjectKind
     Player,
     Npc,
     WorldItem,
+    ItemBox,
 }
 
 public class WorldObject : MonoBehaviour

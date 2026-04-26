@@ -12,8 +12,8 @@ public sealed class WorldItemManager
 
     sealed class Entry
     {
-        public int TypeId;
         public float X, Y, Z, Rotation;
+        public int[] ItemIds;
     }
 
     public void TempInit()
@@ -23,23 +23,22 @@ public sealed class WorldItemManager
             if (_items.Count > 0)
                 return;
 
-            Add(101, 2f, 0f, 3f, 0f);
-            Add(102, -1.5f, 0f, 2.5f, 30f);
-            Add(103, 0f, 0f, 6f, 0f);
+            SpawnBox(0f, 0f, 4f, 0f, new[] { 101, 102, 103 });
         }
+
     }
 
-    void Add(int typeId, float x, float y, float z, float rot)
+    public void SpawnBox(float x, float y, float z, float rot, int[] itemIds)
     {
-        if (ItemTable.Get(typeId) == null)
+        int uid;
+        lock (_lock)
         {
-            LOG_W($"WorldItem: type_id {typeId} 없음, 스킵");
-            return;
+            uid = _nextUid++;
+            _items[uid] = new Entry { X = x, Y = y, Z = z, Rotation = rot, ItemIds = itemIds };
         }
 
-        int uid = _nextUid++;
-        _items[uid] = new Entry { TypeId = typeId, X = x, Y = y, Z = z, Rotation = rot };
-        LOG($"WorldItem 등록: uid={uid}, type_id={typeId}");
+        PacketSender.SSpawnItemBoxNtfBroadcast(0, x, y, z, rot, itemIds);
+        LOG($"ItemBox 스폰: uid={uid}, pos=({x},{y},{z}), items=[{string.Join(",", itemIds)}]");
     }
 
     public void SyncTo(ClientSession session)
@@ -53,13 +52,8 @@ public sealed class WorldItemManager
         foreach (var kv in copy)
         {
             Entry e = kv.Value;
-            PacketSender.SWorldItemSpawnNtf(session, kv.Key, e.TypeId, e.X, e.Y, e.Z, e.Rotation);
+            PacketSender.SSpawnItemBoxNtfBroadcast(0, e.X, e.Y, e.Z, e.Rotation, e.ItemIds);
         }
-    }
-
-    public void Spawn(int uid, int typeId, float x, float y, float z, float rot)
-    {
-        PacketSender.SWorldItemSpawnNtfBroadcast(uid, typeId, x, y, z, rot);
     }
 
     public void Despawn(int uid)

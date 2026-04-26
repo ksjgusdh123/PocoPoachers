@@ -30,6 +30,8 @@ public struct FlatPacket : IFlatbufferObject
   public S_InventoryNtf TypeAsS_InventoryNtf() { return Type<S_InventoryNtf>().Value; }
   public S_WorldItemSpawnNtf TypeAsS_WorldItemSpawnNtf() { return Type<S_WorldItemSpawnNtf>().Value; }
   public S_WorldItemDespawnNtf TypeAsS_WorldItemDespawnNtf() { return Type<S_WorldItemDespawnNtf>().Value; }
+  public S_SpawnItemBoxNtf TypeAsS_SpawnItemBoxNtf() { return Type<S_SpawnItemBoxNtf>().Value; }
+  public C_OpenBox TypeAsC_OpenBox() { return Type<C_OpenBox>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
