@@ -16,7 +16,7 @@ public class MonsterTable
         var table = new MonsterTable();
         string wrapped = "{\"items\":" + asset.text + "}";
         var wrapper = JsonUtility.FromJson<Wrapper>(wrapped);
-        foreach (var d in wrapper.items) table._map[d.Id] = d;
+        foreach (var d in wrapper.items) table._map[d.id] = d;
         return table;
     }
 
