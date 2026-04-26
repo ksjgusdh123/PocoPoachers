@@ -2,7 +2,7 @@
 using System;
 
 [Serializable]
-public class MonsterData
+public partial class MonsterData
 {
     public int id;
     public string name = "";
