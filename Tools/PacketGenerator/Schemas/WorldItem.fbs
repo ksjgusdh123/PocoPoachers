@@ -1,0 +1,14 @@
+include "Common.fbs";
+
+table S_WorldItemSpawnNtf
+{
+    uid: int;
+    type_id: int;
+    pos: Vec3;
+    rotation: float;
+}
+
+table S_WorldItemDespawnNtf
+{
+    uid: int;
+}

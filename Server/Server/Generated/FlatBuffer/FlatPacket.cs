@@ -28,6 +28,8 @@ public struct FlatPacket : IFlatbufferObject
   public C_RemoveItemReq TypeAsC_RemoveItemReq() { return Type<C_RemoveItemReq>().Value; }
   public S_RemoveItemRes TypeAsS_RemoveItemRes() { return Type<S_RemoveItemRes>().Value; }
   public S_InventoryNtf TypeAsS_InventoryNtf() { return Type<S_InventoryNtf>().Value; }
+  public S_WorldItemSpawnNtf TypeAsS_WorldItemSpawnNtf() { return Type<S_WorldItemSpawnNtf>().Value; }
+  public S_WorldItemDespawnNtf TypeAsS_WorldItemDespawnNtf() { return Type<S_WorldItemDespawnNtf>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,

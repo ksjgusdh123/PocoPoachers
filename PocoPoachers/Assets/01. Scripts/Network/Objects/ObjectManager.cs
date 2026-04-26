@@ -9,6 +9,7 @@ struct PendingMove
     public Vector3 Pos;
     public float Rotation;
     public sbyte MoveType;
+    public int TypeId;
 }
 
 public class ObjectManager : Singleton<ObjectManager>
@@ -83,10 +84,7 @@ public class ObjectManager : Singleton<ObjectManager>
         }
 
         for (int i = 0; i < _drain.Count; i++)
-        {
-            PendingMove m = _drain[i];
-            ApplyMove(m.Kind, m.Id, m.Pos, m.Rotation);
-        }
+            ApplyMove(_drain[i]);
     }
 
     public void QueueMove(ObjectKind kind, int id, Vector3 pos, float rotation, sbyte moveType)
@@ -100,19 +98,41 @@ public class ObjectManager : Singleton<ObjectManager>
                 Pos = pos,
                 Rotation = rotation,
                 MoveType = moveType,
+                TypeId = 0,
             });
         }
     }
 
-    void ApplyMove(ObjectKind kind, int id, Vector3 pos, float rotation)
+    public void QueueWorldItemSpawn(int uid, int typeId, Vector3 pos, float rotation)
     {
+        lock (_moveLock)
+        {
+            _pending.Add(new PendingMove
+            {
+                Kind = ObjectKind.WorldItem,
+                Id = uid,
+                Pos = pos,
+                Rotation = rotation,
+                MoveType = 0,
+                TypeId = typeId,
+            });
+        }
+    }
+
+    void ApplyMove(in PendingMove m)
+    {
+        ObjectKind kind = m.Kind;
+        int id = m.Id;
+        Vector3 pos = m.Pos;
+        float rotation = m.Rotation;
+
         if (IsLocalPlayer(kind, id))
             return;
 
         var key = (kind, id);
         if (!_objects.TryGetValue(key, out var obj))
         {
-            obj = Spawn(kind, id);
+            obj = Spawn(kind, id, m.TypeId);
             obj.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, rotation, 0f));
             _objects.Add(key, obj);
         }
@@ -142,10 +162,26 @@ public class ObjectManager : Singleton<ObjectManager>
         _objects.Clear();
     }
 
-    WorldObject Spawn(ObjectKind kind, int id)
+    WorldObject Spawn(ObjectKind kind, int id, int typeId = 0)
     {
         GameObject go;
         WorldObject obj;
+
+        if (kind == ObjectKind.WorldItem && typeId > 0)
+        {
+            ItemData data = ItemTable.Instance.Get(typeId);
+            GameObject prefabGo = data != null ? data.LoadPrefab() : null;
+            if (prefabGo != null)
+            {
+                go = Instantiate(prefabGo);
+                obj = go.GetComponent<WorldObject>();
+                if (obj == null)
+                    obj = go.AddComponent<WorldObject>();
+                go.name = $"WorldItem_{id}_{typeId}";
+                obj.Initialize(kind, id, typeId);
+                return obj;
+            }
+        }
 
         if (_prefabs.TryGetValue(kind, out WorldObject prefab) && prefab != null)
         {
@@ -164,7 +200,7 @@ public class ObjectManager : Singleton<ObjectManager>
         }
 
         go.name = $"{kind}_{id}";
-        obj.Initialize(kind, id);
+        obj.Initialize(kind, id, typeId);
         return obj;
     }
 }

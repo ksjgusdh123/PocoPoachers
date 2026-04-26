@@ -31,31 +31,3 @@ Escape From Duckov게임을 모방하여 만듬
 
 
 
-\## 폴더 규칙
-
-
-
-| 분류 | 경로 |
-
-|-------|-------|
-
-| Scripts | 'Assets/01. Scripts/{도메인}/' |
-
-| Meshes | 'Assets/02. Meshes/{도메인}/' |
-
-| Materials | 'Assets/03. Materials/{도메인}/' |
-
-| Textures | 'Assets/04. Textures/{도메인}/' |
-
-| Shaders | 'Assets/05. Shaders/{도메인}/' |
-
-| Prefabs | 'Assets/06. Prefabs/{도메인}/' |
-
-| ScriptableObjects | 'Assets/07. SO/{도메인}/' |
-
-| Inputs | 'Assets/08. Inputs/' |
-
-| SFXs | 'Assets/09. Sounds/SFX/{도메인}/' |
-
-| BGMs | 'Assets/09. Sounds/BGM/' |
-

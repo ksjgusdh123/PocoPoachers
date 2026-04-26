@@ -41,6 +41,8 @@ public class PacketHandler
             var vecOff = S_InventoryNtf.CreateItemsVector(fb2, itemOffsets);
             var ntfOff = S_InventoryNtf.CreateS_InventoryNtf(fb2, vecOff);
             PacketBuilder.Send(session, fb2, PacketType.S_InventoryNtf, ntfOff.Value);
+
+            WorldItemManager.Instance.SyncTo(session);
         }
     }
 

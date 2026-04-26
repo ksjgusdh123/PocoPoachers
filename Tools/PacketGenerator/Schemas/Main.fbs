@@ -2,6 +2,7 @@
 include "Auth.fbs";
 include "Movement.fbs";
 include "Inventory.fbs";
+include "WorldItem.fbs";
 
 union PacketType
 {
@@ -16,6 +17,9 @@ union PacketType
     C_RemoveItemReq,
     S_RemoveItemRes,
     S_InventoryNtf,
+
+    S_WorldItemSpawnNtf,
+    S_WorldItemDespawnNtf,
 }
 
 table FlatPacket

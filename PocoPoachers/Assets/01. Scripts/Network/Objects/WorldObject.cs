@@ -13,15 +13,17 @@ public class WorldObject : MonoBehaviour
 
     public int Id { get; private set; }
     public ObjectKind Kind { get; private set; }
+    public int TypeId { get; private set; }
 
     Vector3 _targetPos;
     float _targetYaw;
     bool _hasTarget;
 
-    public void Initialize(ObjectKind kind, int id)
+    public void Initialize(ObjectKind kind, int id, int typeId = 0)
     {
         Kind = kind;
         Id = id;
+        TypeId = typeId;
     }
 
     public void SetMoveTarget(Vector3 worldPos, float yawDegrees)
