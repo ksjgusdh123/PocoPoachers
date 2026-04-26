@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
-    <Exec Command="call &quot;$(ProjectDir)..\Tools\PacketGenerator\generate.bat&quot;" />
-    <Exec Command="call &quot;$(ProjectDir)..\Tools\TableGenerator\generate.bat&quot;" />
+    <Exec Command="call &quot;$(ProjectDir)..\..\Tools\PacketGenerator\generate.bat&quot;" />
+    <Exec Command="call &quot;$(ProjectDir)..\..\Tools\TableGenerator\generate.bat&quot;" />
   </Target>
 
 </Project>
