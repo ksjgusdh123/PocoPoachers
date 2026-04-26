@@ -1,10 +1,10 @@
-﻿using Google.FlatBuffers;
+using Google.FlatBuffers;
 
 namespace Server;
 
 public class SessionManager
 {
-    public static SessionManager Instance { get; } = new SessionManager();
+    public static SessionManager Instance { get; } = new();
 
     private readonly object _lock = new();
     private readonly Dictionary<int, ClientSession> _sessions = new();

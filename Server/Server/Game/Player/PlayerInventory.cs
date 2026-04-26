@@ -1,6 +1,6 @@
 namespace Server;
 
-public class Inventory
+public class PlayerInventory
 {
     private readonly object _lock = new();
     private readonly Dictionary<int, int> _items = new(); // itemId → amount

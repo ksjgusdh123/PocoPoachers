@@ -1,4 +1,4 @@
-﻿using Google.FlatBuffers;
+using Google.FlatBuffers;
 using ServerCore;
 
 namespace Server;
