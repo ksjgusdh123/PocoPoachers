@@ -10,8 +10,6 @@ public static class PrefabMakeIcon
 {
     const int DefaultIconSize = 256;
 
-    const string BackgroundPrefKey = "PocoPoachers.MakeIcon.BackgroundMode";
-
     /// <summary>에셋 기준: Resources/Icons (테이블 icon 키 <c>Icons/...</c>와 동일).</summary>
     static string IconsOutputDirectory
     {
@@ -21,46 +19,6 @@ public static class PrefabMakeIcon
             Directory.CreateDirectory(dir);
             return dir;
         }
-    }
-
-    enum IconBackgroundMode
-    {
-        Transparent = 0,
-        White = 1,
-        Dark = 2
-    }
-
-    [MenuItem("Tools/PocoPoachers/아이콘 배경/투명", false, 42)]
-    static void SetBackgroundTransparent() => EditorPrefs.SetInt(BackgroundPrefKey, (int)IconBackgroundMode.Transparent);
-
-    [MenuItem("Tools/PocoPoachers/아이콘 배경/투명", true)]
-    static bool SetBackgroundTransparentValidate()
-    {
-        Menu.SetChecked("Tools/PocoPoachers/아이콘 배경/투명",
-            EditorPrefs.GetInt(BackgroundPrefKey, (int)IconBackgroundMode.Transparent) == (int)IconBackgroundMode.Transparent);
-        return true;
-    }
-
-    [MenuItem("Tools/PocoPoachers/아이콘 배경/흰색", false, 43)]
-    static void SetBackgroundWhite() => EditorPrefs.SetInt(BackgroundPrefKey, (int)IconBackgroundMode.White);
-
-    [MenuItem("Tools/PocoPoachers/아이콘 배경/흰색", true)]
-    static bool SetBackgroundWhiteValidate()
-    {
-        Menu.SetChecked("Tools/PocoPoachers/아이콘 배경/흰색",
-            EditorPrefs.GetInt(BackgroundPrefKey, (int)IconBackgroundMode.Transparent) == (int)IconBackgroundMode.White);
-        return true;
-    }
-
-    [MenuItem("Tools/PocoPoachers/아이콘 배경/어두운 회색", false, 44)]
-    static void SetBackgroundDark() => EditorPrefs.SetInt(BackgroundPrefKey, (int)IconBackgroundMode.Dark);
-
-    [MenuItem("Tools/PocoPoachers/아이콘 배경/어두운 회색", true)]
-    static bool SetBackgroundDarkValidate()
-    {
-        Menu.SetChecked("Tools/PocoPoachers/아이콘 배경/어두운 회색",
-            EditorPrefs.GetInt(BackgroundPrefKey, (int)IconBackgroundMode.Transparent) == (int)IconBackgroundMode.Dark);
-        return true;
     }
 
     [MenuItem("Tools/PocoPoachers/프리팹 → 아이콘 PNG", false, 41)]
@@ -162,7 +120,8 @@ public static class PrefabMakeIcon
 
         var cam = camGo.AddComponent<Camera>();
         cam.clearFlags = CameraClearFlags.SolidColor;
-        ApplyBackgroundMode(cam, out var captureAmbient);
+        cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
+        var captureAmbient = new Color(0.45f, 0.47f, 0.5f);
         cam.orthographic = false;
         cam.fieldOfView = 28f;
         cam.nearClipPlane = 0.01f;
@@ -259,26 +218,5 @@ public static class PrefabMakeIcon
         for (var i = 1; i < renderers.Length; i++)
             b.Encapsulate(renderers[i].bounds);
         return b;
-    }
-
-    static void ApplyBackgroundMode(Camera cam, out Color ambientForCapture)
-    {
-        var mode = (IconBackgroundMode)EditorPrefs.GetInt(BackgroundPrefKey, (int)IconBackgroundMode.Transparent);
-
-        switch (mode)
-        {
-            case IconBackgroundMode.White:
-                cam.backgroundColor = Color.white;
-                ambientForCapture = new Color(0.52f, 0.52f, 0.55f);
-                break;
-            case IconBackgroundMode.Dark:
-                cam.backgroundColor = new Color(0.14f, 0.15f, 0.17f, 1f);
-                ambientForCapture = new Color(0.38f, 0.4f, 0.44f);
-                break;
-            default:
-                cam.backgroundColor = new Color(0f, 0f, 0f, 0f);
-                ambientForCapture = new Color(0.45f, 0.47f, 0.5f);
-                break;
-        }
     }
 }
