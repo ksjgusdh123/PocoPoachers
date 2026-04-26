@@ -16,7 +16,7 @@ public class PlayerMovement : MonoBehaviour
     private PlayerInputHandler _inputHandler;
     private Animator _animator;
 
-    private float _currentSpeed;
+    private Vector3 _currentVelocity; // _currentSpeed 대신 벡터로 교체
 
     private float _nextSendTime;
     private Vector3 _lastSentPos;
@@ -29,7 +29,6 @@ public class PlayerMovement : MonoBehaviour
         _characterController = GetComponent<CharacterController>();
         _inputHandler = GetComponent<PlayerInputHandler>();
         _animator = GetComponentInChildren<Animator>();
-        _currentSpeed = _moveSpeed;
     }
 
     private void Update()
@@ -45,21 +44,21 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move()
     {
-        Vector2 input = _inputHandler.MoveInput;
-        Vector3 moveDir = new Vector3(input.x, 0f, input.y);
+      Vector2 input = _inputHandler.MoveInput;
+      Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
 
-        float targetSpeed = moveDir == Vector3.zero ? 0f : (_inputHandler.IsSprintPressed ? _sprintSpeed :_moveSpeed);
-        _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, _acceleration * Time.deltaTime);
+      float targetSpeed = moveDir == Vector3.zero ? 0f
+          : (_inputHandler.IsSprintPressed ? _sprintSpeed : _moveSpeed);
+      Vector3 targetVelocity = moveDir * targetSpeed;
 
-        // 캐릭터 로컬 방향 기준으로 속도 분해 (조준 방향이 캐릭터 forward)
-        Vector3 localMove = transform.InverseTransformDirection(moveDir * _currentSpeed);
-        float normalizedX = localMove.x / _sprintSpeed;
-        float normalizedZ = localMove.z / _sprintSpeed;
+      // 방향 포함 전체 벡터를 부드럽게 보간 → 반대 방향 전환 시 튀지 않음
+      _currentVelocity = Vector3.MoveTowards(_currentVelocity, targetVelocity, _acceleration * Time.deltaTime);
 
-        _animator.SetFloat("VelocityX", normalizedX, 0.1f, Time.deltaTime);
-        _animator.SetFloat("VelocityZ", normalizedZ, 0.1f, Time.deltaTime);
+      Vector3 localVelocity = transform.InverseTransformDirection(_currentVelocity);
+      _animator.SetFloat("VelocityX", localVelocity.x / _sprintSpeed, 0.1f, Time.deltaTime);
+      _animator.SetFloat("VelocityZ", localVelocity.z / _sprintSpeed, 0.1f, Time.deltaTime);
 
-        _characterController.Move(moveDir * _currentSpeed * Time.deltaTime);
+      _characterController.Move(_currentVelocity * Time.deltaTime);
     }
 
     private void SendMoveToServer()
