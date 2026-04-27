@@ -5,6 +5,7 @@ using UnityEngine.InputSystem;
 public class PlayerRotation : MonoBehaviour
 {
     [SerializeField] private float _runRotationSpeed = 10f;
+    [SerializeField] private float _mouseRotationSpeed = 15f;
 
     private static readonly Plane GroundPlane = new Plane(Vector3.up, Vector3.zero);
     private PlayerInputHandler _inputHandler;
@@ -34,7 +35,8 @@ public class PlayerRotation : MonoBehaviour
 
         if (direction.sqrMagnitude < 0.001f) return;
 
-        transform.rotation = Quaternion.LookRotation(direction);
+        Quaternion target = Quaternion.LookRotation(direction);
+        transform.rotation = Quaternion.Slerp(transform.rotation, target, _mouseRotationSpeed * Time.deltaTime);
     }
 
     private void RotateTowardMovement()
