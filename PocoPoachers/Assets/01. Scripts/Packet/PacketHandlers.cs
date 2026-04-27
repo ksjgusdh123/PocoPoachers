@@ -65,6 +65,7 @@ public static class PacketHandlers
     public static void OnS_SpawnItemBoxNtf(FlatPacket root)
     {
         var pkt = root.TypeAsS_SpawnItemBoxNtf();
+        int uid = pkt.Uid;
         int typeId = pkt.TypeId;
         float x = pkt.Pos?.X ?? 0f;
         float y = pkt.Pos?.Y ?? 0f;
@@ -75,7 +76,7 @@ public static class PacketHandlers
 
         MainThreadDispatcher.Enqueue(() =>
         {
-            var box = ObjectManager.Instance?.SpawnItemBox(0, typeId, pos, rotation);
+            var box = ObjectManager.Instance?.SpawnItemBox(uid, typeId, pos, rotation);
             box?.Initialize(item_ids);
         });
     }

@@ -15,11 +15,17 @@ public class InventoryUI : MonoBehaviour
 
     private void Start()
     {
-        _descriptionUI = FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
-        _inventory.ChangeInventory += Refresh;
+        _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
+
+        if (_inventory != null)
+        {
+            _inventory.ChangeInventory += Refresh;
+            if (_slotUIs == null)
+                GenerateSlots();
+            Refresh();
+        }
+
         if(_sortButton) _sortButton.onClick.AddListener(OnClickSort);
-        GenerateSlots();
-        Refresh();
 
         var manager = SlotInteractionManager.GetInstance();
         manager.OnHoverEnter += _descriptionUI.ShowDescription;
@@ -40,6 +46,20 @@ public class InventoryUI : MonoBehaviour
 
         if (target.AddItem(targetSlot.SlotItemData, targetSlot.SavedAmountItem))
             targetSlot.ClearSlot();
+    }
+
+    public void Bind(Inventory inventory)
+    {
+        if (_inventory != null)
+            _inventory.ChangeInventory -= Refresh;
+        _inventory = inventory;
+        _inventory.ChangeInventory += Refresh;
+        if (_slotUIs == null)
+        {
+            _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
+            GenerateSlots();
+        }
+        Refresh();
     }
 
     private void OnClickSort()

@@ -16,23 +16,25 @@ public struct S_SpawnItemBoxNtf : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public S_SpawnItemBoxNtf __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int TypeId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public Vec3? Pos { get { int o = __p.__offset(6); return o != 0 ? (Vec3?)(new Vec3()).__assign(o + __p.bb_pos, __p.bb) : null; } }
-  public float Rotation { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
-  public int ItemIds(int j) { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(__p.__vector(o) + j * 4) : (int)0; }
-  public int ItemIdsLength { get { int o = __p.__offset(10); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public int Uid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int TypeId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public Vec3? Pos { get { int o = __p.__offset(8); return o != 0 ? (Vec3?)(new Vec3()).__assign(o + __p.bb_pos, __p.bb) : null; } }
+  public float Rotation { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public int ItemIds(int j) { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(__p.__vector(o) + j * 4) : (int)0; }
+  public int ItemIdsLength { get { int o = __p.__offset(12); return o != 0 ? __p.__vector_len(o) : 0; } }
 #if ENABLE_SPAN_T
-  public Span<int> GetItemIdsBytes() { return __p.__vector_as_span<int>(10, 4); }
+  public Span<int> GetItemIdsBytes() { return __p.__vector_as_span<int>(12, 4); }
 #else
-  public ArraySegment<byte>? GetItemIdsBytes() { return __p.__vector_as_arraysegment(10); }
+  public ArraySegment<byte>? GetItemIdsBytes() { return __p.__vector_as_arraysegment(12); }
 #endif
-  public int[] GetItemIdsArray() { return __p.__vector_as_array<int>(10); }
+  public int[] GetItemIdsArray() { return __p.__vector_as_array<int>(12); }
 
-  public static void StartS_SpawnItemBoxNtf(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddTypeId(FlatBufferBuilder builder, int typeId) { builder.AddInt(0, typeId, 0); }
-  public static void AddPos(FlatBufferBuilder builder, Offset<Vec3> posOffset) { builder.AddStruct(1, posOffset.Value, 0); }
-  public static void AddRotation(FlatBufferBuilder builder, float rotation) { builder.AddFloat(2, rotation, 0.0f); }
-  public static void AddItemIds(FlatBufferBuilder builder, VectorOffset itemIdsOffset) { builder.AddOffset(3, itemIdsOffset.Value, 0); }
+  public static void StartS_SpawnItemBoxNtf(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void AddUid(FlatBufferBuilder builder, int uid) { builder.AddInt(0, uid, 0); }
+  public static void AddTypeId(FlatBufferBuilder builder, int typeId) { builder.AddInt(1, typeId, 0); }
+  public static void AddPos(FlatBufferBuilder builder, Offset<Vec3> posOffset) { builder.AddStruct(2, posOffset.Value, 0); }
+  public static void AddRotation(FlatBufferBuilder builder, float rotation) { builder.AddFloat(3, rotation, 0.0f); }
+  public static void AddItemIds(FlatBufferBuilder builder, VectorOffset itemIdsOffset) { builder.AddOffset(4, itemIdsOffset.Value, 0); }
   public static VectorOffset CreateItemIdsVector(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddInt(data[i]); return builder.EndVector(); }
   public static VectorOffset CreateItemIdsVectorBlock(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateItemIdsVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
@@ -50,10 +52,11 @@ static public class S_SpawnItemBoxNtfVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*TypeId*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Pos*/, 12 /*Vec3*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Rotation*/, 4 /*float*/, 4, false)
-      && verifier.VerifyVectorOfData(tablePos, 10 /*ItemIds*/, 4 /*int*/, false)
+      && verifier.VerifyField(tablePos, 4 /*Uid*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*TypeId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Pos*/, 12 /*Vec3*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*Rotation*/, 4 /*float*/, 4, false)
+      && verifier.VerifyVectorOfData(tablePos, 12 /*ItemIds*/, 4 /*int*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

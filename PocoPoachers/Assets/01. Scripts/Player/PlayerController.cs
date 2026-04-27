@@ -35,7 +35,7 @@ public class PlayerController : MonoBehaviour
 
     void Interaction()
     {
-        if (_interactObject.TryGetComponent<Inventory>(out var inven))
+        if (_interactObject != null && _interactObject.TryGetComponent<Inventory>(out var inven))
         {
             ShowInventory();
             boxUI.SetActive(!boxUI.activeSelf);
@@ -43,6 +43,7 @@ public class PlayerController : MonoBehaviour
             {
                 _inventory._interactionInventory = inven;
                 inven._interactionInventory = _inventory;
+                boxUI.GetComponentInChildren<InventoryUI>()?.Bind(inven);
             }
             else
             {

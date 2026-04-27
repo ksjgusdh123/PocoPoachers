@@ -41,11 +41,12 @@ public static class PacketSender
         SessionManager.Instance.Broadcast(fb, PacketType.S_MoveNtf, bodyOff.Value, except);
     }
 
-    public static void SSpawnItemBoxNtfBroadcast(int typeId, float x, float y, float z, float rotation, int[] itemIds)
+    public static void SSpawnItemBoxNtfBroadcast(int uid, int typeId, float x, float y, float z, float rotation, int[] itemIds)
     {
         var fb = new FlatBufferBuilder(BufferSize);
         var itemVec = S_SpawnItemBoxNtf.CreateItemIdsVector(fb, itemIds);
         S_SpawnItemBoxNtf.StartS_SpawnItemBoxNtf(fb);
+        S_SpawnItemBoxNtf.AddUid(fb, uid);
         S_SpawnItemBoxNtf.AddTypeId(fb, typeId);
         S_SpawnItemBoxNtf.AddPos(fb, Vec3.CreateVec3(fb, x, y, z));
         S_SpawnItemBoxNtf.AddRotation(fb, rotation);

@@ -12,6 +12,7 @@ public sealed class WorldItemManager
 
     sealed class Entry
     {
+        public int TypeId;
         public float X, Y, Z, Rotation;
         public int[] ItemIds;
     }
@@ -23,21 +24,21 @@ public sealed class WorldItemManager
             if (_items.Count > 0)
                 return;
 
-            SpawnBox(0f, 0f, 4f, 0f, new[] { 101, 102, 103 });
+            SpawnBox(301, 0f, 0f, 4f, 0f, new[] { 101, 102, 103 });
         }
 
     }
 
-    public void SpawnBox(float x, float y, float z, float rot, int[] itemIds)
+    public void SpawnBox(int typeId, float x, float y, float z, float rot, int[] itemIds)
     {
         int uid;
         lock (_lock)
         {
             uid = _nextUid++;
-            _items[uid] = new Entry { X = x, Y = y, Z = z, Rotation = rot, ItemIds = itemIds };
+            _items[uid] = new Entry { TypeId = typeId, X = x, Y = y, Z = z, Rotation = rot, ItemIds = itemIds };
         }
 
-        PacketSender.SSpawnItemBoxNtfBroadcast(0, x, y, z, rot, itemIds);
+        PacketSender.SSpawnItemBoxNtfBroadcast(uid, typeId, x, y, z, rot, itemIds);
         LOG($"ItemBox 스폰: uid={uid}, pos=({x},{y},{z}), items=[{string.Join(",", itemIds)}]");
     }
 
@@ -52,7 +53,7 @@ public sealed class WorldItemManager
         foreach (var kv in copy)
         {
             Entry e = kv.Value;
-            PacketSender.SSpawnItemBoxNtfBroadcast(0, e.X, e.Y, e.Z, e.Rotation, e.ItemIds);
+            PacketSender.SSpawnItemBoxNtfBroadcast(kv.Key, e.TypeId, e.X, e.Y, e.Z, e.Rotation, e.ItemIds);
         }
     }
 

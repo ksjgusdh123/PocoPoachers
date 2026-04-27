@@ -178,7 +178,7 @@ public class ObjectManager : Singleton<ObjectManager>
         GameObject go;
         WorldObject obj;
 
-        if (kind == ObjectKind.WorldItem && typeId > 0)
+        if (kind == ObjectKind.ItemBox && typeId > 0)
         {
             ItemData data = ItemTable.Instance.Get(typeId);
             GameObject prefabGo = data != null ? data.LoadPrefab() : null;
@@ -192,7 +192,7 @@ public class ObjectManager : Singleton<ObjectManager>
                 obj.Initialize(kind, id, typeId);
                 return obj;
             }
-        }
+        } 
 
         if (_prefabs.TryGetValue(kind, out WorldObject prefab) && prefab != null)
         {
