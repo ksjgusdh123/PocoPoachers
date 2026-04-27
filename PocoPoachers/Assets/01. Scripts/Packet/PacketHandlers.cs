@@ -130,9 +130,10 @@ public static class PacketHandlers
     public static void OnS_ChangeItemBox(FlatPacket root)
     {
         var pkt = root.TypeAsS_ChangeItemBox();
+        bool isGain= pkt.IsGain;
         int boxUid = pkt.BoxUid;
         int typeId = pkt.TypeId;
-        int amount = pkt.RemovedAmount;
+        int amount = pkt.Amount;
 
         MainThreadDispatcher.Enqueue(() =>
         {
@@ -140,7 +141,8 @@ public static class PacketHandlers
             if (data == null) return;
 
             if (!ObjectManager.Instance.TryGet(ObjectKind.ItemBox, boxUid, out var worldObj)) return;
-            worldObj.GetComponent<Inventory>()?.RemoveItem(data, amount);
+            if(isGain) worldObj.GetComponent<Inventory>()?.AddItem(data, amount);
+            else worldObj.GetComponent<Inventory>()?.RemoveItem(data, amount);
         });
     }
 

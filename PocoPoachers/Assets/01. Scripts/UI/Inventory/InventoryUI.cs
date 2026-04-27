@@ -25,7 +25,7 @@ public class InventoryUI : MonoBehaviour
             Refresh();
         }
 
-        if(_sortButton) _sortButton.onClick.AddListener(OnClickSort);
+        if (_sortButton) _sortButton.onClick.AddListener(OnClickSort);
 
         var manager = SlotInteractionManager.GetInstance();
         manager.OnHoverEnter += _descriptionUI.ShowDescription;
@@ -41,12 +41,23 @@ public class InventoryUI : MonoBehaviour
         if (!_slotSet.Contains(targetSlot)) return;
 
         var target = _inventory._interactionInventory;
-        if (target == null) return;
+        if (target == null || !target.CanAddItem(targetSlot.SlotItemData)) return;
 
-        int boxUid = _inventory.GetComponent<WorldObject>().Id;
+        int boxUid;
+        bool isPlayer;
+        if (_inventory.TryGetComponent<WorldObject>(out var worldObject))
+        {
+             boxUid = worldObject.Id;
+            isPlayer = false;
+        }
+        else
+        {
+            boxUid = target.GetComponent<WorldObject>().Id;
+            isPlayer = true;
+        }
         int itemTypeId = targetSlot.SlotItemData.Id;
         GameManager.GetInstance().SaveInventory(_inventory, target);
-        PacketSender.CGainItemReq(boxUid, itemTypeId, targetSlot.SavedAmountItem);
+        PacketSender.CGainItemReq(boxUid, itemTypeId, targetSlot.SavedAmountItem, isPlayer);
 
         //if (target.AddItem(targetSlot.SlotItemData, targetSlot.SavedAmountItem))
         //    targetSlot.ClearSlot();

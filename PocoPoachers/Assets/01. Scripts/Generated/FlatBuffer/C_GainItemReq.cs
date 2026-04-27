@@ -16,25 +16,29 @@ public struct C_GainItemReq : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public C_GainItemReq __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int BoxUid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int ItemUid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int Amount { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public bool IsPlayer { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public int BoxUid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int ItemUid { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int Amount { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<C_GainItemReq> CreateC_GainItemReq(FlatBufferBuilder builder,
+      bool is_player = false,
       int box_uid = 0,
       int item_uid = 0,
       int amount = 0) {
-    builder.StartTable(3);
+    builder.StartTable(4);
     C_GainItemReq.AddAmount(builder, amount);
     C_GainItemReq.AddItemUid(builder, item_uid);
     C_GainItemReq.AddBoxUid(builder, box_uid);
+    C_GainItemReq.AddIsPlayer(builder, is_player);
     return C_GainItemReq.EndC_GainItemReq(builder);
   }
 
-  public static void StartC_GainItemReq(FlatBufferBuilder builder) { builder.StartTable(3); }
-  public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(0, boxUid, 0); }
-  public static void AddItemUid(FlatBufferBuilder builder, int itemUid) { builder.AddInt(1, itemUid, 0); }
-  public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(2, amount, 0); }
+  public static void StartC_GainItemReq(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void AddIsPlayer(FlatBufferBuilder builder, bool isPlayer) { builder.AddBool(0, isPlayer, false); }
+  public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(1, boxUid, 0); }
+  public static void AddItemUid(FlatBufferBuilder builder, int itemUid) { builder.AddInt(2, itemUid, 0); }
+  public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(3, amount, 0); }
   public static Offset<C_GainItemReq> EndC_GainItemReq(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<C_GainItemReq>(o);
@@ -47,9 +51,10 @@ static public class C_GainItemReqVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*BoxUid*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*ItemUid*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Amount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*IsPlayer*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 6 /*BoxUid*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*ItemUid*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*Amount*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

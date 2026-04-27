@@ -29,6 +29,7 @@ table C_OpenBox
 
 table C_GainItemReq
 {
+    is_player: bool;
     box_uid: int;
     item_uid: int;
     amount: int;
@@ -36,9 +37,10 @@ table C_GainItemReq
 
 table S_ChangeItemBox
 {
+    is_gain: bool;
     box_uid: int;
     type_id: int;
-    removed_amount: int;
+    amount: int;
 }
 
 table S_SuccessGainItemNtf

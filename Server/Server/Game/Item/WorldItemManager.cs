@@ -59,6 +59,19 @@ public sealed class WorldItemManager
         }
     }
 
+    public bool AddItemToBox(int boxUid, int itemTypeId, int amount)
+    {
+        lock (_lock)
+        {
+            if (!_items.TryGetValue(boxUid, out var entry))
+                return false;
+
+            for (int i = 0; i < amount; i++)
+                entry.ItemIds.Add(itemTypeId);
+        }
+        return true;
+    }
+
     public bool TryTakeItem(int boxUid, int itemTypeId, int amount, out int takenAmount)
     {
         lock (_lock)

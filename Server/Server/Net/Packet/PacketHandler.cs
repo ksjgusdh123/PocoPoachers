@@ -111,19 +111,34 @@ public class PacketHandler
             LOG_W("RemoveItemReq from unauthenticated session, ignoring");
             return;
         }
+        bool isPlayer = req.IsPlayer;
         int boxUid = req.BoxUid;
         int itemTypeId = req.ItemUid;
         int amount = req.Amount;
 
-        if (!WorldItemManager.Instance.TryTakeItem(boxUid, itemTypeId, amount, out int taken))
+        if (isPlayer)
         {
-            LOG_W($"GainItemReq 실패: boxUid={boxUid}, itemTypeId={itemTypeId}, amount={amount}");
-            return;
+            if (!session.Player.Inventory.RemoveItem(itemTypeId, amount))
+            {
+                LOG_W($"GainItemReq 실패(플레이어→박스): boxUid={boxUid}, itemTypeId={itemTypeId}, amount={amount}");
+                return;
+            }
+            WorldItemManager.Instance.AddItemToBox(boxUid, itemTypeId, amount);
+            LOG($"PlayerToBox: PlayerId={session.PlayerId}, boxUid={boxUid}, itemTypeId={itemTypeId}, amount={amount}");
+        }
+        else
+        {
+            if (!WorldItemManager.Instance.TryTakeItem(boxUid, itemTypeId, amount, out int taken))
+            {
+                LOG_W($"GainItemReq 실패(박스→플레이어): boxUid={boxUid}, itemTypeId={itemTypeId}, amount={amount}");
+                return;
+            }
+            amount = taken;
+            session.Player.Inventory.AddItem(itemTypeId, amount);
+            LOG($"BoxToPlayer: PlayerId={session.PlayerId}, boxUid={boxUid}, itemTypeId={itemTypeId}, taken={amount}");
         }
 
-        session.Player.Inventory.AddItem(itemTypeId, taken);
-        LOG($"GainItem: PlayerId={session.PlayerId}, boxUid={boxUid}, itemTypeId={itemTypeId}, taken={taken}");
-        PacketSender.SChangeItemBox(session, boxUid, itemTypeId, taken);
-        PacketSender.SSuccessGainItemNtf(session, boxUid, itemTypeId, taken);
+        PacketSender.SChangeItemBox(session, isPlayer, boxUid, itemTypeId, amount);
+        PacketSender.SSuccessGainItemNtf(session, boxUid, itemTypeId, amount);
     }
 }

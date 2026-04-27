@@ -70,10 +70,10 @@ public static class PacketSender
         PacketBuilder.Send(session, fb, PacketType.S_RemoveItemRes, bodyOff.Value);
     }
 
-    public static void SChangeItemBox(ClientSession session, int boxUid, int typeId, int removedAmount)
+    public static void SChangeItemBox(ClientSession session, bool isGain, int boxUid, int typeId, int removedAmount)
     {
         var fb = new FlatBufferBuilder(BufferSize);
-        var bodyOff = S_ChangeItemBox.CreateS_ChangeItemBox(fb, boxUid, typeId, removedAmount);
+        var bodyOff = S_ChangeItemBox.CreateS_ChangeItemBox(fb, isGain, boxUid, typeId, removedAmount);
         SessionManager.Instance.Broadcast(fb, PacketType.S_ChangeItemBox, bodyOff.Value, session);
     }
 

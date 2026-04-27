@@ -16,25 +16,29 @@ public struct S_ChangeItemBox : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public S_ChangeItemBox __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int BoxUid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int TypeId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int RemovedAmount { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public bool IsGain { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public int BoxUid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int TypeId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int Amount { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<S_ChangeItemBox> CreateS_ChangeItemBox(FlatBufferBuilder builder,
+      bool is_gain = false,
       int box_uid = 0,
       int type_id = 0,
-      int removed_amount = 0) {
-    builder.StartTable(3);
-    S_ChangeItemBox.AddRemovedAmount(builder, removed_amount);
+      int amount = 0) {
+    builder.StartTable(4);
+    S_ChangeItemBox.AddAmount(builder, amount);
     S_ChangeItemBox.AddTypeId(builder, type_id);
     S_ChangeItemBox.AddBoxUid(builder, box_uid);
+    S_ChangeItemBox.AddIsGain(builder, is_gain);
     return S_ChangeItemBox.EndS_ChangeItemBox(builder);
   }
 
-  public static void StartS_ChangeItemBox(FlatBufferBuilder builder) { builder.StartTable(3); }
-  public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(0, boxUid, 0); }
-  public static void AddTypeId(FlatBufferBuilder builder, int typeId) { builder.AddInt(1, typeId, 0); }
-  public static void AddRemovedAmount(FlatBufferBuilder builder, int removedAmount) { builder.AddInt(2, removedAmount, 0); }
+  public static void StartS_ChangeItemBox(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void AddIsGain(FlatBufferBuilder builder, bool isGain) { builder.AddBool(0, isGain, false); }
+  public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(1, boxUid, 0); }
+  public static void AddTypeId(FlatBufferBuilder builder, int typeId) { builder.AddInt(2, typeId, 0); }
+  public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(3, amount, 0); }
   public static Offset<S_ChangeItemBox> EndS_ChangeItemBox(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<S_ChangeItemBox>(o);
@@ -47,9 +51,10 @@ static public class S_ChangeItemBoxVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*BoxUid*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*TypeId*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*RemovedAmount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*IsGain*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 6 /*BoxUid*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*TypeId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*Amount*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
