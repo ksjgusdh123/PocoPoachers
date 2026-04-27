@@ -34,6 +34,13 @@ table C_GainItemReq
     amount: int;
 }
 
+table S_ChangeItemBox
+{
+    box_uid: int;
+    type_id: int;
+    removed_amount: int;
+}
+
 table S_SuccessGainItemNtf
 {
     uid: int;

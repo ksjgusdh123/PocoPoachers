@@ -127,6 +127,23 @@ public static class PacketHandlers
         });
     }
 
+    public static void OnS_ChangeItemBox(FlatPacket root)
+    {
+        var pkt = root.TypeAsS_ChangeItemBox();
+        int boxUid = pkt.BoxUid;
+        int typeId = pkt.TypeId;
+        int amount = pkt.RemovedAmount;
+
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            ItemData data = ItemTable.Instance.Get(typeId);
+            if (data == null) return;
+
+            if (!ObjectManager.Instance.TryGet(ObjectKind.ItemBox, boxUid, out var worldObj)) return;
+            worldObj.GetComponent<Inventory>()?.RemoveItem(data, amount);
+        });
+    }
+
     public static void OnS_SuccessGainItemNtf(FlatPacket root)
     {
         var pkt = root.TypeAsS_SuccessGainItemNtf();

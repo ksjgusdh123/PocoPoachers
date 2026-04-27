@@ -1,6 +1,7 @@
 using Google.FlatBuffers;
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 
 namespace Server;
 
@@ -67,6 +68,13 @@ public static class PacketSender
         var fb = new FlatBufferBuilder(BufferSize);
         var bodyOff = S_RemoveItemRes.CreateS_RemoveItemRes(fb, success, itemId, amount);
         PacketBuilder.Send(session, fb, PacketType.S_RemoveItemRes, bodyOff.Value);
+    }
+
+    public static void SChangeItemBox(ClientSession session, int boxUid, int typeId, int removedAmount)
+    {
+        var fb = new FlatBufferBuilder(BufferSize);
+        var bodyOff = S_ChangeItemBox.CreateS_ChangeItemBox(fb, boxUid, typeId, removedAmount);
+        SessionManager.Instance.Broadcast(fb, PacketType.S_ChangeItemBox, bodyOff.Value, session);
     }
 
     public static void SSuccessGainItemNtf(ClientSession session, int uid, int typeId, int amount)

@@ -33,6 +33,7 @@ public struct FlatPacket : IFlatbufferObject
   public S_SpawnItemBoxNtf TypeAsS_SpawnItemBoxNtf() { return Type<S_SpawnItemBoxNtf>().Value; }
   public C_OpenBox TypeAsC_OpenBox() { return Type<C_OpenBox>().Value; }
   public C_GainItemReq TypeAsC_GainItemReq() { return Type<C_GainItemReq>().Value; }
+  public S_ChangeItemBox TypeAsS_ChangeItemBox() { return Type<S_ChangeItemBox>().Value; }
   public S_SuccessGainItemNtf TypeAsS_SuccessGainItemNtf() { return Type<S_SuccessGainItemNtf>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,

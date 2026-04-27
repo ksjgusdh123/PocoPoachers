@@ -19,7 +19,8 @@ public enum PacketType : byte
   S_SpawnItemBoxNtf = 12,
   C_OpenBox = 13,
   C_GainItemReq = 14,
-  S_SuccessGainItemNtf = 15,
+  S_ChangeItemBox = 15,
+  S_SuccessGainItemNtf = 16,
 };
 
 
@@ -72,6 +73,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.C_GainItemReq:
         result = C_GainItemReqVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_ChangeItemBox:
+        result = S_ChangeItemBoxVerify.Verify(verifier, tablePos);
         break;
       case PacketType.S_SuccessGainItemNtf:
         result = S_SuccessGainItemNtfVerify.Verify(verifier, tablePos);

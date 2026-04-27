@@ -123,6 +123,7 @@ public class PacketHandler
 
         session.Player.Inventory.AddItem(itemTypeId, taken);
         LOG($"GainItem: PlayerId={session.PlayerId}, boxUid={boxUid}, itemTypeId={itemTypeId}, taken={taken}");
+        PacketSender.SChangeItemBox(session, boxUid, itemTypeId, taken);
         PacketSender.SSuccessGainItemNtf(session, boxUid, itemTypeId, taken);
     }
 }

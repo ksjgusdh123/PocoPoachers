@@ -22,6 +22,7 @@ public static class PacketManager
         _onRecv.Add(PacketType.S_AddItemRes,    PacketHandlers.OnS_AddItemRes);
         _onRecv.Add(PacketType.S_RemoveItemRes, PacketHandlers.OnS_RemoveItemRes);
         _onRecv.Add(PacketType.S_InventoryNtf,  PacketHandlers.OnS_InventoryNtf);
+        _onRecv.Add(PacketType.S_ChangeItemBox,  PacketHandlers.OnS_ChangeItemBox);
         _onRecv.Add(PacketType.S_SuccessGainItemNtf,  PacketHandlers.OnS_SuccessGainItemNtf);
     }
 
