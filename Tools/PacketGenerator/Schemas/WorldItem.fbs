@@ -1,12 +1,5 @@
 include "Common.fbs";
 
-table S_WorldItemSpawnNtf
-{
-    uid: int;
-    type_id: int;
-    pos: Vec3;
-    rotation: float;
-}
 
 table S_WorldItemDespawnNtf
 {
@@ -20,11 +13,6 @@ table S_SpawnItemBoxNtf
     pos: Vec3;
     rotation: float;
     item_ids: [int];
-}
-
-table C_OpenBox
-{
-
 }
 
 table C_GainItemReq

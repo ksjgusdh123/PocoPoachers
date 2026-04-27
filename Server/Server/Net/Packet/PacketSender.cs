@@ -1,7 +1,5 @@
 using Google.FlatBuffers;
-using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
 
 namespace Server;
 
@@ -56,20 +54,6 @@ public static class PacketSender
         PacketBuilder.Broadcast(SessionManager.Instance.Snapshot(), fb, PacketType.S_SpawnItemBoxNtf, bodyOff.Value);
     }
 
-    public static void SAddItemRes(ClientSession session, bool success, int itemId, int amount)
-    {
-        var fb = new FlatBufferBuilder(BufferSize);
-        var bodyOff = S_AddItemRes.CreateS_AddItemRes(fb, success, itemId, amount);
-        PacketBuilder.Send(session, fb, PacketType.S_AddItemRes, bodyOff.Value);
-    }
-
-    public static void SRemoveItemRes(ClientSession session, bool success, int itemId, int amount)
-    {
-        var fb = new FlatBufferBuilder(BufferSize);
-        var bodyOff = S_RemoveItemRes.CreateS_RemoveItemRes(fb, success, itemId, amount);
-        PacketBuilder.Send(session, fb, PacketType.S_RemoveItemRes, bodyOff.Value);
-    }
-
     public static void SChangeItemBox(ClientSession session, bool isGain, int boxUid, int typeId, int removedAmount)
     {
         var fb = new FlatBufferBuilder(BufferSize);
@@ -84,20 +68,6 @@ public static class PacketSender
         PacketBuilder.Send(session, fb, PacketType.S_SuccessGainItemNtf, bodyOff.Value);
     }
 
-    public static void SWorldItemSpawnNtf(ClientSession session, int uid, int typeId, float x, float y, float z, float rotation)
-    {
-        var fb = new FlatBufferBuilder(BufferSize);
-        var bodyOff = BuildWorldItemSpawn(fb, uid, typeId, x, y, z, rotation);
-        PacketBuilder.Send(session, fb, PacketType.S_WorldItemSpawnNtf, bodyOff.Value);
-    }
-
-    public static void SWorldItemSpawnNtfBroadcast(int uid, int typeId, float x, float y, float z, float rotation)
-    {
-        var fb = new FlatBufferBuilder(BufferSize);
-        var bodyOff = BuildWorldItemSpawn(fb, uid, typeId, x, y, z, rotation);
-        PacketBuilder.Broadcast(SessionManager.Instance.Snapshot(), fb, PacketType.S_WorldItemSpawnNtf, bodyOff.Value);
-    }
-
     public static void SWorldItemDespawnNtfBroadcast(int uid)
     {
         var fb = new FlatBufferBuilder(BufferSize);
@@ -105,13 +75,4 @@ public static class PacketSender
         PacketBuilder.Broadcast(SessionManager.Instance.Snapshot(), fb, PacketType.S_WorldItemDespawnNtf, bodyOff.Value);
     }
 
-    static Offset<S_WorldItemSpawnNtf> BuildWorldItemSpawn(FlatBufferBuilder fb, int uid, int typeId, float x, float y, float z, float rotation)
-    {
-        S_WorldItemSpawnNtf.StartS_WorldItemSpawnNtf(fb);
-        S_WorldItemSpawnNtf.AddUid(fb, uid);
-        S_WorldItemSpawnNtf.AddTypeId(fb, typeId);
-        S_WorldItemSpawnNtf.AddPos(fb, Vec3.CreateVec3(fb, x, y, z));
-        S_WorldItemSpawnNtf.AddRotation(fb, rotation);
-        return S_WorldItemSpawnNtf.EndS_WorldItemSpawnNtf(fb);
-    }
 }

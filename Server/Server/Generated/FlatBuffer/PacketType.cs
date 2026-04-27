@@ -9,18 +9,12 @@ public enum PacketType : byte
   S_LoginRes = 2,
   C_MoveReq = 3,
   S_MoveNtf = 4,
-  C_AddItemReq = 5,
-  S_AddItemRes = 6,
-  C_RemoveItemReq = 7,
-  S_RemoveItemRes = 8,
-  S_InventoryNtf = 9,
-  S_WorldItemSpawnNtf = 10,
-  S_WorldItemDespawnNtf = 11,
-  S_SpawnItemBoxNtf = 12,
-  C_OpenBox = 13,
-  C_GainItemReq = 14,
-  S_ChangeItemBox = 15,
-  S_SuccessGainItemNtf = 16,
+  S_InventoryNtf = 5,
+  S_WorldItemDespawnNtf = 6,
+  S_SpawnItemBoxNtf = 7,
+  C_GainItemReq = 8,
+  S_ChangeItemBox = 9,
+  S_SuccessGainItemNtf = 10,
 };
 
 
@@ -44,32 +38,14 @@ static public class PacketTypeVerify
       case PacketType.S_MoveNtf:
         result = S_MoveNtfVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.C_AddItemReq:
-        result = C_AddItemReqVerify.Verify(verifier, tablePos);
-        break;
-      case PacketType.S_AddItemRes:
-        result = S_AddItemResVerify.Verify(verifier, tablePos);
-        break;
-      case PacketType.C_RemoveItemReq:
-        result = C_RemoveItemReqVerify.Verify(verifier, tablePos);
-        break;
-      case PacketType.S_RemoveItemRes:
-        result = S_RemoveItemResVerify.Verify(verifier, tablePos);
-        break;
       case PacketType.S_InventoryNtf:
         result = S_InventoryNtfVerify.Verify(verifier, tablePos);
-        break;
-      case PacketType.S_WorldItemSpawnNtf:
-        result = S_WorldItemSpawnNtfVerify.Verify(verifier, tablePos);
         break;
       case PacketType.S_WorldItemDespawnNtf:
         result = S_WorldItemDespawnNtfVerify.Verify(verifier, tablePos);
         break;
       case PacketType.S_SpawnItemBoxNtf:
         result = S_SpawnItemBoxNtfVerify.Verify(verifier, tablePos);
-        break;
-      case PacketType.C_OpenBox:
-        result = C_OpenBoxVerify.Verify(verifier, tablePos);
         break;
       case PacketType.C_GainItemReq:
         result = C_GainItemReqVerify.Verify(verifier, tablePos);

@@ -63,47 +63,6 @@ public class PacketHandler
         PacketSender.SMoveNtfBroadcast(session, session.PlayerId, x, y, z, rotation, moveType);
     }
 
-    public void OnC_AddItemReq(ClientSession session, C_AddItemReq req)
-    {
-        if (session.Player == null)
-        {
-            LOG_W("AddItemReq from unauthenticated session, ignoring");
-            return;
-        }
-
-        int itemId = req.ItemId;
-        int amount = req.Amount;
-        bool success = session.Player.Inventory.AddItem(itemId, amount);
-        LOG($"OnC_AddItemReq: PlayerId={session.PlayerId}, ItemId={itemId}, Amount={amount}, success={success}");
-
-        PacketSender.SAddItemRes(session, success, itemId, success ? amount : 0);
-    }
-
-    public void OnC_RemoveItemReq(ClientSession session, C_RemoveItemReq req)
-    {
-        if (session.Player == null)
-        {
-            LOG_W("RemoveItemReq from unauthenticated session, ignoring");
-            return;
-        }
-
-        int itemId = req.ItemId;
-        int amount = req.Amount;
-        bool success = session.Player.Inventory.RemoveItem(itemId, amount);
-        LOG($"OnC_RemoveItemReq: PlayerId={session.PlayerId}, ItemId={itemId}, Amount={amount}, success={success}");
-
-        PacketSender.SRemoveItemRes(session, success, itemId, success ? amount : 0);
-    }
-
-    public void OnC_OpenBox(ClientSession session, C_OpenBox req)
-    {
-        if (session.Player == null)
-        {
-            LOG_W("RemoveItemReq from unauthenticated session, ignoring");
-            return;
-        }
-    }
-
     public void OnC_GainItemReq(ClientSession session, C_GainItemReq req)
     {
         if (session.Player == null)

@@ -34,23 +34,6 @@ public static class PacketHandlers
         ObjectManager.Instance?.QueueMove(ObjectKind.Player, playerId, pos, rotation, moveType);
     }
 
-    public static void OnS_WorldItemSpawnNtf(FlatPacket root)
-    {
-        var pkt = root.TypeAsS_WorldItemSpawnNtf();
-        int uid = pkt.Uid;
-        int typeId = pkt.TypeId;
-        float x = pkt.Pos?.X ?? 0f;
-        float y = pkt.Pos?.Y ?? 0f;
-        float z = pkt.Pos?.Z ?? 0f;
-        Vector3 pos = new Vector3(x, y, z);
-        float rotation = pkt.Rotation;
-
-        MainThreadDispatcher.Enqueue(() =>
-        {
-            ObjectManager.Instance?.QueueWorldItemSpawn(uid, typeId, pos, rotation);
-        });
-    }
-
     public static void OnS_WorldItemDespawnNtf(FlatPacket root)
     {
         var pkt = root.TypeAsS_WorldItemDespawnNtf();
@@ -59,53 +42,6 @@ public static class PacketHandlers
         MainThreadDispatcher.Enqueue(() =>
         {
             ObjectManager.Instance?.Despawn(ObjectKind.WorldItem, uid);
-        });
-    }
-
-    public static void OnS_SpawnItemBoxNtf(FlatPacket root)
-    {
-        var pkt = root.TypeAsS_SpawnItemBoxNtf();
-        int uid = pkt.Uid;
-        int typeId = pkt.TypeId;
-        float x = pkt.Pos?.X ?? 0f;
-        float y = pkt.Pos?.Y ?? 0f;
-        float z = pkt.Pos?.Z ?? 0f;
-        Vector3 pos = new Vector3(x, y, z);
-        float rotation = pkt.Rotation;
-        int[] item_ids = pkt.GetItemIdsArray();
-
-        MainThreadDispatcher.Enqueue(() =>
-        {
-            var box = ObjectManager.Instance?.SpawnItemBox(uid, typeId, pos, rotation);
-            box?.Initialize(item_ids);
-        });
-    }
-
-    public static void OnS_AddItemRes(FlatPacket root)
-    {
-        var pkt = root.TypeAsS_AddItemRes();
-        bool success = pkt.Success;
-        int itemId = pkt.ItemId;
-        int amount = pkt.Amount;
-
-        MainThreadDispatcher.Enqueue(() =>
-        {
-            // TODO: InventoryManager에 결과 전달 (itemId로 ItemData 조회 후 AddItem)
-            Debug.Log($"[Inventory] AddItem {(success ? "성공" : "실패")}: id={itemId} x{amount}");
-        });
-    }
-
-    public static void OnS_RemoveItemRes(FlatPacket root)
-    {
-        var pkt = root.TypeAsS_RemoveItemRes();
-        bool success = pkt.Success;
-        int itemId = pkt.ItemId;
-        int amount = pkt.Amount;
-
-        MainThreadDispatcher.Enqueue(() =>
-        {
-            // TODO: InventoryManager에 결과 전달
-            Debug.Log($"[Inventory] RemoveItem {(success ? "성공" : "실패")}: id={itemId} x{amount}");
         });
     }
 
@@ -124,6 +60,26 @@ public static class PacketHandlers
         {
             // TODO: itemId → ItemData 변환 후 Inventory에 적용
             Debug.Log($"[Inventory] 초기 로드 완료: {items.Count}종");
+        });
+    }
+
+
+    public static void OnS_SpawnItemBoxNtf(FlatPacket root)
+    {
+        var pkt = root.TypeAsS_SpawnItemBoxNtf();
+        int uid = pkt.Uid;
+        int typeId = pkt.TypeId;
+        float x = pkt.Pos?.X ?? 0f;
+        float y = pkt.Pos?.Y ?? 0f;
+        float z = pkt.Pos?.Z ?? 0f;
+        Vector3 pos = new Vector3(x, y, z);
+        float rotation = pkt.Rotation;
+        int[] item_ids = pkt.GetItemIdsArray();
+
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            var box = ObjectManager.Instance?.SpawnItemBox(uid, typeId, pos, rotation);
+            box?.Initialize(item_ids);
         });
     }
 
