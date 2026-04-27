@@ -52,11 +52,11 @@ public class PlayerMovement : MonoBehaviour
       Vector3 targetVelocity = moveDir * targetSpeed;
 
       // 방향 포함 전체 벡터를 부드럽게 보간 → 반대 방향 전환 시 튀지 않음
-      _currentVelocity = Vector3.MoveTowards(_currentVelocity, targetVelocity, _acceleration * Time.deltaTime);
+      _currentVelocity = Vector3.MoveTowards(_currentVelocity, targetVelocity, _acceleration *Time.deltaTime);
 
       Vector3 localVelocity = transform.InverseTransformDirection(_currentVelocity);
-      _animator.SetFloat("VelocityX", localVelocity.x / _sprintSpeed, 0.1f, Time.deltaTime);
-      _animator.SetFloat("VelocityZ", localVelocity.z / _sprintSpeed, 0.1f, Time.deltaTime);
+      _animator.SetFloat("VelocityX", localVelocity.x / _moveSpeed, 0.1f, Time.deltaTime);
+      _animator.SetFloat("VelocityZ", localVelocity.z / _moveSpeed, 0.1f, Time.deltaTime);
 
       _characterController.Move(_currentVelocity * Time.deltaTime);
     }
