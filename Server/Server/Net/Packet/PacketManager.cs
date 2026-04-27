@@ -19,6 +19,8 @@ public class PacketManager
         _onRecv.Add(PacketType.C_MoveReq,       (session, root) => _handler.OnC_MoveReq(session, root.TypeAsC_MoveReq()));
         _onRecv.Add(PacketType.C_AddItemReq,    (session, root) => _handler.OnC_AddItemReq(session, root.TypeAsC_AddItemReq()));
         _onRecv.Add(PacketType.C_RemoveItemReq, (session, root) => _handler.OnC_RemoveItemReq(session, root.TypeAsC_RemoveItemReq()));
+        _onRecv.Add(PacketType.C_OpenBox,       (session, root) => _handler.OnC_OpenBox(session, root.TypeAsC_OpenBox()));
+        _onRecv.Add(PacketType.C_GainItemReq,   (session, root) => _handler.OnC_GainItemReq(session, root.TypeAsC_GainItemReq()));
     }
 
     public static void HandlePacket(ClientSession session, ArraySegment<byte> buffer)

@@ -59,10 +59,21 @@ public static class PacketSender
         PacketBuilder.Send(session, _builder, PacketType.C_OpenBox, bodyOff.Value);
     }
 
+    public static void CGainItemReq(int boxId, int itemId, int amount = 1)
+    {
+        if (!TryGetSession(out Session session)) return;
+        _builder.Clear();
+
+        var bodyOff = C_GainItemReq.CreateC_GainItemReq(_builder, boxId ,itemId, amount);
+        PacketBuilder.Send(session, _builder, PacketType.C_GainItemReq, bodyOff.Value);
+    }
+
+
     static bool TryGetSession(out Session session)
     {
         session = NetworkManager.Instance?.Session;
         if (session == null) return false;
         return true;
     }
+
 }

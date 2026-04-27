@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Server;
@@ -14,7 +16,7 @@ public sealed class WorldItemManager
     {
         public int TypeId;
         public float X, Y, Z, Rotation;
-        public int[] ItemIds;
+        public List<int> ItemIds;
     }
 
     public void TempInit()
@@ -35,10 +37,10 @@ public sealed class WorldItemManager
         lock (_lock)
         {
             uid = _nextUid++;
-            _items[uid] = new Entry { TypeId = typeId, X = x, Y = y, Z = z, Rotation = rot, ItemIds = itemIds };
+            _items[uid] = new Entry { TypeId = typeId, X = x, Y = y, Z = z, Rotation = rot, ItemIds = new List<int>(itemIds) };
         }
 
-        PacketSender.SSpawnItemBoxNtfBroadcast(uid, typeId, x, y, z, rot, itemIds);
+        PacketSender.SSpawnItemBoxNtfBroadcast(uid, typeId, x, y, z, rot, itemIds.ToArray());
         LOG($"ItemBox 스폰: uid={uid}, pos=({x},{y},{z}), items=[{string.Join(",", itemIds)}]");
     }
 
@@ -53,7 +55,26 @@ public sealed class WorldItemManager
         foreach (var kv in copy)
         {
             Entry e = kv.Value;
-            PacketSender.SSpawnItemBoxNtfBroadcast(kv.Key, e.TypeId, e.X, e.Y, e.Z, e.Rotation, e.ItemIds);
+            PacketSender.SSpawnItemBoxNtfBroadcast(kv.Key, e.TypeId, e.X, e.Y, e.Z, e.Rotation, e.ItemIds.ToArray());
+        }
+    }
+
+    public bool TryTakeItem(int boxUid, int itemTypeId, int amount, out int takenAmount)
+    {
+        lock (_lock)
+        {
+            if (!_items.TryGetValue(boxUid, out var entry))
+            {
+                takenAmount = 0;
+                return false;
+            }
+
+            int count = entry.ItemIds.Count(id => id == itemTypeId);
+            takenAmount = Math.Min(count, amount);
+            for (int i = 0; i < takenAmount; i++)
+                entry.ItemIds.Remove(itemTypeId);
+
+            return takenAmount > 0;
         }
     }
 

@@ -3,7 +3,12 @@ using UnityEngine.UI;
 
 public class GameManager : Singleton<GameManager>
 {
-    private void Start()
+    public Inventory GainedInventory { get; private set; }
+    public Inventory GiveInventory { get; private set; }
+
+    public void SaveInventory(Inventory give, Inventory gained)
     {
+        GiveInventory = give;
+        GainedInventory = gained;
     }
 }

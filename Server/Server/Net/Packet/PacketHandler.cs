@@ -102,7 +102,27 @@ public class PacketHandler
             LOG_W("RemoveItemReq from unauthenticated session, ignoring");
             return;
         }
+    }
 
+    public void OnC_GainItemReq(ClientSession session, C_GainItemReq req)
+    {
+        if (session.Player == null)
+        {
+            LOG_W("RemoveItemReq from unauthenticated session, ignoring");
+            return;
+        }
+        int boxUid = req.BoxUid;
+        int itemTypeId = req.ItemUid;
+        int amount = req.Amount;
 
+        if (!WorldItemManager.Instance.TryTakeItem(boxUid, itemTypeId, amount, out int taken))
+        {
+            LOG_W($"GainItemReq 실패: boxUid={boxUid}, itemTypeId={itemTypeId}, amount={amount}");
+            return;
+        }
+
+        session.Player.Inventory.AddItem(itemTypeId, taken);
+        LOG($"GainItem: PlayerId={session.PlayerId}, boxUid={boxUid}, itemTypeId={itemTypeId}, taken={taken}");
+        PacketSender.SSuccessGainItemNtf(session, boxUid, itemTypeId, taken);
     }
 }

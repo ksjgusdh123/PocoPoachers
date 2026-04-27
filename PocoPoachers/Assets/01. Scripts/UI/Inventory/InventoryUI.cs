@@ -43,9 +43,13 @@ public class InventoryUI : MonoBehaviour
         var target = _inventory._interactionInventory;
         if (target == null) return;
 
+        int boxUid = _inventory.GetComponent<WorldObject>().Id;
+        int itemTypeId = targetSlot.SlotItemData.Id;
+        GameManager.GetInstance().SaveInventory(_inventory, target);
+        PacketSender.CGainItemReq(boxUid, itemTypeId, targetSlot.SavedAmountItem);
 
-        if (target.AddItem(targetSlot.SlotItemData, targetSlot.SavedAmountItem))
-            targetSlot.ClearSlot();
+        //if (target.AddItem(targetSlot.SlotItemData, targetSlot.SavedAmountItem))
+        //    targetSlot.ClearSlot();
     }
 
     public void Bind(Inventory inventory)

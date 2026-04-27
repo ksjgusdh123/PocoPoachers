@@ -26,3 +26,17 @@ table C_OpenBox
 {
 
 }
+
+table C_GainItemReq
+{
+    box_uid: int;
+    item_uid: int;
+    amount: int;
+}
+
+table S_SuccessGainItemNtf
+{
+    uid: int;
+    type_id: int;
+    amount: int;
+}

@@ -69,6 +69,13 @@ public static class PacketSender
         PacketBuilder.Send(session, fb, PacketType.S_RemoveItemRes, bodyOff.Value);
     }
 
+    public static void SSuccessGainItemNtf(ClientSession session, int uid, int typeId, int amount)
+    {
+        var fb = new FlatBufferBuilder(BufferSize);
+        var bodyOff = S_SuccessGainItemNtf.CreateS_SuccessGainItemNtf(fb, uid, typeId, amount);
+        PacketBuilder.Send(session, fb, PacketType.S_SuccessGainItemNtf, bodyOff.Value);
+    }
+
     public static void SWorldItemSpawnNtf(ClientSession session, int uid, int typeId, float x, float y, float z, float rotation)
     {
         var fb = new FlatBufferBuilder(BufferSize);

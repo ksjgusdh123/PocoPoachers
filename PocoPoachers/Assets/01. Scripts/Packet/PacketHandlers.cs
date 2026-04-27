@@ -127,4 +127,17 @@ public static class PacketHandlers
         });
     }
 
+    public static void OnS_SuccessGainItemNtf(FlatPacket root)
+    {
+        var pkt = root.TypeAsS_SuccessGainItemNtf();
+        var item = ItemTable.Instance.Get(pkt.TypeId);
+        int amount = pkt.Amount;
+
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            GameManager.GetInstance().GainedInventory.AddItem(item, amount);
+            GameManager.GetInstance().GiveInventory.RemoveItem(item, amount);
+        });
+    }
+
 }
