@@ -57,6 +57,7 @@ public class PlayerMovement : MonoBehaviour
       Vector3 localVelocity = transform.InverseTransformDirection(_currentVelocity);
       _animator.SetFloat("VelocityX", localVelocity.x / _moveSpeed, 0.1f, Time.deltaTime);
       _animator.SetFloat("VelocityZ", localVelocity.z / _moveSpeed, 0.1f, Time.deltaTime);
+      _animator.SetBool("IsSprinting", _inputHandler.IsSprintPressed && moveDir != Vector3.zero);
 
       _characterController.Move(_currentVelocity * Time.deltaTime);
     }
