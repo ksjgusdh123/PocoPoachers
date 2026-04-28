@@ -1,10 +1,9 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+public class ItemSlotUI : MonoBehaviour
 {
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _nameText;
@@ -21,39 +20,6 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     private void Start()
     {
         _inventoryUI = GetComponentInParent<InventoryUI>();
-    }
-
-    public void OnPointerEnter(PointerEventData eventData) => SlotInteractionManager.GetInstance().SetHovered(this);
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        var manager = SlotInteractionManager.GetInstance();
-        manager.ClearHovered(this);
-        if (manager.PendingSlot == this)
-        {
-            manager.ResetPending();
-            DragIcon.Instance.Hide();
-        }
-    }
-
-    public void OnPointerClick(PointerEventData eventData)
-    {
-        if (eventData.button != PointerEventData.InputButton.Right) return;
-        if (!IsSettedItem) return;
-
-        var keyboard = Keyboard.current;
-        var manager = SlotInteractionManager.GetInstance();
-
-        if (keyboard.ctrlKey.isPressed)
-        {
-            manager.IncrementPending(this);
-            DragIcon.Instance.Show(SlotItemData.Icon, eventData.position, manager.PendingAmount);
-        }
-        else if (keyboard.shiftKey.isPressed)
-        {
-            manager.SetPending(this, SavedAmountItem / 2);
-            DragIcon.Instance.Show(SlotItemData.Icon, eventData.position, manager.PendingAmount);
-        }
     }
 
     public void SetSlot(ItemSlot slot)
