@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public abstract class GunBase : MonoBehaviour
 {
@@ -31,6 +32,20 @@ public abstract class GunBase : MonoBehaviour
     }
 
     protected abstract void Shoot();
+
+    private static readonly Plane GroundPlane = new Plane(Vector3.up, Vector3.zero);
+
+    protected Vector3 GetAimDirection()
+    {
+        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        if (!GroundPlane.Raycast(ray, out float distance))
+            return _muzzle.forward;
+
+        Vector3 hitPoint = ray.GetPoint(distance);
+        Vector3 direction = (hitPoint - _muzzle.position);
+        direction.y = 0f;
+        return direction.normalized;
+    }
 
     public void StartReload()
     {

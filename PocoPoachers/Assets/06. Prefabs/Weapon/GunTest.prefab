@@ -32,7 +32,8 @@ Transform:
   m_LocalPosition: {x: 0.338, y: 0.508, z: 0.279}
   m_LocalScale: {x: 0.3, y: 0.49999994, z: 0.29999998}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1162216925614759048}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: -90, z: -90}
 --- !u!33 &6936015971059027664
@@ -128,4 +129,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SingleGun
   _gunData: {fileID: 11400000, guid: eb68ebcfe986a03459c6c2884607ef5d, type: 2}
-  _muzzle: {fileID: 0}
+  _muzzle: {fileID: 1162216925614759048}
+--- !u!1 &3018362434536768202
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1162216925614759048}
+  m_Layer: 0
+  m_Name: Muzzle
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1162216925614759048
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3018362434536768202}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1.265, z: -0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3663055974269070062}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
