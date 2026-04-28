@@ -22,6 +22,7 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
 
     public Inventory InteractionInventory { get; private set; }
     public event Action OnDoubleClick;
+    //public event Action<ItemSlotUI, ItemSlotUI, ItemData, int> OnSlotDrop;
 
     protected override void Awake()
     {
@@ -31,6 +32,13 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     public void SetInteractionInventory(Inventory inventory)
     {
         InteractionInventory = inventory;
+    }
+
+    public void InvokeSlotDrop(ItemSlotUI source, ItemSlotUI target, ItemData StoTItem, ItemData TtoSItem,
+        int StoTMovedAmount, int TtoSMovedAmount)
+    {
+        source.InventoryUI.OnSlotDropped(source, target, StoTItem, StoTMovedAmount);
+        if (TtoSMovedAmount > 0) target.InventoryUI.OnSlotDropped(target, source, TtoSItem, TtoSMovedAmount);
     }
 
     public void InvokeDoubleClick()

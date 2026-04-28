@@ -6,7 +6,7 @@ public class GameManager : Singleton<GameManager>
     public Inventory GainedInventory { get; private set; }
     public Inventory GiveInventory { get; private set; }
 
-    public void SaveInventory(Inventory give, Inventory gained)
+    public void SaveChangeInventorys(Inventory give, Inventory gained)
     {
         GiveInventory = give;
         GainedInventory = gained;

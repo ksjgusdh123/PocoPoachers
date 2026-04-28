@@ -10,16 +10,16 @@ public class ItemSlotUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _amountText;
     [SerializeField] private GameObject _itemVisual;
 
+    public InventoryUI InventoryUI { get; private set; }
     public bool IsSettedItem { get; private set; }
     public ItemData SlotItemData => _settedSlot?.ItemData;
     public int SavedAmountItem => _settedSlot.Amount;
 
     private ItemSlot _settedSlot;
-    private InventoryUI _inventoryUI;
 
     private void Start()
     {
-        _inventoryUI = GetComponentInParent<InventoryUI>();
+        InventoryUI = GetComponentInParent<InventoryUI>();
     }
 
     public void SetSlot(ItemSlot slot)
@@ -70,6 +70,6 @@ public class ItemSlotUI : MonoBehaviour
 
     public void NotifyInventoryChanged()
     {
-        _inventoryUI?.Refresh();
+        InventoryUI?.Refresh();
     }
 }

@@ -29,20 +29,21 @@ public class InventoryDropHandler : BaseDropHandler
             int canFit = draggedData.MaxStack - prevAmount;
             if (canFit <= 0) return false;
 
-            int transferred = Mathf.Min(dragAmount, canFit);
-            int backToSource = remaining + (dragAmount - transferred);
+            //int transferred = Mathf.Min(dragAmount, canFit);
+            //int backToSource = remaining + (dragAmount - transferred);
 
-            _slotUI.SetSlotData(draggedData, prevAmount + transferred);
-            dragged.SetSlotData(backToSource > 0 ? draggedData : null, backToSource);
+            //_slotUI.SetSlotData(draggedData, prevAmount + transferred);
+            //dragged.SetSlotData(backToSource > 0 ? draggedData : null, backToSource);
         }
         else
         {
             // 다른 아이템이거나 빈 슬롯 → 교환
-            if (remaining > 0 && prevData != null) return false;
+            //if (remaining > 0 && prevData != null) return false;
 
-            _slotUI.SetSlotData(draggedData, dragAmount);
-            dragged.SetSlotData(remaining > 0 ? draggedData : prevData, remaining > 0 ? remaining : prevAmount);
+            //_slotUI.SetSlotData(draggedData, dragAmount);
+            //dragged.SetSlotData(remaining > 0 ? draggedData : prevData, remaining > 0 ? remaining : prevAmount);
         }
+        manager.InvokeSlotDrop(dragged, _slotUI, draggedData, prevData, dragAmount, prevAmount);
 
         _slotUI.NotifyInventoryChanged();
         dragged.NotifyInventoryChanged();
