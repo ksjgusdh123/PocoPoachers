@@ -18,7 +18,7 @@ public class SingleGun : GunBase
         {
             PacketSender.CShootReq(
                 _muzzle.position,
-                _muzzle.forward.normalized,
+                _muzzle.up.normalized,
                 _gunData.bulletSpeed,
                 _gunData.damage,
                 _gunData.range);
