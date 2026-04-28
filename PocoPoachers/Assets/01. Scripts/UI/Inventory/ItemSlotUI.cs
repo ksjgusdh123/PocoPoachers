@@ -1,9 +1,10 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
-public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
 {
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _nameText;
@@ -15,19 +16,55 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public int SavedAmountItem => _settedSlot.Amount;
 
     private ItemSlot _settedSlot;
+    private InventoryUI _inventoryUI;
+
+    private void Start()
+    {
+        _inventoryUI = GetComponentInParent<InventoryUI>();
+    }
 
     public void OnPointerEnter(PointerEventData eventData) => SlotInteractionManager.GetInstance().SetHovered(this);
-    public void OnPointerExit(PointerEventData eventData) => SlotInteractionManager.GetInstance().ClearHovered(this);
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        var manager = SlotInteractionManager.GetInstance();
+        manager.ClearHovered(this);
+        if (manager.PendingSlot == this)
+        {
+            manager.ResetPending();
+            DragIcon.Instance.Hide();
+        }
+    }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Right) return;
+        if (!IsSettedItem) return;
+
+        var keyboard = Keyboard.current;
+        var manager = SlotInteractionManager.GetInstance();
+
+        if (keyboard.ctrlKey.isPressed)
+        {
+            manager.IncrementPending(this);
+            DragIcon.Instance.Show(SlotItemData.Icon, eventData.position, manager.PendingAmount);
+        }
+        else if (keyboard.shiftKey.isPressed)
+        {
+            manager.SetPending(this, SavedAmountItem / 2);
+            DragIcon.Instance.Show(SlotItemData.Icon, eventData.position, manager.PendingAmount);
+        }
+    }
 
     public void SetSlot(ItemSlot slot)
     {
+        _settedSlot = slot;
+
         if (slot.IsEmpty)
         {
             SetEmpty();
             return;
         }
-
-        _settedSlot = slot;
         ItemData slotItemData = slot.ItemData;
 
         _icon.sprite = slotItemData.Icon;
@@ -55,6 +92,18 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
     public void EquipItem(ItemData prevData)
     {
         _settedSlot.ChangeByDragDrop(prevData);
-        SlotInteractionManager.GetInstance().ClearDragged();
+    }
+
+    public void SetSlotData(ItemData data, int amount)
+    {
+        if (data == null)
+            _settedSlot.Clear();
+        else
+            _settedSlot.Set(data, amount);
+    }
+
+    public void NotifyInventoryChanged()
+    {
+        _inventoryUI?.Refresh();
     }
 }

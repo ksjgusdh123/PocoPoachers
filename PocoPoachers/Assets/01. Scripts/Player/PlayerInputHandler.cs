@@ -54,6 +54,7 @@ public class PlayerInputHandler : MonoBehaviour
     void OnClick(InputValue value)
     {
         if (!value.isPressed) return;
+
         if (Time.time - _lastClickTime < DoubleClickThreshold)
             DoubleClick?.Invoke();
         _lastClickTime = Time.time;

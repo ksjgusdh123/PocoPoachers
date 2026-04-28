@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 // ItemSlotUI와 같은 오브젝트에 추가
 public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
@@ -16,9 +17,21 @@ public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
     public void OnBeginDrag(PointerEventData eventData)
     {
         if (_slotUI.IsSettedItem == false) return;
+        if (eventData.button != PointerEventData.InputButton.Left) return;
 
-        SlotInteractionManager.GetInstance().SetDragged(_slotUI, _canvasGroup);
-        DragIcon.Instance.Show(_slotUI.SlotItemData.Icon, eventData.position);
+            var manager = SlotInteractionManager.GetInstance();
+        int amount;
+
+        if (manager.PendingSlot == _slotUI && manager.PendingAmount > 0)
+        {
+            amount = manager.PendingAmount;
+            manager.ResetPending();
+        }
+        else
+            amount = _slotUI.SavedAmountItem;
+
+        manager.SetDragged(_slotUI, _canvasGroup, amount);
+        DragIcon.Instance.Show(_slotUI.SlotItemData.Icon, eventData.position, amount);
 
         if (_canvasGroup != null)
             _canvasGroup.alpha = 0.4f;
@@ -33,12 +46,9 @@ public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
 
     public void OnEndDrag(PointerEventData eventData)
     {
-        if (_slotUI.IsSettedItem == false) return;
-
-        SlotInteractionManager.GetInstance().ClearDragged();
-
         if (_canvasGroup != null)
             _canvasGroup.alpha = 1f;
+        SlotInteractionManager.GetInstance().ClearDragged();
     }
 
 }

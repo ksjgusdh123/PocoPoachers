@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class SlotInteractionManager : Singleton<SlotInteractionManager>
 {
@@ -13,9 +11,14 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
 
     // 드래그 상태
     public ItemSlotUI DraggedSlot { get; private set; }
+    public int DragAmount { get; private set; }
     public CanvasGroup DraggedCanvasGroup { get; private set; }
     public event Action<ItemSlotUI> OnDragBegin;
     public event Action OnDragEnd;
+
+    // Ctrl 클릭 누적 상태
+    public ItemSlotUI PendingSlot { get; private set; }
+    public int PendingAmount { get; private set; }
 
     public Inventory InteractionInventory { get; private set; }
     public event Action OnDoubleClick;
@@ -48,8 +51,9 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         OnHoverExit?.Invoke(slot);
     }
 
-    public void SetDragged(ItemSlotUI slot, CanvasGroup canvasGroup)
+    public void SetDragged(ItemSlotUI slot, CanvasGroup canvasGroup, int amount)
     {
+        DragAmount = amount;
         DraggedSlot = slot;
         DraggedCanvasGroup = canvasGroup;
         OnDragBegin?.Invoke(slot);
@@ -60,6 +64,30 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         DragIcon.Instance.Hide();
         DraggedSlot = null;
         DraggedCanvasGroup = null;
+        DragAmount = 0;
         OnDragEnd?.Invoke();
+    }
+
+    public void IncrementPending(ItemSlotUI slot)
+    {
+        if (PendingSlot != slot)
+        {
+            PendingSlot = slot;
+            PendingAmount = 0;
+        }
+        if (PendingAmount < slot.SavedAmountItem)
+            PendingAmount++;
+    }
+
+    public void SetPending(ItemSlotUI slot, int amount)
+    {
+        PendingSlot = slot;
+        PendingAmount = Mathf.Clamp(amount, 1, slot.SavedAmountItem);
+    }
+
+    public void ResetPending()
+    {
+        PendingSlot = null;
+        PendingAmount = 0;
     }
 }

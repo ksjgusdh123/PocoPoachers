@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class DropQuickSlotUI : DropSlotUI
+public class QuickSlotDropHandler : EquipDropHandler
 {
     [SerializeField] private TextMeshProUGUI _countText;
     [SerializeField] private int _quickSlotCount;
@@ -24,8 +24,8 @@ public class DropQuickSlotUI : DropSlotUI
         ItemSlotUI slotUI = manager.HoveredSlot;
         if (slotUI == null || !slotUI.IsSettedItem) return false;
 
-        ItemData prev = _droppedItemData;  
-        if (!OnItemDropped(slotUI.SlotItemData, slotUI.SavedAmountItem)) 
+        ItemData prev = _droppedItemData;
+        if (!OnItemDropped(slotUI.SlotItemData, slotUI.SavedAmountItem))
         {
             return false;
         }

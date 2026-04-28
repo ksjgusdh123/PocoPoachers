@@ -26,7 +26,7 @@ public sealed class WorldItemManager
             if (_items.Count > 0)
                 return;
 
-            SpawnBox(301, 0f, 0f, 4f, 0f, new[] { 101, 102, 103 });
+            SpawnBox(301, 0f, 0f, 4f, 0f, new[] { 101, 101, 101, 101, 101, 101, 101, 101, 102, 103 });
         }
 
     }
