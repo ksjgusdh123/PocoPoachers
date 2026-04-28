@@ -49,16 +49,16 @@ public class PacketHandler
         PacketSender.SMoveNtfBroadcast(session, player.PlayerId, x, y, z, rotation, moveType);
     }
 
-    public void OnC_GainItemReq(ClientSession session, C_GainItemReq req)
+    public void OnC_GainItemReq(ClientSession session, FlatPacket root)
     {
-        var pkt = root.TypeAsC_RemoveItemReq();
+        var pkt = root.TypeAsC_GainItemReq();
         if (session.Player is not { } player)
             return;
             
-        bool isPlayer = req.IsPlayer;
-        int boxUid = req.BoxUid;
-        int itemTypeId = req.ItemUid;
-        int amount = req.Amount;
+        bool isPlayer = pkt.IsPlayer;
+        int boxUid = pkt.BoxUid;
+        int itemTypeId = pkt.ItemUid;
+        int amount = pkt.Amount;
 
         if (isPlayer)
         {

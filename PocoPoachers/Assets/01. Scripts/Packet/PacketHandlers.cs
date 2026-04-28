@@ -79,23 +79,6 @@ public static class PacketHandlers
         });
     }
 
-    public static void OnS_WorldItemSpawnNtf(FlatPacket root)
-    {
-        var pkt = root.TypeAsS_WorldItemSpawnNtf();
-        int uid = pkt.Uid;
-        int typeId = pkt.TypeId;
-        float x = pkt.Pos?.X ?? 0f;
-        float y = pkt.Pos?.Y ?? 0f;
-        float z = pkt.Pos?.Z ?? 0f;
-        Vector3 pos = new Vector3(x, y, z);
-        float rotation = pkt.Rotation;
-
-        MainThreadDispatcher.Enqueue(() =>
-        {
-            ObjectManager.Instance?.QueueWorldItemSpawn(uid, typeId, pos, rotation);
-        });
-    }
-
     public static void OnS_WorldItemDespawnNtf(FlatPacket root)
     {
         var pkt = root.TypeAsS_WorldItemDespawnNtf();

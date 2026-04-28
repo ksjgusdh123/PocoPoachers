@@ -51,6 +51,7 @@ static public class PacketTypeVerify
         break;
       case PacketType.S_ShootNtf:
         result = S_ShootNtfVerify.Verify(verifier, tablePos);
+        break;
       case PacketType.S_SpawnItemBoxNtf:
         result = S_SpawnItemBoxNtfVerify.Verify(verifier, tablePos);
         break;

@@ -4,7 +4,7 @@
 
 public enum PacketType : byte
 {
-   NONE = 0,
+  NONE = 0,
   C_LoginReq = 1,
   S_LoginRes = 2,
   C_MoveReq = 3,
@@ -51,6 +51,7 @@ static public class PacketTypeVerify
         break;
       case PacketType.S_ShootNtf:
         result = S_ShootNtfVerify.Verify(verifier, tablePos);
+        break;
       case PacketType.S_SpawnItemBoxNtf:
         result = S_SpawnItemBoxNtfVerify.Verify(verifier, tablePos);
         break;
