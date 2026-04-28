@@ -93,6 +93,23 @@ public class Inventory : MonoBehaviour
         ChangeInventory?.Invoke();
     }
 
+    public bool CanAddItem(ItemData itemData, int amount = 1)
+    {
+        int remaining = amount;
+
+        for (int i = 0; i < _currentCapacity; i++)
+        {
+            if (_slots[i].IsEmpty)
+                remaining -= itemData.MaxStack;
+            else if (_slots[i].ItemData == itemData)
+                remaining -= itemData.MaxStack - _slots[i].Amount;
+
+            if (remaining <= 0) return true;
+        }
+
+        return false;
+    }
+
     public bool HasItem(ItemData itemData, int amount = 1)
     {
         int count = 0;

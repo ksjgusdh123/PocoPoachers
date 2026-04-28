@@ -16,12 +16,12 @@ public static class PacketManager
     {
         _onRecv.Add(PacketType.S_LoginRes,      PacketHandlers.OnS_LoginRes);
         _onRecv.Add(PacketType.S_MoveNtf,       PacketHandlers.OnS_MoveNtf);
-        _onRecv.Add(PacketType.S_WorldItemSpawnNtf,   PacketHandlers.OnS_WorldItemSpawnNtf);
         _onRecv.Add(PacketType.S_WorldItemDespawnNtf, PacketHandlers.OnS_WorldItemDespawnNtf);
-        _onRecv.Add(PacketType.S_AddItemRes,    PacketHandlers.OnS_AddItemRes);
-        _onRecv.Add(PacketType.S_RemoveItemRes, PacketHandlers.OnS_RemoveItemRes);
+        _onRecv.Add(PacketType.S_SpawnItemBoxNtf, PacketHandlers.OnS_SpawnItemBoxNtf);
         _onRecv.Add(PacketType.S_InventoryNtf,  PacketHandlers.OnS_InventoryNtf);
         _onRecv.Add(PacketType.S_ShootNtf,      PacketHandlers.OnS_ShootNtf);
+        _onRecv.Add(PacketType.S_ChangeItemBox,  PacketHandlers.OnS_ChangeItemBox);
+        _onRecv.Add(PacketType.S_SuccessGainItemNtf,  PacketHandlers.OnS_SuccessGainItemNtf);
     }
 
     public static void HandlePacket(ArraySegment<byte> buffer)

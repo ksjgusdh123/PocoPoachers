@@ -9,15 +9,14 @@ public enum PacketType : byte
   S_LoginRes = 2,
   C_MoveReq = 3,
   S_MoveNtf = 4,
-  C_AddItemReq = 5,
-  S_AddItemRes = 6,
-  C_RemoveItemReq = 7,
-  S_RemoveItemRes = 8,
-  S_InventoryNtf = 9,
-  S_WorldItemSpawnNtf = 10,
-  S_WorldItemDespawnNtf = 11,
-  C_ShootReq = 12,
-  S_ShootNtf = 13,
+  S_InventoryNtf = 5,
+  S_WorldItemDespawnNtf = 6,
+  C_ShootReq = 7,
+  S_ShootNtf = 8,
+  S_SpawnItemBoxNtf = 9,
+  C_GainItemReq = 10,
+  S_ChangeItemBox = 11,
+  S_SuccessGainItemNtf = 12,
 };
 
 
@@ -41,23 +40,8 @@ static public class PacketTypeVerify
       case PacketType.S_MoveNtf:
         result = S_MoveNtfVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.C_AddItemReq:
-        result = C_AddItemReqVerify.Verify(verifier, tablePos);
-        break;
-      case PacketType.S_AddItemRes:
-        result = S_AddItemResVerify.Verify(verifier, tablePos);
-        break;
-      case PacketType.C_RemoveItemReq:
-        result = C_RemoveItemReqVerify.Verify(verifier, tablePos);
-        break;
-      case PacketType.S_RemoveItemRes:
-        result = S_RemoveItemResVerify.Verify(verifier, tablePos);
-        break;
       case PacketType.S_InventoryNtf:
         result = S_InventoryNtfVerify.Verify(verifier, tablePos);
-        break;
-      case PacketType.S_WorldItemSpawnNtf:
-        result = S_WorldItemSpawnNtfVerify.Verify(verifier, tablePos);
         break;
       case PacketType.S_WorldItemDespawnNtf:
         result = S_WorldItemDespawnNtfVerify.Verify(verifier, tablePos);
@@ -67,6 +51,17 @@ static public class PacketTypeVerify
         break;
       case PacketType.S_ShootNtf:
         result = S_ShootNtfVerify.Verify(verifier, tablePos);
+      case PacketType.S_SpawnItemBoxNtf:
+        result = S_SpawnItemBoxNtfVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.C_GainItemReq:
+        result = C_GainItemReqVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_ChangeItemBox:
+        result = S_ChangeItemBoxVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_SuccessGainItemNtf:
+        result = S_SuccessGainItemNtfVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

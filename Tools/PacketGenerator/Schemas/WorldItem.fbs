@@ -1,14 +1,39 @@
 include "Common.fbs";
 
-table S_WorldItemSpawnNtf
+
+table S_WorldItemDespawnNtf
+{
+    uid: int;
+}
+
+table S_SpawnItemBoxNtf
 {
     uid: int;
     type_id: int;
     pos: Vec3;
     rotation: float;
+    item_ids: [int];
 }
 
-table S_WorldItemDespawnNtf
+table C_GainItemReq
+{
+    is_player: bool;
+    box_uid: int;
+    item_uid: int;
+    amount: int;
+}
+
+table S_ChangeItemBox
+{
+    is_gain: bool;
+    box_uid: int;
+    type_id: int;
+    amount: int;
+}
+
+table S_SuccessGainItemNtf
 {
     uid: int;
+    type_id: int;
+    amount: int;
 }

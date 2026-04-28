@@ -23,15 +23,14 @@ public struct FlatPacket : IFlatbufferObject
   public S_LoginRes TypeAsS_LoginRes() { return Type<S_LoginRes>().Value; }
   public C_MoveReq TypeAsC_MoveReq() { return Type<C_MoveReq>().Value; }
   public S_MoveNtf TypeAsS_MoveNtf() { return Type<S_MoveNtf>().Value; }
-  public C_AddItemReq TypeAsC_AddItemReq() { return Type<C_AddItemReq>().Value; }
-  public S_AddItemRes TypeAsS_AddItemRes() { return Type<S_AddItemRes>().Value; }
-  public C_RemoveItemReq TypeAsC_RemoveItemReq() { return Type<C_RemoveItemReq>().Value; }
-  public S_RemoveItemRes TypeAsS_RemoveItemRes() { return Type<S_RemoveItemRes>().Value; }
   public S_InventoryNtf TypeAsS_InventoryNtf() { return Type<S_InventoryNtf>().Value; }
-  public S_WorldItemSpawnNtf TypeAsS_WorldItemSpawnNtf() { return Type<S_WorldItemSpawnNtf>().Value; }
   public S_WorldItemDespawnNtf TypeAsS_WorldItemDespawnNtf() { return Type<S_WorldItemDespawnNtf>().Value; }
   public C_ShootReq TypeAsC_ShootReq() { return Type<C_ShootReq>().Value; }
   public S_ShootNtf TypeAsS_ShootNtf() { return Type<S_ShootNtf>().Value; }
+  public S_SpawnItemBoxNtf TypeAsS_SpawnItemBoxNtf() { return Type<S_SpawnItemBoxNtf>().Value; }
+  public C_GainItemReq TypeAsC_GainItemReq() { return Type<C_GainItemReq>().Value; }
+  public S_ChangeItemBox TypeAsS_ChangeItemBox() { return Type<S_ChangeItemBox>().Value; }
+  public S_SuccessGainItemNtf TypeAsS_SuccessGainItemNtf() { return Type<S_SuccessGainItemNtf>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,

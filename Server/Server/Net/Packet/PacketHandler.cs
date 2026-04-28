@@ -49,28 +49,41 @@ public class PacketHandler
         PacketSender.SMoveNtfBroadcast(session, player.PlayerId, x, y, z, rotation, moveType);
     }
 
-    public void OnC_AddItemReq(ClientSession session, FlatPacket root)
-    {
-        var pkt = root.TypeAsC_AddItemReq();
-        if (session.Player is not { } player)
-            return;
-
-        int itemId = pkt.ItemId;
-        int amount = pkt.Amount;
-        bool success = player.Inventory.AddItem(itemId, amount);
-        PacketSender.SAddItemRes(session, success, itemId, success ? amount : 0);
-    }
-
-    public void OnC_RemoveItemReq(ClientSession session, FlatPacket root)
+    public void OnC_GainItemReq(ClientSession session, C_GainItemReq req)
     {
         var pkt = root.TypeAsC_RemoveItemReq();
         if (session.Player is not { } player)
             return;
+            
+        bool isPlayer = req.IsPlayer;
+        int boxUid = req.BoxUid;
+        int itemTypeId = req.ItemUid;
+        int amount = req.Amount;
 
-        int itemId = pkt.ItemId;
-        int amount = pkt.Amount;
-        bool success = player.Inventory.RemoveItem(itemId, amount);
-        PacketSender.SRemoveItemRes(session, success, itemId, success ? amount : 0);
+        if (isPlayer)
+        {
+            if (!session.Player.Inventory.RemoveItem(itemTypeId, amount))
+            {
+                LOG_W($"GainItemReq 실패(플레이어→박스): boxUid={boxUid}, itemTypeId={itemTypeId}, amount={amount}");
+                return;
+            }
+            WorldItemManager.Instance.AddItemToBox(boxUid, itemTypeId, amount);
+            LOG($"PlayerToBox: PlayerId={session.PlayerId}, boxUid={boxUid}, itemTypeId={itemTypeId}, amount={amount}");
+        }
+        else
+        {
+            if (!WorldItemManager.Instance.TryTakeItem(boxUid, itemTypeId, amount, out int taken))
+            {
+                LOG_W($"GainItemReq 실패(박스→플레이어): boxUid={boxUid}, itemTypeId={itemTypeId}, amount={amount}");
+                return;
+            }
+            amount = taken;
+            session.Player.Inventory.AddItem(itemTypeId, amount);
+            LOG($"BoxToPlayer: PlayerId={session.PlayerId}, boxUid={boxUid}, itemTypeId={itemTypeId}, taken={amount}");
+        }
+
+        PacketSender.SChangeItemBox(session, isPlayer, boxUid, itemTypeId, amount);
+        PacketSender.SSuccessGainItemNtf(session, boxUid, itemTypeId, amount);
     }
 
     public void OnC_ShootReq(ClientSession session, FlatPacket root)

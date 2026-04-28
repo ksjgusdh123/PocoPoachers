@@ -162,12 +162,23 @@ public class ObjectManager : Singleton<ObjectManager>
         _objects.Clear();
     }
 
+    public ItemBox SpawnItemBox(int uid, int typeId, Vector3 pos, float rotation)
+    {
+        var obj = Spawn(ObjectKind.ItemBox, uid, typeId);
+        obj.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, rotation, 0f));
+        _objects[(ObjectKind.ItemBox, uid)] = obj;
+        var box = obj.GetComponent<ItemBox>();
+        if (box == null)
+            box = obj.gameObject.AddComponent<ItemBox>();
+        return box;
+    }
+
     WorldObject Spawn(ObjectKind kind, int id, int typeId = 0)
     {
         GameObject go;
         WorldObject obj;
 
-        if (kind == ObjectKind.WorldItem && typeId > 0)
+        if (kind == ObjectKind.ItemBox && typeId > 0)
         {
             ItemData data = ItemTable.Instance.Get(typeId);
             GameObject prefabGo = data != null ? data.LoadPrefab() : null;
@@ -181,7 +192,7 @@ public class ObjectManager : Singleton<ObjectManager>
                 obj.Initialize(kind, id, typeId);
                 return obj;
             }
-        }
+        } 
 
         if (_prefabs.TryGetValue(kind, out WorldObject prefab) && prefab != null)
         {

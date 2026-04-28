@@ -15,11 +15,17 @@ public class InventoryUI : MonoBehaviour
 
     private void Start()
     {
-        _descriptionUI = FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
-        _inventory.ChangeInventory += Refresh;
-        if(_sortButton) _sortButton.onClick.AddListener(OnClickSort);
-        GenerateSlots();
-        Refresh();
+        _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
+
+        if (_inventory != null)
+        {
+            _inventory.ChangeInventory += Refresh;
+            if (_slotUIs == null)
+                GenerateSlots();
+            Refresh();
+        }
+
+        if (_sortButton) _sortButton.onClick.AddListener(OnClickSort);
 
         var manager = SlotInteractionManager.GetInstance();
         manager.OnHoverEnter += _descriptionUI.ShowDescription;
@@ -35,11 +41,40 @@ public class InventoryUI : MonoBehaviour
         if (!_slotSet.Contains(targetSlot)) return;
 
         var target = _inventory._interactionInventory;
-        if (target == null) return;
+        if (target == null || !target.CanAddItem(targetSlot.SlotItemData)) return;
 
+        int boxUid;
+        bool isPlayer;
+        if (_inventory.TryGetComponent<WorldObject>(out var worldObject))
+        {
+             boxUid = worldObject.Id;
+            isPlayer = false;
+        }
+        else
+        {
+            boxUid = target.GetComponent<WorldObject>().Id;
+            isPlayer = true;
+        }
+        int itemTypeId = targetSlot.SlotItemData.Id;
+        GameManager.GetInstance().SaveInventory(_inventory, target);
+        PacketSender.CGainItemReq(boxUid, itemTypeId, targetSlot.SavedAmountItem, isPlayer);
 
-        if (target.AddItem(targetSlot.SlotItemData, targetSlot.SavedAmountItem))
-            targetSlot.ClearSlot();
+        //if (target.AddItem(targetSlot.SlotItemData, targetSlot.SavedAmountItem))
+        //    targetSlot.ClearSlot();
+    }
+
+    public void Bind(Inventory inventory)
+    {
+        if (_inventory != null)
+            _inventory.ChangeInventory -= Refresh;
+        _inventory = inventory;
+        _inventory.ChangeInventory += Refresh;
+        if (_slotUIs == null)
+        {
+            _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
+            GenerateSlots();
+        }
+        Refresh();
     }
 
     private void OnClickSort()

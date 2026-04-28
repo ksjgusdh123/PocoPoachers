@@ -13,17 +13,17 @@ union PacketType
     C_MoveReq,
     S_MoveNtf,
 
-    C_AddItemReq,
-    S_AddItemRes,
-    C_RemoveItemReq,
-    S_RemoveItemRes,
     S_InventoryNtf,
 
-    S_WorldItemSpawnNtf,
     S_WorldItemDespawnNtf,
 
     C_ShootReq,
     S_ShootNtf,
+    
+    S_SpawnItemBoxNtf,
+    C_GainItemReq,
+    S_ChangeItemBox,
+    S_SuccessGainItemNtf,
 }
 
 table FlatPacket

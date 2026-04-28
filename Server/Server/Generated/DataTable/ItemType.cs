@@ -4,4 +4,5 @@ public enum ItemType : int
     None = 0,
     Consumable = 1,
     Weapon = 2,
+    ItemBox = 3,
 }

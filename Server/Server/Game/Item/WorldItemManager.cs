@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Server;
@@ -14,6 +16,7 @@ public sealed class WorldItemManager
     {
         public int TypeId;
         public float X, Y, Z, Rotation;
+        public List<int> ItemIds;
     }
 
     public void TempInit()
@@ -23,23 +26,22 @@ public sealed class WorldItemManager
             if (_items.Count > 0)
                 return;
 
-            Add(101, 2f, 0f, 3f, 0f);
-            Add(102, -1.5f, 0f, 2.5f, 30f);
-            Add(103, 0f, 0f, 6f, 0f);
+            SpawnBox(301, 0f, 0f, 4f, 0f, new[] { 101, 102, 103 });
         }
+
     }
 
-    void Add(int typeId, float x, float y, float z, float rot)
+    public void SpawnBox(int typeId, float x, float y, float z, float rot, int[] itemIds)
     {
-        if (ItemTable.Get(typeId) == null)
+        int uid;
+        lock (_lock)
         {
-            LOG_W($"WorldItem: type_id {typeId} 없음, 스킵");
-            return;
+            uid = _nextUid++;
+            _items[uid] = new Entry { TypeId = typeId, X = x, Y = y, Z = z, Rotation = rot, ItemIds = new List<int>(itemIds) };
         }
 
-        int uid = _nextUid++;
-        _items[uid] = new Entry { TypeId = typeId, X = x, Y = y, Z = z, Rotation = rot };
-        LOG($"WorldItem 등록: uid={uid}, type_id={typeId}");
+        PacketSender.SSpawnItemBoxNtfBroadcast(uid, typeId, x, y, z, rot, itemIds.ToArray());
+        LOG($"ItemBox 스폰: uid={uid}, pos=({x},{y},{z}), items=[{string.Join(",", itemIds)}]");
     }
 
     public void SyncTo(ClientSession session)
@@ -53,13 +55,40 @@ public sealed class WorldItemManager
         foreach (var kv in copy)
         {
             Entry e = kv.Value;
-            PacketSender.SWorldItemSpawnNtf(session, kv.Key, e.TypeId, e.X, e.Y, e.Z, e.Rotation);
+            PacketSender.SSpawnItemBoxNtfBroadcast(kv.Key, e.TypeId, e.X, e.Y, e.Z, e.Rotation, e.ItemIds.ToArray());
         }
     }
 
-    public void Spawn(int uid, int typeId, float x, float y, float z, float rot)
+    public bool AddItemToBox(int boxUid, int itemTypeId, int amount)
     {
-        PacketSender.SWorldItemSpawnNtfBroadcast(uid, typeId, x, y, z, rot);
+        lock (_lock)
+        {
+            if (!_items.TryGetValue(boxUid, out var entry))
+                return false;
+
+            for (int i = 0; i < amount; i++)
+                entry.ItemIds.Add(itemTypeId);
+        }
+        return true;
+    }
+
+    public bool TryTakeItem(int boxUid, int itemTypeId, int amount, out int takenAmount)
+    {
+        lock (_lock)
+        {
+            if (!_items.TryGetValue(boxUid, out var entry))
+            {
+                takenAmount = 0;
+                return false;
+            }
+
+            int count = entry.ItemIds.Count(id => id == itemTypeId);
+            takenAmount = Math.Min(count, amount);
+            for (int i = 0; i < takenAmount; i++)
+                entry.ItemIds.Remove(itemTypeId);
+
+            return takenAmount > 0;
+        }
     }
 
     public void Despawn(int uid)
