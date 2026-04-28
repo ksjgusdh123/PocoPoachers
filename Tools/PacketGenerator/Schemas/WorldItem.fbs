@@ -37,3 +37,22 @@ table S_SuccessGainItemNtf
     type_id: int;
     amount: int;
 }
+
+table C_ExchangeItemReq
+{
+    box_uid: int;
+    player_item_id: int;
+    player_item_amount: int;
+    box_item_id: int;
+    box_item_amount: int;
+}
+
+table S_ExchangeItemResultNtf
+{
+    is_success: bool;
+    box_uid: int;
+    player_gain_item_id: int;
+    player_gain_item_amount: int;
+    box_gain_item_id: int;
+    box_gain_item_amount: int;
+}

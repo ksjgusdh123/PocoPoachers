@@ -13,6 +13,10 @@ public class InventoryUI : MonoBehaviour
     private HashSet<ItemSlotUI> _slotSet;
     private DescriptionUI _descriptionUI;
 
+    public WorldObject Box => _inventory.GetComponent<WorldObject>();
+    public bool IsBox => _inventory.TryGetComponent<WorldObject>(out _);
+
+
     private void Start()
     {
         _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
@@ -63,35 +67,9 @@ public class InventoryUI : MonoBehaviour
         //    targetSlot.ClearSlot();
     }
 
-    public void OnSlotDropped(ItemSlotUI source, ItemSlotUI target, ItemData data, int movedAmount)
+    public void OnSlotDropped()
     {
-        bool sourceIsMine = _slotSet.Contains(source);
-        bool targetIsMine = _slotSet.Contains(target);
-
-        // 이 인벤토리와 무관하거나, 같은 인벤토리 내부 교환이면 무시
-        if (!sourceIsMine && !targetIsMine) return;
-        if (sourceIsMine && targetIsMine) return;
-
-        var interactionInven = _inventory._interactionInventory;
-        if (interactionInven == null) return;
-
-        int boxUid;
-        bool isPlayer;
-        if (_inventory.TryGetComponent<WorldObject>(out var worldObject))
-        {
-            boxUid = worldObject.Id;
-            isPlayer = false;
-        }
-        else
-        {
-            boxUid = interactionInven.GetComponent<WorldObject>().Id;
-            isPlayer = true;
-        }
-
-        var movedSlot = sourceIsMine ? source : target;
-        int itemTypeId = movedSlot.SlotItemData.Id;
-        GameManager.GetInstance().SaveChangeInventorys(_inventory, interactionInven);
-        PacketSender.CGainItemReq(boxUid, itemTypeId, movedSlot.SavedAmountItem, isPlayer);
+        GameManager.GetInstance().SaveChangeInventorys(_inventory, _inventory._interactionInventory);
     }
 
     public void Bind(Inventory inventory)

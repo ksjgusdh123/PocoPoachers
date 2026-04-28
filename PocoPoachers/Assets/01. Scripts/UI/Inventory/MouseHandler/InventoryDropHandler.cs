@@ -23,30 +23,23 @@ public class InventoryDropHandler : BaseDropHandler
         ItemData prevData = _slotUI.IsSettedItem ? _slotUI.SlotItemData : null;
         int prevAmount = _slotUI.IsSettedItem ? _slotUI.SavedAmountItem : 0;
 
-        if (prevData != null && prevData == draggedData)
+        if (prevData != null)
         {
-            // 같은 아이템 → 스택 합치기
-            int canFit = draggedData.MaxStack - prevAmount;
-            if (canFit <= 0) return false;
-
-            //int transferred = Mathf.Min(dragAmount, canFit);
-            //int backToSource = remaining + (dragAmount - transferred);
-
-            //_slotUI.SetSlotData(draggedData, prevAmount + transferred);
-            //dragged.SetSlotData(backToSource > 0 ? draggedData : null, backToSource);
+            // 타겟 슬롯에 아이템 있음 → 전체 수량 교환
+            int fullSourceAmount = dragged.SavedAmountItem;
+            if(dragged.InventoryUI.IsBox) manager.InvokeSlotExchange(_slotUI, dragged, prevData, draggedData, prevAmount, fullSourceAmount);
+            else manager.InvokeSlotExchange(dragged, _slotUI, draggedData, prevData, fullSourceAmount, prevAmount);
         }
         else
         {
-            // 다른 아이템이거나 빈 슬롯 → 교환
-            //if (remaining > 0 && prevData != null) return false;
-
+            //// 타겟 슬롯이 비어 있음 → 드래그한 수량만 이동
             //_slotUI.SetSlotData(draggedData, dragAmount);
-            //dragged.SetSlotData(remaining > 0 ? draggedData : prevData, remaining > 0 ? remaining : prevAmount);
+            //if (remaining > 0)
+            //    dragged.SetSlotData(draggedData, remaining);
+            //else
+            //    dragged.SetSlotData(null, 0);
+            //manager.InvokeSlotDrop(dragged, _slotUI, draggedData, null, dragAmount, 0);
         }
-        manager.InvokeSlotDrop(dragged, _slotUI, draggedData, prevData, dragAmount, prevAmount);
-
-        _slotUI.NotifyInventoryChanged();
-        dragged.NotifyInventoryChanged();
         return true;
     }
 }

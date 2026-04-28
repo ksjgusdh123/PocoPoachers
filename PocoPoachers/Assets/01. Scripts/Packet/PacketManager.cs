@@ -22,6 +22,7 @@ public static class PacketManager
         _onRecv.Add(PacketType.S_ShootNtf,      PacketHandlers.OnS_ShootNtf);
         _onRecv.Add(PacketType.S_ChangeItemBox,  PacketHandlers.OnS_ChangeItemBox);
         _onRecv.Add(PacketType.S_SuccessGainItemNtf,  PacketHandlers.OnS_SuccessGainItemNtf);
+        _onRecv.Add(PacketType.S_ExchangeItemResultNtf,  PacketHandlers.OnS_ExchangeItemResultNtf);
     }
 
     public static void HandlePacket(ArraySegment<byte> buffer)

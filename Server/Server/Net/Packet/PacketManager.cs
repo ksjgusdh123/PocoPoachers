@@ -20,6 +20,7 @@ public class PacketManager
         _onRecv.Add(PacketType.C_MoveReq,       _handler.OnC_MoveReq);
         _onRecv.Add(PacketType.C_ShootReq,      _handler.OnC_ShootReq);
         _onRecv.Add(PacketType.C_GainItemReq,   _handler.OnC_GainItemReq);
+        _onRecv.Add(PacketType.C_ExchangeItemReq,   _handler.OnC_ExchangeItemReq);
     }
 
     public static void HandlePacket(ClientSession session, ArraySegment<byte> buffer)

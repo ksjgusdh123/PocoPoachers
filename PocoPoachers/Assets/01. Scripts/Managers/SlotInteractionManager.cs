@@ -34,11 +34,11 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         InteractionInventory = inventory;
     }
 
-    public void InvokeSlotDrop(ItemSlotUI source, ItemSlotUI target, ItemData StoTItem, ItemData TtoSItem,
-        int StoTMovedAmount, int TtoSMovedAmount)
+    public void InvokeSlotExchange(ItemSlotUI player, ItemSlotUI box, ItemData PtoBItem, ItemData BtoPItem,
+        int PtoBMovedAmount, int BtoPMovedAmount)
     {
-        source.InventoryUI.OnSlotDropped(source, target, StoTItem, StoTMovedAmount);
-        if (TtoSMovedAmount > 0) target.InventoryUI.OnSlotDropped(target, source, TtoSItem, TtoSMovedAmount);
+        player.InventoryUI.OnSlotDropped();
+        PacketSender.CExchangeItemReq(box.InventoryUI.Box.Id, PtoBItem?.Id ?? 0, PtoBMovedAmount, BtoPItem?.Id ?? 0, BtoPMovedAmount);
     }
 
     public void InvokeDoubleClick()

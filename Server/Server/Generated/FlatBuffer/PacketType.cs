@@ -17,6 +17,8 @@ public enum PacketType : byte
   C_GainItemReq = 10,
   S_ChangeItemBox = 11,
   S_SuccessGainItemNtf = 12,
+  C_ExchangeItemReq = 13,
+  S_ExchangeItemResultNtf = 14,
 };
 
 
@@ -63,6 +65,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.S_SuccessGainItemNtf:
         result = S_SuccessGainItemNtfVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.C_ExchangeItemReq:
+        result = C_ExchangeItemReqVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_ExchangeItemResultNtf:
+        result = S_ExchangeItemResultNtfVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

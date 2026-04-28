@@ -104,4 +104,34 @@ public class PacketHandler
             pkt.Damage,
             pkt.MaxRange);
     }
+
+    public void OnC_ExchangeItemReq(ClientSession session, FlatPacket root)
+    {
+        var pkt = root.TypeAsC_ExchangeItemReq();
+        if (session.Player is not { } player)
+            return;
+
+        int boxUid = pkt.BoxUid;
+        int playerItemId = pkt.PlayerItemId;
+        int playerItemAmount = pkt.PlayerItemAmount;
+        int boxItemId = pkt.BoxItemId;
+        int boxItemAmount = pkt.BoxItemAmount;
+
+        if (!WorldItemManager.Instance.TryTakeItem(boxUid, boxItemId, boxItemAmount, out int taken))
+        {
+            LOG_W($"GainItemReq 실패(박스→플레이어): boxUid={boxUid}, itemTypeId={boxItemId}, amount={boxItemAmount}");
+            return;
+        }
+        boxItemAmount = taken;
+        session.Player.Inventory.AddItem(boxItemId, boxItemAmount);
+
+        if (!session.Player.Inventory.RemoveItem(playerItemId, playerItemAmount))
+        {
+            LOG_W($"GainItemReq 실패(플레이어→박스): boxUid={boxUid}, itemTypeId={playerItemId}, amount={playerItemAmount}");
+            return;
+        }
+        WorldItemManager.Instance.AddItemToBox(boxUid, playerItemId, playerItemAmount);
+
+        PacketSender.SExchangeItemResultNtf(session, true, boxUid, playerItemId, playerItemAmount, boxItemId, boxItemAmount);
+    }
 }

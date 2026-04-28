@@ -1,5 +1,6 @@
 using Google.FlatBuffers;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 public static class PacketSender
 {
@@ -54,6 +55,16 @@ public static class PacketSender
         var bodyOff = C_ShootReq.EndC_ShootReq(_builder);
 
         PacketBuilder.Send(session, _builder, PacketType.C_ShootReq, bodyOff.Value);
+    }
+
+    public static void CExchangeItemReq(int boxUid, int playerItemId, int playerItemAmount,
+        int boxItemId, int boxItemAmount)
+    {
+        if (!TryGetSession(out Session session)) return;
+        _builder.Clear();
+
+        var bodyOff = C_ExchangeItemReq.CreateC_ExchangeItemReq(_builder, boxUid, playerItemId, playerItemAmount, boxItemId, boxItemAmount);
+        PacketBuilder.Send(session, _builder, PacketType.C_ExchangeItemReq, bodyOff.Value);
     }
 
     static bool TryGetSession(out Session session)

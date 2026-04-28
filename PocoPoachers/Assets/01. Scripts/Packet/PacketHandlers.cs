@@ -1,6 +1,7 @@
-using System.Collections.Generic;
 using Google.FlatBuffers;
+using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 public static class PacketHandlers
 {
@@ -160,4 +161,32 @@ public static class PacketHandlers
         });
     }
 
+    public static void OnS_ExchangeItemResultNtf(FlatPacket root)
+    {
+        var pkt = root.TypeAsS_ExchangeItemResultNtf();
+        if (!pkt.IsSuccess) return;
+
+        int playerGainItemId = pkt.PlayerGainItemId;
+        int playerGainAmount = pkt.PlayerGainItemAmount;
+        int boxGainItemId    = pkt.BoxGainItemId;
+        int boxGainAmount    = pkt.BoxGainItemAmount;
+
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            // GiveInventory = 플레이어, GainedInventory = 박스 (OnSlotDropped에서 SaveChangeInventorys(_inventory, interactionInven) 순서 기준)
+            var playerInven = GameManager.GetInstance().GiveInventory;
+            var boxInven    = GameManager.GetInstance().GainedInventory;
+
+            ItemData playerGainedItem = ItemTable.Instance.Get(playerGainItemId);
+            ItemData boxGainedItem    = ItemTable.Instance.Get(boxGainItemId);
+
+            if (playerGainedItem != null && boxGainedItem != null)
+            { 
+                playerInven.RemoveItem(boxGainedItem, boxGainAmount);
+                boxInven.RemoveItem(playerGainedItem, playerGainAmount);
+                playerInven.AddItem(playerGainedItem, playerGainAmount);
+                boxInven.AddItem(boxGainedItem, boxGainAmount);
+            }
+        });
+    }
 }

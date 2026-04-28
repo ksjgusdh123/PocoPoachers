@@ -31,6 +31,8 @@ public struct FlatPacket : IFlatbufferObject
   public C_GainItemReq TypeAsC_GainItemReq() { return Type<C_GainItemReq>().Value; }
   public S_ChangeItemBox TypeAsS_ChangeItemBox() { return Type<S_ChangeItemBox>().Value; }
   public S_SuccessGainItemNtf TypeAsS_SuccessGainItemNtf() { return Type<S_SuccessGainItemNtf>().Value; }
+  public C_ExchangeItemReq TypeAsC_ExchangeItemReq() { return Type<C_ExchangeItemReq>().Value; }
+  public S_ExchangeItemResultNtf TypeAsS_ExchangeItemResultNtf() { return Type<S_ExchangeItemResultNtf>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,

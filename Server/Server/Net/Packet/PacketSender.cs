@@ -1,4 +1,5 @@
 using Google.FlatBuffers;
+using System;
 using System.Collections.Generic;
 
 namespace Server;
@@ -87,6 +88,15 @@ public static class PacketSender
         var fb = new FlatBufferBuilder(BufferSize);
         var bodyOff = S_SuccessGainItemNtf.CreateS_SuccessGainItemNtf(fb, uid, typeId, amount);
         PacketBuilder.Send(session, fb, PacketType.S_SuccessGainItemNtf, bodyOff.Value);
+    }
+
+    public static void SExchangeItemResultNtf(ClientSession session, bool isSuccess, int boxUid, int playerItemId, int playerItemAmont,
+        int boxItemId, int boxItemAmount)
+    {
+        var fb = new FlatBufferBuilder(BufferSize);
+        var bodyOff = S_ExchangeItemResultNtf.CreateS_ExchangeItemResultNtf(fb, isSuccess, boxUid, boxItemId, 
+            boxItemAmount, playerItemId, playerItemAmont);
+        PacketBuilder.Send(session, fb, PacketType.S_ExchangeItemResultNtf, bodyOff.Value);
     }
 
     public static void SWorldItemDespawnNtfBroadcast(int uid)
