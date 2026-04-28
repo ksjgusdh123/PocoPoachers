@@ -6,17 +6,22 @@ public class PlayerRotation : MonoBehaviour
 {
     [SerializeField] private float _runRotationSpeed = 10f;
     [SerializeField] private float _mouseRotationSpeed = 15f;
+    [SerializeField] private float _recoveryRotationSpeed = 3f;
 
     private static readonly Plane GroundPlane = new Plane(Vector3.up, Vector3.zero);
     private PlayerInputHandler _inputHandler;
+    private PlayerDodge _playerDodge;
 
     private void Awake()
     {
         _inputHandler = GetComponent<PlayerInputHandler>();
+        _playerDodge = GetComponent<PlayerDodge>();
     }
 
     private void Update()
     {
+        if (_playerDodge.IsRolling) return;
+
         if (_inputHandler.IsSprintPressed && _inputHandler.MoveInput.sqrMagnitude > 0.01f)
             RotateTowardMovement();
         else
@@ -35,8 +40,9 @@ public class PlayerRotation : MonoBehaviour
 
         if (direction.sqrMagnitude < 0.001f) return;
 
+        float speed = _playerDodge.IsRecovering ? _recoveryRotationSpeed : _mouseRotationSpeed;
         Quaternion target = Quaternion.LookRotation(direction);
-        transform.rotation = Quaternion.Slerp(transform.rotation, target, _mouseRotationSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Slerp(transform.rotation, target, speed * Time.deltaTime);
     }
 
     private void RotateTowardMovement()

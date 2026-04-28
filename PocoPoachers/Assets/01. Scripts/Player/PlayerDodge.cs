@@ -9,7 +9,10 @@ public class PlayerDodge : MonoBehaviour
     [SerializeField] private float _dodgeDuration = 0.5f;
     [SerializeField] private float _cooldown = 1f;
 
+    [SerializeField] private float _recoveryDuration = 0.4f;
+
     public bool IsRolling { get; private set; }
+    public bool IsRecovering { get; private set; }
     public bool IsInvincible { get; private set; }
 
     private PlayerInputHandler _inputHandler;
@@ -52,6 +55,7 @@ public class PlayerDodge : MonoBehaviour
         IsRolling = true;
         IsInvincible = true;
         _lastDodgeTime = Time.time;
+        transform.rotation = Quaternion.LookRotation(direction);
         _animator.SetTrigger("Roll");
         _animator.SetLayerWeight(1, 0f);
 
@@ -66,5 +70,8 @@ public class PlayerDodge : MonoBehaviour
         _animator.SetLayerWeight(1, 1f);
         IsInvincible = false;
         IsRolling = false;
+        IsRecovering = true;
+        yield return new WaitForSeconds(_recoveryDuration);
+        IsRecovering = false;
     }
 }
