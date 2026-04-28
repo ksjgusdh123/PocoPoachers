@@ -5,7 +5,7 @@ using UnityEngine;
 public class NetworkManager : Singleton<NetworkManager>
 {
     [SerializeField] string localHost = "127.0.0.1";
-    [SerializeField] string remoteHost = "34.47.102.176";
+    [SerializeField] string remoteHost = "34.50.21.90";
     [SerializeField] int port = 7000;
     [SerializeField] string userName = "Player";
     [SerializeField] bool remoteConnection = false;
