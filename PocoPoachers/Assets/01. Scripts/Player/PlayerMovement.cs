@@ -14,8 +14,10 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController _characterController;
     private PlayerInputHandler _inputHandler;
+    private PlayerDodge _playerDodge;
+    private Animator _animator;
 
-    private float _currentSpeed;
+    private Vector3 _currentVelocity; // _currentSpeed 대신 벡터로 교체
 
     private float _nextSendTime;
     private Vector3 _lastSentPos;
@@ -27,7 +29,8 @@ public class PlayerMovement : MonoBehaviour
     {
         _characterController = GetComponent<CharacterController>();
         _inputHandler = GetComponent<PlayerInputHandler>();
-        _currentSpeed = _moveSpeed;
+        _playerDodge = GetComponent<PlayerDodge>();
+        _animator = GetComponentInChildren<Animator>();
     }
 
     private void Update()
@@ -43,13 +46,24 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move()
     {
-        Vector2 input = _inputHandler.MoveInput;
-        Vector3 moveDir = new Vector3(input.x, 0f, input.y);
+      if (_playerDodge.IsRolling) return;
 
-        float targetSpeed = _inputHandler.IsSprintPressed ? _sprintSpeed : _moveSpeed;
-        _currentSpeed = Mathf.MoveTowards(_currentSpeed, targetSpeed, _acceleration * Time.deltaTime);
+      Vector2 input = _inputHandler.MoveInput;
+      Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
 
-        _characterController.Move(moveDir * _currentSpeed * Time.deltaTime);
+      float targetSpeed = moveDir == Vector3.zero ? 0f
+          : (_inputHandler.IsSprintPressed ? _sprintSpeed : _moveSpeed);
+      Vector3 targetVelocity = moveDir * targetSpeed;
+
+      // 방향 포함 전체 벡터를 부드럽게 보간 → 반대 방향 전환 시 튀지 않음
+      _currentVelocity = Vector3.MoveTowards(_currentVelocity, targetVelocity, _acceleration *Time.deltaTime);
+
+      Vector3 localVelocity = transform.InverseTransformDirection(_currentVelocity);
+      _animator.SetFloat("VelocityX", localVelocity.x / _moveSpeed, 0.1f, Time.deltaTime);
+      _animator.SetFloat("VelocityZ", localVelocity.z / _moveSpeed, 0.1f, Time.deltaTime);
+      _animator.SetBool("IsSprinting", _inputHandler.IsSprintPressed && moveDir != Vector3.zero);
+
+      _characterController.Move(_currentVelocity * Time.deltaTime);
     }
 
     private void SendMoveToServer()

@@ -9,7 +9,7 @@ public class SingleGun : GunBase
             _gunData.bulletSpeed,
             _gunData.damage,
             _gunData.range,
-            _muzzle.forward,
+            _muzzle.up,
             () => BulletPool.GetInstance().Release(_gunData.bulletPrefab, bullet)
         );
 

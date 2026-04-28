@@ -15,6 +15,7 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action StartInteraction;
     public event Action<int> ItemNumberKey;
     public event Action DoubleClick;
+    public event Action Dodge;
 
     private readonly Key[] _numberKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5 };
     private float _lastClickTime;
@@ -56,6 +57,11 @@ public class PlayerInputHandler : MonoBehaviour
         if (Time.time - _lastClickTime < DoubleClickThreshold)
             DoubleClick?.Invoke();
         _lastClickTime = Time.time;
+    }
+
+    void OnDodge(InputValue value)
+    {
+        if (value.isPressed) Dodge?.Invoke();
     }
 
     void OnItemNumberKey(InputValue value)
