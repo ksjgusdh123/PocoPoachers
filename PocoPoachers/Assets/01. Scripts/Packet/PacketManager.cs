@@ -21,6 +21,7 @@ public static class PacketManager
         _onRecv.Add(PacketType.S_AddItemRes,    PacketHandlers.OnS_AddItemRes);
         _onRecv.Add(PacketType.S_RemoveItemRes, PacketHandlers.OnS_RemoveItemRes);
         _onRecv.Add(PacketType.S_InventoryNtf,  PacketHandlers.OnS_InventoryNtf);
+        _onRecv.Add(PacketType.S_ShootNtf,      PacketHandlers.OnS_ShootNtf);
     }
 
     public static void HandlePacket(ArraySegment<byte> buffer)
@@ -33,9 +34,8 @@ public static class PacketManager
         var root = FlatPacket.GetRootAsFlatPacket(bb);
 
         PacketType type = root.TypeType;
-        int bodyLen = buffer.Count - Session.HeaderSize;
         if (type != PacketType.S_MoveNtf)
-            Debug.Log($"[Packet] recv {type} body={bodyLen}b");
+            Debug.Log($"[PacketManager] Recv {type}");
 
         if (!_onRecv.TryGetValue(type, out Action<FlatPacket> action))
         {

@@ -1,4 +1,4 @@
-﻿using Google.FlatBuffers;
+using Google.FlatBuffers;
 using UnityEngine;
 
 public static class PacketSender
@@ -47,6 +47,22 @@ public static class PacketSender
 
         var bodyOff = C_RemoveItemReq.CreateC_RemoveItemReq(_builder, itemId, amount);
         PacketBuilder.Send(session, _builder, PacketType.C_RemoveItemReq, bodyOff.Value);
+    }
+
+    public static void CShootReq(Vector3 origin, Vector3 direction, float bulletSpeed, float damage, float maxRange)
+    {
+        if (!TryGetSession(out Session session)) return;
+        _builder.Clear();
+
+        C_ShootReq.StartC_ShootReq(_builder);
+        C_ShootReq.AddOrigin(_builder, Vec3.CreateVec3(_builder, origin.x, origin.y, origin.z));
+        C_ShootReq.AddDirection(_builder, Vec3.CreateVec3(_builder, direction.x, direction.y, direction.z));
+        C_ShootReq.AddBulletSpeed(_builder, bulletSpeed);
+        C_ShootReq.AddDamage(_builder, damage);
+        C_ShootReq.AddMaxRange(_builder, maxRange);
+        var bodyOff = C_ShootReq.EndC_ShootReq(_builder);
+
+        PacketBuilder.Send(session, _builder, PacketType.C_ShootReq, bodyOff.Value);
     }
 
     static bool TryGetSession(out Session session)

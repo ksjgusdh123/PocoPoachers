@@ -1,8 +1,9 @@
-﻿include "Common.fbs";
+include "Common.fbs";
 include "Auth.fbs";
 include "Movement.fbs";
 include "Inventory.fbs";
 include "WorldItem.fbs";
+include "Combat.fbs";
 
 union PacketType
 {
@@ -20,6 +21,9 @@ union PacketType
 
     S_WorldItemSpawnNtf,
     S_WorldItemDespawnNtf,
+
+    C_ShootReq,
+    S_ShootNtf,
 }
 
 table FlatPacket

@@ -5,6 +5,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <FlatBufferGenDir>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)..\Server\Generated\FlatBuffer\'))</FlatBufferGenDir>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,8 +17,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Server\PacketGenerator\Generated\*.cs">
-      <Link>Generated\%(Filename)%(Extension)</Link>
+    <Compile Include="$(FlatBufferGenDir)*.cs">
+      <Link>Generated\FlatBuffer\%(Filename)%(Extension)</Link>
     </Compile>
   </ItemGroup>
 

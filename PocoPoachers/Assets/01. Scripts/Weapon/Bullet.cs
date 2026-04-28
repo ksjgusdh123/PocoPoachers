@@ -9,6 +9,7 @@ public class Bullet : MonoBehaviour
     private float _traveledDistance;
     private Vector3 _direction;
     private Action _onRelease;
+    private bool _applyDamage = true;
     private TrailRenderer _trail;
 
     private void Awake()
@@ -16,13 +17,14 @@ public class Bullet : MonoBehaviour
         _trail = GetComponent<TrailRenderer>();
     }
 
-    public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease)
+    public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease, bool applyDamage = true)
     {
         _speed = speed;
         _damage = damage;
         _range = range;
         _direction = direction;
         _onRelease = onRelease;
+        _applyDamage = applyDamage;
         _traveledDistance = 0f;
     }
 
@@ -38,7 +40,7 @@ public class Bullet : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent<IDamageable>(out var damageable))
+        if (_applyDamage && other.TryGetComponent<IDamageable>(out var damageable))
             damageable.TakeDamage(_damage);
 
         Release();

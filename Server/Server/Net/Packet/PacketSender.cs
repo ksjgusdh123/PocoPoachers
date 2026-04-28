@@ -40,6 +40,27 @@ public static class PacketSender
         SessionManager.Instance.Broadcast(fb, PacketType.S_MoveNtf, bodyOff.Value, except);
     }
 
+    public static void SShootNtfBroadcast(
+        ClientSession? except,
+        int playerId,
+        float ox, float oy, float oz,
+        float dx, float dy, float dz,
+        float bulletSpeed,
+        float damage,
+        float maxRange)
+    {
+        var fb = new FlatBufferBuilder(BufferSize);
+        S_ShootNtf.StartS_ShootNtf(fb);
+        S_ShootNtf.AddPlayerId(fb, playerId);
+        S_ShootNtf.AddOrigin(fb, Vec3.CreateVec3(fb, ox, oy, oz));
+        S_ShootNtf.AddDirection(fb, Vec3.CreateVec3(fb, dx, dy, dz));
+        S_ShootNtf.AddBulletSpeed(fb, bulletSpeed);
+        S_ShootNtf.AddDamage(fb, damage);
+        S_ShootNtf.AddMaxRange(fb, maxRange);
+        Offset<S_ShootNtf> bodyOff = S_ShootNtf.EndS_ShootNtf(fb);
+        SessionManager.Instance.Broadcast(fb, PacketType.S_ShootNtf, bodyOff.Value, except);
+    }
+
     public static void SAddItemRes(ClientSession session, bool success, int itemId, int amount)
     {
         var fb = new FlatBufferBuilder(BufferSize);

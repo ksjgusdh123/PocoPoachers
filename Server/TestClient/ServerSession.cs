@@ -1,4 +1,4 @@
-﻿using Google.FlatBuffers;
+using Google.FlatBuffers;
 using ServerCore;
 using System.Net;
 
@@ -33,6 +33,9 @@ namespace TestClient
                     break;
                 case PacketType.S_MoveNtf:
                     HandleMoveNtf(root.TypeAsS_MoveNtf());
+                    break;
+                case PacketType.S_ShootNtf:
+                    HandleShootNtf(root.TypeAsS_ShootNtf());
                     break;
                 default:
                     LOG_W($"Unknown packet type: {root.TypeType}");
@@ -74,6 +77,15 @@ namespace TestClient
             float y = ntf.Pos?.Y ?? 0f;
             float z = ntf.Pos?.Z ?? 0f;
             LOG($"<-- S_MoveNtf: PlayerId={ntf.PlayerId}, Pos=({x:F2},{y:F2},{z:F2}), Rot={ntf.Rotation:F2}, MoveType={ntf.MoveType}");
+        }
+
+        void HandleShootNtf(S_ShootNtf ntf)
+        {
+            var o = ntf.Origin;
+            var d = ntf.Direction;
+            float ox = o?.X ?? 0f, oy = o?.Y ?? 0f, oz = o?.Z ?? 0f;
+            float dx = d?.X ?? 0f, dy = d?.Y ?? 0f, dz = d?.Z ?? 0f;
+            LOG($"<-- S_ShootNtf: PlayerId={ntf.PlayerId}, origin=({ox:F2},{oy:F2},{oz:F2}), dir=({dx:F2},{dy:F2},{dz:F2}), speed={ntf.BulletSpeed:F1}, dmg={ntf.Damage:F1}, range={ntf.MaxRange:F1}");
         }
 
         static ArraySegment<byte> BuildPacket(FlatBufferBuilder builder, PacketType type, int innerOffset)

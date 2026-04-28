@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net;
 using UnityEngine;
 
@@ -10,6 +10,9 @@ public class NetworkManager : Singleton<NetworkManager>
     [SerializeField] string userName = "Player";
     [SerializeField] bool remoteConnection = false;
 
+    [Tooltip("다른 플레이어 발사 표시용 탄환 프리팹 (보통 로컬 총의 bulletPrefab과 동일)")]
+    [SerializeField] GameObject remoteBulletPrefab;
+
     public Session Session { get; private set; }
     public int MyPlayerId { get; private set; }
     public bool IsLoggedIn { get; private set; }
@@ -18,6 +21,8 @@ public class NetworkManager : Singleton<NetworkManager>
     public event Action OnDisconnected;
 
     public string TargetHost => remoteConnection ? remoteHost : localHost;
+
+    public GameObject RemoteBulletPrefab => remoteBulletPrefab;
 
     protected override void Awake()
     {

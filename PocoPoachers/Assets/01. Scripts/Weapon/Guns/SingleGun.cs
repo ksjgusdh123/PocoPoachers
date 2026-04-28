@@ -12,5 +12,16 @@ public class SingleGun : GunBase
             _muzzle.forward,
             () => BulletPool.GetInstance().Release(_gunData.bulletPrefab, bullet)
         );
+
+        var nm = NetworkManager.Instance;
+        if (nm != null && nm.IsLoggedIn)
+        {
+            PacketSender.CShootReq(
+                _muzzle.position,
+                _muzzle.forward.normalized,
+                _gunData.bulletSpeed,
+                _gunData.damage,
+                _gunData.range);
+        }
     }
 }
