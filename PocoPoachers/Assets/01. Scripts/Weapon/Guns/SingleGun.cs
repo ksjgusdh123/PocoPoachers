@@ -4,13 +4,12 @@ public class SingleGun : GunBase
 {
     protected override void Shoot()
     {
-        Vector3 direction = GetAimDirection();
-        Bullet bullet = BulletPool.GetInstance().Get(_gunData.bulletPrefab, _muzzle.position, Quaternion.LookRotation(direction));
+        Bullet bullet = BulletPool.GetInstance().Get(_gunData.bulletPrefab, _muzzle.position, _muzzle.rotation);
         bullet.Initialize(
             _gunData.bulletSpeed,
             _gunData.damage,
             _gunData.range,
-            direction,
+            _muzzle.up,
             () => BulletPool.GetInstance().Release(_gunData.bulletPrefab, bullet)
         );
     }
