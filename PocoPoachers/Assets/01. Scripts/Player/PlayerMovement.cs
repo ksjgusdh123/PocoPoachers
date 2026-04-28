@@ -14,6 +14,7 @@ public class PlayerMovement : MonoBehaviour
 
     private CharacterController _characterController;
     private PlayerInputHandler _inputHandler;
+    private PlayerDodge _playerDodge;
     private Animator _animator;
 
     private Vector3 _currentVelocity; // _currentSpeed 대신 벡터로 교체
@@ -28,6 +29,7 @@ public class PlayerMovement : MonoBehaviour
     {
         _characterController = GetComponent<CharacterController>();
         _inputHandler = GetComponent<PlayerInputHandler>();
+        _playerDodge = GetComponent<PlayerDodge>();
         _animator = GetComponentInChildren<Animator>();
     }
 
@@ -44,6 +46,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move()
     {
+      if (_playerDodge.IsRolling) return;
+
       Vector2 input = _inputHandler.MoveInput;
       Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
 
