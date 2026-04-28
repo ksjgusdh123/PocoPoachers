@@ -1,0 +1,9 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: poco-poachers-server:latest
+    ports:
+      - "7000:7000"
+    restart: unless-stopped
