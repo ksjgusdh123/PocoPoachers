@@ -55,9 +55,9 @@ public class ItemSlotUI : MonoBehaviour
 
     public void ClearSlot() => _settedSlot?.Clear();
 
-    public void EquipItem(ItemData prevData)
+    public void EquipItem(ItemData prevData, int amount)
     {
-        _settedSlot.ChangeByDragDrop(prevData);
+        _settedSlot.ChangeByDragDrop(prevData, amount);
     }
 
     public void SetSlotData(ItemData data, int amount)
