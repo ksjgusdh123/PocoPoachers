@@ -9,7 +9,7 @@ static int Run(string[] args)
     string schemasDir = Path.GetFullPath("Schemas");
     string flatcExe   = Path.GetFullPath("flatc.exe");
     string serverOut  = Path.GetFullPath(Path.Combine("..", "..", "Server", "Server", "Generated", "FlatBuffer"));
-    string clientOut  = Path.GetFullPath(Path.Combine("..", "..", "PocoPoachers", "Assets", "01. Scripts", "Network", "Generated", "FlatBuffer"));
+    string clientOut  = Path.GetFullPath(Path.Combine("..", "..", "PocoPoachers", "Assets", "01. Scripts", "Generated", "FlatBuffer"));
 
     for (int i = 0; i < args.Length; i++)
     {

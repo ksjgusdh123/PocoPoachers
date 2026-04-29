@@ -11,7 +11,7 @@ int Run(string[] args)
 {
     string dataDir        = "Data";
     string serverCsOut    = Path.Combine("..", "..", "Server", "Server", "Generated", "DataTable");
-    string clientCsOut    = Path.Combine("..", "..", "PocoPoachers", "Assets", "01. Scripts", "Generated", "DataTable");
+    string clientCsOut    = Path.Combine("..", "..", "PocoPoachers", "Assets", "01. Scripts", "DataTable");
     string serverJsonOut  = Path.Combine("..", "..", "Server", "Server", "Generated", "JsonData");
     string clientJsonOut  = Path.Combine("..", "..", "PocoPoachers", "Assets", "Resources", "JsonData");
 
