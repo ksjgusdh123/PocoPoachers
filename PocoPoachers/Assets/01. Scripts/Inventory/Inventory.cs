@@ -74,7 +74,7 @@ public class Inventory : MonoBehaviour
 
         for (int i = _currentCapacity - 1; i >= 0; i--)
         {
-            if (!_slots[i].IsEmpty && _slots[i].ItemData == itemData)
+            if (!_slots[i].IsEmpty && _slots[i].ItemData.id == itemData.id)
             {
                 remaining -= _slots[i].RemoveAmount(remaining);
                 if (remaining <= 0)
@@ -84,6 +84,29 @@ public class Inventory : MonoBehaviour
 
         ChangeInventory?.Invoke();
         return amount - remaining;
+    }
+
+    // 지정 인덱스 슬롯이 비어있으면 추가, 비어있지 않으면 false 반환
+    public bool AddItemAtSlot(int slotIndex, ItemData itemData, int amount = 1)
+    {
+        if (slotIndex < 0 || slotIndex >= _currentCapacity) return false;
+        if (!_slots[slotIndex].IsEmpty) return false;
+
+        int toAdd = Mathf.Min(amount, itemData.MaxStack);
+        _slots[slotIndex].Set(itemData, toAdd);
+        ChangeInventory?.Invoke();
+        return true;
+    }
+
+    // 지정 인덱스 슬롯에서 amount만큼 제거, 실제 제거된 수량 반환
+    public int RemoveItemAtSlot(int slotIndex, ItemData itemData, int amount = 1)
+    {
+        if (slotIndex < 0 || slotIndex >= _currentCapacity) return 0;
+        if (_slots[slotIndex].IsEmpty || _slots[slotIndex].ItemData.id != itemData.id) return 0;
+
+        int removed = _slots[slotIndex].RemoveAmount(amount);
+        ChangeInventory?.Invoke();
+        return removed;
     }
 
     // 현재 용량 확장 (최대 용량 초과 불가)

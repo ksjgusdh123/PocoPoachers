@@ -132,10 +132,11 @@ public static class PacketHandlers
     public static void OnS_ChangeItemBox(FlatPacket root)
     {
         var pkt = root.TypeAsS_ChangeItemBox();
-        bool isGain= pkt.IsGain;
+        bool isGain = pkt.IsGain;
         int boxUid = pkt.BoxUid;
         int typeId = pkt.TypeId;
         int amount = pkt.Amount;
+        int slotIndex = pkt.SlotIndex;
 
         MainThreadDispatcher.Enqueue(() =>
         {
@@ -143,8 +144,16 @@ public static class PacketHandlers
             if (data == null) return;
 
             if (!ObjectManager.Instance.TryGet(ObjectKind.ItemBox, boxUid, out var worldObj)) return;
-            if(isGain) worldObj.GetComponent<Inventory>()?.AddItem(data, amount);
-            else worldObj.GetComponent<Inventory>()?.RemoveItem(data, amount);
+            if (slotIndex == -1)
+            {
+                if (isGain) worldObj.GetComponent<Inventory>()?.AddItem(data, amount);
+                else worldObj.GetComponent<Inventory>()?.RemoveItem(data, amount);
+            }
+            else
+            {
+                if (isGain) worldObj.GetComponent<Inventory>()?.AddItemAtSlot(slotIndex, data, amount);
+                else worldObj.GetComponent<Inventory>()?.RemoveItemAtSlot(slotIndex, data, amount);
+            }
         });
     }
 
@@ -153,11 +162,21 @@ public static class PacketHandlers
         var pkt = root.TypeAsS_SuccessGainItemNtf();
         var item = ItemTable.Instance.Get(pkt.TypeId);
         int amount = pkt.Amount;
+        int slotIndex = pkt.SlotIndex;
+        int removedSlotIndex = pkt.RemovedSlotIndex;
 
         MainThreadDispatcher.Enqueue(() =>
         {
-            GameManager.GetInstance().GainedInventory.AddItem(item, amount);
-            GameManager.GetInstance().GiveInventory.RemoveItem(item, amount);
+            if (slotIndex == -1)
+            {
+                GameManager.GetInstance().GainedInventory.AddItem(item, amount);
+                GameManager.GetInstance().GiveInventory.RemoveItem(item, amount);
+            }
+            else
+            {
+                GameManager.GetInstance().GainedInventory.AddItemAtSlot(slotIndex, item, amount);
+                GameManager.GetInstance().GiveInventory.RemoveItemAtSlot(removedSlotIndex, item, amount);
+            }
         });
     }
 
@@ -168,24 +187,27 @@ public static class PacketHandlers
 
         int playerGainItemId = pkt.PlayerGainItemId;
         int playerGainAmount = pkt.PlayerGainItemAmount;
-        int boxGainItemId    = pkt.BoxGainItemId;
-        int boxGainAmount    = pkt.BoxGainItemAmount;
+        int playerSlotIndex = pkt.PlayerSlotIndex;
+        int boxGainItemId = pkt.BoxGainItemId;
+        int boxGainAmount = pkt.BoxGainItemAmount;
+        int boxSlotIndex = pkt.BoxSlotIndex;
 
         MainThreadDispatcher.Enqueue(() =>
         {
             // GiveInventory = 플레이어, GainedInventory = 박스 (OnSlotDropped에서 SaveChangeInventorys(_inventory, interactionInven) 순서 기준)
             var playerInven = GameManager.GetInstance().GiveInventory;
-            var boxInven    = GameManager.GetInstance().GainedInventory;
+            var boxInven = GameManager.GetInstance().GainedInventory;
 
             ItemData playerGainedItem = ItemTable.Instance.Get(playerGainItemId);
-            ItemData boxGainedItem    = ItemTable.Instance.Get(boxGainItemId);
+            ItemData boxGainedItem = ItemTable.Instance.Get(boxGainItemId);
 
             if (playerGainedItem != null && boxGainedItem != null)
-            { 
-                playerInven.RemoveItem(boxGainedItem, boxGainAmount);
-                boxInven.RemoveItem(playerGainedItem, playerGainAmount);
-                playerInven.AddItem(playerGainedItem, playerGainAmount);
-                boxInven.AddItem(boxGainedItem, boxGainAmount);
+            {
+                playerInven.RemoveItemAtSlot(playerSlotIndex, boxGainedItem, boxGainAmount);
+                boxInven.RemoveItemAtSlot(boxSlotIndex, playerGainedItem, playerGainAmount);
+                playerInven.AddItemAtSlot(playerSlotIndex, playerGainedItem, playerGainAmount);
+                boxInven.AddItemAtSlot(boxSlotIndex, boxGainedItem, boxGainAmount);
+                Debug.Log($"playerSlot : {playerSlotIndex}        boxSlot : {boxSlotIndex}");
             }
         });
     }

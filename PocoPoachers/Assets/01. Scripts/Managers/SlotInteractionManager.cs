@@ -22,7 +22,7 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
 
     public Inventory InteractionInventory { get; private set; }
     public event Action OnDoubleClick;
-    public event Action<ItemData, int> OnDragEmptySlot;
+    public event Action<ItemData, int, int, int> OnDragEmptySlot;
     //public event Action<ItemSlotUI, ItemSlotUI, ItemData, int> OnSlotDrop;
 
     protected override void Awake()
@@ -36,16 +36,17 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     }
 
     public void InvokeSlotExchange(ItemSlotUI player, ItemSlotUI box, ItemData PtoBItem, ItemData BtoPItem,
-        int PtoBMovedAmount, int BtoPMovedAmount)
+        int PtoBMovedAmount, int BtoPMovedAmount, int PSlotIndex, int BSlotIndex)
     {
         player.InventoryUI.OnSlotDropped();
-        PacketSender.CExchangeItemReq(box.InventoryUI.Box.Id, PtoBItem?.Id ?? 0, PtoBMovedAmount, BtoPItem?.Id ?? 0, BtoPMovedAmount);
+        PacketSender.CExchangeItemReq(box.InventoryUI.Box.Id, PtoBItem?.Id ?? 0, PtoBMovedAmount, PSlotIndex,
+            BtoPItem?.Id ?? 0, BtoPMovedAmount, BSlotIndex);
     }
 
-    public void InvokeDragEmptySlot(ItemData data,int amount)
+    public void InvokeDragEmptySlot(ItemData data,int amount, int gainedSlotIndex, int removedSlotIndex)
     {
         if (HoveredSlot == null || HoveredSlot.IsSettedItem) return;
-        OnDragEmptySlot?.Invoke(data, amount);
+        OnDragEmptySlot?.Invoke(data, amount, gainedSlotIndex, removedSlotIndex);
     }
 
     public void InvokeDoubleClick()

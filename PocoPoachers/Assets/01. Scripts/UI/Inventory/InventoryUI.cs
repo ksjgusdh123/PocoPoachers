@@ -65,7 +65,7 @@ public class InventoryUI : MonoBehaviour
         PacketSender.CGainItemReq(boxUid, itemTypeId, targetSlot.SavedAmountItem, isPlayer);
     }
 
-    private void OnDraggedSlot(ItemData data, int amount)
+    private void OnDraggedSlot(ItemData data, int amount, int gainedSlotIndex, int removedSlotIndex)
     {
         var targetSlot = SlotInteractionManager.GetInstance().HoveredSlot;
         if (targetSlot == null || !_slotSet.Contains(targetSlot)) return;
@@ -87,7 +87,7 @@ public class InventoryUI : MonoBehaviour
         }
         int itemTypeId = data.Id;
         GameManager.GetInstance().SaveChangeInventorys(target, _inventory);
-        PacketSender.CGainItemReq(boxUid, itemTypeId, amount, isPlayer);
+        PacketSender.CGainItemReq(boxUid, itemTypeId, amount, isPlayer, gainedSlotIndex, removedSlotIndex);
     }
 
     public void OnSlotDropped()
@@ -123,6 +123,7 @@ public class InventoryUI : MonoBehaviour
         for (int i = 0; i < _inventory.MaxCapacity; i++)
         {
             _slotUIs[i] = Instantiate(_slotPrefab, _slotParent);
+            _slotUIs[i].SetIndex(i);
             _slotSet.Add(_slotUIs[i]);
         }
 

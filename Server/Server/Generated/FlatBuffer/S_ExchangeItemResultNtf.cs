@@ -20,19 +20,25 @@ public struct S_ExchangeItemResultNtf : IFlatbufferObject
   public int BoxUid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int PlayerGainItemId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int PlayerGainItemAmount { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int BoxGainItemId { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int BoxGainItemAmount { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int PlayerSlotIndex { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int BoxGainItemId { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int BoxGainItemAmount { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int BoxSlotIndex { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<S_ExchangeItemResultNtf> CreateS_ExchangeItemResultNtf(FlatBufferBuilder builder,
       bool is_success = false,
       int box_uid = 0,
       int player_gain_item_id = 0,
       int player_gain_item_amount = 0,
+      int player_slot_index = 0,
       int box_gain_item_id = 0,
-      int box_gain_item_amount = 0) {
-    builder.StartTable(6);
+      int box_gain_item_amount = 0,
+      int box_slot_index = 0) {
+    builder.StartTable(8);
+    S_ExchangeItemResultNtf.AddBoxSlotIndex(builder, box_slot_index);
     S_ExchangeItemResultNtf.AddBoxGainItemAmount(builder, box_gain_item_amount);
     S_ExchangeItemResultNtf.AddBoxGainItemId(builder, box_gain_item_id);
+    S_ExchangeItemResultNtf.AddPlayerSlotIndex(builder, player_slot_index);
     S_ExchangeItemResultNtf.AddPlayerGainItemAmount(builder, player_gain_item_amount);
     S_ExchangeItemResultNtf.AddPlayerGainItemId(builder, player_gain_item_id);
     S_ExchangeItemResultNtf.AddBoxUid(builder, box_uid);
@@ -40,13 +46,15 @@ public struct S_ExchangeItemResultNtf : IFlatbufferObject
     return S_ExchangeItemResultNtf.EndS_ExchangeItemResultNtf(builder);
   }
 
-  public static void StartS_ExchangeItemResultNtf(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartS_ExchangeItemResultNtf(FlatBufferBuilder builder) { builder.StartTable(8); }
   public static void AddIsSuccess(FlatBufferBuilder builder, bool isSuccess) { builder.AddBool(0, isSuccess, false); }
   public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(1, boxUid, 0); }
   public static void AddPlayerGainItemId(FlatBufferBuilder builder, int playerGainItemId) { builder.AddInt(2, playerGainItemId, 0); }
   public static void AddPlayerGainItemAmount(FlatBufferBuilder builder, int playerGainItemAmount) { builder.AddInt(3, playerGainItemAmount, 0); }
-  public static void AddBoxGainItemId(FlatBufferBuilder builder, int boxGainItemId) { builder.AddInt(4, boxGainItemId, 0); }
-  public static void AddBoxGainItemAmount(FlatBufferBuilder builder, int boxGainItemAmount) { builder.AddInt(5, boxGainItemAmount, 0); }
+  public static void AddPlayerSlotIndex(FlatBufferBuilder builder, int playerSlotIndex) { builder.AddInt(4, playerSlotIndex, 0); }
+  public static void AddBoxGainItemId(FlatBufferBuilder builder, int boxGainItemId) { builder.AddInt(5, boxGainItemId, 0); }
+  public static void AddBoxGainItemAmount(FlatBufferBuilder builder, int boxGainItemAmount) { builder.AddInt(6, boxGainItemAmount, 0); }
+  public static void AddBoxSlotIndex(FlatBufferBuilder builder, int boxSlotIndex) { builder.AddInt(7, boxSlotIndex, 0); }
   public static Offset<S_ExchangeItemResultNtf> EndS_ExchangeItemResultNtf(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<S_ExchangeItemResultNtf>(o);
@@ -63,8 +71,10 @@ static public class S_ExchangeItemResultNtfVerify
       && verifier.VerifyField(tablePos, 6 /*BoxUid*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*PlayerGainItemId*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 10 /*PlayerGainItemAmount*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 12 /*BoxGainItemId*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 14 /*BoxGainItemAmount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*PlayerSlotIndex*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*BoxGainItemId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 16 /*BoxGainItemAmount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 18 /*BoxSlotIndex*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

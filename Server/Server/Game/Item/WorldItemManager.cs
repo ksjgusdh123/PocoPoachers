@@ -16,7 +16,7 @@ public sealed class WorldItemManager
     {
         public int TypeId;
         public float X, Y, Z, Rotation;
-        public List<int> ItemIds;
+        public required List<int> ItemIds;
     }
 
     public void TempInit()

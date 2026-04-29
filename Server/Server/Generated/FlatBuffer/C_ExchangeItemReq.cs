@@ -19,30 +19,38 @@ public struct C_ExchangeItemReq : IFlatbufferObject
   public int BoxUid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int PlayerItemId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int PlayerItemAmount { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int BoxItemId { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int BoxItemAmount { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int PlayerSlotIndex { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int BoxItemId { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int BoxItemAmount { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int BoxSlotIndex { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<C_ExchangeItemReq> CreateC_ExchangeItemReq(FlatBufferBuilder builder,
       int box_uid = 0,
       int player_item_id = 0,
       int player_item_amount = 0,
+      int player_slot_index = 0,
       int box_item_id = 0,
-      int box_item_amount = 0) {
-    builder.StartTable(5);
+      int box_item_amount = 0,
+      int box_slot_index = 0) {
+    builder.StartTable(7);
+    C_ExchangeItemReq.AddBoxSlotIndex(builder, box_slot_index);
     C_ExchangeItemReq.AddBoxItemAmount(builder, box_item_amount);
     C_ExchangeItemReq.AddBoxItemId(builder, box_item_id);
+    C_ExchangeItemReq.AddPlayerSlotIndex(builder, player_slot_index);
     C_ExchangeItemReq.AddPlayerItemAmount(builder, player_item_amount);
     C_ExchangeItemReq.AddPlayerItemId(builder, player_item_id);
     C_ExchangeItemReq.AddBoxUid(builder, box_uid);
     return C_ExchangeItemReq.EndC_ExchangeItemReq(builder);
   }
 
-  public static void StartC_ExchangeItemReq(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartC_ExchangeItemReq(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(0, boxUid, 0); }
   public static void AddPlayerItemId(FlatBufferBuilder builder, int playerItemId) { builder.AddInt(1, playerItemId, 0); }
   public static void AddPlayerItemAmount(FlatBufferBuilder builder, int playerItemAmount) { builder.AddInt(2, playerItemAmount, 0); }
-  public static void AddBoxItemId(FlatBufferBuilder builder, int boxItemId) { builder.AddInt(3, boxItemId, 0); }
-  public static void AddBoxItemAmount(FlatBufferBuilder builder, int boxItemAmount) { builder.AddInt(4, boxItemAmount, 0); }
+  public static void AddPlayerSlotIndex(FlatBufferBuilder builder, int playerSlotIndex) { builder.AddInt(3, playerSlotIndex, 0); }
+  public static void AddBoxItemId(FlatBufferBuilder builder, int boxItemId) { builder.AddInt(4, boxItemId, 0); }
+  public static void AddBoxItemAmount(FlatBufferBuilder builder, int boxItemAmount) { builder.AddInt(5, boxItemAmount, 0); }
+  public static void AddBoxSlotIndex(FlatBufferBuilder builder, int boxSlotIndex) { builder.AddInt(6, boxSlotIndex, 0); }
   public static Offset<C_ExchangeItemReq> EndC_ExchangeItemReq(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<C_ExchangeItemReq>(o);
@@ -58,8 +66,10 @@ static public class C_ExchangeItemReqVerify
       && verifier.VerifyField(tablePos, 4 /*BoxUid*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*PlayerItemId*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*PlayerItemAmount*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 10 /*BoxItemId*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 12 /*BoxItemAmount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*PlayerSlotIndex*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*BoxItemId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*BoxItemAmount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 16 /*BoxSlotIndex*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

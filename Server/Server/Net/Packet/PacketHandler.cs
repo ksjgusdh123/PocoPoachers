@@ -59,6 +59,8 @@ public class PacketHandler
         int boxUid = pkt.BoxUid;
         int itemTypeId = pkt.ItemUid;
         int amount = pkt.Amount;
+        int slotIndex = pkt.SlotIndex;
+        int removedSlotIndex = pkt.RemovedSlotIndex;
 
         if (isPlayer)
         {
@@ -82,8 +84,9 @@ public class PacketHandler
             LOG($"BoxToPlayer: PlayerId={session.PlayerId}, boxUid={boxUid}, itemTypeId={itemTypeId}, taken={amount}");
         }
 
-        PacketSender.SChangeItemBox(session, isPlayer, boxUid, itemTypeId, amount);
-        PacketSender.SSuccessGainItemNtf(session, boxUid, itemTypeId, amount);
+        if(isPlayer && removedSlotIndex != -1) PacketSender.SChangeItemBox(session, isPlayer, boxUid, itemTypeId, amount, slotIndex);
+        else PacketSender.SChangeItemBox(session, isPlayer, boxUid, itemTypeId, amount, removedSlotIndex);
+        PacketSender.SSuccessGainItemNtf(session, boxUid, itemTypeId, amount, slotIndex, removedSlotIndex);
     }
 
     public void OnC_ShootReq(ClientSession session, FlatPacket root)
@@ -114,8 +117,10 @@ public class PacketHandler
         int boxUid = pkt.BoxUid;
         int playerItemId = pkt.PlayerItemId;
         int playerItemAmount = pkt.PlayerItemAmount;
+        int playerSlotIndex = pkt.PlayerSlotIndex;
         int boxItemId = pkt.BoxItemId;
         int boxItemAmount = pkt.BoxItemAmount;
+        int boxSlotIndex = pkt.BoxSlotIndex;
 
         if (!WorldItemManager.Instance.TryTakeItem(boxUid, boxItemId, boxItemAmount, out int taken))
         {
@@ -133,10 +138,11 @@ public class PacketHandler
         WorldItemManager.Instance.AddItemToBox(boxUid, playerItemId, playerItemAmount);
 
         // 교환으로 상자가 소실
-        PacketSender.SChangeItemBox(session, false, boxUid, boxItemId, boxItemAmount);
+        PacketSender.SChangeItemBox(session, false, boxUid, boxItemId, boxItemAmount, boxSlotIndex);
         // 교환으로 상자가 획득
-        PacketSender.SChangeItemBox(session, true, boxUid, playerItemId, playerItemAmount);
+        PacketSender.SChangeItemBox(session, true, boxUid, playerItemId, playerItemAmount, boxSlotIndex);
 
-        PacketSender.SExchangeItemResultNtf(session, true, boxUid, playerItemId, playerItemAmount, boxItemId, boxItemAmount);
+        PacketSender.SExchangeItemResultNtf(session, true, boxUid, playerItemId, playerItemAmount, playerSlotIndex,
+            boxItemId, boxItemAmount, boxSlotIndex);
     }
 }

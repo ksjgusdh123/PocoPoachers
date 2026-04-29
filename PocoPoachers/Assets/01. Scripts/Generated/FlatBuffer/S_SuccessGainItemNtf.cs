@@ -19,22 +19,30 @@ public struct S_SuccessGainItemNtf : IFlatbufferObject
   public int Uid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int TypeId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int Amount { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int SlotIndex { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int RemovedSlotIndex { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<S_SuccessGainItemNtf> CreateS_SuccessGainItemNtf(FlatBufferBuilder builder,
       int uid = 0,
       int type_id = 0,
-      int amount = 0) {
-    builder.StartTable(3);
+      int amount = 0,
+      int slot_index = 0,
+      int removed_slot_index = 0) {
+    builder.StartTable(5);
+    S_SuccessGainItemNtf.AddRemovedSlotIndex(builder, removed_slot_index);
+    S_SuccessGainItemNtf.AddSlotIndex(builder, slot_index);
     S_SuccessGainItemNtf.AddAmount(builder, amount);
     S_SuccessGainItemNtf.AddTypeId(builder, type_id);
     S_SuccessGainItemNtf.AddUid(builder, uid);
     return S_SuccessGainItemNtf.EndS_SuccessGainItemNtf(builder);
   }
 
-  public static void StartS_SuccessGainItemNtf(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartS_SuccessGainItemNtf(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddUid(FlatBufferBuilder builder, int uid) { builder.AddInt(0, uid, 0); }
   public static void AddTypeId(FlatBufferBuilder builder, int typeId) { builder.AddInt(1, typeId, 0); }
   public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(2, amount, 0); }
+  public static void AddSlotIndex(FlatBufferBuilder builder, int slotIndex) { builder.AddInt(3, slotIndex, 0); }
+  public static void AddRemovedSlotIndex(FlatBufferBuilder builder, int removedSlotIndex) { builder.AddInt(4, removedSlotIndex, 0); }
   public static Offset<S_SuccessGainItemNtf> EndS_SuccessGainItemNtf(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<S_SuccessGainItemNtf>(o);
@@ -50,6 +58,8 @@ static public class S_SuccessGainItemNtfVerify
       && verifier.VerifyField(tablePos, 4 /*Uid*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*TypeId*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Amount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*SlotIndex*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*RemovedSlotIndex*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

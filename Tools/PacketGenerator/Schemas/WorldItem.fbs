@@ -21,6 +21,8 @@ table C_GainItemReq
     box_uid: int;
     item_uid: int;
     amount: int;
+    slot_index: int;
+    removed_slot_index: int;
 }
 
 table S_ChangeItemBox
@@ -29,6 +31,7 @@ table S_ChangeItemBox
     box_uid: int;
     type_id: int;
     amount: int;
+    slot_index: int;
 }
 
 table S_SuccessGainItemNtf
@@ -36,6 +39,8 @@ table S_SuccessGainItemNtf
     uid: int;
     type_id: int;
     amount: int;
+    slot_index: int;
+    removed_slot_index: int;
 }
 
 table C_ExchangeItemReq
@@ -43,8 +48,10 @@ table C_ExchangeItemReq
     box_uid: int;
     player_item_id: int;
     player_item_amount: int;
+    player_slot_index: int;
     box_item_id: int;
     box_item_amount: int;
+    box_slot_index: int;
 }
 
 table S_ExchangeItemResultNtf
@@ -53,6 +60,8 @@ table S_ExchangeItemResultNtf
     box_uid: int;
     player_gain_item_id: int;
     player_gain_item_amount: int;
+    player_slot_index: int;
     box_gain_item_id: int;
     box_gain_item_amount: int;
+    box_slot_index: int;
 }

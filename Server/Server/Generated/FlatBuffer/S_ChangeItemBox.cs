@@ -20,13 +20,16 @@ public struct S_ChangeItemBox : IFlatbufferObject
   public int BoxUid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int TypeId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int Amount { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int SlotIndex { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<S_ChangeItemBox> CreateS_ChangeItemBox(FlatBufferBuilder builder,
       bool is_gain = false,
       int box_uid = 0,
       int type_id = 0,
-      int amount = 0) {
-    builder.StartTable(4);
+      int amount = 0,
+      int slot_index = 0) {
+    builder.StartTable(5);
+    S_ChangeItemBox.AddSlotIndex(builder, slot_index);
     S_ChangeItemBox.AddAmount(builder, amount);
     S_ChangeItemBox.AddTypeId(builder, type_id);
     S_ChangeItemBox.AddBoxUid(builder, box_uid);
@@ -34,11 +37,12 @@ public struct S_ChangeItemBox : IFlatbufferObject
     return S_ChangeItemBox.EndS_ChangeItemBox(builder);
   }
 
-  public static void StartS_ChangeItemBox(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartS_ChangeItemBox(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddIsGain(FlatBufferBuilder builder, bool isGain) { builder.AddBool(0, isGain, false); }
   public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(1, boxUid, 0); }
   public static void AddTypeId(FlatBufferBuilder builder, int typeId) { builder.AddInt(2, typeId, 0); }
   public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(3, amount, 0); }
+  public static void AddSlotIndex(FlatBufferBuilder builder, int slotIndex) { builder.AddInt(4, slotIndex, 0); }
   public static Offset<S_ChangeItemBox> EndS_ChangeItemBox(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<S_ChangeItemBox>(o);
@@ -55,6 +59,7 @@ static public class S_ChangeItemBoxVerify
       && verifier.VerifyField(tablePos, 6 /*BoxUid*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*TypeId*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 10 /*Amount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*SlotIndex*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

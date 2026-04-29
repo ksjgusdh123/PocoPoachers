@@ -11,6 +11,7 @@ public class ItemSlotUI : MonoBehaviour
     [SerializeField] private GameObject _itemVisual;
 
     public InventoryUI InventoryUI { get; private set; }
+    public int SlotIndex { get; private set; }
     public bool IsSettedItem { get; private set; }
     public ItemData SlotItemData => _settedSlot?.ItemData;
     public int SavedAmountItem => _settedSlot.Amount;
@@ -66,6 +67,11 @@ public class ItemSlotUI : MonoBehaviour
             _settedSlot.Clear();
         else
             _settedSlot.Set(data, amount);
+    }
+
+    public void SetIndex(int index)
+    {
+        SlotIndex = index;
     }
 
     public void NotifyInventoryChanged()
