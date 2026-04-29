@@ -20,13 +20,19 @@ public struct C_GainItemReq : IFlatbufferObject
   public int BoxUid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int ItemUid { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int Amount { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int SlotIndex { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int RemovedSlotIndex { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<C_GainItemReq> CreateC_GainItemReq(FlatBufferBuilder builder,
       bool is_player = false,
       int box_uid = 0,
       int item_uid = 0,
-      int amount = 0) {
-    builder.StartTable(4);
+      int amount = 0,
+      int slot_index = 0,
+      int removed_slot_index = 0) {
+    builder.StartTable(6);
+    C_GainItemReq.AddRemovedSlotIndex(builder, removed_slot_index);
+    C_GainItemReq.AddSlotIndex(builder, slot_index);
     C_GainItemReq.AddAmount(builder, amount);
     C_GainItemReq.AddItemUid(builder, item_uid);
     C_GainItemReq.AddBoxUid(builder, box_uid);
@@ -34,11 +40,13 @@ public struct C_GainItemReq : IFlatbufferObject
     return C_GainItemReq.EndC_GainItemReq(builder);
   }
 
-  public static void StartC_GainItemReq(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartC_GainItemReq(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddIsPlayer(FlatBufferBuilder builder, bool isPlayer) { builder.AddBool(0, isPlayer, false); }
   public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(1, boxUid, 0); }
   public static void AddItemUid(FlatBufferBuilder builder, int itemUid) { builder.AddInt(2, itemUid, 0); }
   public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(3, amount, 0); }
+  public static void AddSlotIndex(FlatBufferBuilder builder, int slotIndex) { builder.AddInt(4, slotIndex, 0); }
+  public static void AddRemovedSlotIndex(FlatBufferBuilder builder, int removedSlotIndex) { builder.AddInt(5, removedSlotIndex, 0); }
   public static Offset<C_GainItemReq> EndC_GainItemReq(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<C_GainItemReq>(o);
@@ -55,6 +63,8 @@ static public class C_GainItemReqVerify
       && verifier.VerifyField(tablePos, 6 /*BoxUid*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*ItemUid*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 10 /*Amount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*SlotIndex*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*RemovedSlotIndex*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

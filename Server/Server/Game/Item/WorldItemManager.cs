@@ -16,7 +16,7 @@ public sealed class WorldItemManager
     {
         public int TypeId;
         public float X, Y, Z, Rotation;
-        public List<int> ItemIds;
+        public required List<int> ItemIds;
     }
 
     public void TempInit()
@@ -26,7 +26,7 @@ public sealed class WorldItemManager
             if (_items.Count > 0)
                 return;
 
-            SpawnBox(301, 0f, 0f, 4f, 0f, new[] { 101, 102, 103 });
+            SpawnBox(301, 0f, 0f, 4f, 0f, new[] { 101, 101, 101, 101, 101, 101, 101, 101, 102, 103 });
         }
 
     }

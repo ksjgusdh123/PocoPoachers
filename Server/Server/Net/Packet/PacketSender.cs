@@ -1,4 +1,5 @@
 using Google.FlatBuffers;
+using System;
 using System.Collections.Generic;
 
 namespace Server;
@@ -75,18 +76,28 @@ public static class PacketSender
         PacketBuilder.Broadcast(SessionManager.Instance.Snapshot(), fb, PacketType.S_SpawnItemBoxNtf, bodyOff.Value);
     }
 
-    public static void SChangeItemBox(ClientSession session, bool isGain, int boxUid, int typeId, int removedAmount)
+    public static void SChangeItemBox(ClientSession session, bool isGain, int boxUid, int typeId, int removedAmount, int slotIndex)
     {
         var fb = new FlatBufferBuilder(BufferSize);
-        var bodyOff = S_ChangeItemBox.CreateS_ChangeItemBox(fb, isGain, boxUid, typeId, removedAmount);
+        var bodyOff = S_ChangeItemBox.CreateS_ChangeItemBox(fb, isGain, boxUid, typeId, removedAmount, slotIndex);
         SessionManager.Instance.Broadcast(fb, PacketType.S_ChangeItemBox, bodyOff.Value, session);
+        LOG($"boxSlotIndex : {slotIndex}");
     }
 
-    public static void SSuccessGainItemNtf(ClientSession session, int uid, int typeId, int amount)
+    public static void SSuccessGainItemNtf(ClientSession session, int uid, int typeId, int amount, int slotIndex, int removedSlotIndex)
     {
         var fb = new FlatBufferBuilder(BufferSize);
-        var bodyOff = S_SuccessGainItemNtf.CreateS_SuccessGainItemNtf(fb, uid, typeId, amount);
+        var bodyOff = S_SuccessGainItemNtf.CreateS_SuccessGainItemNtf(fb, uid, typeId, amount, slotIndex, removedSlotIndex);
         PacketBuilder.Send(session, fb, PacketType.S_SuccessGainItemNtf, bodyOff.Value);
+    }
+
+    public static void SExchangeItemResultNtf(ClientSession session, bool isSuccess, int boxUid, int playerItemId, int playerItemAmont,
+        int playerSlotIndex, int boxItemId, int boxItemAmount, int boxSlotIndex)
+    {
+        var fb = new FlatBufferBuilder(BufferSize);
+        var bodyOff = S_ExchangeItemResultNtf.CreateS_ExchangeItemResultNtf(fb, isSuccess, boxUid, boxItemId, boxItemAmount,
+            playerSlotIndex, playerItemId, playerItemAmont, boxSlotIndex);
+        PacketBuilder.Send(session, fb, PacketType.S_ExchangeItemResultNtf, bodyOff.Value);
     }
 
     public static void SWorldItemDespawnNtfBroadcast(int uid)

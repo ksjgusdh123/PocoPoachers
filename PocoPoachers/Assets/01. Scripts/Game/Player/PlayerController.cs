@@ -7,13 +7,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject boxUI;
     [SerializeField] private CameraController _cameraController;
     private Inventory _inventory;
-    private DropQuickSlotUI[] _quickSlots;
+    private QuickSlotDropHandler[] _quickSlots;
     private GameObject _interactObject;
 
     private void Start()
     {
         _inventory = GetComponent<Inventory>();
-        _quickSlots = FindObjectsByType<DropQuickSlotUI>(FindObjectsInactive.Include)
+        _quickSlots = FindObjectsByType<QuickSlotDropHandler>(FindObjectsInactive.Include)
             .OrderBy(s => s.gameObject.name).ToArray();
 
         var inputHandler = GetComponent<PlayerInputHandler>();

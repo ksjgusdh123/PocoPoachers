@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class DropQuickSlotUI : DropSlotUI
+public class QuickSlotDropHandler : EquipDropHandler
 {
     [SerializeField] private TextMeshProUGUI _countText;
     [SerializeField] private int _quickSlotCount;
@@ -24,13 +24,15 @@ public class DropQuickSlotUI : DropSlotUI
         ItemSlotUI slotUI = manager.HoveredSlot;
         if (slotUI == null || !slotUI.IsSettedItem) return false;
 
-        ItemData prev = _droppedItemData;  
-        if (!OnItemDropped(slotUI.SlotItemData, slotUI.SavedAmountItem)) 
-        {
+        ItemData prev = _droppedItemData;
+        int prevAmount = _droppedAmount;
+        if (!OnItemDropped(slotUI.SlotItemData, slotUI.SavedAmountItem))
             return false;
-        }
 
-        slotUI.EquipItem(prev);
+        if (prev == null)
+            slotUI.ClearSlot();  // 퀵슬롯이 비어 있었으면 인벤토리 슬롯 비우기
+        else
+            slotUI.EquipItem(prev, prevAmount);  // 이전 퀵슬롯 아이템과 교환
         return true;
     }
 }

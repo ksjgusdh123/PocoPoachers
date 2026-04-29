@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class SlotInteractionManager : Singleton<SlotInteractionManager>
 {
@@ -13,12 +11,19 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
 
     // 드래그 상태
     public ItemSlotUI DraggedSlot { get; private set; }
+    public int DragAmount { get; private set; }
     public CanvasGroup DraggedCanvasGroup { get; private set; }
     public event Action<ItemSlotUI> OnDragBegin;
     public event Action OnDragEnd;
 
+    // Ctrl 클릭 누적 상태
+    public ItemSlotUI PendingSlot { get; private set; }
+    public int PendingAmount { get; private set; }
+
     public Inventory InteractionInventory { get; private set; }
     public event Action OnDoubleClick;
+    public event Action<ItemData, int, int, int> OnDragEmptySlot;
+    //public event Action<ItemSlotUI, ItemSlotUI, ItemData, int> OnSlotDrop;
 
     protected override void Awake()
     {
@@ -28,6 +33,20 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     public void SetInteractionInventory(Inventory inventory)
     {
         InteractionInventory = inventory;
+    }
+
+    public void InvokeSlotExchange(ItemSlotUI player, ItemSlotUI box, ItemData PtoBItem, ItemData BtoPItem,
+        int PtoBMovedAmount, int BtoPMovedAmount, int PSlotIndex, int BSlotIndex)
+    {
+        player.InventoryUI.OnSlotDropped();
+        PacketSender.CExchangeItemReq(box.InventoryUI.Box.Id, PtoBItem?.Id ?? 0, PtoBMovedAmount, PSlotIndex,
+            BtoPItem?.Id ?? 0, BtoPMovedAmount, BSlotIndex);
+    }
+
+    public void InvokeDragEmptySlot(ItemData data,int amount, int gainedSlotIndex, int removedSlotIndex)
+    {
+        if (HoveredSlot == null || HoveredSlot.IsSettedItem) return;
+        OnDragEmptySlot?.Invoke(data, amount, gainedSlotIndex, removedSlotIndex);
     }
 
     public void InvokeDoubleClick()
@@ -48,8 +67,9 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         OnHoverExit?.Invoke(slot);
     }
 
-    public void SetDragged(ItemSlotUI slot, CanvasGroup canvasGroup)
+    public void SetDragged(ItemSlotUI slot, CanvasGroup canvasGroup, int amount)
     {
+        DragAmount = amount;
         DraggedSlot = slot;
         DraggedCanvasGroup = canvasGroup;
         OnDragBegin?.Invoke(slot);
@@ -60,6 +80,30 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         DragIcon.Instance.Hide();
         DraggedSlot = null;
         DraggedCanvasGroup = null;
+        DragAmount = 0;
         OnDragEnd?.Invoke();
+    }
+
+    public void IncrementPending(ItemSlotUI slot)
+    {
+        if (PendingSlot != slot)
+        {
+            PendingSlot = slot;
+            PendingAmount = 0;
+        }
+        if (PendingAmount < slot.SavedAmountItem)
+            PendingAmount++;
+    }
+
+    public void SetPending(ItemSlotUI slot, int amount)
+    {
+        PendingSlot = slot;
+        PendingAmount = Mathf.Clamp(amount, 1, slot.SavedAmountItem);
+    }
+
+    public void ResetPending()
+    {
+        PendingSlot = null;
+        PendingAmount = 0;
     }
 }

@@ -1,5 +1,6 @@
 using Google.FlatBuffers;
 using UnityEngine;
+using static UnityEditor.Progress;
 
 public static class PacketSender
 {
@@ -30,12 +31,12 @@ public static class PacketSender
         PacketBuilder.Send(session, _builder, PacketType.C_MoveReq, bodyOff.Value);
     }
 
-    public static void CGainItemReq(int boxId, int itemId, int amount = 1, bool isPlayer = false)
+    public static void CGainItemReq(int boxId, int itemId, int amount = 1, bool isPlayer = false, int gainedSlotIndex = -1, int removedSlotIndex = -1)
     {
         if (!TryGetSession(out Session session)) return;
         _builder.Clear();
 
-        var bodyOff = C_GainItemReq.CreateC_GainItemReq(_builder, isPlayer, boxId ,itemId, amount);
+        var bodyOff = C_GainItemReq.CreateC_GainItemReq(_builder, isPlayer, boxId ,itemId, amount, gainedSlotIndex, removedSlotIndex);
         PacketBuilder.Send(session, _builder, PacketType.C_GainItemReq, bodyOff.Value);
     }
 
@@ -54,6 +55,17 @@ public static class PacketSender
         var bodyOff = C_ShootReq.EndC_ShootReq(_builder);
 
         PacketBuilder.Send(session, _builder, PacketType.C_ShootReq, bodyOff.Value);
+    }
+
+    public static void CExchangeItemReq(int boxUid, int playerItemId, int playerItemAmount, int playerSlotIndex,
+        int boxItemId, int boxItemAmount, int boxSlotIndex)
+    {
+        if (!TryGetSession(out Session session)) return;
+        _builder.Clear();
+
+        var bodyOff = C_ExchangeItemReq.CreateC_ExchangeItemReq(_builder, boxUid, playerItemId, playerItemAmount, playerSlotIndex,
+            boxItemId, boxItemAmount, boxSlotIndex);
+        PacketBuilder.Send(session, _builder, PacketType.C_ExchangeItemReq, bodyOff.Value);
     }
 
     static bool TryGetSession(out Session session)

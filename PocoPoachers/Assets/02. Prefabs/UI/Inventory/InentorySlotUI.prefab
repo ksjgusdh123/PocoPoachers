@@ -12,6 +12,8 @@ GameObject:
   - component: {fileID: 7612342290374880186}
   - component: {fileID: 8856712730721527188}
   - component: {fileID: 6241164574615071016}
+  - component: {fileID: 5733527361705115282}
+  - component: {fileID: 739709507161521102}
   m_Layer: 5
   m_Name: InentorySlotUI
   m_TagString: Untagged
@@ -26,7 +28,7 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 861106329415925472}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
@@ -54,7 +56,6 @@ MonoBehaviour:
   _icon: {fileID: 575279559070787536}
   _nameText: {fileID: 7590587628231208667}
   _amountText: {fileID: 5521557141152817302}
-  _emptyOverlay: {fileID: 0}
   _itemVisual: {fileID: 8387190578981905206}
 --- !u!114 &8856712730721527188
 MonoBehaviour:
@@ -80,6 +81,30 @@ CanvasGroup:
   m_Interactable: 1
   m_BlocksRaycasts: 1
   m_IgnoreParentGroups: 0
+--- !u!114 &5733527361705115282
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 861106329415925472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4658f8e43061214c99e6adfec0b438b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryDropHandler
+--- !u!114 &739709507161521102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 861106329415925472}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e1bd2c20b1dd67a46b5b9d096b3b6f4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlotClickHandler
 --- !u!1 &864971980617541441
 GameObject:
   m_ObjectHideFlags: 0

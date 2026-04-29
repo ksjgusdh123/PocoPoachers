@@ -3,31 +3,35 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
+public class ItemSlotUI : MonoBehaviour
 {
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private TextMeshProUGUI _amountText;
     [SerializeField] private GameObject _itemVisual;
 
+    public InventoryUI InventoryUI { get; private set; }
+    public int SlotIndex { get; private set; }
     public bool IsSettedItem { get; private set; }
     public ItemData SlotItemData => _settedSlot?.ItemData;
     public int SavedAmountItem => _settedSlot.Amount;
 
     private ItemSlot _settedSlot;
 
-    public void OnPointerEnter(PointerEventData eventData) => SlotInteractionManager.GetInstance().SetHovered(this);
-    public void OnPointerExit(PointerEventData eventData) => SlotInteractionManager.GetInstance().ClearHovered(this);
+    private void Start()
+    {
+        InventoryUI = GetComponentInParent<InventoryUI>();
+    }
 
     public void SetSlot(ItemSlot slot)
     {
+        _settedSlot = slot;
+
         if (slot.IsEmpty)
         {
             SetEmpty();
             return;
         }
-
-        _settedSlot = slot;
         ItemData slotItemData = slot.ItemData;
 
         _icon.sprite = slotItemData.Icon;
@@ -52,9 +56,26 @@ public class ItemSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
 
     public void ClearSlot() => _settedSlot?.Clear();
 
-    public void EquipItem(ItemData prevData)
+    public void EquipItem(ItemData prevData, int amount)
     {
-        _settedSlot.ChangeByDragDrop(prevData);
-        SlotInteractionManager.GetInstance().ClearDragged();
+        _settedSlot.ChangeByDragDrop(prevData, amount);
+    }
+
+    public void SetSlotData(ItemData data, int amount)
+    {
+        if (data == null)
+            _settedSlot.Clear();
+        else
+            _settedSlot.Set(data, amount);
+    }
+
+    public void SetIndex(int index)
+    {
+        SlotIndex = index;
+    }
+
+    public void NotifyInventoryChanged()
+    {
+        InventoryUI?.Refresh();
     }
 }

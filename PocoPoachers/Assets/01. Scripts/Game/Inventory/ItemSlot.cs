@@ -52,16 +52,14 @@ public class ItemSlot
         return removed;
     }
 
-    public void ChangeByDragDrop(ItemData changedData)
+    public void ChangeByDragDrop(ItemData changedData, int amount)
     {
-        if(changedData == null)
-        {
-            RemoveAmount(1);
-        }
+        if (changedData == null)
+            RemoveAmount(amount);
         else
         {
-            Set(changedData, 1);
-            OnCleared.Invoke();
+            Set(changedData, amount);
+            OnCleared?.Invoke();
         }
     }
 }
