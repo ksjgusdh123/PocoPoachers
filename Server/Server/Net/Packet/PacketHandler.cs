@@ -132,6 +132,11 @@ public class PacketHandler
         }
         WorldItemManager.Instance.AddItemToBox(boxUid, playerItemId, playerItemAmount);
 
+        // 교환으로 상자가 소실
+        PacketSender.SChangeItemBox(session, false, boxUid, boxItemId, boxItemAmount);
+        // 교환으로 상자가 획득
+        PacketSender.SChangeItemBox(session, true, boxUid, playerItemId, playerItemAmount);
+
         PacketSender.SExchangeItemResultNtf(session, true, boxUid, playerItemId, playerItemAmount, boxItemId, boxItemAmount);
     }
 }

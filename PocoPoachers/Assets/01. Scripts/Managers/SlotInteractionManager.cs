@@ -22,6 +22,7 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
 
     public Inventory InteractionInventory { get; private set; }
     public event Action OnDoubleClick;
+    public event Action<ItemData, int> OnDragEmptySlot;
     //public event Action<ItemSlotUI, ItemSlotUI, ItemData, int> OnSlotDrop;
 
     protected override void Awake()
@@ -39,6 +40,12 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     {
         player.InventoryUI.OnSlotDropped();
         PacketSender.CExchangeItemReq(box.InventoryUI.Box.Id, PtoBItem?.Id ?? 0, PtoBMovedAmount, BtoPItem?.Id ?? 0, BtoPMovedAmount);
+    }
+
+    public void InvokeDragEmptySlot(ItemData data,int amount)
+    {
+        if (HoveredSlot == null || HoveredSlot.IsSettedItem) return;
+        OnDragEmptySlot?.Invoke(data, amount);
     }
 
     public void InvokeDoubleClick()

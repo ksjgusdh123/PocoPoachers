@@ -15,6 +15,7 @@ public class InventoryDropHandler : BaseDropHandler
     {
         var dragged = manager.DraggedSlot;
         if (dragged == _slotUI) return false;
+        bool draggedSlotIsBox = dragged.InventoryUI.IsBox;
 
         ItemData draggedData = dragged.SlotItemData;
         int dragAmount = manager.DragAmount;
@@ -27,18 +28,18 @@ public class InventoryDropHandler : BaseDropHandler
         {
             // 타겟 슬롯에 아이템 있음 → 전체 수량 교환
             int fullSourceAmount = dragged.SavedAmountItem;
-            if(dragged.InventoryUI.IsBox) manager.InvokeSlotExchange(_slotUI, dragged, prevData, draggedData, prevAmount, fullSourceAmount);
+            if(draggedSlotIsBox) manager.InvokeSlotExchange(_slotUI, dragged, prevData, draggedData, prevAmount, fullSourceAmount);
             else manager.InvokeSlotExchange(dragged, _slotUI, draggedData, prevData, fullSourceAmount, prevAmount);
         }
         else
         {
             //// 타겟 슬롯이 비어 있음 → 드래그한 수량만 이동
             //_slotUI.SetSlotData(draggedData, dragAmount);
+            manager.InvokeDragEmptySlot(draggedData, dragAmount);
             //if (remaining > 0)
             //    dragged.SetSlotData(draggedData, remaining);
             //else
             //    dragged.SetSlotData(null, 0);
-            //manager.InvokeSlotDrop(dragged, _slotUI, draggedData, null, dragAmount, 0);
         }
         return true;
     }

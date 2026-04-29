@@ -35,6 +35,7 @@ public class InventoryUI : MonoBehaviour
         manager.OnHoverEnter += _descriptionUI.ShowDescription;
         manager.OnHoverExit += _descriptionUI.HideDescription;
         manager.OnDoubleClick += OnSlotDoubleClicked;
+        manager.OnDragEmptySlot += OnDraggedSlot;
     }
 
     private void OnSlotDoubleClicked()
@@ -62,9 +63,31 @@ public class InventoryUI : MonoBehaviour
         int itemTypeId = targetSlot.SlotItemData.Id;
         GameManager.GetInstance().SaveChangeInventorys(_inventory, target);
         PacketSender.CGainItemReq(boxUid, itemTypeId, targetSlot.SavedAmountItem, isPlayer);
+    }
 
-        //if (target.AddItem(targetSlot.SlotItemData, targetSlot.SavedAmountItem))
-        //    targetSlot.ClearSlot();
+    private void OnDraggedSlot(ItemData data, int amount)
+    {
+        var targetSlot = SlotInteractionManager.GetInstance().HoveredSlot;
+        if (targetSlot == null || !_slotSet.Contains(targetSlot)) return;
+
+        var target = _inventory._interactionInventory;
+        if (target == null) return;
+
+        int boxUid;
+        bool isPlayer;
+        if (_inventory.TryGetComponent<WorldObject>(out var worldObject))
+        {
+            boxUid = worldObject.Id;
+            isPlayer = true;
+        }
+        else
+        {
+            boxUid = target.GetComponent<WorldObject>().Id;
+            isPlayer = false;
+        }
+        int itemTypeId = data.Id;
+        GameManager.GetInstance().SaveChangeInventorys(target, _inventory);
+        PacketSender.CGainItemReq(boxUid, itemTypeId, amount, isPlayer);
     }
 
     public void OnSlotDropped()
