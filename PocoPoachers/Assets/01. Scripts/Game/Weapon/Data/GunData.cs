@@ -29,7 +29,9 @@ public class GunData : ScriptableObject
 
     [Header("탄 퍼짐")]
     public float spreadAngle = 5f;
-
+    public float aimSpreadAngle = 5f;
+    
     [Header("조준")]
     public float aimFOV = 57f;
+    
 }

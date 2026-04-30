@@ -50,10 +50,13 @@ public abstract class GunBase : MonoBehaviour
 
     protected abstract void Shoot();
 
+    public bool IsAiming { get; set; }
+
     protected Vector3 GetFireDirection()
     {
-        if (_gunData.spreadAngle <= 0f) return _muzzle.up;
-        float angle = Random.Range(-_gunData.spreadAngle / 2f, _gunData.spreadAngle / 2f);
+        float spread = IsAiming ? _gunData.aimSpreadAngle : _gunData.spreadAngle;
+        if (spread <= 0f) return _muzzle.up;
+        float angle = Random.Range(-spread / 2f, spread / 2f);
         return Quaternion.AngleAxis(angle, Vector3.up) * _muzzle.up;
     }
 

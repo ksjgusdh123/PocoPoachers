@@ -49,6 +49,7 @@ public class WeaponController : MonoBehaviour
         if (isAimPressed == _wasAimPressed) return;
 
         _wasAimPressed = isAimPressed;
+        if (_currentGun != null) _currentGun.IsAiming = isAimPressed;
         CameraZoom.Instance?.SetAiming(isAimPressed, _currentGun != null ? _currentGun.GunData.aimFOV : 45f);
     }
 }
