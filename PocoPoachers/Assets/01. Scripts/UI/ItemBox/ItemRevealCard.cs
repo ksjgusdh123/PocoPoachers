@@ -13,7 +13,7 @@ public class ItemRevealCard : MonoBehaviour
 
     public bool isFlip { get; private set; } = true;
 
-    void OnEnable()
+    public void CheckSlotState()
     {
         var sprite = Resources.Load<Sprite>(BackFaceSpritePath);
         if (_itemImage.sprite == null)
@@ -29,16 +29,18 @@ public class ItemRevealCard : MonoBehaviour
             _backFrameImage.sprite = sprite;
         }
         _itemImage.gameObject.SetActive(false);
+        isFlip = true;
     }
 
     public void Reveal()
     {
+        Debug.Log("Reveal");
         _backFrameImage.DOFade(0f, 0.3f)
             .OnComplete(() => 
             {
                 _backFrameImage.sprite = originFrameImage;
                 _backFrameImage.color = originFrameColor;
-                if(_itemImage.sprite != null) _itemImage.gameObject.SetActive(true);
+                _itemImage.gameObject.SetActive(true);
             });
     }
 }

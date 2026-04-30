@@ -39,6 +39,7 @@ public class ItemSlotUI : MonoBehaviour
         _amountText.text = slot.Amount >= 1 ? slot.Amount.ToString() : "";
         IsSettedItem = true;
 
+
         if (_itemVisual != null)
             _itemVisual.SetActive(true);
     }
