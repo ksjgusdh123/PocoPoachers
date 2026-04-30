@@ -10,6 +10,7 @@ public class PlayerInputHandler : MonoBehaviour
     public bool IsSprintPressed { get; private set; }
     public bool IsFirePressed { get; private set; }
     public bool IsReloadPressed { get; private set; }
+    public bool IsAimPressed { get; private set; }
 
     public event Action GoInventory;
     public event Action StartInteraction;
@@ -39,6 +40,11 @@ public class PlayerInputHandler : MonoBehaviour
     private void OnReload(InputValue value)
     {
         IsReloadPressed = value.isPressed;
+    }
+
+    private void OnAim(InputValue value)
+    {
+        IsAimPressed = value.isPressed;
     }
      
     void OnGoInventory(InputValue value)

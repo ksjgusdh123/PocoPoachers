@@ -6,6 +6,7 @@ public class WeaponController : MonoBehaviour
 
     private PlayerInputHandler _inputHandler;
     private bool _wasFirePressed;
+    private bool _wasAimPressed;
 
     private void Awake()
     {
@@ -16,6 +17,7 @@ public class WeaponController : MonoBehaviour
     {
         HandleFireInput();
         HandleReloadInput();
+        HandleAimInput();
     }
 
     private void HandleFireInput()
@@ -39,5 +41,14 @@ public class WeaponController : MonoBehaviour
         {
             _currentGun?.StartReload();
         }
+    }
+
+    private void HandleAimInput()
+    {
+        bool isAimPressed = _inputHandler.IsAimPressed;
+        if (isAimPressed == _wasAimPressed) return;
+
+        _wasAimPressed = isAimPressed;
+        CameraZoom.Instance?.SetAiming(isAimPressed, _currentGun != null ? _currentGun.GunData.aimFOV : 45f);
     }
 }
