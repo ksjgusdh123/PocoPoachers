@@ -26,4 +26,7 @@ public class GunData : ScriptableObject
     [Header("카메라 흔들림")]
     public float shakeIntensity = 0.2f;
     public float shakeDuration = 0.1f;
+
+    [Header("탄 퍼짐")]
+    public float spreadAngle = 5f;
 }

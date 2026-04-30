@@ -4,12 +4,14 @@ public class SingleGun : GunBase
 {
     protected override void Shoot()
     {
+        Vector3 fireDir = GetFireDirection();
+
         Bullet bullet = BulletPool.GetInstance().Get(_gunData.bulletPrefab, _muzzle.position, _muzzle.rotation);
         bullet.Initialize(
             _gunData.bulletSpeed,
             _gunData.damage,
             _gunData.range,
-            _muzzle.up,
+            fireDir,
             () => BulletPool.GetInstance().Release(_gunData.bulletPrefab, bullet)
         );
 
@@ -18,7 +20,7 @@ public class SingleGun : GunBase
         {
             PacketSender.CShootReq(
                 _muzzle.position,
-                _muzzle.up.normalized,
+                fireDir,
                 _gunData.bulletSpeed,
                 _gunData.damage,
                 _gunData.range);

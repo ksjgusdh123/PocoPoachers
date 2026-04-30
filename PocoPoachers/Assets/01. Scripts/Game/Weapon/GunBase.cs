@@ -50,6 +50,13 @@ public abstract class GunBase : MonoBehaviour
 
     protected abstract void Shoot();
 
+    protected Vector3 GetFireDirection()
+    {
+        if (_gunData.spreadAngle <= 0f) return _muzzle.up;
+        float angle = Random.Range(-_gunData.spreadAngle / 2f, _gunData.spreadAngle / 2f);
+        return Quaternion.AngleAxis(angle, Vector3.up) * _muzzle.up;
+    }
+
     public void StartReload()
     {
         if (_isReloading || _currentAmmo == _gunData.magazineSize) return;
