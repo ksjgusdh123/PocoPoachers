@@ -33,6 +33,7 @@ public class GunData : ScriptableObject
     
     [Header("조준")]
     public float aimFOV = 57f;
+    public float aimTime = 0.2f;
 
     [Header("이동속도 계수")]
     public float moveSpeedMultiplier = 1f;
