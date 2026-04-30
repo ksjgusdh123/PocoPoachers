@@ -22,4 +22,8 @@ public class GunData : ScriptableObject
     [Header("반동")]
     public float recoilDistance = 0.3f;
     public float recoilReturnSpeed = 1f;
+
+    [Header("카메라 흔들림")]
+    public float shakeIntensity = 0.2f;
+    public float shakeDuration = 0.1f;
 }

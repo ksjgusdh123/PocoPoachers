@@ -43,6 +43,7 @@ public abstract class GunBase : MonoBehaviour
         _currentAmmo--;
         _nextFireTime = Time.time + 1f / _gunData.fireRate;
         _recoilDist = _gunData.recoilDistance;
+        CameraShake.Instance?.Shake(_gunData.shakeIntensity, _gunData.shakeDuration, _muzzle.up);
 
         if (_currentAmmo <= 0) StartReload();
     }
