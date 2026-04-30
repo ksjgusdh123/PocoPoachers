@@ -4,6 +4,17 @@ public class WeaponController : MonoBehaviour
 {
     [SerializeField] private GunBase _currentGun;
 
+    public float MoveSpeedMultiplier
+    {
+        get
+        {
+            if (_currentGun == null) return 1f;
+            return _wasAimPressed
+                ? _currentGun.GunData.moveSpeedMultiplier * _currentGun.GunData.aimMoveSpeedMultiplier
+                : _currentGun.GunData.moveSpeedMultiplier;
+        }
+    }
+
     private PlayerInputHandler _inputHandler;
     private bool _wasFirePressed;
     private bool _wasAimPressed;

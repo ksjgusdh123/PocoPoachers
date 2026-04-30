@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
     private PlayerInputHandler _inputHandler;
     private PlayerDodge _playerDodge;
     private Animator _animator;
+    private WeaponController _weaponController;
 
     private Vector3 _currentVelocity; // _currentSpeed 대신 벡터로 교체
 
@@ -31,6 +32,7 @@ public class PlayerMovement : MonoBehaviour
         _inputHandler = GetComponent<PlayerInputHandler>();
         _playerDodge = GetComponent<PlayerDodge>();
         _animator = GetComponentInChildren<Animator>();
+        _weaponController = GetComponent<WeaponController>();
     }
 
     private void Update()
@@ -51,8 +53,9 @@ public class PlayerMovement : MonoBehaviour
       Vector2 input = _inputHandler.MoveInput;
       Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
 
+      float weaponMultiplier = _weaponController != null ? _weaponController.MoveSpeedMultiplier : 1f;
       float targetSpeed = moveDir == Vector3.zero ? 0f
-          : (_inputHandler.IsSprintPressed ? _sprintSpeed : _moveSpeed);
+          : (_inputHandler.IsSprintPressed ? _sprintSpeed : _moveSpeed) * weaponMultiplier;
       Vector3 targetVelocity = moveDir * targetSpeed;
 
       // 방향 포함 전체 벡터를 부드럽게 보간 → 반대 방향 전환 시 튀지 않음
