@@ -25,7 +25,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        _interactObject = other.gameObject;
+        if(other.gameObject != gameObject) _interactObject = other.gameObject;
     }
 
     private void OnTriggerExit(Collider other)
@@ -44,6 +44,7 @@ public class PlayerController : MonoBehaviour
                 _inventory._interactionInventory = inven;
                 inven._interactionInventory = _inventory;
                 boxUI.GetComponentInChildren<InventoryUI>()?.Bind(inven);
+                boxUI.GetComponent<ItemBoxRevealUI>().Open();
             }
             else
             {

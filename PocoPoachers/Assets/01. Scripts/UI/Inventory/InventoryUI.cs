@@ -120,6 +120,7 @@ public class InventoryUI : MonoBehaviour
         _slotUIs = new ItemSlotUI[_inventory.MaxCapacity];
         _slotSet = new HashSet<ItemSlotUI>();
 
+
         for (int i = 0; i < _inventory.MaxCapacity; i++)
         {
             _slotUIs[i] = Instantiate(_slotPrefab, _slotParent);
