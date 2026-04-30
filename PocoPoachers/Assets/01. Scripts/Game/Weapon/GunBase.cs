@@ -14,9 +14,25 @@ public abstract class GunBase : MonoBehaviour
     private bool _isReloading;
     private float _nextFireTime;
 
+    private Vector3 _originLocalPos;
+    private float _recoilDist;
+
     protected virtual void Awake()
     {
         _currentAmmo = _gunData.magazineSize;
+        _originLocalPos = transform.localPosition;
+    }
+
+    private void Update()
+    {
+        if (_recoilDist <= 0f) return;
+
+        _recoilDist = Mathf.MoveTowards(_recoilDist, 0f, _gunData.recoilReturnSpeed * Time.deltaTime);
+
+        Vector3 recoilDirLocal = transform.parent != null
+            ? transform.parent.InverseTransformDirection(-_muzzle.up)
+            : -_muzzle.up;
+        transform.localPosition = _originLocalPos + recoilDirLocal * _recoilDist;
     }
 
     public void TryShoot()
@@ -26,6 +42,7 @@ public abstract class GunBase : MonoBehaviour
         Shoot();
         _currentAmmo--;
         _nextFireTime = Time.time + 1f / _gunData.fireRate;
+        _recoilDist = _gunData.recoilDistance;
 
         if (_currentAmmo <= 0) StartReload();
     }

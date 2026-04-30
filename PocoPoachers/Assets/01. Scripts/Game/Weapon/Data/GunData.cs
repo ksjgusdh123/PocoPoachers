@@ -18,4 +18,8 @@ public class GunData : ScriptableObject
 
     [Header("발사 모드")]
     public FireMode fireMode = FireMode.Single;
+
+    [Header("반동")]
+    public float recoilDistance = 0.3f;
+    public float recoilReturnSpeed = 1f;
 }
