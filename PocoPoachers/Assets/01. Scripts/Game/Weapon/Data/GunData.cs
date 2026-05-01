@@ -15,6 +15,7 @@ public class GunData : ScriptableObject
     public float bulletSpeed = 20f;
     public float range = 50f;
     public GameObject bulletPrefab;
+    public int bulletsPerShot = 1;
 
     [Header("발사 모드")]
     public FireMode fireMode = FireMode.Single;
