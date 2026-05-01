@@ -708,6 +708,17 @@ MonoBehaviour:
   m_ShadowLayerMask: 1
   m_RenderingLayers: 1
   m_ShadowRenderingLayers: 1
+--- !u!114 &501080045 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6866015966114098606, guid: 6c7f06c6a702d4d41bba4b5576adc82c, type: 3}
+  m_PrefabInstance: {fileID: 1864613178}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d3b4e14ab4bd3e4408a2d4b3dbe06260, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SingleGun
 --- !u!1001 &640473687
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -719,6 +730,10 @@ PrefabInstance:
     - target: {fileID: 404186832736903495, guid: 1462d7ebb0496594b9326abee54530a5, type: 3}
       propertyPath: m_Name
       value: ShotGunTest
+      objectReference: {fileID: 0}
+    - target: {fileID: 404186832736903495, guid: 1462d7ebb0496594b9326abee54530a5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3663055974269070062, guid: 1462d7ebb0496594b9326abee54530a5, type: 3}
       propertyPath: m_LocalPosition.x
@@ -1401,7 +1416,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40fd5f2137c486143ae64c45c1b59d82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponController
-  _currentGun: {fileID: 2028231470}
+  _currentGun: {fileID: 501080045}
 --- !u!114 &1170366765
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1696,8 +1711,12 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6416639880435875059, guid: 6c7f06c6a702d4d41bba4b5576adc82c, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6866015966114098606, guid: 6c7f06c6a702d4d41bba4b5576adc82c, type: 3}
+      propertyPath: _gunData
+      value: 
+      objectReference: {fileID: 11400000, guid: 9443209f3014256478b2d780b8e329d6, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
@@ -1832,17 +1851,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Item
   _itemId: 101
---- !u!114 &2028231470 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6790100276519992138, guid: 1462d7ebb0496594b9326abee54530a5, type: 3}
-  m_PrefabInstance: {fileID: 640473687}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d90b844a125e3e4ead81035a844b883, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ShotgunGun
 --- !u!1 &2117736434
 GameObject:
   m_ObjectHideFlags: 0
