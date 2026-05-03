@@ -9,14 +9,16 @@ public class ItemBoxRevealUI : MonoBehaviour
     [SerializeField] float _revealInterval = 0.5f;
     List<ItemRevealCard> _cards;
 
-    public void Open()
+    public void Open(Inventory inven)
     {
         //StartCoroutine(StartOpen());
         _cards = GetComponentsInChildren<ItemRevealCard>(true).ToList();
 
-        foreach (var card in _cards)
+        BoxItemSlot[] slots = inven.Slots.Cast<BoxItemSlot>().ToArray();
+
+        for (int i = 0; i < slots.Length; ++i)
         {
-            card.CheckSlotState();
+            _cards[i].CheckSlotState(slots[i]);
         }
         StartCoroutine(RevealSequence());
     }

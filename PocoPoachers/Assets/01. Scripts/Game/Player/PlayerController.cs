@@ -44,7 +44,7 @@ public class PlayerController : MonoBehaviour
                 _inventory._interactionInventory = inven;
                 inven._interactionInventory = _inventory;
                 boxUI.GetComponentInChildren<InventoryUI>()?.Bind(inven);
-                boxUI.GetComponent<ItemBoxRevealUI>().Open();
+                boxUI.GetComponent<ItemBoxRevealUI>().Open(inven);
             }
             else
             {
