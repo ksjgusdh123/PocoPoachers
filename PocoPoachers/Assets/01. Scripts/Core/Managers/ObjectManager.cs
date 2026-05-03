@@ -169,7 +169,9 @@ public class ObjectManager : Singleton<ObjectManager>
         _objects[(ObjectKind.ItemBox, uid)] = obj;
         var box = obj.GetComponent<ItemBox>();
         if (box == null)
+        {
             box = obj.gameObject.AddComponent<ItemBox>();
+        }
         return box;
     }
 

@@ -6,6 +6,7 @@ public class Inventory : MonoBehaviour
 {
     [SerializeField] private int _maxCapacity = 50;
     [SerializeField] private int _initialCapacity = 20;
+    [SerializeField] private bool isPlayer;
 
     private List<ItemSlot> _slots = new List<ItemSlot>();
     private int _currentCapacity;
@@ -27,7 +28,7 @@ public class Inventory : MonoBehaviour
         // 최대 용량만큼 슬롯 미리 생성
         for (int i = 0; i < _maxCapacity; i++)
         {
-            var slot = new ItemSlot();
+            ItemSlot slot = isPlayer ? new ItemSlot() : new BoxItemSlot();
             slot.OnCleared += () => ChangeInventory?.Invoke();
             _slots.Add(slot);
         }

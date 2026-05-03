@@ -4,8 +4,8 @@ using UnityEngine;
 [System.Serializable]
 public class ItemSlot
 {
-    [SerializeField] private ItemData _itemData;
-    [SerializeField] private int _amount;
+    [SerializeField] protected ItemData _itemData;
+    [SerializeField] protected int _amount;
 
     public event Action OnCleared;
 

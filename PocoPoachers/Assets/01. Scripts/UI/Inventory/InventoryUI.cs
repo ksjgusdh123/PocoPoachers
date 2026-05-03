@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -16,9 +17,14 @@ public class InventoryUI : MonoBehaviour
     public WorldObject Box => _inventory.GetComponent<WorldObject>();
     public bool IsBox => _inventory.TryGetComponent<WorldObject>(out _);
 
-
-    private void Start()
+    private void Awake()
     {
+        ItemSlotUI[] slots = GetComponentsInChildren<ItemSlotUI>();
+        if (slots.Length > 0)
+        {
+            _slotUIs = slots;
+        }
+
         _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
 
         if (_inventory != null)
@@ -38,6 +44,11 @@ public class InventoryUI : MonoBehaviour
         manager.OnDragEmptySlot += OnDraggedSlot;
     }
 
+    private void Start()
+    {
+      
+    }
+
     private void OnSlotDoubleClicked()
     {
         var targetSlot = SlotInteractionManager.GetInstance().HoveredSlot;
@@ -52,7 +63,7 @@ public class InventoryUI : MonoBehaviour
         bool isPlayer;
         if (_inventory.TryGetComponent<WorldObject>(out var worldObject))
         {
-             boxUid = worldObject.Id;
+            boxUid = worldObject.Id;
             isPlayer = false;
         }
         else
@@ -104,7 +115,6 @@ public class InventoryUI : MonoBehaviour
         if (_slotUIs == null)
         {
             _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
-            GenerateSlots();
         }
         Refresh();
     }
@@ -119,6 +129,7 @@ public class InventoryUI : MonoBehaviour
     {
         _slotUIs = new ItemSlotUI[_inventory.MaxCapacity];
         _slotSet = new HashSet<ItemSlotUI>();
+
 
         for (int i = 0; i < _inventory.MaxCapacity; i++)
         {
