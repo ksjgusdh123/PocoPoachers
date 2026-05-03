@@ -11,12 +11,7 @@ public class ItemBoxRevealUI : MonoBehaviour
 
     public void Open()
     {
-        StartCoroutine(StartOpen());
-    }
-
-    IEnumerator StartOpen()
-    {
-        yield return null;
+        //StartCoroutine(StartOpen());
         _cards = GetComponentsInChildren<ItemRevealCard>(true).ToList();
 
         foreach (var card in _cards)
