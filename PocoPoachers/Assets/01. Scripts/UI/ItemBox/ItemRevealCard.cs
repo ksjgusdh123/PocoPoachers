@@ -14,6 +14,12 @@ public class ItemRevealCard : MonoBehaviour
 
     public bool isFlip { get; private set; } = true;
 
+    private void Awake()
+    {
+        originFrameImage = _backFrameImage.sprite;
+        originFrameColor = _backFrameImage.color;
+    }
+
     public void CheckSlotState(BoxItemSlot slot)
     {
         var sprite = Resources.Load<Sprite>(BackFaceSpritePath);
@@ -25,8 +31,6 @@ public class ItemRevealCard : MonoBehaviour
 
         if (sprite != null)
         {
-            originFrameImage = _backFrameImage.sprite;
-            originFrameColor = _backFrameImage.color;
             _backFrameImage.sprite = sprite;
             _currentSlot = slot;
         }

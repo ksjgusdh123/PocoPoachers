@@ -27,8 +27,11 @@ public class ItemBoxRevealUI : MonoBehaviour
     {
         foreach (var card in _cards)
         {
-            if(card.isFlip) card.Reveal();
-            yield return new WaitForSeconds(_revealInterval);
+            if (card.isFlip)
+            {
+                card.Reveal();
+                yield return new WaitForSeconds(_revealInterval);
+            }
         }
     }
 }
