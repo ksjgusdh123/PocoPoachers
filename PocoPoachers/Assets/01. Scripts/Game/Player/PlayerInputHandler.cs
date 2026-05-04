@@ -21,12 +21,14 @@ public class PlayerInputHandler : MonoBehaviour
 
     public event Action GoInventory;
     public event Action StartInteraction;
-    public event Action<int> ItemNumberKey;
+    public event Action<int> RegisterItemNumberKey;
+    public event Action<int> ConsumeItemNumberKey;
     public event Action DoubleClick;
     public event Action Dodge;
 
     private PlayerInput _inputMap;
     private readonly Key[] _numberKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5 };
+    private PlayerInputMapType _inputType;
     private float _lastClickTime;
 
     private void Awake()
@@ -36,6 +38,7 @@ public class PlayerInputHandler : MonoBehaviour
 
     public void SwitchInputActionMap(PlayerInputMapType type)
     {
+        _inputType = type;
         _inputMap.SwitchCurrentActionMap(type.ToString());
     }
 
@@ -64,7 +67,7 @@ public class PlayerInputHandler : MonoBehaviour
     {
         IsAimPressed = value.isPressed;
     }
-     
+
     void OnGoInventory(InputValue value)
     {
         if (value.isPressed) GoInventory?.Invoke();
@@ -98,7 +101,8 @@ public class PlayerInputHandler : MonoBehaviour
         {
             if (keyboard[_numberKeys[i]].wasPressedThisFrame)
             {
-                ItemNumberKey?.Invoke(i);
+                if (_inputType == PlayerInputMapType.Game) ConsumeItemNumberKey?.Invoke(i);
+                else RegisterItemNumberKey?.Invoke(i);
                 break;
             }
         }

@@ -19,7 +19,8 @@ public class PlayerController : MonoBehaviour
 
         _inputHander = GetComponent<PlayerInputHandler>();
         _inputHander.GoInventory += ShowInventory;
-        _inputHander.ItemNumberKey += RegisterItem;
+        _inputHander.RegisterItemNumberKey += RegisterItem;
+        _inputHander.ConsumeItemNumberKey += ConsumeItem;
         _inputHander.StartInteraction += Interaction;
         _inputHander.DoubleClick += () => SlotInteractionManager.GetInstance().InvokeDoubleClick();
     }
@@ -71,5 +72,11 @@ public class PlayerController : MonoBehaviour
     void RegisterItem(int index)
     {   
         _quickSlots[index].TryRegisterItem();
+    }
+
+    void ConsumeItem(int index)
+    {
+        if (!_quickSlots[index].IsSetted) return;
+        _quickSlots[index].GetComponent<ItemConsume>().ConsumeItem();
     }
 }
