@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class WeaponController : MonoBehaviour
 {
-    [SerializeField] private GunBase _currentGun;
+    [SerializeField] private GunBase[] _guns;
 
     public float MoveSpeedMultiplier
     {
@@ -15,6 +15,8 @@ public class WeaponController : MonoBehaviour
         }
     }
 
+    private GunBase _currentGun;
+    private int _currentGunIndex = -1;
     private PlayerInputHandler _inputHandler;
     private bool _wasFirePressed;
     private bool _wasAimPressed;
@@ -22,6 +24,19 @@ public class WeaponController : MonoBehaviour
     private void Awake()
     {
         _inputHandler = GetComponent<PlayerInputHandler>();
+        foreach (var gun in _guns)
+            gun?.gameObject.SetActive(false);
+    }
+
+    private void Start()
+    {
+        _inputHandler.WeaponSwitch += SwitchWeapon;
+        if (_guns.Length > 0) SwitchWeapon(0);
+    }
+
+    private void OnDestroy()
+    {
+        _inputHandler.WeaponSwitch -= SwitchWeapon;
     }
 
     private void Update()
@@ -29,6 +44,26 @@ public class WeaponController : MonoBehaviour
         HandleFireInput();
         HandleReloadInput();
         HandleAimInput();
+    }
+
+    private void SwitchWeapon(int index)
+    {
+        if (index >= _guns.Length || index == _currentGunIndex) return;
+
+        _guns[_currentGunIndex >= 0 ? _currentGunIndex : 0]?.gameObject.SetActive(false);
+
+        _currentGunIndex = index;
+        _currentGun = _guns[index];
+        _currentGun?.gameObject.SetActive(true);
+
+        _wasFirePressed = false;
+
+        if (_wasAimPressed)
+        {
+            _wasAimPressed = false;
+            if (_currentGun != null) _currentGun.IsAiming = false;
+            CameraZoom.Instance?.SetAiming(false, 45f, 0.2f);
+        }
     }
 
     private void HandleFireInput()

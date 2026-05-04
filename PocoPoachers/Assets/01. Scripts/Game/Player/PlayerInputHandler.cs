@@ -15,10 +15,12 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action GoInventory;
     public event Action StartInteraction;
     public event Action<int> ItemNumberKey;
+    public event Action<int> WeaponSwitch;
     public event Action DoubleClick;
     public event Action Dodge;
 
     private readonly Key[] _numberKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5 };
+    private readonly Key[] _weaponKeys = { Key.Digit7, Key.Digit8 };
     private float _lastClickTime;
 
     // PlayerInput 컴포넌트가 Move 액션 발생 시 자동으로 호출
@@ -69,6 +71,21 @@ public class PlayerInputHandler : MonoBehaviour
     void OnDodge(InputValue value)
     {
         if (value.isPressed) Dodge?.Invoke();
+    }
+
+    private void Update()
+    {
+        var keyboard = Keyboard.current;
+        if (keyboard == null) return;
+
+        for (int i = 0; i < _weaponKeys.Length; i++)
+        {
+            if (keyboard[_weaponKeys[i]].wasPressedThisFrame)
+            {
+                WeaponSwitch?.Invoke(i);
+                break;
+            }
+        }
     }
 
     void OnItemNumberKey(InputValue value)
