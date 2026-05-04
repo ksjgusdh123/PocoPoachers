@@ -1,8 +1,10 @@
+using System.Collections;
 using UnityEngine;
 
 public class WeaponController : MonoBehaviour
 {
     [SerializeField] private GunBase[] _guns;
+    [SerializeField] private float _switchMidTime = 0.15f;
 
     public float MoveSpeedMultiplier
     {
@@ -15,15 +17,20 @@ public class WeaponController : MonoBehaviour
         }
     }
 
+    private static readonly int WeaponSwitchHash = Animator.StringToHash("WeaponSwitch");
+
     private GunBase _currentGun;
     private int _currentGunIndex = -1;
+    private bool _isSwitching;
     private PlayerInputHandler _inputHandler;
+    private Animator _animator;
     private bool _wasFirePressed;
     private bool _wasAimPressed;
 
     private void Awake()
     {
         _inputHandler = GetComponent<PlayerInputHandler>();
+        _animator = GetComponentInChildren<Animator>();
         foreach (var gun in _guns)
             gun?.gameObject.SetActive(false);
     }
@@ -48,15 +55,13 @@ public class WeaponController : MonoBehaviour
 
     private void SwitchWeapon(int index)
     {
-        if (index >= _guns.Length || index == _currentGunIndex) return;
+        if (index >= _guns.Length || index == _currentGunIndex || _isSwitching) return;
+        StartCoroutine(SwitchWeaponRoutine(index));
+    }
 
-        _guns[_currentGunIndex >= 0 ? _currentGunIndex : 0]?.gameObject.SetActive(false);
-
-        _currentGunIndex = index;
-        _currentGun = _guns[index];
-        _currentGun?.gameObject.SetActive(true);
-
-        _wasFirePressed = false;
+    private IEnumerator SwitchWeaponRoutine(int index)
+    {
+        _isSwitching = true;
 
         if (_wasAimPressed)
         {
@@ -64,11 +69,23 @@ public class WeaponController : MonoBehaviour
             if (_currentGun != null) _currentGun.IsAiming = false;
             CameraZoom.Instance?.SetAiming(false, 45f, 0.2f);
         }
+
+        _animator.SetTrigger(WeaponSwitchHash);
+
+        yield return new WaitForSeconds(_switchMidTime);
+
+        _guns[_currentGunIndex >= 0 ? _currentGunIndex : 0]?.gameObject.SetActive(false);
+        _currentGunIndex = index;
+        _currentGun = _guns[index];
+        _currentGun?.gameObject.SetActive(true);
+        _wasFirePressed = false;
+
+        _isSwitching = false;
     }
 
     private void HandleFireInput()
     {
-        if (_currentGun == null) return;
+        if (_currentGun == null || _isSwitching) return;
 
         bool isFirePressed = _inputHandler.IsFirePressed;
 
@@ -83,14 +100,15 @@ public class WeaponController : MonoBehaviour
 
     private void HandleReloadInput()
     {
+        if (_isSwitching) return;
         if (_inputHandler.IsReloadPressed)
-        {
             _currentGun?.StartReload();
-        }
     }
 
     private void HandleAimInput()
     {
+        if (_isSwitching) return;
+
         bool isAimPressed = _inputHandler.IsAimPressed;
         if (isAimPressed == _wasAimPressed) return;
 
