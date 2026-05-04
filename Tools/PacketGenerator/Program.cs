@@ -43,19 +43,21 @@ static int Run(string[] args)
         if (RunFlatc(flatcExe, schemasDir, fbs, clientOut) != 0) return 1;
     }
 
-    if (GeneratePacketManagers(schemasDir, serverOut, clientOut) != 0) return 1;
+    if (!ParseMainFbs(schemasDir, out var cPackets, out var sPackets)) return 1;
+    if (GeneratePacketManagers(serverOut, clientOut, cPackets, sPackets) != 0) return 1;
+    if (GenerateHandlerStubs(schemasDir, serverOut, clientOut) != 0) return 1;
 
     Console.WriteLine($"[{ToolName}] Done.");
     return 0;
 }
 
-static int GeneratePacketManagers(string schemasDir, string serverOut, string clientOut)
+static bool ParseMainFbs(string schemasDir, out List<string> cPackets, out List<string> sPackets)
 {
+    cPackets = new List<string>();
+    sPackets = new List<string>();
     var mainFbs = Path.Combine(schemasDir, "Main.fbs");
-    if (!File.Exists(mainFbs)) { LogError($"Main.fbs not found: {mainFbs}"); return 1; }
+    if (!File.Exists(mainFbs)) { LogError($"Main.fbs not found: {mainFbs}"); return false; }
 
-    var cPackets = new List<string>();
-    var sPackets = new List<string>();
     bool inUnion = false;
     foreach (var line in File.ReadAllLines(mainFbs))
     {
@@ -67,7 +69,12 @@ static int GeneratePacketManagers(string schemasDir, string serverOut, string cl
         if      (name.StartsWith("C_")) cPackets.Add(name);
         else if (name.StartsWith("S_")) sPackets.Add(name);
     }
+    return true;
+}
 
+static int GeneratePacketManagers(string serverOut, string clientOut,
+    List<string> cPackets, List<string> sPackets)
+{
     string serverPacketDir = Path.GetFullPath(Path.Combine(serverOut, "..", "..", "Net", "Packet"));
     string clientPacketDir = Path.GetFullPath(Path.Combine(clientOut, "..", "..", "Network", "Packet"));
 
@@ -82,8 +89,8 @@ static int GeneratePacketManagers(string schemasDir, string serverOut, string cl
         Path.Combine(clientPacketDir, "PacketManager.Generated.cs"),
         BuildClientPacketManager(sPackets));
 
-    Console.WriteLine($"[{ToolName}] PacketManager.Generated.cs → server ({cPackets.Count} handlers)");
-    Console.WriteLine($"[{ToolName}] PacketManager.Generated.cs → client ({sPackets.Count} handlers)");
+    Console.WriteLine($"[{ToolName}] PacketManager.Generated.cs -> server ({cPackets.Count} handlers)");
+    Console.WriteLine($"[{ToolName}] PacketManager.Generated.cs -> client ({sPackets.Count} handlers)");
     return 0;
 }
 
@@ -123,6 +130,142 @@ static string BuildClientPacketManager(List<string> sPackets)
     foreach (var name in sPackets)
         sb.AppendLine($"        _onRecv.Add(PacketType.{name.PadRight(pad)}, PacketHandlers.On{name});");
     sb.AppendLine("    }");
+    sb.AppendLine("}");
+    return sb.ToString();
+}
+
+static int GenerateHandlerStubs(string schemasDir, string serverOut, string clientOut)
+{
+    string serverHandlerDir = Path.GetFullPath(Path.Combine(serverOut, "..", "..", "Net", "Packet", "PacketHandler"));
+    string clientHandlerDir = Path.GetFullPath(Path.Combine(clientOut, "..", "..", "Network", "Packet", "PacketHandlers"));
+
+    Directory.CreateDirectory(serverHandlerDir);
+    Directory.CreateDirectory(clientHandlerDir);
+
+    var existingServer = CollectImplementedMethods(serverHandlerDir, "OnC_");
+    var existingClient = CollectImplementedMethods(clientHandlerDir, "OnS_");
+
+    // 스키마 파일별로 패킷 그룹화 (Main, Common 제외)
+    var skip = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Main.fbs", "Common.fbs" };
+    foreach (var fbsPath in Directory.GetFiles(schemasDir, "*.fbs"))
+    {
+        if (skip.Contains(Path.GetFileName(fbsPath))) continue;
+
+        string schema    = Path.GetFileNameWithoutExtension(fbsPath);
+        var cPackets = new List<string>();
+        var sPackets = new List<string>();
+
+        foreach (var line in File.ReadAllLines(fbsPath))
+        {
+            string t = line.Trim();
+            if (!t.StartsWith("table ")) continue;
+            string name = t["table ".Length..].TrimEnd('{').Trim();
+            if      (name.StartsWith("C_")) cPackets.Add(name);
+            else if (name.StartsWith("S_")) sPackets.Add(name);
+        }
+
+        // 서버: C_ 패킷 중 미구현만
+        var newServer = cPackets.Where(n => !existingServer.Contains($"On{n}")).ToList();
+        WriteHandlerFile(
+            serverHandlerDir, $"PacketHandler.{schema}",
+            BuildServerHandlerStubs(schema, newServer));
+
+        // 클라: S_ 패킷 중 미구현만
+        var newClient = sPackets.Where(n => !existingClient.Contains($"On{n}")).ToList();
+        WriteHandlerFile(
+            clientHandlerDir, $"PacketHandlers.{schema}",
+            BuildClientHandlerStubs(schema, newClient));
+    }
+    return 0;
+}
+
+// 파일이 이미 있으면 .temp.cs, 없으면 .cs로 저장
+static void WriteHandlerFile(string dir, string baseName, string content)
+{
+    string normal = Path.Combine(dir, $"{baseName}.cs");
+    string temp   = Path.Combine(dir, $"{baseName}.temp.cs");
+
+    if (File.Exists(normal))
+    {
+        // 내용이 빈 스텁 클래스뿐이면 temp 불필요
+        if (string.IsNullOrWhiteSpace(content) || IsEmptyClass(content))
+        {
+            if (File.Exists(temp)) File.Delete(temp);
+            return;
+        }
+        File.WriteAllText(temp, content);
+        Console.WriteLine($"[{ToolName}]   {Path.GetFileName(temp)} (temp — merge manually)");
+    }
+    else
+    {
+        File.WriteAllText(normal, content);
+        Console.WriteLine($"[{ToolName}]   {Path.GetFileName(normal)}");
+    }
+}
+
+// 스텁 메서드가 하나도 없는 빈 클래스인지 확인
+static bool IsEmptyClass(string content)
+    => !content.Contains("// TODO");
+
+static HashSet<string> CollectImplementedMethods(string dir, string prefix)
+{
+    var result = new HashSet<string>();
+    if (!Directory.Exists(dir)) return result;
+    foreach (var file in Directory.GetFiles(dir, "*.cs"))
+    {
+        if (file.EndsWith(".temp.cs", StringComparison.OrdinalIgnoreCase)) continue;
+        foreach (var line in File.ReadAllLines(file))
+        {
+            int idx = line.IndexOf(prefix, StringComparison.Ordinal);
+            if (idx < 0 || !line.Contains('(')) continue;
+            int end        = line.IndexOf('(', idx);
+            string method  = line[idx..end].Trim();
+            if (method.Length > prefix.Length) result.Add(method);
+        }
+    }
+    return result;
+}
+
+static string BuildServerHandlerStubs(string schema, List<string> packets)
+{
+    var sb = new StringBuilder();
+    sb.AppendLine("// <auto-generated>");
+    sb.AppendLine($"//  generated by PacketGenerator ({schema}.fbs)");
+    sb.AppendLine("// </auto-generated>");
+    sb.AppendLine();
+    sb.AppendLine("namespace Server;");
+    sb.AppendLine();
+    sb.AppendLine("public partial class PacketHandler");
+    sb.AppendLine("{");
+    for (int i = 0; i < packets.Count; i++)
+    {
+        if (i > 0) sb.AppendLine();
+        sb.AppendLine($"    public void On{packets[i]}(ClientSession session, FlatPacket root)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        // TODO");
+        sb.AppendLine("    }");
+    }
+    sb.AppendLine("}");
+    return sb.ToString();
+}
+
+static string BuildClientHandlerStubs(string schema, List<string> packets)
+{
+    var sb = new StringBuilder();
+    sb.AppendLine("// <auto-generated>");
+    sb.AppendLine($"//  generated by PacketGenerator ({schema}.fbs)");
+    sb.AppendLine("// </auto-generated>");
+    sb.AppendLine();
+    sb.AppendLine("public static partial class PacketHandlers");
+    sb.AppendLine("{");
+    for (int i = 0; i < packets.Count; i++)
+    {
+        if (i > 0) sb.AppendLine();
+        sb.AppendLine($"    public static void On{packets[i]}(FlatPacket root)");
+        sb.AppendLine("    {");
+        sb.AppendLine("        // TODO");
+        sb.AppendLine("    }");
+    }
     sb.AppendLine("}");
     return sb.ToString();
 }
