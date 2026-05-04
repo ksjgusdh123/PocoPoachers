@@ -11,9 +11,11 @@ public class EquipDropHandler : BaseDropHandler
     [SerializeField] private GameObject _itemVisual;
 
     public ItemType ItemType => _itemType;
+    public bool IsSetted => _isSetted;
 
     protected ItemData _droppedItemData;
     protected int _droppedAmount;
+    protected bool _isSetted;
 
     protected override bool HandleDrop(SlotInteractionManager manager)
     {
@@ -36,6 +38,7 @@ public class EquipDropHandler : BaseDropHandler
         _nameText.text = data.ItemName;
         _icon.sprite = data.Icon;
         _icon.gameObject.SetActive(true);
+        _isSetted = true;
         if (_itemVisual != null)
             _itemVisual.SetActive(true);
         return true;
@@ -48,6 +51,8 @@ public class EquipDropHandler : BaseDropHandler
         _droppedAmount = 0;
         _nameText.text = "";
         _icon.sprite = null;
+        _icon.gameObject.SetActive(false);
+        _isSetted = false;
         if (_itemVisual != null)
             _itemVisual.SetActive(false);
     }

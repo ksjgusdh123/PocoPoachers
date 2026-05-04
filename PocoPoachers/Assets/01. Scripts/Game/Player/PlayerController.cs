@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject boxUI;
     [SerializeField] private CameraController _cameraController;
     private Inventory _inventory;
+    private PlayerInputHandler _inputHander;
     private QuickSlotDropHandler[] _quickSlots;
     private GameObject _interactObject;
 
@@ -16,11 +17,12 @@ public class PlayerController : MonoBehaviour
         _quickSlots = FindObjectsByType<QuickSlotDropHandler>(FindObjectsInactive.Include)
             .OrderBy(s => s.gameObject.name).ToArray();
 
-        var inputHandler = GetComponent<PlayerInputHandler>();
-        inputHandler.GoInventory += ShowInventory;
-        inputHandler.ItemNumberKey += RegisterItem;
-        inputHandler.StartInteraction += Interaction;
-        inputHandler.DoubleClick += () => SlotInteractionManager.GetInstance().InvokeDoubleClick();
+        _inputHander = GetComponent<PlayerInputHandler>();
+        _inputHander.GoInventory += ShowInventory;
+        _inputHander.RegisterItemNumberKey += RegisterItem;
+        _inputHander.ConsumeItemNumberKey += ConsumeItem;
+        _inputHander.StartInteraction += Interaction;
+        _inputHander.DoubleClick += () => SlotInteractionManager.GetInstance().InvokeDoubleClick();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -45,11 +47,13 @@ public class PlayerController : MonoBehaviour
                 inven._interactionInventory = _inventory;
                 boxUI.GetComponentInChildren<InventoryUI>()?.Bind(inven);
                 boxUI.GetComponent<ItemBoxRevealUI>().Open(inven);
+                _inputHander.SwitchInputActionMap(PlayerInputMapType.Inventory);
             }
             else
             {
                 _inventory._interactionInventory = null;
                 inven._interactionInventory = null;
+                _inputHander.SwitchInputActionMap(PlayerInputMapType.Game);
             }
         }
     }
@@ -66,7 +70,13 @@ public class PlayerController : MonoBehaviour
     }
 
     void RegisterItem(int index)
-    {
+    {   
         _quickSlots[index].TryRegisterItem();
+    }
+
+    void ConsumeItem(int index)
+    {
+        if (!_quickSlots[index].IsSetted) return;
+        _quickSlots[index].GetComponent<ItemConsume>().ConsumeItem();
     }
 }

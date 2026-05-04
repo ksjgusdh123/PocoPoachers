@@ -35,4 +35,16 @@ public class QuickSlotDropHandler : EquipDropHandler
             slotUI.EquipItem(prev, prevAmount);  // 이전 퀵슬롯 아이템과 교환
         return true;
     }
+
+    public void ConsumeItem()
+    {
+        if (--_droppedAmount <= 0)
+        {
+            Unequip();       
+        }
+        else
+        {
+            _countText.text = _droppedAmount.ToString();
+        }
+    }
 }

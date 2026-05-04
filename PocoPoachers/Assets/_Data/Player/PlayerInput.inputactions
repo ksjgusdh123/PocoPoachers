@@ -3,7 +3,7 @@
     "name": "PlayerInput",
     "maps": [
         {
-            "name": "Player",
+            "name": "Game",
             "id": "ba75fb14-1a7a-4260-9909-f209f5dd9e19",
             "actions": [
                 {
@@ -303,12 +303,39 @@
             "id": "bd5654a1-184a-4605-9ed6-5922bf197b15",
             "actions": [
                 {
-                    "name": "New action",
+                    "name": "GoInventory",
                     "type": "Button",
                     "id": "8e84de8d-3c41-439a-97f7-951f615fca71",
                     "expectedControlType": "",
                     "processors": "",
+                    "interactions": "Press",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Interaction",
+                    "type": "Button",
+                    "id": "d15eebcb-53ee-4b02-9e39-66a86b9ed9d8",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Click",
+                    "type": "Button",
+                    "id": "4ba6b596-c0ab-429d-884d-24bef9905d69",
+                    "expectedControlType": "",
+                    "processors": "",
                     "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ItemNumberKey",
+                    "type": "Button",
+                    "id": "20a42b34-a714-478f-ac98-171162f054af",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "Press",
                     "initialStateCheck": false
                 }
             ],
@@ -316,11 +343,88 @@
                 {
                     "name": "",
                     "id": "4d97ae4a-e204-4dc5-9a4d-dd319c948506",
-                    "path": "",
+                    "path": "<Keyboard>/tab",
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "New action",
+                    "action": "GoInventory",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e6e16cce-f1e5-44a4-826a-76af5a9c3c84",
+                    "path": "<Keyboard>/f",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Interaction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "7ac0aeb3-4d6c-4376-a5cf-137bc2a87808",
+                    "path": "<Mouse>/press",
+                    "interactions": "Press",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Click",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2cef80f1-ea6b-4193-9441-dcbeb2fd72d6",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ItemNumberKey",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "03be03f7-4d3d-4641-a97b-e5c54337ef5b",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ItemNumberKey",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "409f2f01-851d-4755-badb-96e97350e62d",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ItemNumberKey",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f368fb54-d605-476b-a473-47b022041c7d",
+                    "path": "<Keyboard>/5",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ItemNumberKey",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2ba383a8-f9d9-463c-b01b-a19f6cf00392",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ItemNumberKey",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
