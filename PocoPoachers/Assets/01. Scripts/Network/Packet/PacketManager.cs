@@ -3,27 +3,11 @@ using System.Collections.Generic;
 using Google.FlatBuffers;
 using UnityEngine;
 
-public static class PacketManager
+public static partial class PacketManager
 {
     static readonly Dictionary<PacketType, Action<FlatPacket>> _onRecv = new Dictionary<PacketType, Action<FlatPacket>>();
 
-    static PacketManager()
-    {
-        Register();
-    }
-
-    static void Register()
-    {
-        _onRecv.Add(PacketType.S_LoginRes,      PacketHandlers.OnS_LoginRes);
-        _onRecv.Add(PacketType.S_MoveNtf,       PacketHandlers.OnS_MoveNtf);
-        _onRecv.Add(PacketType.S_WorldItemDespawnNtf, PacketHandlers.OnS_WorldItemDespawnNtf);
-        _onRecv.Add(PacketType.S_SpawnItemBoxNtf, PacketHandlers.OnS_SpawnItemBoxNtf);
-        _onRecv.Add(PacketType.S_InventoryNtf,  PacketHandlers.OnS_InventoryNtf);
-        _onRecv.Add(PacketType.S_ShootNtf,      PacketHandlers.OnS_ShootNtf);
-        _onRecv.Add(PacketType.S_ChangeItemBox,  PacketHandlers.OnS_ChangeItemBox);
-        _onRecv.Add(PacketType.S_SuccessGainItemNtf,  PacketHandlers.OnS_SuccessGainItemNtf);
-        _onRecv.Add(PacketType.S_ExchangeItemResultNtf,  PacketHandlers.OnS_ExchangeItemResultNtf);
-    }
+    static PacketManager() { Register(); }
 
     public static void HandlePacket(ArraySegment<byte> buffer)
     {
@@ -44,10 +28,7 @@ public static class PacketManager
             return;
         }
 
-        try
-        {
-            action.Invoke(root);
-        }
+        try { action.Invoke(root); }
         catch (Exception e)
         {
             Debug.LogException(e);

@@ -4,24 +4,12 @@ using ServerCore;
 
 namespace Server;
 
-public class PacketManager
+public static partial class PacketManager
 {
     static readonly Dictionary<PacketType, Action<ClientSession, FlatPacket>> _onRecv = new();
     static readonly PacketHandler _handler = new();
 
-    static PacketManager()
-    {
-        Register();
-    }
-
-    static void Register()
-    {
-        _onRecv.Add(PacketType.C_LoginReq,      _handler.OnC_LoginReq);
-        _onRecv.Add(PacketType.C_MoveReq,       _handler.OnC_MoveReq);
-        _onRecv.Add(PacketType.C_ShootReq,      _handler.OnC_ShootReq);
-        _onRecv.Add(PacketType.C_GainItemReq,   _handler.OnC_GainItemReq);
-        _onRecv.Add(PacketType.C_ExchangeItemReq,   _handler.OnC_ExchangeItemReq);
-    }
+    static PacketManager() { Register(); }
 
     public static void HandlePacket(ClientSession session, ArraySegment<byte> buffer)
     {
@@ -42,13 +30,7 @@ public class PacketManager
             return;
         }
 
-        try
-        {
-            action.Invoke(session, root);
-        }
-        catch (Exception e)
-        {
-            LOG_E($"[PacketManager] Handler failed: {type} — {e}");
-        }
+        try { action.Invoke(session, root); }
+        catch (Exception e) { LOG_E($"[PacketManager] Handler failed: {type} — {e}"); }
     }
 }
