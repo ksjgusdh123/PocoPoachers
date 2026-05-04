@@ -54,6 +54,7 @@ public class PlayerController : MonoBehaviour
                 _inventory._interactionInventory = null;
                 inven._interactionInventory = null;
                 _inputHander.SwitchInputActionMap(PlayerInputMapType.Game);
+                UIManager.GetInstance().ChangeMouseCursor(true);
             }
         }
     }
@@ -67,6 +68,7 @@ public class PlayerController : MonoBehaviour
     {
         PlayerBagUI.SetActive(!PlayerBagUI.activeSelf);
         LockCamera(PlayerBagUI.activeSelf);
+        UIManager.GetInstance().ChangeMouseCursor(false);
     }
 
     void RegisterItem(int index)
