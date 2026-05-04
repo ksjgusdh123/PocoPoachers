@@ -5,6 +5,7 @@ public class WeaponController : MonoBehaviour
 {
     [SerializeField] private GunBase[] _guns;
     [SerializeField] private float _switchMidTime = 0.15f;
+    [SerializeField] private CrosshairUI _crosshairUI;
 
     public float MoveSpeedMultiplier
     {
@@ -74,11 +75,20 @@ public class WeaponController : MonoBehaviour
 
         yield return new WaitForSeconds(_switchMidTime);
 
+        if (_currentGunIndex >= 0 && _guns[_currentGunIndex] != null && _crosshairUI != null)
+            _guns[_currentGunIndex].OnShoot -= _crosshairUI.OnShoot;
+
         _guns[_currentGunIndex >= 0 ? _currentGunIndex : 0]?.gameObject.SetActive(false);
         _currentGunIndex = index;
         _currentGun = _guns[index];
         _currentGun?.gameObject.SetActive(true);
         _wasFirePressed = false;
+
+        if (_currentGun != null && _crosshairUI != null)
+        {
+            _currentGun.OnShoot += _crosshairUI.OnShoot;
+            _crosshairUI.UpdateBaseSpread(_currentGun.GunData, false);
+        }
 
         _isSwitching = false;
     }
@@ -114,6 +124,7 @@ public class WeaponController : MonoBehaviour
 
         _wasAimPressed = isAimPressed;
         if (_currentGun != null) _currentGun.IsAiming = isAimPressed;
+        _crosshairUI?.UpdateBaseSpread(_currentGun?.GunData, isAimPressed);
         CameraZoom.Instance?.SetAiming(
             isAimPressed,
             _currentGun != null ? _currentGun.GunData.aimFOV : 45f,

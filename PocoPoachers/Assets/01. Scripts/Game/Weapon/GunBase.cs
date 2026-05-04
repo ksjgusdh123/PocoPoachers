@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -9,6 +10,8 @@ public abstract class GunBase : MonoBehaviour
     public GunData GunData => _gunData;
     public int CurrentAmmo => _currentAmmo;
     public bool IsReloading => _isReloading;
+
+    public event Action OnShoot;
 
     private int _currentAmmo;
     private bool _isReloading;
@@ -43,6 +46,7 @@ public abstract class GunBase : MonoBehaviour
         _currentAmmo--;
         _nextFireTime = Time.time + 1f / _gunData.fireRate;
         _recoilDist = _gunData.recoilDistance;
+        OnShoot?.Invoke();
         CameraShake.Instance?.Shake(_gunData.shakeIntensity, _gunData.shakeDuration, _muzzle.up);
 
         if (_currentAmmo <= 0) StartReload();
@@ -56,7 +60,7 @@ public abstract class GunBase : MonoBehaviour
     {
         float spread = IsAiming ? _gunData.aimSpreadAngle : _gunData.spreadAngle;
         if (spread <= 0f) return _muzzle.up;
-        float angle = Random.Range(-spread / 2f, spread / 2f);
+        float angle = UnityEngine.Random.Range(-spread / 2f, spread / 2f);
         return Quaternion.AngleAxis(angle, Vector3.up) * _muzzle.up;
     }
 
