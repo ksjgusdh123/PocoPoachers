@@ -47,6 +47,45 @@ public struct S_ChangeItemBox : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<S_ChangeItemBox>(o);
   }
+  public S_ChangeItemBoxT UnPack() {
+    var _o = new S_ChangeItemBoxT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(S_ChangeItemBoxT _o) {
+    _o.IsGain = this.IsGain;
+    _o.BoxUid = this.BoxUid;
+    _o.TypeId = this.TypeId;
+    _o.Amount = this.Amount;
+    _o.SlotIndex = this.SlotIndex;
+  }
+  public static Offset<S_ChangeItemBox> Pack(FlatBufferBuilder builder, S_ChangeItemBoxT _o) {
+    if (_o == null) return default(Offset<S_ChangeItemBox>);
+    return CreateS_ChangeItemBox(
+      builder,
+      _o.IsGain,
+      _o.BoxUid,
+      _o.TypeId,
+      _o.Amount,
+      _o.SlotIndex);
+  }
+}
+
+public class S_ChangeItemBoxT
+{
+  public bool IsGain { get; set; }
+  public int BoxUid { get; set; }
+  public int TypeId { get; set; }
+  public int Amount { get; set; }
+  public int SlotIndex { get; set; }
+
+  public S_ChangeItemBoxT() {
+    this.IsGain = false;
+    this.BoxUid = 0;
+    this.TypeId = 0;
+    this.Amount = 0;
+    this.SlotIndex = 0;
+  }
 }
 
 

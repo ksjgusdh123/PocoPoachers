@@ -52,6 +52,86 @@ public struct FlatPacket : IFlatbufferObject
   }
   public static void FinishFlatPacketBuffer(FlatBufferBuilder builder, Offset<FlatPacket> offset) { builder.Finish(offset.Value); }
   public static void FinishSizePrefixedFlatPacketBuffer(FlatBufferBuilder builder, Offset<FlatPacket> offset) { builder.FinishSizePrefixed(offset.Value); }
+  public FlatPacketT UnPack() {
+    var _o = new FlatPacketT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(FlatPacketT _o) {
+    _o.Type = new PacketTypeUnion();
+    _o.Type.Type = this.TypeType;
+    switch (this.TypeType) {
+      default: break;
+      case PacketType.C_LoginReq:
+        _o.Type.Value = this.Type<C_LoginReq>().HasValue ? this.Type<C_LoginReq>().Value.UnPack() : null;
+        break;
+      case PacketType.S_LoginRes:
+        _o.Type.Value = this.Type<S_LoginRes>().HasValue ? this.Type<S_LoginRes>().Value.UnPack() : null;
+        break;
+      case PacketType.C_MoveReq:
+        _o.Type.Value = this.Type<C_MoveReq>().HasValue ? this.Type<C_MoveReq>().Value.UnPack() : null;
+        break;
+      case PacketType.S_MoveNtf:
+        _o.Type.Value = this.Type<S_MoveNtf>().HasValue ? this.Type<S_MoveNtf>().Value.UnPack() : null;
+        break;
+      case PacketType.S_InventoryNtf:
+        _o.Type.Value = this.Type<S_InventoryNtf>().HasValue ? this.Type<S_InventoryNtf>().Value.UnPack() : null;
+        break;
+      case PacketType.S_WorldItemDespawnNtf:
+        _o.Type.Value = this.Type<S_WorldItemDespawnNtf>().HasValue ? this.Type<S_WorldItemDespawnNtf>().Value.UnPack() : null;
+        break;
+      case PacketType.C_ShootReq:
+        _o.Type.Value = this.Type<C_ShootReq>().HasValue ? this.Type<C_ShootReq>().Value.UnPack() : null;
+        break;
+      case PacketType.S_ShootNtf:
+        _o.Type.Value = this.Type<S_ShootNtf>().HasValue ? this.Type<S_ShootNtf>().Value.UnPack() : null;
+        break;
+      case PacketType.S_SpawnItemBoxNtf:
+        _o.Type.Value = this.Type<S_SpawnItemBoxNtf>().HasValue ? this.Type<S_SpawnItemBoxNtf>().Value.UnPack() : null;
+        break;
+      case PacketType.C_GainItemReq:
+        _o.Type.Value = this.Type<C_GainItemReq>().HasValue ? this.Type<C_GainItemReq>().Value.UnPack() : null;
+        break;
+      case PacketType.S_ChangeItemBox:
+        _o.Type.Value = this.Type<S_ChangeItemBox>().HasValue ? this.Type<S_ChangeItemBox>().Value.UnPack() : null;
+        break;
+      case PacketType.S_SuccessGainItemNtf:
+        _o.Type.Value = this.Type<S_SuccessGainItemNtf>().HasValue ? this.Type<S_SuccessGainItemNtf>().Value.UnPack() : null;
+        break;
+      case PacketType.C_ExchangeItemReq:
+        _o.Type.Value = this.Type<C_ExchangeItemReq>().HasValue ? this.Type<C_ExchangeItemReq>().Value.UnPack() : null;
+        break;
+      case PacketType.S_ExchangeItemResultNtf:
+        _o.Type.Value = this.Type<S_ExchangeItemResultNtf>().HasValue ? this.Type<S_ExchangeItemResultNtf>().Value.UnPack() : null;
+        break;
+    }
+  }
+  public static Offset<FlatPacket> Pack(FlatBufferBuilder builder, FlatPacketT _o) {
+    if (_o == null) return default(Offset<FlatPacket>);
+    var _type_type = _o.Type == null ? PacketType.NONE : _o.Type.Type;
+    var _type = _o.Type == null ? 0 : PacketTypeUnion.Pack(builder, _o.Type);
+    return CreateFlatPacket(
+      builder,
+      _type_type,
+      _type);
+  }
+}
+
+public class FlatPacketT
+{
+  public PacketTypeUnion Type { get; set; }
+
+  public FlatPacketT() {
+    this.Type = null;
+  }
+  public static FlatPacketT DeserializeFromBinary(byte[] fbBuffer) {
+    return FlatPacket.GetRootAsFlatPacket(new ByteBuffer(fbBuffer)).UnPack();
+  }
+  public byte[] SerializeToBinary() {
+    var fbb = new FlatBufferBuilder(0x10000);
+    FlatPacket.FinishFlatPacketBuffer(fbb, FlatPacket.Pack(fbb, this));
+    return fbb.DataBuffer.ToSizedArray();
+  }
 }
 
 

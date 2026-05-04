@@ -39,8 +39,16 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         int PtoBMovedAmount, int BtoPMovedAmount, int PSlotIndex, int BSlotIndex)
     {
         player.InventoryUI.OnSlotDropped();
-        PacketSender.CExchangeItemReq(box.InventoryUI.Box.Id, PtoBItem?.Id ?? 0, PtoBMovedAmount, PSlotIndex,
-            BtoPItem?.Id ?? 0, BtoPMovedAmount, BSlotIndex);
+        PacketBuilder.Send(new C_ExchangeItemReqT
+        {
+            BoxUid           = box.InventoryUI.Box.Id,
+            PlayerItemId     = PtoBItem?.Id ?? 0,
+            PlayerItemAmount = PtoBMovedAmount,
+            PlayerSlotIndex  = PSlotIndex,
+            BoxItemId        = BtoPItem?.Id ?? 0,
+            BoxItemAmount    = BtoPMovedAmount,
+            BoxSlotIndex     = BSlotIndex,
+        }, C_ExchangeItemReq.Pack, PacketType.C_ExchangeItemReq);
     }
 
     public void InvokeDragEmptySlot(ItemData data,int amount, int gainedSlotIndex, int removedSlotIndex)

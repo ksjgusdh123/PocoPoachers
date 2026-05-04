@@ -55,6 +55,53 @@ public struct C_ExchangeItemReq : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<C_ExchangeItemReq>(o);
   }
+  public C_ExchangeItemReqT UnPack() {
+    var _o = new C_ExchangeItemReqT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(C_ExchangeItemReqT _o) {
+    _o.BoxUid = this.BoxUid;
+    _o.PlayerItemId = this.PlayerItemId;
+    _o.PlayerItemAmount = this.PlayerItemAmount;
+    _o.PlayerSlotIndex = this.PlayerSlotIndex;
+    _o.BoxItemId = this.BoxItemId;
+    _o.BoxItemAmount = this.BoxItemAmount;
+    _o.BoxSlotIndex = this.BoxSlotIndex;
+  }
+  public static Offset<C_ExchangeItemReq> Pack(FlatBufferBuilder builder, C_ExchangeItemReqT _o) {
+    if (_o == null) return default(Offset<C_ExchangeItemReq>);
+    return CreateC_ExchangeItemReq(
+      builder,
+      _o.BoxUid,
+      _o.PlayerItemId,
+      _o.PlayerItemAmount,
+      _o.PlayerSlotIndex,
+      _o.BoxItemId,
+      _o.BoxItemAmount,
+      _o.BoxSlotIndex);
+  }
+}
+
+public class C_ExchangeItemReqT
+{
+  public int BoxUid { get; set; }
+  public int PlayerItemId { get; set; }
+  public int PlayerItemAmount { get; set; }
+  public int PlayerSlotIndex { get; set; }
+  public int BoxItemId { get; set; }
+  public int BoxItemAmount { get; set; }
+  public int BoxSlotIndex { get; set; }
+
+  public C_ExchangeItemReqT() {
+    this.BoxUid = 0;
+    this.PlayerItemId = 0;
+    this.PlayerItemAmount = 0;
+    this.PlayerSlotIndex = 0;
+    this.BoxItemId = 0;
+    this.BoxItemAmount = 0;
+    this.BoxSlotIndex = 0;
+  }
 }
 
 

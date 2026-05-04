@@ -51,6 +51,49 @@ public struct C_GainItemReq : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<C_GainItemReq>(o);
   }
+  public C_GainItemReqT UnPack() {
+    var _o = new C_GainItemReqT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(C_GainItemReqT _o) {
+    _o.IsPlayer = this.IsPlayer;
+    _o.BoxUid = this.BoxUid;
+    _o.ItemUid = this.ItemUid;
+    _o.Amount = this.Amount;
+    _o.SlotIndex = this.SlotIndex;
+    _o.RemovedSlotIndex = this.RemovedSlotIndex;
+  }
+  public static Offset<C_GainItemReq> Pack(FlatBufferBuilder builder, C_GainItemReqT _o) {
+    if (_o == null) return default(Offset<C_GainItemReq>);
+    return CreateC_GainItemReq(
+      builder,
+      _o.IsPlayer,
+      _o.BoxUid,
+      _o.ItemUid,
+      _o.Amount,
+      _o.SlotIndex,
+      _o.RemovedSlotIndex);
+  }
+}
+
+public class C_GainItemReqT
+{
+  public bool IsPlayer { get; set; }
+  public int BoxUid { get; set; }
+  public int ItemUid { get; set; }
+  public int Amount { get; set; }
+  public int SlotIndex { get; set; }
+  public int RemovedSlotIndex { get; set; }
+
+  public C_GainItemReqT() {
+    this.IsPlayer = false;
+    this.BoxUid = 0;
+    this.ItemUid = 0;
+    this.Amount = 0;
+    this.SlotIndex = 0;
+    this.RemovedSlotIndex = 0;
+  }
 }
 
 

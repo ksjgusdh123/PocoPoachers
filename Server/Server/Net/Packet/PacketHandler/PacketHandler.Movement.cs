@@ -8,16 +8,16 @@ public partial class PacketHandler
         if (session.Player is not { } player)
             return;
 
-        var pos = pkt.Pos;
-        if (!pos.HasValue)
+        if (!pkt.Pos.HasValue)
             return;
 
-        float x = pos.Value.X;
-        float y = pos.Value.Y;
-        float z = pos.Value.Z;
-        float rotation = pkt.Rotation;
-        sbyte moveType = pkt.MoveType;
-
-        PacketSender.SMoveNtfBroadcast(session, player.PlayerId, x, y, z, rotation, moveType);
+        var pos = pkt.Pos.Value;
+        PacketBuilder.Broadcast(SessionManager.Instance.Snapshot(session), new S_MoveNtfT
+        {
+            PlayerId = player.PlayerId,
+            Pos      = new Vec3T { X = pos.X, Y = pos.Y, Z = pos.Z },
+            Rotation = pkt.Rotation,
+            MoveType = pkt.MoveType,
+        }, S_MoveNtf.Pack, PacketType.S_MoveNtf);
     }
 }

@@ -24,5 +24,36 @@ public struct Vec3 : IFlatbufferObject
     builder.PutFloat(X);
     return new Offset<Vec3>(builder.Offset);
   }
+  public Vec3T UnPack() {
+    var _o = new Vec3T();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(Vec3T _o) {
+    _o.X = this.X;
+    _o.Y = this.Y;
+    _o.Z = this.Z;
+  }
+  public static Offset<Vec3> Pack(FlatBufferBuilder builder, Vec3T _o) {
+    if (_o == null) return default(Offset<Vec3>);
+    return CreateVec3(
+      builder,
+      _o.X,
+      _o.Y,
+      _o.Z);
+  }
+}
+
+public class Vec3T
+{
+  public float X { get; set; }
+  public float Y { get; set; }
+  public float Z { get; set; }
+
+  public Vec3T() {
+    this.X = 0.0f;
+    this.Y = 0.0f;
+    this.Z = 0.0f;
+  }
 }
 

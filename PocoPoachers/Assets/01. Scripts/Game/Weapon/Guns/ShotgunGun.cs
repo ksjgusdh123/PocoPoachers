@@ -21,12 +21,15 @@ public class ShotgunGun : GunBase
 
             if (nm != null && nm.IsLoggedIn)
             {
-                PacketSender.CShootReq(
-                    _muzzle.position,
-                    fireDir,
-                    _gunData.bulletSpeed,
-                    _gunData.damage,
-                    _gunData.range);
+                var p = _muzzle.position;
+                PacketBuilder.Send(new C_ShootReqT
+                {
+                    Origin      = new Vec3T { X = p.x,       Y = p.y,       Z = p.z },
+                    Direction   = new Vec3T { X = fireDir.x,  Y = fireDir.y,  Z = fireDir.z },
+                    BulletSpeed = _gunData.bulletSpeed,
+                    Damage      = _gunData.damage,
+                    MaxRange    = _gunData.range,
+                }, C_ShootReq.Pack, PacketType.C_ShootReq);
             }
         }
     }

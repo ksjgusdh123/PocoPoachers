@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
 const string ToolName = "PacketGenerator";
 
@@ -14,54 +14,25 @@ static int Run(string[] args)
     for (int i = 0; i < args.Length; i++)
     {
         string a = args[i];
-        if (a == "--schemas")
-        {
-            if (!TryReadValue(args, ref i, out var v)) return 1;
-            schemasDir = v;
-        }
-        else if (a == "--server")
-        {
-            if (!TryReadValue(args, ref i, out var v)) return 1;
-            serverOut = v;
-        }
-        else if (a == "--client")
-        {
-            if (!TryReadValue(args, ref i, out var v)) return 1;
-            clientOut = v;
-        }
-        else
-        {
-            LogError($"Unknown argument: {a}");
-            return 1;
-        }
+        if      (a == "--schemas") { if (!TryReadValue(args, ref i, out var v)) return 1; schemasDir = v; }
+        else if (a == "--server")  { if (!TryReadValue(args, ref i, out var v)) return 1; serverOut  = v; }
+        else if (a == "--client")  { if (!TryReadValue(args, ref i, out var v)) return 1; clientOut  = v; }
+        else { LogError($"Unknown argument: {a}"); return 1; }
     }
 
-    if (!File.Exists(flatcExe))
-    {
-        LogError($"flatc.exe not found: {flatcExe}");
-        return 1;
-    }
+    if (!File.Exists(flatcExe))        { LogError($"flatc.exe not found: {flatcExe}"); return 1; }
+    if (!Directory.Exists(schemasDir)) { LogError($"schemas directory not found: {schemasDir}"); return 1; }
 
     Directory.CreateDirectory(serverOut);
     Directory.CreateDirectory(clientOut);
 
-    if (!Directory.Exists(schemasDir))
-    {
-        LogError($"schemas directory not found: {schemasDir}");
-        return 1;
-    }
-
     var fbsFiles = Directory.GetFiles(schemasDir, "*.fbs");
-    if (fbsFiles.Length == 0)
-    {
-        LogError("No .fbs files found.");
-        return 1;
-    }
+    if (fbsFiles.Length == 0) { LogError("No .fbs files found."); return 1; }
 
     LogPath("schemas", schemasDir);
-    LogPath("flatc", flatcExe);
-    LogPath("server (csharp)", serverOut);
-    LogPath("client (csharp)", clientOut);
+    LogPath("flatc",   flatcExe);
+    LogPath("server",  serverOut);
+    LogPath("client",  clientOut);
     Console.WriteLine();
 
     foreach (var fbs in fbsFiles)
@@ -78,12 +49,7 @@ static int Run(string[] args)
 static bool TryReadValue(string[] args, ref int i, out string value)
 {
     value = "";
-    if (i + 1 >= args.Length)
-    {
-        LogError($"Missing value for {args[i]}");
-        return false;
-    }
-
+    if (i + 1 >= args.Length) { LogError($"Missing value for {args[i]}"); return false; }
     value = args[++i];
     return true;
 }
@@ -96,7 +62,7 @@ static void LogPath(string key, string path) =>
 
 static int RunFlatc(string flatc, string schemasDir, string fbsPath, string outDir)
 {
-    var psi = new ProcessStartInfo(flatc, $"--csharp -I \"{schemasDir}\" -o \"{outDir}\" \"{fbsPath}\"")
+    var psi = new ProcessStartInfo(flatc, $"--csharp --gen-object-api -I \"{schemasDir}\" -o \"{outDir}\" \"{fbsPath}\"")
     {
         UseShellExecute = false,
         RedirectStandardError = true,

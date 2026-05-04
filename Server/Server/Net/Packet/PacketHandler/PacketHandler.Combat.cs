@@ -11,13 +11,16 @@ public partial class PacketHandler
         if (!pkt.Origin.HasValue || !pkt.Direction.HasValue)
             return;
 
-        PacketSender.SShootNtfBroadcast(
-            session,
-            player.PlayerId,
-            pkt.Origin.Value.X, pkt.Origin.Value.Y, pkt.Origin.Value.Z,
-            pkt.Direction.Value.X, pkt.Direction.Value.Y, pkt.Direction.Value.Z,
-            pkt.BulletSpeed,
-            pkt.Damage,
-            pkt.MaxRange);
+        var o = pkt.Origin.Value;
+        var d = pkt.Direction.Value;
+        PacketBuilder.Broadcast(SessionManager.Instance.Snapshot(session), new S_ShootNtfT
+        {
+            PlayerId    = player.PlayerId,
+            Origin      = new Vec3T { X = o.X, Y = o.Y, Z = o.Z },
+            Direction   = new Vec3T { X = d.X, Y = d.Y, Z = d.Z },
+            BulletSpeed = pkt.BulletSpeed,
+            Damage      = pkt.Damage,
+            MaxRange    = pkt.MaxRange,
+        }, S_ShootNtf.Pack, PacketType.S_ShootNtf);
     }
 }

@@ -20,6 +20,17 @@ public struct C_MoveReq : IFlatbufferObject
   public float Rotation { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public sbyte MoveType { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetSbyte(o + __p.bb_pos) : (sbyte)0; } }
 
+  public static Offset<C_MoveReq> CreateC_MoveReq(FlatBufferBuilder builder,
+      Vec3T pos = null,
+      float rotation = 0.0f,
+      sbyte move_type = 0) {
+    builder.StartTable(3);
+    C_MoveReq.AddRotation(builder, rotation);
+    C_MoveReq.AddPos(builder, Vec3.Pack(builder, pos));
+    C_MoveReq.AddMoveType(builder, move_type);
+    return C_MoveReq.EndC_MoveReq(builder);
+  }
+
   public static void StartC_MoveReq(FlatBufferBuilder builder) { builder.StartTable(3); }
   public static void AddPos(FlatBufferBuilder builder, Offset<Vec3> posOffset) { builder.AddStruct(0, posOffset.Value, 0); }
   public static void AddRotation(FlatBufferBuilder builder, float rotation) { builder.AddFloat(1, rotation, 0.0f); }
@@ -27,6 +38,37 @@ public struct C_MoveReq : IFlatbufferObject
   public static Offset<C_MoveReq> EndC_MoveReq(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<C_MoveReq>(o);
+  }
+  public C_MoveReqT UnPack() {
+    var _o = new C_MoveReqT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(C_MoveReqT _o) {
+    _o.Pos = this.Pos.HasValue ? this.Pos.Value.UnPack() : null;
+    _o.Rotation = this.Rotation;
+    _o.MoveType = this.MoveType;
+  }
+  public static Offset<C_MoveReq> Pack(FlatBufferBuilder builder, C_MoveReqT _o) {
+    if (_o == null) return default(Offset<C_MoveReq>);
+    return CreateC_MoveReq(
+      builder,
+      _o.Pos,
+      _o.Rotation,
+      _o.MoveType);
+  }
+}
+
+public class C_MoveReqT
+{
+  public Vec3T Pos { get; set; }
+  public float Rotation { get; set; }
+  public sbyte MoveType { get; set; }
+
+  public C_MoveReqT() {
+    this.Pos = new Vec3T();
+    this.Rotation = 0.0f;
+    this.MoveType = 0;
   }
 }
 

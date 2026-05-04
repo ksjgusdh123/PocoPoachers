@@ -35,6 +35,33 @@ public struct InventoryItem : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<InventoryItem>(o);
   }
+  public InventoryItemT UnPack() {
+    var _o = new InventoryItemT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(InventoryItemT _o) {
+    _o.ItemId = this.ItemId;
+    _o.Amount = this.Amount;
+  }
+  public static Offset<InventoryItem> Pack(FlatBufferBuilder builder, InventoryItemT _o) {
+    if (_o == null) return default(Offset<InventoryItem>);
+    return CreateInventoryItem(
+      builder,
+      _o.ItemId,
+      _o.Amount);
+  }
+}
+
+public class InventoryItemT
+{
+  public int ItemId { get; set; }
+  public int Amount { get; set; }
+
+  public InventoryItemT() {
+    this.ItemId = 0;
+    this.Amount = 0;
+  }
 }
 
 

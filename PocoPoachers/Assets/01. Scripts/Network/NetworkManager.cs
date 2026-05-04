@@ -59,7 +59,7 @@ public class NetworkManager : Singleton<NetworkManager>
     public void NotifySessionConnected()
     {
         Debug.Log("[NetworkManager] Connected");
-        PacketSender.CLoginReq(userName);
+        PacketBuilder.Send(new C_LoginReqT { Username = userName ?? string.Empty }, C_LoginReq.Pack, PacketType.C_LoginReq);
         OnConnected?.Invoke();
     }
 

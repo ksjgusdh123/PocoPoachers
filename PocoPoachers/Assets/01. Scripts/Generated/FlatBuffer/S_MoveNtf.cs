@@ -21,6 +21,19 @@ public struct S_MoveNtf : IFlatbufferObject
   public float Rotation { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public sbyte MoveType { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetSbyte(o + __p.bb_pos) : (sbyte)0; } }
 
+  public static Offset<S_MoveNtf> CreateS_MoveNtf(FlatBufferBuilder builder,
+      int player_id = 0,
+      Vec3T pos = null,
+      float rotation = 0.0f,
+      sbyte move_type = 0) {
+    builder.StartTable(4);
+    S_MoveNtf.AddRotation(builder, rotation);
+    S_MoveNtf.AddPos(builder, Vec3.Pack(builder, pos));
+    S_MoveNtf.AddPlayerId(builder, player_id);
+    S_MoveNtf.AddMoveType(builder, move_type);
+    return S_MoveNtf.EndS_MoveNtf(builder);
+  }
+
   public static void StartS_MoveNtf(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddPos(FlatBufferBuilder builder, Offset<Vec3> posOffset) { builder.AddStruct(1, posOffset.Value, 0); }
@@ -29,6 +42,41 @@ public struct S_MoveNtf : IFlatbufferObject
   public static Offset<S_MoveNtf> EndS_MoveNtf(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<S_MoveNtf>(o);
+  }
+  public S_MoveNtfT UnPack() {
+    var _o = new S_MoveNtfT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(S_MoveNtfT _o) {
+    _o.PlayerId = this.PlayerId;
+    _o.Pos = this.Pos.HasValue ? this.Pos.Value.UnPack() : null;
+    _o.Rotation = this.Rotation;
+    _o.MoveType = this.MoveType;
+  }
+  public static Offset<S_MoveNtf> Pack(FlatBufferBuilder builder, S_MoveNtfT _o) {
+    if (_o == null) return default(Offset<S_MoveNtf>);
+    return CreateS_MoveNtf(
+      builder,
+      _o.PlayerId,
+      _o.Pos,
+      _o.Rotation,
+      _o.MoveType);
+  }
+}
+
+public class S_MoveNtfT
+{
+  public int PlayerId { get; set; }
+  public Vec3T Pos { get; set; }
+  public float Rotation { get; set; }
+  public sbyte MoveType { get; set; }
+
+  public S_MoveNtfT() {
+    this.PlayerId = 0;
+    this.Pos = new Vec3T();
+    this.Rotation = 0.0f;
+    this.MoveType = 0;
   }
 }
 

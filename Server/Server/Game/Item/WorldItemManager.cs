@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace Server;
@@ -29,7 +27,6 @@ public sealed class WorldItemManager
             SpawnBox(301, 0f, 0f, 4f, 0f, new[] { 101, 101, 101, 101, 101, 101, 101, 101, 102, 103 });
             SpawnBox(301, 0f, 0f, 8f, 0f, new[] { 102, 103 });
         }
-
     }
 
     public void SpawnBox(int typeId, float x, float y, float z, float rot, int[] itemIds)
@@ -41,22 +38,19 @@ public sealed class WorldItemManager
             _items[uid] = new Entry { TypeId = typeId, X = x, Y = y, Z = z, Rotation = rot, ItemIds = new List<int>(itemIds) };
         }
 
-        PacketSender.SSpawnItemBoxNtfBroadcast(uid, typeId, x, y, z, rot, itemIds.ToArray());
+        PacketBuilder.Broadcast(SessionManager.Instance.Snapshot(), BuildSpawnPkt(uid, typeId, x, y, z, rot, itemIds), S_SpawnItemBoxNtf.Pack, PacketType.S_SpawnItemBoxNtf);
         LOG($"ItemBox 스폰: uid={uid}, pos=({x},{y},{z}), items=[{string.Join(",", itemIds)}]");
     }
 
     public void SyncTo(ClientSession session)
     {
         List<KeyValuePair<int, Entry>> copy;
-        lock (_lock)
-        {
-            copy = _items.ToList();
-        }
+        lock (_lock) { copy = _items.ToList(); }
 
         foreach (var kv in copy)
         {
             Entry e = kv.Value;
-            PacketSender.SSpawnItemBoxNtfBroadcast(kv.Key, e.TypeId, e.X, e.Y, e.Z, e.Rotation, e.ItemIds.ToArray());
+            PacketBuilder.Send(session, BuildSpawnPkt(kv.Key, e.TypeId, e.X, e.Y, e.Z, e.Rotation, e.ItemIds.ToArray()), S_SpawnItemBoxNtf.Pack, PacketType.S_SpawnItemBoxNtf);
         }
     }
 
@@ -94,11 +88,17 @@ public sealed class WorldItemManager
 
     public void Despawn(int uid)
     {
-        lock (_lock)
-        {
-            _items.Remove(uid);
-        }
-
-        PacketSender.SWorldItemDespawnNtfBroadcast(uid);
+        lock (_lock) { _items.Remove(uid); }
+        PacketBuilder.Broadcast(SessionManager.Instance.Snapshot(), new S_WorldItemDespawnNtfT { Uid = uid }, S_WorldItemDespawnNtf.Pack, PacketType.S_WorldItemDespawnNtf);
     }
+
+    static S_SpawnItemBoxNtfT BuildSpawnPkt(int uid, int typeId, float x, float y, float z, float rot, int[] itemIds) =>
+        new S_SpawnItemBoxNtfT
+        {
+            Uid      = uid,
+            TypeId   = typeId,
+            Pos      = new Vec3T { X = x, Y = y, Z = z },
+            Rotation = rot,
+            ItemIds  = itemIds.ToList(),
+        };
 }

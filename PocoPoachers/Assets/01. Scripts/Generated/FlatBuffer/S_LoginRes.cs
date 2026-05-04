@@ -17,11 +17,11 @@ public struct S_LoginRes : IFlatbufferObject
   public S_LoginRes __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public bool Success { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-  public UserInfo? UserInfo { get { int o = __p.__offset(6); return o != 0 ? (UserInfo?)(new UserInfo()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public TUserInfo? UserInfo { get { int o = __p.__offset(6); return o != 0 ? (TUserInfo?)(new TUserInfo()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<S_LoginRes> CreateS_LoginRes(FlatBufferBuilder builder,
       bool success = false,
-      Offset<UserInfo> user_infoOffset = default(Offset<UserInfo>)) {
+      Offset<TUserInfo> user_infoOffset = default(Offset<TUserInfo>)) {
     builder.StartTable(2);
     S_LoginRes.AddUserInfo(builder, user_infoOffset);
     S_LoginRes.AddSuccess(builder, success);
@@ -30,10 +30,38 @@ public struct S_LoginRes : IFlatbufferObject
 
   public static void StartS_LoginRes(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddSuccess(FlatBufferBuilder builder, bool success) { builder.AddBool(0, success, false); }
-  public static void AddUserInfo(FlatBufferBuilder builder, Offset<UserInfo> userInfoOffset) { builder.AddOffset(1, userInfoOffset.Value, 0); }
+  public static void AddUserInfo(FlatBufferBuilder builder, Offset<TUserInfo> userInfoOffset) { builder.AddOffset(1, userInfoOffset.Value, 0); }
   public static Offset<S_LoginRes> EndS_LoginRes(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<S_LoginRes>(o);
+  }
+  public S_LoginResT UnPack() {
+    var _o = new S_LoginResT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(S_LoginResT _o) {
+    _o.Success = this.Success;
+    _o.UserInfo = this.UserInfo.HasValue ? this.UserInfo.Value.UnPack() : null;
+  }
+  public static Offset<S_LoginRes> Pack(FlatBufferBuilder builder, S_LoginResT _o) {
+    if (_o == null) return default(Offset<S_LoginRes>);
+    var _user_info = _o.UserInfo == null ? default(Offset<TUserInfo>) : TUserInfo.Pack(builder, _o.UserInfo);
+    return CreateS_LoginRes(
+      builder,
+      _o.Success,
+      _user_info);
+  }
+}
+
+public class S_LoginResT
+{
+  public bool Success { get; set; }
+  public TUserInfoT UserInfo { get; set; }
+
+  public S_LoginResT() {
+    this.Success = false;
+    this.UserInfo = null;
   }
 }
 
@@ -44,7 +72,7 @@ static public class S_LoginResVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Success*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyTable(tablePos, 6 /*UserInfo*/, UserInfoVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 6 /*UserInfo*/, TUserInfoVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

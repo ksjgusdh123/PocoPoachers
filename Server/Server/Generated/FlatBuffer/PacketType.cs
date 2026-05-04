@@ -21,6 +21,66 @@ public enum PacketType : byte
   S_ExchangeItemResultNtf = 14,
 };
 
+public class PacketTypeUnion {
+  public PacketType Type { get; set; }
+  public object Value { get; set; }
+
+  public PacketTypeUnion() {
+    this.Type = PacketType.NONE;
+    this.Value = null;
+  }
+
+  public T As<T>() where T : class { return this.Value as T; }
+  public C_LoginReqT AsC_LoginReq() { return this.As<C_LoginReqT>(); }
+  public static PacketTypeUnion FromC_LoginReq(C_LoginReqT _c_loginreq) { return new PacketTypeUnion{ Type = PacketType.C_LoginReq, Value = _c_loginreq }; }
+  public S_LoginResT AsS_LoginRes() { return this.As<S_LoginResT>(); }
+  public static PacketTypeUnion FromS_LoginRes(S_LoginResT _s_loginres) { return new PacketTypeUnion{ Type = PacketType.S_LoginRes, Value = _s_loginres }; }
+  public C_MoveReqT AsC_MoveReq() { return this.As<C_MoveReqT>(); }
+  public static PacketTypeUnion FromC_MoveReq(C_MoveReqT _c_movereq) { return new PacketTypeUnion{ Type = PacketType.C_MoveReq, Value = _c_movereq }; }
+  public S_MoveNtfT AsS_MoveNtf() { return this.As<S_MoveNtfT>(); }
+  public static PacketTypeUnion FromS_MoveNtf(S_MoveNtfT _s_moventf) { return new PacketTypeUnion{ Type = PacketType.S_MoveNtf, Value = _s_moventf }; }
+  public S_InventoryNtfT AsS_InventoryNtf() { return this.As<S_InventoryNtfT>(); }
+  public static PacketTypeUnion FromS_InventoryNtf(S_InventoryNtfT _s_inventoryntf) { return new PacketTypeUnion{ Type = PacketType.S_InventoryNtf, Value = _s_inventoryntf }; }
+  public S_WorldItemDespawnNtfT AsS_WorldItemDespawnNtf() { return this.As<S_WorldItemDespawnNtfT>(); }
+  public static PacketTypeUnion FromS_WorldItemDespawnNtf(S_WorldItemDespawnNtfT _s_worlditemdespawnntf) { return new PacketTypeUnion{ Type = PacketType.S_WorldItemDespawnNtf, Value = _s_worlditemdespawnntf }; }
+  public C_ShootReqT AsC_ShootReq() { return this.As<C_ShootReqT>(); }
+  public static PacketTypeUnion FromC_ShootReq(C_ShootReqT _c_shootreq) { return new PacketTypeUnion{ Type = PacketType.C_ShootReq, Value = _c_shootreq }; }
+  public S_ShootNtfT AsS_ShootNtf() { return this.As<S_ShootNtfT>(); }
+  public static PacketTypeUnion FromS_ShootNtf(S_ShootNtfT _s_shootntf) { return new PacketTypeUnion{ Type = PacketType.S_ShootNtf, Value = _s_shootntf }; }
+  public S_SpawnItemBoxNtfT AsS_SpawnItemBoxNtf() { return this.As<S_SpawnItemBoxNtfT>(); }
+  public static PacketTypeUnion FromS_SpawnItemBoxNtf(S_SpawnItemBoxNtfT _s_spawnitemboxntf) { return new PacketTypeUnion{ Type = PacketType.S_SpawnItemBoxNtf, Value = _s_spawnitemboxntf }; }
+  public C_GainItemReqT AsC_GainItemReq() { return this.As<C_GainItemReqT>(); }
+  public static PacketTypeUnion FromC_GainItemReq(C_GainItemReqT _c_gainitemreq) { return new PacketTypeUnion{ Type = PacketType.C_GainItemReq, Value = _c_gainitemreq }; }
+  public S_ChangeItemBoxT AsS_ChangeItemBox() { return this.As<S_ChangeItemBoxT>(); }
+  public static PacketTypeUnion FromS_ChangeItemBox(S_ChangeItemBoxT _s_changeitembox) { return new PacketTypeUnion{ Type = PacketType.S_ChangeItemBox, Value = _s_changeitembox }; }
+  public S_SuccessGainItemNtfT AsS_SuccessGainItemNtf() { return this.As<S_SuccessGainItemNtfT>(); }
+  public static PacketTypeUnion FromS_SuccessGainItemNtf(S_SuccessGainItemNtfT _s_successgainitemntf) { return new PacketTypeUnion{ Type = PacketType.S_SuccessGainItemNtf, Value = _s_successgainitemntf }; }
+  public C_ExchangeItemReqT AsC_ExchangeItemReq() { return this.As<C_ExchangeItemReqT>(); }
+  public static PacketTypeUnion FromC_ExchangeItemReq(C_ExchangeItemReqT _c_exchangeitemreq) { return new PacketTypeUnion{ Type = PacketType.C_ExchangeItemReq, Value = _c_exchangeitemreq }; }
+  public S_ExchangeItemResultNtfT AsS_ExchangeItemResultNtf() { return this.As<S_ExchangeItemResultNtfT>(); }
+  public static PacketTypeUnion FromS_ExchangeItemResultNtf(S_ExchangeItemResultNtfT _s_exchangeitemresultntf) { return new PacketTypeUnion{ Type = PacketType.S_ExchangeItemResultNtf, Value = _s_exchangeitemresultntf }; }
+
+  public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
+    switch (_o.Type) {
+      default: return 0;
+      case PacketType.C_LoginReq: return C_LoginReq.Pack(builder, _o.AsC_LoginReq()).Value;
+      case PacketType.S_LoginRes: return S_LoginRes.Pack(builder, _o.AsS_LoginRes()).Value;
+      case PacketType.C_MoveReq: return C_MoveReq.Pack(builder, _o.AsC_MoveReq()).Value;
+      case PacketType.S_MoveNtf: return S_MoveNtf.Pack(builder, _o.AsS_MoveNtf()).Value;
+      case PacketType.S_InventoryNtf: return S_InventoryNtf.Pack(builder, _o.AsS_InventoryNtf()).Value;
+      case PacketType.S_WorldItemDespawnNtf: return S_WorldItemDespawnNtf.Pack(builder, _o.AsS_WorldItemDespawnNtf()).Value;
+      case PacketType.C_ShootReq: return C_ShootReq.Pack(builder, _o.AsC_ShootReq()).Value;
+      case PacketType.S_ShootNtf: return S_ShootNtf.Pack(builder, _o.AsS_ShootNtf()).Value;
+      case PacketType.S_SpawnItemBoxNtf: return S_SpawnItemBoxNtf.Pack(builder, _o.AsS_SpawnItemBoxNtf()).Value;
+      case PacketType.C_GainItemReq: return C_GainItemReq.Pack(builder, _o.AsC_GainItemReq()).Value;
+      case PacketType.S_ChangeItemBox: return S_ChangeItemBox.Pack(builder, _o.AsS_ChangeItemBox()).Value;
+      case PacketType.S_SuccessGainItemNtf: return S_SuccessGainItemNtf.Pack(builder, _o.AsS_SuccessGainItemNtf()).Value;
+      case PacketType.C_ExchangeItemReq: return C_ExchangeItemReq.Pack(builder, _o.AsC_ExchangeItemReq()).Value;
+      case PacketType.S_ExchangeItemResultNtf: return S_ExchangeItemResultNtf.Pack(builder, _o.AsS_ExchangeItemResultNtf()).Value;
+    }
+  }
+}
+
 
 
 static public class PacketTypeVerify

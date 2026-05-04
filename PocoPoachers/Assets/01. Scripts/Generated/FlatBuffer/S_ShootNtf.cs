@@ -23,6 +23,23 @@ public struct S_ShootNtf : IFlatbufferObject
   public float Damage { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float MaxRange { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
 
+  public static Offset<S_ShootNtf> CreateS_ShootNtf(FlatBufferBuilder builder,
+      int player_id = 0,
+      Vec3T origin = null,
+      Vec3T direction = null,
+      float bullet_speed = 0.0f,
+      float damage = 0.0f,
+      float max_range = 0.0f) {
+    builder.StartTable(6);
+    S_ShootNtf.AddMaxRange(builder, max_range);
+    S_ShootNtf.AddDamage(builder, damage);
+    S_ShootNtf.AddBulletSpeed(builder, bullet_speed);
+    S_ShootNtf.AddDirection(builder, Vec3.Pack(builder, direction));
+    S_ShootNtf.AddOrigin(builder, Vec3.Pack(builder, origin));
+    S_ShootNtf.AddPlayerId(builder, player_id);
+    return S_ShootNtf.EndS_ShootNtf(builder);
+  }
+
   public static void StartS_ShootNtf(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddOrigin(FlatBufferBuilder builder, Offset<Vec3> originOffset) { builder.AddStruct(1, originOffset.Value, 0); }
@@ -33,6 +50,49 @@ public struct S_ShootNtf : IFlatbufferObject
   public static Offset<S_ShootNtf> EndS_ShootNtf(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<S_ShootNtf>(o);
+  }
+  public S_ShootNtfT UnPack() {
+    var _o = new S_ShootNtfT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(S_ShootNtfT _o) {
+    _o.PlayerId = this.PlayerId;
+    _o.Origin = this.Origin.HasValue ? this.Origin.Value.UnPack() : null;
+    _o.Direction = this.Direction.HasValue ? this.Direction.Value.UnPack() : null;
+    _o.BulletSpeed = this.BulletSpeed;
+    _o.Damage = this.Damage;
+    _o.MaxRange = this.MaxRange;
+  }
+  public static Offset<S_ShootNtf> Pack(FlatBufferBuilder builder, S_ShootNtfT _o) {
+    if (_o == null) return default(Offset<S_ShootNtf>);
+    return CreateS_ShootNtf(
+      builder,
+      _o.PlayerId,
+      _o.Origin,
+      _o.Direction,
+      _o.BulletSpeed,
+      _o.Damage,
+      _o.MaxRange);
+  }
+}
+
+public class S_ShootNtfT
+{
+  public int PlayerId { get; set; }
+  public Vec3T Origin { get; set; }
+  public Vec3T Direction { get; set; }
+  public float BulletSpeed { get; set; }
+  public float Damage { get; set; }
+  public float MaxRange { get; set; }
+
+  public S_ShootNtfT() {
+    this.PlayerId = 0;
+    this.Origin = new Vec3T();
+    this.Direction = new Vec3T();
+    this.BulletSpeed = 0.0f;
+    this.Damage = 0.0f;
+    this.MaxRange = 0.0f;
   }
 }
 

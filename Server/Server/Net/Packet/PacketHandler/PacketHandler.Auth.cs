@@ -1,3 +1,5 @@
+﻿using System.Linq;
+
 namespace Server;
 
 public partial class PacketHandler
@@ -15,17 +17,24 @@ public partial class PacketHandler
             SessionManager.Instance.Add(session);
         }
 
-        PacketSender.SLoginRes(
-            session,
-            success,
-            success ? session.PlayerId : 0,
-            success ? session.UserName : string.Empty,
-            success ? session.Player!.Stat.Level : 1);
+        PacketBuilder.Send(session, new S_LoginResT
+        {
+            Success  = success,
+            UserInfo = new TUserInfoT
+            {
+                Id    = success ? session.PlayerId : 0,
+                Name  = success ? session.UserName : "",
+                Level = success ? session.Player!.Stat.Level : 1,
+            },
+        }, S_LoginRes.Pack, PacketType.S_LoginRes);
 
         if (success)
         {
             var snapshot = session.Player!.Inventory.GetSnapshot();
-            PacketSender.SInventoryNtf(session, snapshot);
+            PacketBuilder.Send(session, new S_InventoryNtfT
+            {
+                Items = snapshot.Select(kv => new InventoryItemT { ItemId = kv.Key, Amount = kv.Value }).ToList(),
+            }, S_InventoryNtf.Pack, PacketType.S_InventoryNtf);
             WorldItemManager.Instance.SyncTo(session);
         }
     }

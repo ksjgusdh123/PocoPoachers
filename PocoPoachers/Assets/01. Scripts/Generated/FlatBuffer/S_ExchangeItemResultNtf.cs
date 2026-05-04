@@ -59,6 +59,57 @@ public struct S_ExchangeItemResultNtf : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<S_ExchangeItemResultNtf>(o);
   }
+  public S_ExchangeItemResultNtfT UnPack() {
+    var _o = new S_ExchangeItemResultNtfT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(S_ExchangeItemResultNtfT _o) {
+    _o.IsSuccess = this.IsSuccess;
+    _o.BoxUid = this.BoxUid;
+    _o.PlayerGainItemId = this.PlayerGainItemId;
+    _o.PlayerGainItemAmount = this.PlayerGainItemAmount;
+    _o.PlayerSlotIndex = this.PlayerSlotIndex;
+    _o.BoxGainItemId = this.BoxGainItemId;
+    _o.BoxGainItemAmount = this.BoxGainItemAmount;
+    _o.BoxSlotIndex = this.BoxSlotIndex;
+  }
+  public static Offset<S_ExchangeItemResultNtf> Pack(FlatBufferBuilder builder, S_ExchangeItemResultNtfT _o) {
+    if (_o == null) return default(Offset<S_ExchangeItemResultNtf>);
+    return CreateS_ExchangeItemResultNtf(
+      builder,
+      _o.IsSuccess,
+      _o.BoxUid,
+      _o.PlayerGainItemId,
+      _o.PlayerGainItemAmount,
+      _o.PlayerSlotIndex,
+      _o.BoxGainItemId,
+      _o.BoxGainItemAmount,
+      _o.BoxSlotIndex);
+  }
+}
+
+public class S_ExchangeItemResultNtfT
+{
+  public bool IsSuccess { get; set; }
+  public int BoxUid { get; set; }
+  public int PlayerGainItemId { get; set; }
+  public int PlayerGainItemAmount { get; set; }
+  public int PlayerSlotIndex { get; set; }
+  public int BoxGainItemId { get; set; }
+  public int BoxGainItemAmount { get; set; }
+  public int BoxSlotIndex { get; set; }
+
+  public S_ExchangeItemResultNtfT() {
+    this.IsSuccess = false;
+    this.BoxUid = 0;
+    this.PlayerGainItemId = 0;
+    this.PlayerGainItemAmount = 0;
+    this.PlayerSlotIndex = 0;
+    this.BoxGainItemId = 0;
+    this.BoxGainItemAmount = 0;
+    this.BoxSlotIndex = 0;
+  }
 }
 
 

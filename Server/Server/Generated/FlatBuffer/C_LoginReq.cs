@@ -37,6 +37,30 @@ public struct C_LoginReq : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<C_LoginReq>(o);
   }
+  public C_LoginReqT UnPack() {
+    var _o = new C_LoginReqT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(C_LoginReqT _o) {
+    _o.Username = this.Username;
+  }
+  public static Offset<C_LoginReq> Pack(FlatBufferBuilder builder, C_LoginReqT _o) {
+    if (_o == null) return default(Offset<C_LoginReq>);
+    var _username = _o.Username == null ? default(StringOffset) : builder.CreateString(_o.Username);
+    return CreateC_LoginReq(
+      builder,
+      _username);
+  }
+}
+
+public class C_LoginReqT
+{
+  public string Username { get; set; }
+
+  public C_LoginReqT() {
+    this.Username = null;
+  }
 }
 
 

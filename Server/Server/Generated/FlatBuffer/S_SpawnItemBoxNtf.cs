@@ -29,6 +29,21 @@ public struct S_SpawnItemBoxNtf : IFlatbufferObject
 #endif
   public int[] GetItemIdsArray() { return __p.__vector_as_array<int>(12); }
 
+  public static Offset<S_SpawnItemBoxNtf> CreateS_SpawnItemBoxNtf(FlatBufferBuilder builder,
+      int uid = 0,
+      int type_id = 0,
+      Vec3T pos = null,
+      float rotation = 0.0f,
+      VectorOffset item_idsOffset = default(VectorOffset)) {
+    builder.StartTable(5);
+    S_SpawnItemBoxNtf.AddItemIds(builder, item_idsOffset);
+    S_SpawnItemBoxNtf.AddRotation(builder, rotation);
+    S_SpawnItemBoxNtf.AddPos(builder, Vec3.Pack(builder, pos));
+    S_SpawnItemBoxNtf.AddTypeId(builder, type_id);
+    S_SpawnItemBoxNtf.AddUid(builder, uid);
+    return S_SpawnItemBoxNtf.EndS_SpawnItemBoxNtf(builder);
+  }
+
   public static void StartS_SpawnItemBoxNtf(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddUid(FlatBufferBuilder builder, int uid) { builder.AddInt(0, uid, 0); }
   public static void AddTypeId(FlatBufferBuilder builder, int typeId) { builder.AddInt(1, typeId, 0); }
@@ -43,6 +58,51 @@ public struct S_SpawnItemBoxNtf : IFlatbufferObject
   public static Offset<S_SpawnItemBoxNtf> EndS_SpawnItemBoxNtf(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<S_SpawnItemBoxNtf>(o);
+  }
+  public S_SpawnItemBoxNtfT UnPack() {
+    var _o = new S_SpawnItemBoxNtfT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(S_SpawnItemBoxNtfT _o) {
+    _o.Uid = this.Uid;
+    _o.TypeId = this.TypeId;
+    _o.Pos = this.Pos.HasValue ? this.Pos.Value.UnPack() : null;
+    _o.Rotation = this.Rotation;
+    _o.ItemIds = new List<int>();
+    for (var _j = 0; _j < this.ItemIdsLength; ++_j) {_o.ItemIds.Add(this.ItemIds(_j));}
+  }
+  public static Offset<S_SpawnItemBoxNtf> Pack(FlatBufferBuilder builder, S_SpawnItemBoxNtfT _o) {
+    if (_o == null) return default(Offset<S_SpawnItemBoxNtf>);
+    var _item_ids = default(VectorOffset);
+    if (_o.ItemIds != null) {
+      var __item_ids = _o.ItemIds.ToArray();
+      _item_ids = CreateItemIdsVector(builder, __item_ids);
+    }
+    return CreateS_SpawnItemBoxNtf(
+      builder,
+      _o.Uid,
+      _o.TypeId,
+      _o.Pos,
+      _o.Rotation,
+      _item_ids);
+  }
+}
+
+public class S_SpawnItemBoxNtfT
+{
+  public int Uid { get; set; }
+  public int TypeId { get; set; }
+  public Vec3T Pos { get; set; }
+  public float Rotation { get; set; }
+  public List<int> ItemIds { get; set; }
+
+  public S_SpawnItemBoxNtfT() {
+    this.Uid = 0;
+    this.TypeId = 0;
+    this.Pos = new Vec3T();
+    this.Rotation = 0.0f;
+    this.ItemIds = null;
   }
 }
 

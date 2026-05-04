@@ -1,5 +1,3 @@
-using Google.FlatBuffers;
-
 namespace Server;
 
 public class SessionManager
@@ -52,31 +50,16 @@ public class SessionManager
 
     public int Count
     {
-        get
-        {
-            lock (_lock)
-            {
-                return _sessions.Count;
-            }
-        }
+        get { lock (_lock) { return _sessions.Count; } }
     }
 
-    public List<ClientSession> Snapshot()
+    public List<ClientSession> Snapshot(ClientSession? except = null)
     {
         lock (_lock)
         {
-            return _sessions.Values.ToList();
-        }
-    }
-
-    public void Broadcast(FlatBufferBuilder builder, PacketType type, int innerOffset, ClientSession? except = null)
-    {
-        ArraySegment<byte> segment = PacketBuilder.Build(builder, type, innerOffset);
-        List<ClientSession> snapshot = Snapshot();
-        foreach (var s in snapshot)
-        {
-            if (s != except)
-                s.Send(segment);
+            return except is null
+                ? _sessions.Values.ToList()
+                : _sessions.Values.Where(s => s != except).ToList();
         }
     }
 }

@@ -8,12 +8,12 @@ public partial class PacketHandler
         if (session.Player is not { } player)
             return;
 
-        bool isPlayer = pkt.IsPlayer;
-        int boxUid = pkt.BoxUid;
-        int itemTypeId = pkt.ItemUid;
-        int amount = pkt.Amount;
-        int slotIndex = pkt.SlotIndex;
-        int removedSlotIndex = pkt.RemovedSlotIndex;
+        bool isPlayer        = pkt.IsPlayer;
+        int  boxUid          = pkt.BoxUid;
+        int  itemTypeId      = pkt.ItemUid;
+        int  amount          = pkt.Amount;
+        int  slotIndex       = pkt.SlotIndex;
+        int  removedSlotIndex= pkt.RemovedSlotIndex;
 
         if (isPlayer)
         {
@@ -37,9 +37,25 @@ public partial class PacketHandler
             LOG($"BoxToPlayer: PlayerId={session.PlayerId}, boxUid={boxUid}, itemTypeId={itemTypeId}, taken={amount}");
         }
 
-        if (isPlayer && removedSlotIndex != -1) PacketSender.SChangeItemBox(session, isPlayer, boxUid, itemTypeId, amount, slotIndex);
-        else PacketSender.SChangeItemBox(session, isPlayer, boxUid, itemTypeId, amount, removedSlotIndex);
-        PacketSender.SSuccessGainItemNtf(session, boxUid, itemTypeId, amount, slotIndex, removedSlotIndex);
+        int changeSlot = (isPlayer && removedSlotIndex != -1) ? slotIndex : removedSlotIndex;
+        PacketBuilder.Broadcast(SessionManager.Instance.Snapshot(session), new S_ChangeItemBoxT
+        {
+            IsGain    = isPlayer,
+            BoxUid    = boxUid,
+            TypeId    = itemTypeId,
+            Amount    = amount,
+            SlotIndex = changeSlot,
+        }, S_ChangeItemBox.Pack, PacketType.S_ChangeItemBox);
+        LOG($"boxSlotIndex : {changeSlot}");
+
+        PacketBuilder.Send(session, new S_SuccessGainItemNtfT
+        {
+            Uid              = boxUid,
+            TypeId           = itemTypeId,
+            Amount           = amount,
+            SlotIndex        = slotIndex,
+            RemovedSlotIndex = removedSlotIndex,
+        }, S_SuccessGainItemNtf.Pack, PacketType.S_SuccessGainItemNtf);
     }
 
     public void OnC_ExchangeItemReq(ClientSession session, FlatPacket root)
@@ -48,13 +64,13 @@ public partial class PacketHandler
         if (session.Player is not { } player)
             return;
 
-        int boxUid = pkt.BoxUid;
-        int playerItemId = pkt.PlayerItemId;
+        int boxUid           = pkt.BoxUid;
+        int playerItemId     = pkt.PlayerItemId;
         int playerItemAmount = pkt.PlayerItemAmount;
-        int playerSlotIndex = pkt.PlayerSlotIndex;
-        int boxItemId = pkt.BoxItemId;
-        int boxItemAmount = pkt.BoxItemAmount;
-        int boxSlotIndex = pkt.BoxSlotIndex;
+        int playerSlotIndex  = pkt.PlayerSlotIndex;
+        int boxItemId        = pkt.BoxItemId;
+        int boxItemAmount    = pkt.BoxItemAmount;
+        int boxSlotIndex     = pkt.BoxSlotIndex;
 
         if (!WorldItemManager.Instance.TryTakeItem(boxUid, boxItemId, boxItemAmount, out int taken))
         {
@@ -71,12 +87,29 @@ public partial class PacketHandler
         }
         WorldItemManager.Instance.AddItemToBox(boxUid, playerItemId, playerItemAmount);
 
-        // 교환으로 상자가 소실
-        PacketSender.SChangeItemBox(session, false, boxUid, boxItemId, boxItemAmount, boxSlotIndex);
-        // 교환으로 상자가 획득
-        PacketSender.SChangeItemBox(session, true, boxUid, playerItemId, playerItemAmount, boxSlotIndex);
+        var others = SessionManager.Instance.Snapshot(session);
 
-        PacketSender.SExchangeItemResultNtf(session, true, boxUid, playerItemId, playerItemAmount, playerSlotIndex,
-            boxItemId, boxItemAmount, boxSlotIndex);
+        // 교환으로 상자가 소실
+        PacketBuilder.Broadcast(others, new S_ChangeItemBoxT
+        {
+            IsGain = false, BoxUid = boxUid, TypeId = boxItemId, Amount = boxItemAmount, SlotIndex = boxSlotIndex,
+        }, S_ChangeItemBox.Pack, PacketType.S_ChangeItemBox);
+        // 교환으로 상자가 획득
+        PacketBuilder.Broadcast(others, new S_ChangeItemBoxT
+        {
+            IsGain = true, BoxUid = boxUid, TypeId = playerItemId, Amount = playerItemAmount, SlotIndex = boxSlotIndex,
+        }, S_ChangeItemBox.Pack, PacketType.S_ChangeItemBox);
+
+        PacketBuilder.Send(session, new S_ExchangeItemResultNtfT
+        {
+            IsSuccess            = true,
+            BoxUid               = boxUid,
+            PlayerGainItemId     = playerItemId,
+            PlayerGainItemAmount = playerItemAmount,
+            PlayerSlotIndex      = playerSlotIndex,
+            BoxGainItemId        = boxItemId,
+            BoxGainItemAmount    = boxItemAmount,
+            BoxSlotIndex         = boxSlotIndex,
+        }, S_ExchangeItemResultNtf.Pack, PacketType.S_ExchangeItemResultNtf);
     }
 }

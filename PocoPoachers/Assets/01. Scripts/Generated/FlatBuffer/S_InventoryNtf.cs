@@ -37,6 +37,36 @@ public struct S_InventoryNtf : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<S_InventoryNtf>(o);
   }
+  public S_InventoryNtfT UnPack() {
+    var _o = new S_InventoryNtfT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(S_InventoryNtfT _o) {
+    _o.Items = new List<InventoryItemT>();
+    for (var _j = 0; _j < this.ItemsLength; ++_j) {_o.Items.Add(this.Items(_j).HasValue ? this.Items(_j).Value.UnPack() : null);}
+  }
+  public static Offset<S_InventoryNtf> Pack(FlatBufferBuilder builder, S_InventoryNtfT _o) {
+    if (_o == null) return default(Offset<S_InventoryNtf>);
+    var _items = default(VectorOffset);
+    if (_o.Items != null) {
+      var __items = new Offset<InventoryItem>[_o.Items.Count];
+      for (var _j = 0; _j < __items.Length; ++_j) { __items[_j] = InventoryItem.Pack(builder, _o.Items[_j]); }
+      _items = CreateItemsVector(builder, __items);
+    }
+    return CreateS_InventoryNtf(
+      builder,
+      _items);
+  }
+}
+
+public class S_InventoryNtfT
+{
+  public List<InventoryItemT> Items { get; set; }
+
+  public S_InventoryNtfT() {
+    this.Items = null;
+  }
 }
 
 

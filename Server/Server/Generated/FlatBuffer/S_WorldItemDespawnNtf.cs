@@ -31,6 +31,29 @@ public struct S_WorldItemDespawnNtf : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<S_WorldItemDespawnNtf>(o);
   }
+  public S_WorldItemDespawnNtfT UnPack() {
+    var _o = new S_WorldItemDespawnNtfT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(S_WorldItemDespawnNtfT _o) {
+    _o.Uid = this.Uid;
+  }
+  public static Offset<S_WorldItemDespawnNtf> Pack(FlatBufferBuilder builder, S_WorldItemDespawnNtfT _o) {
+    if (_o == null) return default(Offset<S_WorldItemDespawnNtf>);
+    return CreateS_WorldItemDespawnNtf(
+      builder,
+      _o.Uid);
+  }
+}
+
+public class S_WorldItemDespawnNtfT
+{
+  public int Uid { get; set; }
+
+  public S_WorldItemDespawnNtfT() {
+    this.Uid = 0;
+  }
 }
 
 

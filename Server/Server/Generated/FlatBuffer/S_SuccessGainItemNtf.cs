@@ -47,6 +47,45 @@ public struct S_SuccessGainItemNtf : IFlatbufferObject
     int o = builder.EndTable();
     return new Offset<S_SuccessGainItemNtf>(o);
   }
+  public S_SuccessGainItemNtfT UnPack() {
+    var _o = new S_SuccessGainItemNtfT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(S_SuccessGainItemNtfT _o) {
+    _o.Uid = this.Uid;
+    _o.TypeId = this.TypeId;
+    _o.Amount = this.Amount;
+    _o.SlotIndex = this.SlotIndex;
+    _o.RemovedSlotIndex = this.RemovedSlotIndex;
+  }
+  public static Offset<S_SuccessGainItemNtf> Pack(FlatBufferBuilder builder, S_SuccessGainItemNtfT _o) {
+    if (_o == null) return default(Offset<S_SuccessGainItemNtf>);
+    return CreateS_SuccessGainItemNtf(
+      builder,
+      _o.Uid,
+      _o.TypeId,
+      _o.Amount,
+      _o.SlotIndex,
+      _o.RemovedSlotIndex);
+  }
+}
+
+public class S_SuccessGainItemNtfT
+{
+  public int Uid { get; set; }
+  public int TypeId { get; set; }
+  public int Amount { get; set; }
+  public int SlotIndex { get; set; }
+  public int RemovedSlotIndex { get; set; }
+
+  public S_SuccessGainItemNtfT() {
+    this.Uid = 0;
+    this.TypeId = 0;
+    this.Amount = 0;
+    this.SlotIndex = 0;
+    this.RemovedSlotIndex = 0;
+  }
 }
 
 

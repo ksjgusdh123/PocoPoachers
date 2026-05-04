@@ -22,6 +22,21 @@ public struct C_ShootReq : IFlatbufferObject
   public float Damage { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float MaxRange { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
 
+  public static Offset<C_ShootReq> CreateC_ShootReq(FlatBufferBuilder builder,
+      Vec3T origin = null,
+      Vec3T direction = null,
+      float bullet_speed = 0.0f,
+      float damage = 0.0f,
+      float max_range = 0.0f) {
+    builder.StartTable(5);
+    C_ShootReq.AddMaxRange(builder, max_range);
+    C_ShootReq.AddDamage(builder, damage);
+    C_ShootReq.AddBulletSpeed(builder, bullet_speed);
+    C_ShootReq.AddDirection(builder, Vec3.Pack(builder, direction));
+    C_ShootReq.AddOrigin(builder, Vec3.Pack(builder, origin));
+    return C_ShootReq.EndC_ShootReq(builder);
+  }
+
   public static void StartC_ShootReq(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddOrigin(FlatBufferBuilder builder, Offset<Vec3> originOffset) { builder.AddStruct(0, originOffset.Value, 0); }
   public static void AddDirection(FlatBufferBuilder builder, Offset<Vec3> directionOffset) { builder.AddStruct(1, directionOffset.Value, 0); }
@@ -31,6 +46,45 @@ public struct C_ShootReq : IFlatbufferObject
   public static Offset<C_ShootReq> EndC_ShootReq(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<C_ShootReq>(o);
+  }
+  public C_ShootReqT UnPack() {
+    var _o = new C_ShootReqT();
+    this.UnPackTo(_o);
+    return _o;
+  }
+  public void UnPackTo(C_ShootReqT _o) {
+    _o.Origin = this.Origin.HasValue ? this.Origin.Value.UnPack() : null;
+    _o.Direction = this.Direction.HasValue ? this.Direction.Value.UnPack() : null;
+    _o.BulletSpeed = this.BulletSpeed;
+    _o.Damage = this.Damage;
+    _o.MaxRange = this.MaxRange;
+  }
+  public static Offset<C_ShootReq> Pack(FlatBufferBuilder builder, C_ShootReqT _o) {
+    if (_o == null) return default(Offset<C_ShootReq>);
+    return CreateC_ShootReq(
+      builder,
+      _o.Origin,
+      _o.Direction,
+      _o.BulletSpeed,
+      _o.Damage,
+      _o.MaxRange);
+  }
+}
+
+public class C_ShootReqT
+{
+  public Vec3T Origin { get; set; }
+  public Vec3T Direction { get; set; }
+  public float BulletSpeed { get; set; }
+  public float Damage { get; set; }
+  public float MaxRange { get; set; }
+
+  public C_ShootReqT() {
+    this.Origin = new Vec3T();
+    this.Direction = new Vec3T();
+    this.BulletSpeed = 0.0f;
+    this.Damage = 0.0f;
+    this.MaxRange = 0.0f;
   }
 }
 
