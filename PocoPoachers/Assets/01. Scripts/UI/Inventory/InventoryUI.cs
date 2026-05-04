@@ -23,6 +23,9 @@ public class InventoryUI : MonoBehaviour
         if (slots.Length > 0)
         {
             _slotUIs = slots;
+            _slotSet = new HashSet<ItemSlotUI>(slots);
+            for (int i = 0; i < slots.Length; i++)
+                slots[i].SetIndex(i);
         }
 
         _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);

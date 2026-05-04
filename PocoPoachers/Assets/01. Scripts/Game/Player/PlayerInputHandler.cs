@@ -2,9 +2,16 @@ using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+public enum PlayerInputMapType
+{
+    Game,
+    Inventory
+}
+
 [RequireComponent(typeof(PlayerInput))]
 public class PlayerInputHandler : MonoBehaviour
 {
+
     public const float DoubleClickThreshold = 0.3f;
     public Vector2 MoveInput { get; private set; }
     public bool IsSprintPressed { get; private set; }
@@ -18,8 +25,19 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action DoubleClick;
     public event Action Dodge;
 
+    private PlayerInput _inputMap;
     private readonly Key[] _numberKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5 };
     private float _lastClickTime;
+
+    private void Awake()
+    {
+        _inputMap = GetComponent<PlayerInput>();
+    }
+
+    public void SwitchInputActionMap(PlayerInputMapType type)
+    {
+        _inputMap.SwitchCurrentActionMap(type.ToString());
+    }
 
     // PlayerInput 컴포넌트가 Move 액션 발생 시 자동으로 호출
     private void OnMove(InputValue value)
