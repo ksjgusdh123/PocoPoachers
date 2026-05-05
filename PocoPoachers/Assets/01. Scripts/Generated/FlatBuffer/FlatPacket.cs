@@ -33,6 +33,8 @@ public struct FlatPacket : IFlatbufferObject
   public S_SuccessGainItemNtf TypeAsS_SuccessGainItemNtf() { return Type<S_SuccessGainItemNtf>().Value; }
   public C_ExchangeItemReq TypeAsC_ExchangeItemReq() { return Type<C_ExchangeItemReq>().Value; }
   public S_ExchangeItemResultNtf TypeAsS_ExchangeItemResultNtf() { return Type<S_ExchangeItemResultNtf>().Value; }
+  public C_PingReq TypeAsC_PingReq() { return Type<C_PingReq>().Value; }
+  public S_PongRes TypeAsS_PongRes() { return Type<S_PongRes>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -103,6 +105,12 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.S_ExchangeItemResultNtf:
         _o.Type.Value = this.Type<S_ExchangeItemResultNtf>().HasValue ? this.Type<S_ExchangeItemResultNtf>().Value.UnPack() : null;
+        break;
+      case PacketType.C_PingReq:
+        _o.Type.Value = this.Type<C_PingReq>().HasValue ? this.Type<C_PingReq>().Value.UnPack() : null;
+        break;
+      case PacketType.S_PongRes:
+        _o.Type.Value = this.Type<S_PongRes>().HasValue ? this.Type<S_PongRes>().Value.UnPack() : null;
         break;
     }
   }

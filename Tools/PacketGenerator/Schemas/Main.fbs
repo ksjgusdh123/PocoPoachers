@@ -4,6 +4,7 @@ include "Movement.fbs";
 include "Inventory.fbs";
 include "WorldItem.fbs";
 include "Combat.fbs";
+include "Ping.fbs";
 
 union PacketType
 {
@@ -26,6 +27,9 @@ union PacketType
     S_SuccessGainItemNtf,
     C_ExchangeItemReq,
     S_ExchangeItemResultNtf,
+
+    C_PingReq,
+    S_PongRes,
 }
 
 table FlatPacket

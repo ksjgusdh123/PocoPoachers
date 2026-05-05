@@ -16,6 +16,7 @@ public class NetworkManager : Singleton<NetworkManager>
     public Session Session { get; private set; }
     public int MyPlayerId { get; private set; }
     public bool IsLoggedIn { get; private set; }
+    public long Rtt { get; private set; }
 
     public event Action OnConnected;
     public event Action OnDisconnected;
@@ -70,6 +71,12 @@ public class NetworkManager : Singleton<NetworkManager>
         MyPlayerId = 0;
         ObjectManager.Instance?.Clear();
         OnDisconnected?.Invoke();
+    }
+
+    public void OnPongRes(long rtt)
+    {
+        Rtt = rtt;
+        Debug.Log($"[NetworkManager] RTT: {rtt}ms");
     }
 
     public void OnLoginResult(bool success, int playerId, string name, int level)

@@ -19,6 +19,8 @@ public enum PacketType : byte
   S_SuccessGainItemNtf = 12,
   C_ExchangeItemReq = 13,
   S_ExchangeItemResultNtf = 14,
+  C_PingReq = 15,
+  S_PongRes = 16,
 };
 
 public class PacketTypeUnion {
@@ -59,6 +61,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromC_ExchangeItemReq(C_ExchangeItemReqT _c_exchangeitemreq) { return new PacketTypeUnion{ Type = PacketType.C_ExchangeItemReq, Value = _c_exchangeitemreq }; }
   public S_ExchangeItemResultNtfT AsS_ExchangeItemResultNtf() { return this.As<S_ExchangeItemResultNtfT>(); }
   public static PacketTypeUnion FromS_ExchangeItemResultNtf(S_ExchangeItemResultNtfT _s_exchangeitemresultntf) { return new PacketTypeUnion{ Type = PacketType.S_ExchangeItemResultNtf, Value = _s_exchangeitemresultntf }; }
+  public C_PingReqT AsC_PingReq() { return this.As<C_PingReqT>(); }
+  public static PacketTypeUnion FromC_PingReq(C_PingReqT _c_pingreq) { return new PacketTypeUnion{ Type = PacketType.C_PingReq, Value = _c_pingreq }; }
+  public S_PongResT AsS_PongRes() { return this.As<S_PongResT>(); }
+  public static PacketTypeUnion FromS_PongRes(S_PongResT _s_pongres) { return new PacketTypeUnion{ Type = PacketType.S_PongRes, Value = _s_pongres }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -77,6 +83,8 @@ public class PacketTypeUnion {
       case PacketType.S_SuccessGainItemNtf: return S_SuccessGainItemNtf.Pack(builder, _o.AsS_SuccessGainItemNtf()).Value;
       case PacketType.C_ExchangeItemReq: return C_ExchangeItemReq.Pack(builder, _o.AsC_ExchangeItemReq()).Value;
       case PacketType.S_ExchangeItemResultNtf: return S_ExchangeItemResultNtf.Pack(builder, _o.AsS_ExchangeItemResultNtf()).Value;
+      case PacketType.C_PingReq: return C_PingReq.Pack(builder, _o.AsC_PingReq()).Value;
+      case PacketType.S_PongRes: return S_PongRes.Pack(builder, _o.AsS_PongRes()).Value;
     }
   }
 }
@@ -131,6 +139,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.S_ExchangeItemResultNtf:
         result = S_ExchangeItemResultNtfVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.C_PingReq:
+        result = C_PingReqVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_PongRes:
+        result = S_PongResVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;
