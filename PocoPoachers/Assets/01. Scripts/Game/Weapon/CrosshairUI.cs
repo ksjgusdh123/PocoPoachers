@@ -9,12 +9,16 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private float _pixelsPerDegree = 5f;
     [SerializeField] private float _spreadIncrement = 20f;
     [SerializeField] private float _recoverySpeed = 80f;
+    [SerializeField] private float _collapseSpeed = 200f;
+    [SerializeField] private float _collapseTargetSpread = 0f;
 
     private float _maxSpread;
 
     private RectTransform _rectTransform;
     private float _currentSpread;
     private float _targetBaseSpread;
+    private bool _isCollapsing;
+    private bool _isSwitchExpanding;
 
     private void Awake()
     {
@@ -26,7 +30,26 @@ public class CrosshairUI : MonoBehaviour
     private void Update()
     {
         _rectTransform.position = Mouse.current.position.ReadValue();
-        _currentSpread = Mathf.MoveTowards(_currentSpread, _targetBaseSpread, _recoverySpeed * Time.deltaTime);
+
+        if (_isCollapsing)
+        {
+            _currentSpread = Mathf.MoveTowards(_currentSpread, _collapseTargetSpread, _collapseSpeed * Time.deltaTime);
+            if (_currentSpread <= _collapseTargetSpread)
+            {
+                _isCollapsing = false;
+                _isSwitchExpanding = true;
+            }
+        }
+        else if (_isSwitchExpanding)
+        {
+            _currentSpread = Mathf.MoveTowards(_currentSpread, _targetBaseSpread, _collapseSpeed * Time.deltaTime);
+            if (Mathf.Approximately(_currentSpread, _targetBaseSpread)) _isSwitchExpanding = false;
+        }
+        else
+        {
+            _currentSpread = Mathf.MoveTowards(_currentSpread, _targetBaseSpread, _recoverySpeed * Time.deltaTime);
+        }
+
         ApplySpread();
     }
 
@@ -34,7 +57,12 @@ public class CrosshairUI : MonoBehaviour
     {
         if (gunData == null) return;
         _targetBaseSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree;
-        _maxSpread = gunData.spreadAngle * _pixelsPerDegree + _spreadIncrement * 3f;
+        _maxSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree + _spreadIncrement * 3f;
+    }
+
+    public void ResetSpread()
+    {
+        _isCollapsing = true;
     }
 
     public void OnShoot()
