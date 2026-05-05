@@ -37,7 +37,7 @@ public class InventoryDropHandler : BaseDropHandler
         {
             //// 타겟 슬롯이 비어 있음 → 드래그한 수량만 이동
             //_slotUI.SetSlotData(draggedData, dragAmount);
-            manager.InvokeDragEmptySlot(draggedData, dragAmount, prevSlotIndex, draggedSlotIndex);
+            _slotUI.InventoryUI.OnDraggedSlot(draggedData, dragAmount, prevSlotIndex, draggedSlotIndex);
             //if (remaining > 0)
             //    dragged.SetSlotData(draggedData, remaining);
             //else
