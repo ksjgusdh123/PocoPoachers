@@ -47,4 +47,11 @@ public class CrosshairUI : MonoBehaviour
         _left.anchoredPosition   = new Vector2(-_currentSpread, 0);
         _right.anchoredPosition  = new Vector2( _currentSpread, 0);
     }
+
+    public void SetGameMode(bool isGameMode)
+    {
+        gameObject.SetActive(isGameMode);
+        Cursor.visible = !isGameMode;
+        //Cursor.lockState = isGameMode ? CursorLockMode.Confined : CursorLockMode.None;
+    }
 }

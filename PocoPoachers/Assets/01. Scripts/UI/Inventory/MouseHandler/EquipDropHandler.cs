@@ -9,7 +9,7 @@ public class EquipDropHandler : BaseDropHandler
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private GameObject _itemVisual;
-
+    [SerializeField] private int slotNumber;
     public ItemType ItemType => _itemType;
     public bool IsSetted => _isSetted;
 
@@ -33,12 +33,17 @@ public class EquipDropHandler : BaseDropHandler
     protected virtual bool OnItemDropped(ItemData data, int amount)
     {
         if (data.ItemType != _itemType) return false;
+
+        // temp
+        FindAnyObjectByType<WeaponController>().EquipWeapon(data, slotNumber);
+
         _droppedItemData = data;
         _droppedAmount = amount;
         _nameText.text = data.ItemName;
         _icon.sprite = data.Icon;
         _icon.gameObject.SetActive(true);
         _isSetted = true;
+
         if (_itemVisual != null)
             _itemVisual.SetActive(true);
         return true;

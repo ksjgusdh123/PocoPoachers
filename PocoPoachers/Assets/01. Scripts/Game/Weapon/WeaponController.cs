@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class WeaponController : MonoBehaviour
@@ -6,7 +7,7 @@ public class WeaponController : MonoBehaviour
     [SerializeField] private GunBase[] _guns;
     [SerializeField] private float _switchMidTime = 0.15f;
     [SerializeField] private CrosshairUI _crosshairUI;
-
+    [SerializeField] private GunBase[] _baseGunClass;
     public float MoveSpeedMultiplier
     {
         get
@@ -20,6 +21,7 @@ public class WeaponController : MonoBehaviour
 
     private static readonly int WeaponSwitchHash = Animator.StringToHash("WeaponSwitch");
 
+    private Dictionary<int, GunBase> _gunDic = new Dictionary<int, GunBase>();
     private GunBase _currentGun;
     private int _currentGunIndex = -1;
     private bool _isSwitching;
@@ -30,16 +32,22 @@ public class WeaponController : MonoBehaviour
 
     private void Awake()
     {
+        _guns = new GunBase[2];
         _inputHandler = GetComponent<PlayerInputHandler>();
         _animator = GetComponentInChildren<Animator>();
         foreach (var gun in _guns)
             gun?.gameObject.SetActive(false);
+
+        foreach (var gun in _baseGunClass)
+        {
+            _gunDic[gun.GunData.itemId] = gun;
+        }
     }
 
     private void Start()
     {
         _inputHandler.WeaponSwitch += SwitchWeapon;
-        if (_guns.Length > 0) SwitchWeapon(0);
+        //if (_guns.Length > 0) SwitchWeapon(0);
     }
 
     private void OnDestroy()
@@ -52,6 +60,15 @@ public class WeaponController : MonoBehaviour
         HandleFireInput();
         HandleReloadInput();
         HandleAimInput();
+    }
+
+    public void EquipWeapon(ItemData weaponData, int index)
+    {
+        GunBase equipGun = _gunDic[weaponData.id];
+        if (equipGun == null) return;
+
+        _guns[index] = equipGun;
+        _currentGun = equipGun;
     }
 
     private void SwitchWeapon(int index)

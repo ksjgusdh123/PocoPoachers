@@ -5,6 +5,8 @@ public enum FireMode { Single, Auto }
 [CreateAssetMenu(fileName = "GunData", menuName = "Weapon/GunData")]
 public class GunData : ScriptableObject
 {
+    public int itemId;
+
     [Header("기본 스펙")]
     public float damage = 10f;
     public float fireRate = 1f;
