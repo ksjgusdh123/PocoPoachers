@@ -7,23 +7,24 @@ public class ItemSlot
     [SerializeField] protected ItemData _itemData;
     [SerializeField] protected int _amount;
 
-    public event Action OnCleared;
+    public event Action OnChanged;
 
     public ItemData ItemData => _itemData;
     public int Amount => _amount;
     public bool IsEmpty => _itemData == null;
-        
+
     public void Set(ItemData newItemData, int newAmount)
     {
         _itemData = newItemData;
         _amount = newAmount;
+        OnChanged?.Invoke();
     }
 
     public void Clear()
     {
         _itemData = null;
         _amount = 0;
-        OnCleared?.Invoke();
+        OnChanged?.Invoke();
     }
 
     // 이벤트 없이 초기화 (정렬 내부용)
@@ -39,6 +40,7 @@ public class ItemSlot
         int maxStack = _itemData.MaxStack;
         int overflow = Mathf.Max(0, _amount + value - maxStack);
         _amount = Mathf.Min(_amount + value, maxStack);
+        OnChanged?.Invoke();
         return overflow;
     }
 
@@ -49,6 +51,8 @@ public class ItemSlot
         _amount -= removed;
         if (_amount <= 0)
             Clear();
+        else
+            OnChanged?.Invoke();
         return removed;
     }
 
@@ -57,9 +61,6 @@ public class ItemSlot
         if (changedData == null)
             RemoveAmount(amount);
         else
-        {
             Set(changedData, amount);
-            OnCleared?.Invoke();
-        }
     }
 }

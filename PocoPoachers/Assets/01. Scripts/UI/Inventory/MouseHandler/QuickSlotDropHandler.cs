@@ -1,7 +1,7 @@
 using TMPro;
 using UnityEngine;
 
-public class QuickSlotDropHandler : BaseDropHandler
+public class QuickSlotDropHandler : ItemHolderDropHandler
 {
     [SerializeField] private TextMeshProUGUI _countText;
     [SerializeField] private int _quickSlotCount;

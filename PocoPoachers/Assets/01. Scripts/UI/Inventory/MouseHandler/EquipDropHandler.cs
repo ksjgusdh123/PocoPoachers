@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class EquipDropHandler : BaseDropHandler
+public class EquipDropHandler : ItemHolderDropHandler
 {
     [SerializeField] private GameObject _itemVisual;
     [SerializeField] private int slotNumber;

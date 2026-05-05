@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 public class ItemSlotUI : MonoBehaviour
@@ -23,22 +22,34 @@ public class ItemSlotUI : MonoBehaviour
         InventoryUI = GetComponentInParent<InventoryUI>();
     }
 
+    private void OnDestroy()
+    {
+        if (_settedSlot != null)
+            _settedSlot.OnChanged -= Refresh;
+    }
+
     public void SetSlot(ItemSlot slot)
     {
-        _settedSlot = slot;
+        if (_settedSlot != null)
+            _settedSlot.OnChanged -= Refresh;
 
-        if (slot.IsEmpty)
+        _settedSlot = slot;
+        _settedSlot.OnChanged += Refresh;
+        Refresh();
+    }
+
+    private void Refresh()
+    {
+        if (_settedSlot.IsEmpty)
         {
             SetEmpty();
             return;
         }
-        ItemData slotItemData = slot.ItemData;
 
-        _icon.sprite = slotItemData.Icon;
-        _nameText.text = slotItemData.ItemName;
-        _amountText.text = slot.Amount >= 1 ? slot.Amount.ToString() : "";
+        _icon.sprite = _settedSlot.ItemData.Icon;
+        _nameText.text = _settedSlot.ItemData.ItemName;
+        _amountText.text = _settedSlot.Amount >= 1 ? _settedSlot.Amount.ToString() : "";
         IsSettedItem = true;
-
 
         if (_itemVisual != null)
             _itemVisual.SetActive(true);
@@ -73,10 +84,5 @@ public class ItemSlotUI : MonoBehaviour
     public void SetIndex(int index)
     {
         SlotIndex = index;
-    }
-
-    public void NotifyInventoryChanged()
-    {
-        InventoryUI?.Refresh();
     }
 }
