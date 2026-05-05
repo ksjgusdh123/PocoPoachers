@@ -21,4 +21,11 @@ public static partial class PacketHandlers
             Debug.Log($"[Inventory] 초기 로드 완료: {items.Count}종");
         });
     }
+
+    public static void OnS_ConsumeItemNtf(FlatPacket root)
+    {
+        var pkt = root.TypeAsS_ConsumeItemNtf();
+
+        Debug.Log("아이템 사용 확인");
+    }
 }

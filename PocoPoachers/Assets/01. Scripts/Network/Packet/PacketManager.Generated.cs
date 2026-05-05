@@ -9,6 +9,7 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.S_LoginRes             , PacketHandlers.OnS_LoginRes);
         _onRecv.Add(PacketType.S_MoveNtf              , PacketHandlers.OnS_MoveNtf);
         _onRecv.Add(PacketType.S_InventoryNtf         , PacketHandlers.OnS_InventoryNtf);
+        _onRecv.Add(PacketType.S_ConsumeItemNtf       , PacketHandlers.OnS_ConsumeItemNtf);
         _onRecv.Add(PacketType.S_WorldItemDespawnNtf  , PacketHandlers.OnS_WorldItemDespawnNtf);
         _onRecv.Add(PacketType.S_ShootNtf             , PacketHandlers.OnS_ShootNtf);
         _onRecv.Add(PacketType.S_SpawnItemBoxNtf      , PacketHandlers.OnS_SpawnItemBoxNtf);

@@ -21,7 +21,13 @@ public partial class PacketHandler
             LOG_W($"아이템 사용 실패(ID : {itemTypeId}, 수량 : {amount}");
             return;
         }
-        else
-            LOG("아이템 사용");
+        PacketBuilder.Send(session, new S_ConsumeItemNtfT
+        {
+            Amount = amount,
+            InventoryIndex = slotIndex,
+            IsSuccess = true,
+            ItemId = itemTypeId,
+        }, S_ConsumeItemNtf.Pack, PacketType.S_ConsumeItemNtf);
+
     }
 }

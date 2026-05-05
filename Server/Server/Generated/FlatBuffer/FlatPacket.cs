@@ -25,6 +25,7 @@ public struct FlatPacket : IFlatbufferObject
   public S_MoveNtf TypeAsS_MoveNtf() { return Type<S_MoveNtf>().Value; }
   public S_InventoryNtf TypeAsS_InventoryNtf() { return Type<S_InventoryNtf>().Value; }
   public C_ConsumeItem TypeAsC_ConsumeItem() { return Type<C_ConsumeItem>().Value; }
+  public S_ConsumeItemNtf TypeAsS_ConsumeItemNtf() { return Type<S_ConsumeItemNtf>().Value; }
   public S_WorldItemDespawnNtf TypeAsS_WorldItemDespawnNtf() { return Type<S_WorldItemDespawnNtf>().Value; }
   public C_ShootReq TypeAsC_ShootReq() { return Type<C_ShootReq>().Value; }
   public S_ShootNtf TypeAsS_ShootNtf() { return Type<S_ShootNtf>().Value; }
@@ -80,6 +81,9 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.C_ConsumeItem:
         _o.Type.Value = this.Type<C_ConsumeItem>().HasValue ? this.Type<C_ConsumeItem>().Value.UnPack() : null;
+        break;
+      case PacketType.S_ConsumeItemNtf:
+        _o.Type.Value = this.Type<S_ConsumeItemNtf>().HasValue ? this.Type<S_ConsumeItemNtf>().Value.UnPack() : null;
         break;
       case PacketType.S_WorldItemDespawnNtf:
         _o.Type.Value = this.Type<S_WorldItemDespawnNtf>().HasValue ? this.Type<S_WorldItemDespawnNtf>().Value.UnPack() : null;

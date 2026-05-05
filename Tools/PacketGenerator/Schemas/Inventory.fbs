@@ -17,3 +17,11 @@ table C_ConsumeItem
     amount: int;
     inventory_index: int;
 }
+
+table S_ConsumeItemNtf
+{
+    is_success: bool;
+    item_id: int;
+    amount: int;
+    inventory_index: int;
+}
