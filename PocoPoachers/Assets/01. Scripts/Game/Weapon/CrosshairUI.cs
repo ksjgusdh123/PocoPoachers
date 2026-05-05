@@ -6,10 +6,11 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private RectTransform _top, _bottom, _left, _right;
 
     [Header("스프레드 설정")]
-    [SerializeField] private float _pixelsPerDegree = 10f;
+    [SerializeField] private float _pixelsPerDegree = 5f;
     [SerializeField] private float _spreadIncrement = 20f;
-    [SerializeField] private float _maxSpread = 150f;
     [SerializeField] private float _recoverySpeed = 80f;
+
+    private float _maxSpread;
 
     private RectTransform _rectTransform;
     private float _currentSpread;
@@ -33,6 +34,7 @@ public class CrosshairUI : MonoBehaviour
     {
         if (gunData == null) return;
         _targetBaseSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree;
+        _maxSpread = gunData.spreadAngle * _pixelsPerDegree + _spreadIncrement * 3f;
     }
 
     public void OnShoot()
