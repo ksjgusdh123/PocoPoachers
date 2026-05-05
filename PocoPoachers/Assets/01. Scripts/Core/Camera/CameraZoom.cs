@@ -20,6 +20,16 @@ public class CameraZoom : MonoBehaviour
         _targetFOV = _defaultFOV;
     }
 
+    public float ZoomProgress
+    {
+        get
+        {
+            float delta = _defaultFOV - _targetFOV;
+            if (Mathf.Approximately(delta, 0f)) return 0f;
+            return Mathf.Clamp01((_defaultFOV - _camera.fieldOfView) / delta);
+        }
+    }
+
     public void SetAiming(bool isAiming, float aimFOV, float aimTime)
     {
         float fovDelta = Mathf.Abs(_defaultFOV - aimFOV);
