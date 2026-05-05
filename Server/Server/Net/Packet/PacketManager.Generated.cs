@@ -10,6 +10,7 @@ public static partial class PacketManager
     {
         _onRecv.Add(PacketType.C_LoginReq       , _handler.OnC_LoginReq);
         _onRecv.Add(PacketType.C_MoveReq        , _handler.OnC_MoveReq);
+        _onRecv.Add(PacketType.C_ConsumeItem    , _handler.OnC_ConsumeItem);
         _onRecv.Add(PacketType.C_ShootReq       , _handler.OnC_ShootReq);
         _onRecv.Add(PacketType.C_GainItemReq    , _handler.OnC_GainItemReq);
         _onRecv.Add(PacketType.C_ExchangeItemReq, _handler.OnC_ExchangeItemReq);

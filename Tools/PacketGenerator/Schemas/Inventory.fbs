@@ -10,3 +10,10 @@ table S_InventoryNtf
 {
     items: [InventoryItem];
 }
+
+table C_ConsumeItem
+{
+    item_id: int;
+    amount: int;
+    inventory_index: int;
+}

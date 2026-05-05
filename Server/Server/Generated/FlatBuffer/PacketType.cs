@@ -10,15 +10,16 @@ public enum PacketType : byte
   C_MoveReq = 3,
   S_MoveNtf = 4,
   S_InventoryNtf = 5,
-  S_WorldItemDespawnNtf = 6,
-  C_ShootReq = 7,
-  S_ShootNtf = 8,
-  S_SpawnItemBoxNtf = 9,
-  C_GainItemReq = 10,
-  S_ChangeItemBox = 11,
-  S_SuccessGainItemNtf = 12,
-  C_ExchangeItemReq = 13,
-  S_ExchangeItemResultNtf = 14,
+  C_ConsumeItem = 6,
+  S_WorldItemDespawnNtf = 7,
+  C_ShootReq = 8,
+  S_ShootNtf = 9,
+  S_SpawnItemBoxNtf = 10,
+  C_GainItemReq = 11,
+  S_ChangeItemBox = 12,
+  S_SuccessGainItemNtf = 13,
+  C_ExchangeItemReq = 14,
+  S_ExchangeItemResultNtf = 15,
 };
 
 public class PacketTypeUnion {
@@ -41,6 +42,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromS_MoveNtf(S_MoveNtfT _s_moventf) { return new PacketTypeUnion{ Type = PacketType.S_MoveNtf, Value = _s_moventf }; }
   public S_InventoryNtfT AsS_InventoryNtf() { return this.As<S_InventoryNtfT>(); }
   public static PacketTypeUnion FromS_InventoryNtf(S_InventoryNtfT _s_inventoryntf) { return new PacketTypeUnion{ Type = PacketType.S_InventoryNtf, Value = _s_inventoryntf }; }
+  public C_ConsumeItemT AsC_ConsumeItem() { return this.As<C_ConsumeItemT>(); }
+  public static PacketTypeUnion FromC_ConsumeItem(C_ConsumeItemT _c_consumeitem) { return new PacketTypeUnion{ Type = PacketType.C_ConsumeItem, Value = _c_consumeitem }; }
   public S_WorldItemDespawnNtfT AsS_WorldItemDespawnNtf() { return this.As<S_WorldItemDespawnNtfT>(); }
   public static PacketTypeUnion FromS_WorldItemDespawnNtf(S_WorldItemDespawnNtfT _s_worlditemdespawnntf) { return new PacketTypeUnion{ Type = PacketType.S_WorldItemDespawnNtf, Value = _s_worlditemdespawnntf }; }
   public C_ShootReqT AsC_ShootReq() { return this.As<C_ShootReqT>(); }
@@ -68,6 +71,7 @@ public class PacketTypeUnion {
       case PacketType.C_MoveReq: return C_MoveReq.Pack(builder, _o.AsC_MoveReq()).Value;
       case PacketType.S_MoveNtf: return S_MoveNtf.Pack(builder, _o.AsS_MoveNtf()).Value;
       case PacketType.S_InventoryNtf: return S_InventoryNtf.Pack(builder, _o.AsS_InventoryNtf()).Value;
+      case PacketType.C_ConsumeItem: return C_ConsumeItem.Pack(builder, _o.AsC_ConsumeItem()).Value;
       case PacketType.S_WorldItemDespawnNtf: return S_WorldItemDespawnNtf.Pack(builder, _o.AsS_WorldItemDespawnNtf()).Value;
       case PacketType.C_ShootReq: return C_ShootReq.Pack(builder, _o.AsC_ShootReq()).Value;
       case PacketType.S_ShootNtf: return S_ShootNtf.Pack(builder, _o.AsS_ShootNtf()).Value;
@@ -104,6 +108,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.S_InventoryNtf:
         result = S_InventoryNtfVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.C_ConsumeItem:
+        result = C_ConsumeItemVerify.Verify(verifier, tablePos);
         break;
       case PacketType.S_WorldItemDespawnNtf:
         result = S_WorldItemDespawnNtfVerify.Verify(verifier, tablePos);
