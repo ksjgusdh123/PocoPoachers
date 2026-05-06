@@ -21,6 +21,11 @@ public enum PacketType : byte
   S_ExchangeItemResultNtf = 14,
   C_PingReq = 15,
   S_PongRes = 16,
+  C_RegisterP2PSession = 17,
+  S_RegisterP2PSessionRes = 18,
+  C_JoinP2PSession = 19,
+  S_P2PSessionInfo = 20,
+  S_PeerJoined = 21,
 };
 
 public class PacketTypeUnion {
@@ -65,6 +70,16 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromC_PingReq(C_PingReqT _c_pingreq) { return new PacketTypeUnion{ Type = PacketType.C_PingReq, Value = _c_pingreq }; }
   public S_PongResT AsS_PongRes() { return this.As<S_PongResT>(); }
   public static PacketTypeUnion FromS_PongRes(S_PongResT _s_pongres) { return new PacketTypeUnion{ Type = PacketType.S_PongRes, Value = _s_pongres }; }
+  public C_RegisterP2PSessionT AsC_RegisterP2PSession() { return this.As<C_RegisterP2PSessionT>(); }
+  public static PacketTypeUnion FromC_RegisterP2PSession(C_RegisterP2PSessionT _c_registerp2psession) { return new PacketTypeUnion{ Type = PacketType.C_RegisterP2PSession, Value = _c_registerp2psession }; }
+  public S_RegisterP2PSessionResT AsS_RegisterP2PSessionRes() { return this.As<S_RegisterP2PSessionResT>(); }
+  public static PacketTypeUnion FromS_RegisterP2PSessionRes(S_RegisterP2PSessionResT _s_registerp2psessionres) { return new PacketTypeUnion{ Type = PacketType.S_RegisterP2PSessionRes, Value = _s_registerp2psessionres }; }
+  public C_JoinP2PSessionT AsC_JoinP2PSession() { return this.As<C_JoinP2PSessionT>(); }
+  public static PacketTypeUnion FromC_JoinP2PSession(C_JoinP2PSessionT _c_joinp2psession) { return new PacketTypeUnion{ Type = PacketType.C_JoinP2PSession, Value = _c_joinp2psession }; }
+  public S_P2PSessionInfoT AsS_P2PSessionInfo() { return this.As<S_P2PSessionInfoT>(); }
+  public static PacketTypeUnion FromS_P2PSessionInfo(S_P2PSessionInfoT _s_p2psessioninfo) { return new PacketTypeUnion{ Type = PacketType.S_P2PSessionInfo, Value = _s_p2psessioninfo }; }
+  public S_PeerJoinedT AsS_PeerJoined() { return this.As<S_PeerJoinedT>(); }
+  public static PacketTypeUnion FromS_PeerJoined(S_PeerJoinedT _s_peerjoined) { return new PacketTypeUnion{ Type = PacketType.S_PeerJoined, Value = _s_peerjoined }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -85,6 +100,11 @@ public class PacketTypeUnion {
       case PacketType.S_ExchangeItemResultNtf: return S_ExchangeItemResultNtf.Pack(builder, _o.AsS_ExchangeItemResultNtf()).Value;
       case PacketType.C_PingReq: return C_PingReq.Pack(builder, _o.AsC_PingReq()).Value;
       case PacketType.S_PongRes: return S_PongRes.Pack(builder, _o.AsS_PongRes()).Value;
+      case PacketType.C_RegisterP2PSession: return C_RegisterP2PSession.Pack(builder, _o.AsC_RegisterP2PSession()).Value;
+      case PacketType.S_RegisterP2PSessionRes: return S_RegisterP2PSessionRes.Pack(builder, _o.AsS_RegisterP2PSessionRes()).Value;
+      case PacketType.C_JoinP2PSession: return C_JoinP2PSession.Pack(builder, _o.AsC_JoinP2PSession()).Value;
+      case PacketType.S_P2PSessionInfo: return S_P2PSessionInfo.Pack(builder, _o.AsS_P2PSessionInfo()).Value;
+      case PacketType.S_PeerJoined: return S_PeerJoined.Pack(builder, _o.AsS_PeerJoined()).Value;
     }
   }
 }
@@ -145,6 +165,21 @@ static public class PacketTypeVerify
         break;
       case PacketType.S_PongRes:
         result = S_PongResVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.C_RegisterP2PSession:
+        result = C_RegisterP2PSessionVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_RegisterP2PSessionRes:
+        result = S_RegisterP2PSessionResVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.C_JoinP2PSession:
+        result = C_JoinP2PSessionVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_P2PSessionInfo:
+        result = S_P2PSessionInfoVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_PeerJoined:
+        result = S_PeerJoinedVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

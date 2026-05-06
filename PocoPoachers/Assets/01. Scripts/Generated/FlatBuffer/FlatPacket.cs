@@ -35,6 +35,11 @@ public struct FlatPacket : IFlatbufferObject
   public S_ExchangeItemResultNtf TypeAsS_ExchangeItemResultNtf() { return Type<S_ExchangeItemResultNtf>().Value; }
   public C_PingReq TypeAsC_PingReq() { return Type<C_PingReq>().Value; }
   public S_PongRes TypeAsS_PongRes() { return Type<S_PongRes>().Value; }
+  public C_RegisterP2PSession TypeAsC_RegisterP2PSession() { return Type<C_RegisterP2PSession>().Value; }
+  public S_RegisterP2PSessionRes TypeAsS_RegisterP2PSessionRes() { return Type<S_RegisterP2PSessionRes>().Value; }
+  public C_JoinP2PSession TypeAsC_JoinP2PSession() { return Type<C_JoinP2PSession>().Value; }
+  public S_P2PSessionInfo TypeAsS_P2PSessionInfo() { return Type<S_P2PSessionInfo>().Value; }
+  public S_PeerJoined TypeAsS_PeerJoined() { return Type<S_PeerJoined>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -111,6 +116,21 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.S_PongRes:
         _o.Type.Value = this.Type<S_PongRes>().HasValue ? this.Type<S_PongRes>().Value.UnPack() : null;
+        break;
+      case PacketType.C_RegisterP2PSession:
+        _o.Type.Value = this.Type<C_RegisterP2PSession>().HasValue ? this.Type<C_RegisterP2PSession>().Value.UnPack() : null;
+        break;
+      case PacketType.S_RegisterP2PSessionRes:
+        _o.Type.Value = this.Type<S_RegisterP2PSessionRes>().HasValue ? this.Type<S_RegisterP2PSessionRes>().Value.UnPack() : null;
+        break;
+      case PacketType.C_JoinP2PSession:
+        _o.Type.Value = this.Type<C_JoinP2PSession>().HasValue ? this.Type<C_JoinP2PSession>().Value.UnPack() : null;
+        break;
+      case PacketType.S_P2PSessionInfo:
+        _o.Type.Value = this.Type<S_P2PSessionInfo>().HasValue ? this.Type<S_P2PSessionInfo>().Value.UnPack() : null;
+        break;
+      case PacketType.S_PeerJoined:
+        _o.Type.Value = this.Type<S_PeerJoined>().HasValue ? this.Type<S_PeerJoined>().Value.UnPack() : null;
         break;
     }
   }

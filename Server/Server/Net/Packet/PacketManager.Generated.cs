@@ -8,11 +8,13 @@ public static partial class PacketManager
 {
     static void Register()
     {
-        _onRecv.Add(PacketType.C_LoginReq       , _handler.OnC_LoginReq);
-        _onRecv.Add(PacketType.C_MoveReq        , _handler.OnC_MoveReq);
-        _onRecv.Add(PacketType.C_ShootReq       , _handler.OnC_ShootReq);
-        _onRecv.Add(PacketType.C_GainItemReq    , _handler.OnC_GainItemReq);
-        _onRecv.Add(PacketType.C_ExchangeItemReq, _handler.OnC_ExchangeItemReq);
-        _onRecv.Add(PacketType.C_PingReq        , _handler.OnC_PingReq);
+        _onRecv.Add(PacketType.C_LoginReq          , _handler.OnC_LoginReq);
+        _onRecv.Add(PacketType.C_MoveReq           , _handler.OnC_MoveReq);
+        _onRecv.Add(PacketType.C_ShootReq          , _handler.OnC_ShootReq);
+        _onRecv.Add(PacketType.C_GainItemReq       , _handler.OnC_GainItemReq);
+        _onRecv.Add(PacketType.C_ExchangeItemReq   , _handler.OnC_ExchangeItemReq);
+        _onRecv.Add(PacketType.C_PingReq           , _handler.OnC_PingReq);
+        _onRecv.Add(PacketType.C_RegisterP2PSession, _handler.OnC_RegisterP2PSession);
+        _onRecv.Add(PacketType.C_JoinP2PSession    , _handler.OnC_JoinP2PSession);
     }
 }

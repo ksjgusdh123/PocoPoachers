@@ -16,5 +16,8 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.S_SuccessGainItemNtf   , PacketHandlers.OnS_SuccessGainItemNtf);
         _onRecv.Add(PacketType.S_ExchangeItemResultNtf, PacketHandlers.OnS_ExchangeItemResultNtf);
         _onRecv.Add(PacketType.S_PongRes              , PacketHandlers.OnS_PongRes);
+        _onRecv.Add(PacketType.S_RegisterP2PSessionRes, PacketHandlers.OnS_RegisterP2PSessionRes);
+        _onRecv.Add(PacketType.S_P2PSessionInfo       , PacketHandlers.OnS_P2PSessionInfo);
+        _onRecv.Add(PacketType.S_PeerJoined           , PacketHandlers.OnS_PeerJoined);
     }
 }

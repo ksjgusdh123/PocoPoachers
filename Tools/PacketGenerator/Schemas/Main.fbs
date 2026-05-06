@@ -1,10 +1,11 @@
-include "Common.fbs";
+﻿include "Common.fbs";
 include "Auth.fbs";
 include "Movement.fbs";
 include "Inventory.fbs";
 include "WorldItem.fbs";
 include "Combat.fbs";
 include "Ping.fbs";
+include "P2PConnect.fbs";
 
 union PacketType
 {
@@ -20,7 +21,7 @@ union PacketType
 
     C_ShootReq,
     S_ShootNtf,
-    
+
     S_SpawnItemBoxNtf,
     C_GainItemReq,
     S_ChangeItemBox,
@@ -30,6 +31,12 @@ union PacketType
 
     C_PingReq,
     S_PongRes,
+
+    C_RegisterP2PSession,
+    S_RegisterP2PSessionRes,
+    C_JoinP2PSession,
+    S_P2PSessionInfo,
+    S_PeerJoined,
 }
 
 table FlatPacket

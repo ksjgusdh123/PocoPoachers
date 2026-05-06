@@ -53,6 +53,26 @@ public class SessionManager
         get { lock (_lock) { return _sessions.Count; } }
     }
 
+    public void StartHeartbeatMonitor(TimeSpan interval, TimeSpan timeout)
+    {
+        Task.Run(async () =>
+        {
+            while (true)
+            {
+                await Task.Delay(interval);
+                var snapshot = Snapshot();
+                foreach (var session in snapshot)
+                {
+                    if ((DateTimeOffset.UtcNow - session.LastPingAt) > timeout)
+                    {
+                        LOG_W($"[Heartbeat] Timeout PlayerId={session.PlayerId} — disconnecting");
+                        session.Disconnect();
+                    }
+                }
+            }
+        });
+    }
+
     public List<ClientSession> Snapshot(ClientSession? except = null)
     {
         lock (_lock)
