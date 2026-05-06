@@ -147,6 +147,18 @@ public class P2PManager : Singleton<P2PManager>
         OnP2PFailed?.Invoke(reason);
     }
 
+    // ── Cancel ────────────────────────────────────────────────────────────
+
+    public void CancelP2P()
+    {
+        _puncher?.Stop();
+        _puncher = null;
+        _udpSocket?.Close();
+        _udpSocket = null;
+        IsConnected = false;
+        IsHost      = false;
+    }
+
     // ── Helpers ────────────────────────────────────────────────────────────
 
     static string GetLocalPrivateIp()
