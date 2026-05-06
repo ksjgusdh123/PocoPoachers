@@ -1,4 +1,4 @@
-include "Common.fbs";
+﻿include "Common.fbs";
 
 table C_RegisterP2PSession
 {
@@ -17,6 +17,10 @@ table S_RegisterP2PSessionRes
 table C_JoinP2PSession
 {
     session_code : string;
+    public_ip     : string;
+    public_port   : ushort;
+    private_ip    : string;
+    private_port  : ushort;
 }
 
 table S_P2PSessionInfo
@@ -31,4 +35,6 @@ table S_PeerJoined
 {
     peer_public_ip   : string;
     peer_public_port : ushort;
+    peer_private_ip   : string;
+    peer_private_port : ushort;
 }

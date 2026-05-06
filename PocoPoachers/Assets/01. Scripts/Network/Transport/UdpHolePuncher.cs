@@ -18,7 +18,10 @@ public class UdpHolePuncher
 
     public State CurrentState { get; private set; } = State.Idle;
     public IPEndPoint LocalEndPoint  { get; private set; }
-    public IPEndPoint RemoteEndPoint { get; private set; }
+
+    // volatile: RecvLoop(recv thread)에서 갱신, SendLoop(send thread)에서 읽음
+    volatile IPEndPoint _remoteEp;
+    public IPEndPoint RemoteEndPoint => _remoteEp;
 
     public event Action<UdpHolePuncher>          OnSuccess;
     public event Action<UdpHolePuncher, string>  OnFailed;
@@ -34,11 +37,12 @@ public class UdpHolePuncher
     {
         if (CurrentState != State.Idle) return;
 
-        RemoteEndPoint = remoteEp;
-        CurrentState   = State.Punching;
+        _remoteEp    = remoteEp;
+        CurrentState = State.Punching;
         _cts           = new CancellationTokenSource();
 
         _socket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        _socket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
         _socket.Bind(new IPEndPoint(IPAddress.Any, localPort));
         LocalEndPoint = (IPEndPoint)_socket.LocalEndPoint;
 
@@ -98,7 +102,13 @@ public class UdpHolePuncher
 
                 if (buf[0] == PunchByte)
                 {
-                    // 상대의 punch를 받았다 → ack 발신 시작
+                    // 실제 수신 주소로 타겟 갱신: 서버가 전달한 포트가 틀렸을 때 교정
+                    var actual = (IPEndPoint)remoteEp;
+                    if (!actual.Equals(_remoteEp))
+                    {
+                        Debug.Log($"[HolePuncher] RemoteEP 교정: {_remoteEp} → {actual}");
+                        _remoteEp = actual;
+                    }
                     _ackSent = true;
                 }
                 else if (buf[0] == AckByte)

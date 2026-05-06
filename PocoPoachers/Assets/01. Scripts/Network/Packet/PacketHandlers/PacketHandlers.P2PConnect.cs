@@ -17,6 +17,8 @@ public static partial class PacketHandlers
     public static void OnS_PeerJoined(FlatPacket root)
     {
         var pkt = root.TypeAsS_PeerJoined();
-        P2PManager.Instance.OnPeerJoined(pkt.PeerPublicIp, pkt.PeerPublicPort);
+        P2PManager.Instance.OnPeerJoined(
+            pkt.PeerPublicIp,  pkt.PeerPublicPort,
+            pkt.PeerPrivateIp, pkt.PeerPrivatePort);
     }
 }

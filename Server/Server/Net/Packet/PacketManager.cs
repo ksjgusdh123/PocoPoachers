@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Google.FlatBuffers;
 using ServerCore;
 
@@ -21,7 +21,7 @@ public static partial class PacketManager
         var root = FlatPacket.GetRootAsFlatPacket(bb);
 
         PacketType type = root.TypeType;
-        if (type != PacketType.C_MoveReq)
+        if (!(type == PacketType.C_MoveReq || type == PacketType.C_PingReq))
             LOG($"Recv {type}");
 
         if (!_onRecv.TryGetValue(type, out var action))

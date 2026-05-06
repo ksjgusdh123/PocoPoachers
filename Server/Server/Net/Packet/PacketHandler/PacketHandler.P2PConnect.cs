@@ -28,24 +28,23 @@ public partial class PacketHandler
         PacketBuilder.Send(session,
             new S_P2PSessionInfoT
             {
-                HostPublicIp = room.HostPublicIp,
+                HostPublicIp   = room.HostPublicIp,
                 HostPublicPort = room.HostPublicPort,
-                HostPrivateIp = room.HostPrivateIp,
+                HostPrivateIp  = room.HostPrivateIp,
                 HostPrivatePort = room.HostPrivatePort,
             },
             S_P2PSessionInfo.Pack,
             PacketType.S_P2PSessionInfo);
 
-        // 호스트에게 피어 공개 주소 전달
-        // peer의 공개 IP는 TCP 연결 RemoteEndPoint에서 추출
-        string peerPublicIp = session.RemoteEndPoint?.Address.ToString() ?? "";
-        ushort peerPublicPort = (ushort)(session.RemoteEndPoint?.Port ?? 0);
-
+        // 호스트에게 피어 엔드포인트 전달
+        // 클라이언트가 STUN으로 발견한 UDP 공개/사설 주소를 그대로 릴레이
         PacketBuilder.Send(room.Host,
             new S_PeerJoinedT
             {
-                PeerPublicIp = peerPublicIp,
-                PeerPublicPort = peerPublicPort,
+                PeerPublicIp   = pkt.PublicIp,
+                PeerPublicPort = pkt.PublicPort,
+                PeerPrivateIp  = pkt.PrivateIp,
+                PeerPrivatePort = pkt.PrivatePort,
             },
             S_PeerJoined.Pack,
             PacketType.S_PeerJoined);

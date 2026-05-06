@@ -86,10 +86,14 @@ public class P2PManager : Singleton<P2PManager>
     }
 
     // 서버가 S_PeerJoined를 보내면 PacketHandlers에서 호출
-    public void OnPeerJoined(string peerPublicIp, ushort peerPublicPort)
+    public void OnPeerJoined(string peerPublicIp, ushort peerPublicPort,
+                             string peerPrivateIp, ushort peerPrivatePort)
     {
-        var peerEp = new IPEndPoint(IPAddress.Parse(peerPublicIp), peerPublicPort);
-        BeginPunch(peerEp);
+        Debug.Log($"[P2PManager] S_PeerJoined: Public={peerPublicIp}:{peerPublicPort}  Private={peerPrivateIp}:{peerPrivatePort}");
+        var target = IsOnSameLan(peerPrivateIp)
+            ? new IPEndPoint(IPAddress.Parse(peerPrivateIp), peerPrivatePort)
+            : new IPEndPoint(IPAddress.Parse(peerPublicIp),  peerPublicPort);
+        BeginPunch(target);
     }
 
     // ── Peer side ─────────────────────────────────────────────────────────
@@ -97,24 +101,53 @@ public class P2PManager : Singleton<P2PManager>
     public void StartAsPeer(string sessionCode)
     {
         IsHost = false;
-        PacketBuilder.Send(
-            new C_JoinP2PSessionT { SessionCode = sessionCode },
-            C_JoinP2PSession.Pack,
-            PacketType.C_JoinP2PSession);
+        ThreadPool.QueueUserWorkItem(_ => StunAndJoin(sessionCode));
+    }
+
+    // Host의 DiscoverAndRegister와 동일한 흐름: STUN으로 공개 EP 확인 후 서버에 Join
+    void StunAndJoin(string sessionCode)
+    {
+        _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+        _udpSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
+
+        if (!StunClient.TryGetPublicEndPoint(stunHost, stunPort, _udpSocket, out _publicEp))
+        {
+            MainThreadDispatcher.Enqueue(() => OnP2PFailed?.Invoke("STUN 실패"));
+            _udpSocket.Close();
+            _udpSocket = null;
+            return;
+        }
+
+        string privateIp   = GetLocalPrivateIp();
+        int    privatePort = ((IPEndPoint)_udpSocket.LocalEndPoint).Port;
+        Debug.Log($"[P2PManager] Peer Public={_publicEp}  Private={privateIp}:{privatePort}");
+
+        MainThreadDispatcher.Enqueue(() =>
+            PacketBuilder.Send(
+                new C_JoinP2PSessionT
+                {
+                    SessionCode = sessionCode,
+                    PublicIp    = _publicEp.Address.ToString(),
+                    PublicPort  = (ushort)_publicEp.Port,
+                    PrivateIp   = privateIp,
+                    PrivatePort = (ushort)privatePort,
+                },
+                C_JoinP2PSession.Pack,
+                PacketType.C_JoinP2PSession));
     }
 
     // 서버가 S_P2PSessionInfo를 보내면 PacketHandlers에서 호출
     public void OnSessionInfo(string hostPublicIp, ushort hostPublicPort,
                               string hostPrivateIp, ushort hostPrivatePort)
     {
-        // 같은 LAN이면 private 주소 시도, 아니면 public 사용
+        Debug.Log($"[P2PManager] S_P2PSessionInfo: Host Public={hostPublicIp}:{hostPublicPort}  Private={hostPrivateIp}:{hostPrivatePort}");
+        Debug.Log($"[P2PManager] My public (STUN) = {_publicEp}  ← 서버가 S_PeerJoined에 이 값을 보내야 함");
+
         var target = IsOnSameLan(hostPrivateIp)
             ? new IPEndPoint(IPAddress.Parse(hostPrivateIp), hostPrivatePort)
             : new IPEndPoint(IPAddress.Parse(hostPublicIp),  hostPublicPort);
 
-        _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        _udpSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
-
+        // _udpSocket은 StunAndJoin에서 이미 STUN 완료 — 새로 만들면 NAT 매핑이 깨진다
         BeginPunch(target);
     }
 
