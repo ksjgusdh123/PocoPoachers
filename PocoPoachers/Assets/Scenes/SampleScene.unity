@@ -382,6 +382,54 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5716066768571258880, guid: a1278209dca3c164eb662f12316d496f, type: 3}
   m_PrefabInstance: {fileID: 802197861}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &233463961
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 233463963}
+  - component: {fileID: 233463962}
+  m_Layer: 0
+  m_Name: HostItemSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &233463962
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 233463961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 01fdac6b58f376040b0fe954ca977397, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::HostItemSpawner
+  _boxes:
+  - Position: {x: 0, y: 0, z: 0}
+    Rotation: 0
+    ItemIds: 6500000066000000cb000000cc000000
+--- !u!4 &233463963
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 233463961}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 2.6454, y: -1.19501, z: -8.35669}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &248747884
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2106,6 +2154,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc0d563c725ad604ca1e3416e6cc3faf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BulletPool
+  _networkBulletPrefab: {fileID: 2987875953745113460, guid: 5e689d5cd529c5a419cf48503d9a1afa, type: 3}
 --- !u!4 &1382421244
 Transform:
   m_ObjectHideFlags: 0
@@ -2884,9 +2933,8 @@ MonoBehaviour:
   localHost: 127.0.0.1
   remoteHost: 34.50.21.90
   port: 7000
-  userName: Player
   remoteConnection: 0
-  remoteBulletPrefab: {fileID: 0}
+  userName: Player
 --- !u!114 &2139474367 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6790100276519992138, guid: 1462d7ebb0496594b9326abee54530a5, type: 3}
@@ -3939,3 +3987,4 @@ SceneRoots:
   - {fileID: 1343481862}
   - {fileID: 2117736437}
   - {fileID: 1382421244}
+  - {fileID: 233463963}

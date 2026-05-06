@@ -12,9 +12,10 @@ public class P2PManager : Singleton<P2PManager>
     [SerializeField] string stunHost = "stun.l.google.com";
     [SerializeField] int    stunPort = 19302;
 
-    public bool IsHost      { get; private set; }
-    public bool IsConnected => _peers.Count > 0;
-    public int  PeerCount   => _peers.Count;
+    public bool IsHost             { get; private set; }
+    public bool IsConnected        => _peers.Count > 0;
+    public int  PeerCount          => _peers.Count;
+    public int  LastSenderPlayerId { get; private set; }
 
     public event Action          OnP2PConnected;
     public event Action<string>  OnP2PFailed;
@@ -98,6 +99,20 @@ public class P2PManager : Singleton<P2PManager>
         catch (Exception e) { Debug.LogWarning($"[P2P] SendToAll failed: {e.Message}"); }
     }
 
+    // 특정 피어에게만 raw 바이트 전송
+    public void SendTo(int playerId, ArraySegment<byte> segment)
+    {
+        if (_udpSocket == null || !_peers.TryGetValue(playerId, out var ep)) return;
+        try { _udpSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, ep); }
+        catch (Exception e) { Debug.LogWarning($"[P2P] SendTo {playerId} failed: {e.Message}"); }
+    }
+
+    public void SendTo<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+        where TTable : struct where TObj : class
+    {
+        SendTo(playerId, PacketBuilder.BuildSegment(data, packFunc, type));
+    }
+
     // 특정 피어 제외하고 raw 바이트 릴레이 (호스트가 게스트 패킷 중계 시 사용)
     public void RelayExcept(int excludePlayerId, ArraySegment<byte> segment)
     {
@@ -122,9 +137,21 @@ public class P2PManager : Singleton<P2PManager>
                 if (!_udpSocket.Poll(100_000, SelectMode.SelectRead)) continue;
                 int len = _udpSocket.ReceiveFrom(buffer, ref remote);
                 if (len <= 1) continue;
+
+                // 발신자 PlayerId 확인
+                int senderId = 0;
+                foreach (var kv in _peers)
+                    if (kv.Value.Equals(remote)) { senderId = kv.Key; break; }
+
                 byte[] copy = new byte[len];
                 Buffer.BlockCopy(buffer, 0, copy, 0, len);
-                MainThreadDispatcher.Enqueue(() => PacketManager.HandlePacket(new ArraySegment<byte>(copy)));
+                int captured = senderId;
+                MainThreadDispatcher.Enqueue(() =>
+                {
+                    LastSenderPlayerId = captured;
+                    PacketManager.HandlePacket(new ArraySegment<byte>(copy));
+                    LastSenderPlayerId = 0;
+                });
             }
             catch { break; }
         }
