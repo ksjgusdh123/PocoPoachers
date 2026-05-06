@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections;
 using System.Net;
 using UnityEngine;
 
@@ -36,6 +37,7 @@ public class NetworkManager : Singleton<NetworkManager>
     void Start()
     {
         Connect(TargetHost, port);
+        StartCoroutine(CoPingLoop());
     }
 
     public void Connect(string ip, int p)
@@ -71,6 +73,23 @@ public class NetworkManager : Singleton<NetworkManager>
         MyPlayerId = 0;
         ObjectManager.Instance?.Clear();
         OnDisconnected?.Invoke();
+    }
+
+    public void SendPing()
+    {
+        PacketBuilder.Send(new C_PingReqT { SendTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }, C_PingReq.Pack, PacketType.C_PingReq);
+    }
+
+    IEnumerator CoPingLoop()
+    {
+        while (true)
+        {
+            if (Session != null && Session.IsConnected)
+            {
+                SendPing();
+            }
+            yield return new WaitForSeconds(2.0f);
+        }
     }
 
     public void OnPongRes(long rtt)

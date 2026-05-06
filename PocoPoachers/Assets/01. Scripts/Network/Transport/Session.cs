@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
@@ -13,6 +13,7 @@ public class Session
 
     Socket _socket = null!;
     int _disconnected = 0;
+    public bool IsConnected => _disconnected == 0;
 
     RecvBuffer _recvBuffer = new RecvBuffer(1024);
 
