@@ -71,7 +71,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void SendMoveToServer()
     {
-        var nm = NetworkManager.Instance;
+        /*var nm = NetworkManager.Instance;
         if (nm == null || !nm.IsLoggedIn)
         {
             _hasSent = false;
@@ -102,6 +102,6 @@ public class PlayerMovement : MonoBehaviour
         _lastSentPos = pos;
         _lastSentYaw = yaw;
         _lastMoveType = moveType;
-        _hasSent = true;
+        _hasSent = true;*/
     }
 }

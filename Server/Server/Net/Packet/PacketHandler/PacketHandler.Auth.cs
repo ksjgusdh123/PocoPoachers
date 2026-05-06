@@ -22,4 +22,9 @@ public partial class PacketHandler
             PlayerId = playerId
         }, S_LoginResult.Pack, PacketType.S_LoginResult);
     }
+
+    public void OnC_Logout(ClientSession session, FlatPacket root)
+    {
+        SessionManager.Instance.Remove(session);
+    }
 }

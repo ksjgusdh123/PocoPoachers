@@ -22,7 +22,7 @@ public class ClientSession : PacketSession
         SessionManager.Instance.Remove(this);
         if (PlayerId != 0)
         {
-            //TODO: RoomManager DisConnect처리
+            RoomManager.Instance.RemoveBySession(this);
         }
     }
 

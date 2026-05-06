@@ -1,6 +1,4 @@
-﻿using Google.FlatBuffers;
-using UnityEngine;
-
+﻿
 public static partial class PacketHandlers
 {
     public static void OnS_LoginResult(FlatPacket root)

@@ -9,6 +9,7 @@
 
 table C_CreateRoom
 {
+    my_info: PeerInfo;
 }
 
 table S_CreateRoom
@@ -20,10 +21,16 @@ table S_CreateRoom
 table C_JoinRoom
 {
     session_code: string;
+    my_info: PeerInfo;
 }
 
 table S_JoinRoom
 {
     success: bool;
     host_info: PeerInfo;
+}
+
+table S_PeerJoined
+{
+    info: PeerInfo;
 }

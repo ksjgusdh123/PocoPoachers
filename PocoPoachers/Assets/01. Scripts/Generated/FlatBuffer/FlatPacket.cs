@@ -21,6 +21,7 @@ public struct FlatPacket : IFlatbufferObject
   public TTable? Type<TTable>() where TTable : struct, IFlatbufferObject { int o = __p.__offset(6); return o != 0 ? (TTable?)__p.__union<TTable>(o + __p.bb_pos) : null; }
   public C_Login TypeAsC_Login() { return Type<C_Login>().Value; }
   public S_LoginResult TypeAsS_LoginResult() { return Type<S_LoginResult>().Value; }
+  public C_Logout TypeAsC_Logout() { return Type<C_Logout>().Value; }
   public C_Heartbeat TypeAsC_Heartbeat() { return Type<C_Heartbeat>().Value; }
   public S_HeartbeatAck TypeAsS_HeartbeatAck() { return Type<S_HeartbeatAck>().Value; }
   public C_CreateRoom TypeAsC_CreateRoom() { return Type<C_CreateRoom>().Value; }
@@ -38,6 +39,7 @@ public struct FlatPacket : IFlatbufferObject
   public H_InventoryUpdate TypeAsH_InventoryUpdate() { return Type<H_InventoryUpdate>().Value; }
   public G_ItemExchange TypeAsG_ItemExchange() { return Type<G_ItemExchange>().Value; }
   public H_ItemExchangeResult TypeAsH_ItemExchangeResult() { return Type<H_ItemExchangeResult>().Value; }
+  public S_PeerJoined TypeAsS_PeerJoined() { return Type<S_PeerJoined>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -72,6 +74,9 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.S_LoginResult:
         _o.Type.Value = this.Type<S_LoginResult>().HasValue ? this.Type<S_LoginResult>().Value.UnPack() : null;
+        break;
+      case PacketType.C_Logout:
+        _o.Type.Value = this.Type<C_Logout>().HasValue ? this.Type<C_Logout>().Value.UnPack() : null;
         break;
       case PacketType.C_Heartbeat:
         _o.Type.Value = this.Type<C_Heartbeat>().HasValue ? this.Type<C_Heartbeat>().Value.UnPack() : null;
@@ -123,6 +128,9 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_ItemExchangeResult:
         _o.Type.Value = this.Type<H_ItemExchangeResult>().HasValue ? this.Type<H_ItemExchangeResult>().Value.UnPack() : null;
+        break;
+      case PacketType.S_PeerJoined:
+        _o.Type.Value = this.Type<S_PeerJoined>().HasValue ? this.Type<S_PeerJoined>().Value.UnPack() : null;
         break;
     }
   }

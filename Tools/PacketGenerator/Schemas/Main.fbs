@@ -1,16 +1,17 @@
 ﻿include "Common.fbs";
-include "Auth.fbs";
-include "Ping.fbs";
-include "Room.fbs";
-include "Movement.fbs";
-include "Combat.fbs";
-include "Item.fbs";
+include "Master/Auth.fbs";
+include "Master/Heartbeat.fbs";
+include "Master/Room.fbs";
+include "Game/Movement.fbs";
+include "Game/Combat.fbs";
+include "Game/Item.fbs";
 
 union PacketType
 {
     // --- [SECTION 1] 중앙 서버 (Lobby / Auth) ---
     C_Login,
     S_LoginResult,
+    C_Logout,
 
     C_Heartbeat,
     S_HeartbeatAck,
@@ -40,6 +41,8 @@ union PacketType
 
     G_ItemExchange,
     H_ItemExchangeResult,
+
+    S_PeerJoined,
 }
 
 table FlatPacket

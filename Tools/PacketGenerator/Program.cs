@@ -27,7 +27,7 @@ static int Run(string[] args)
     Directory.CreateDirectory(serverOut);
     Directory.CreateDirectory(clientOut);
 
-    var fbsFiles = Directory.GetFiles(schemasDir, "*.fbs");
+    var fbsFiles = Directory.GetFiles(schemasDir, "*.fbs", SearchOption.AllDirectories);
     if (fbsFiles.Length == 0) { LogError("No .fbs files found."); return 1; }
 
     LogPath("schemas", schemasDir);
@@ -137,47 +137,77 @@ static string BuildClientPacketManager(List<string> sPackets)
 
 static int GenerateHandlerStubs(string schemasDir, string serverOut, string clientOut)
 {
+    // 1. 디렉터리 경로 설정
     string serverHandlerDir = Path.GetFullPath(Path.Combine(serverOut, "..", "..", "Net", "Packet", "PacketHandler"));
-    string clientHandlerDir = Path.GetFullPath(Path.Combine(clientOut, "..", "..", "Network", "Packet", "PacketHandlers"));
 
+    // 클라이언트용 세분화된 경로
+    string clientHandlerSDir = Path.GetFullPath(Path.Combine(clientOut, "..", "..", "Network", "Packet", "SPacketHandlers"));
+    string clientHandlerGDir = Path.GetFullPath(Path.Combine(clientOut, "..", "..", "Network", "Packet", "GPacketHandlers"));
+    string clientHandlerHDir = Path.GetFullPath(Path.Combine(clientOut, "..", "..", "Network", "Packet", "HPacketHandlers"));
+
+    // 2. 디렉터리 생성
     Directory.CreateDirectory(serverHandlerDir);
-    Directory.CreateDirectory(clientHandlerDir);
+    Directory.CreateDirectory(clientHandlerSDir);
+    Directory.CreateDirectory(clientHandlerGDir);
+    Directory.CreateDirectory(clientHandlerHDir);
 
+    // 3. 기존 구현된 메서드 수집
     var existingServer = CollectImplementedMethods(serverHandlerDir, "OnC_");
 
-    // 클라이언트는 S_/G_/H_ 메서드를 모두 추적
+    // 클라이언트는 S/G/H 디렉터리 모두에서 수집
     var existingClient = new HashSet<string>();
-    foreach (var pfx in new[] { "OnS_", "OnG_", "OnH_" })
-        existingClient.UnionWith(CollectImplementedMethods(clientHandlerDir, pfx));
+    existingClient.UnionWith(CollectImplementedMethods(clientHandlerSDir, "OnS_"));
+    existingClient.UnionWith(CollectImplementedMethods(clientHandlerGDir, "OnG_"));
+    existingClient.UnionWith(CollectImplementedMethods(clientHandlerHDir, "OnH_"));
 
     var skip = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Main.fbs", "Common.fbs" };
-    foreach (var fbsPath in Directory.GetFiles(schemasDir, "*.fbs"))
+
+    foreach (var fbsPath in Directory.GetFiles(schemasDir, "*.fbs", SearchOption.AllDirectories))
     {
         if (skip.Contains(Path.GetFileName(fbsPath))) continue;
 
         string schema = Path.GetFileNameWithoutExtension(fbsPath);
         var cPackets = new List<string>();
-        var clientPackets = new List<string>();
+        var sPackets = new List<string>();
+        var gPackets = new List<string>();
+        var hPackets = new List<string>();
 
+        // FBS 파일 파싱
         foreach (var line in File.ReadAllLines(fbsPath))
         {
             string t = line.Trim();
             if (!t.StartsWith("table ")) continue;
             string name = t["table ".Length..].TrimEnd('{').Trim();
+
             if (name.StartsWith("C_")) cPackets.Add(name);
-            else if (name.StartsWith("S_") || name.StartsWith("G_") || name.StartsWith("H_")) clientPackets.Add(name);
+            else if (name.StartsWith("S_")) sPackets.Add(name);
+            else if (name.StartsWith("G_")) gPackets.Add(name);
+            else if (name.StartsWith("H_")) hPackets.Add(name);
         }
 
-        // 서버: C_ 패킷 중 미구현만
-        var newServer = cPackets.Where(n => !existingServer.Contains($"On{n}")).ToList();
-        if (newServer.Count > 0)
-            WriteHandlerFile(serverHandlerDir, $"PacketHandler.{schema}", BuildServerHandlerStubs(schema, newServer));
+        // --- 파일 쓰기 (미구현 패킷이 있을 때만 생성) ---
 
-        // 클라: S_/G_/H_ 패킷 중 미구현만
-        var newClient = clientPackets.Where(n => !existingClient.Contains($"On{n}")).ToList();
-        if (newClient.Count > 0)
-            WriteHandlerFile(clientHandlerDir, $"PacketHandlers.{schema}", BuildClientHandlerStubs(schema, newClient));
+        // 서버 (C_)
+        var cPkt = cPackets.Where(n => !existingServer.Contains($"On{n}")).ToList();
+        if (cPkt.Count > 0)
+            WriteHandlerFile(serverHandlerDir, $"PacketHandler.{schema}", BuildServerHandlerStubs(schema, cPkt));
+
+        // 클라 (S_) -> SPacketHandlers 폴더로
+        var sPkt = sPackets.Where(n => !existingClient.Contains($"On{n}")).ToList();
+        if (sPkt.Count > 0)
+            WriteHandlerFile(clientHandlerSDir, $"PacketHandler.{schema}", BuildClientHandlerStubs(schema, sPkt));
+
+        // 클라 (G_) -> GPacketHandlers 폴더로
+        var gPkt = gPackets.Where(n => !existingClient.Contains($"On{n}")).ToList();
+        if (gPkt.Count > 0)
+            WriteHandlerFile(clientHandlerGDir, $"PacketHandler.{schema}", BuildClientHandlerStubs(schema, gPkt));
+
+        // 클라 (H_) -> HPacketHandlers 폴더로
+        var hPkt = hPackets.Where(n => !existingClient.Contains($"On{n}")).ToList();
+        if (hPkt.Count > 0)
+            WriteHandlerFile(clientHandlerHDir, $"PacketHandler.{schema}", BuildClientHandlerStubs(schema, hPkt));
     }
+
     return 0;
 }
 

@@ -7,23 +7,25 @@ public enum PacketType : byte
   NONE = 0,
   C_Login = 1,
   S_LoginResult = 2,
-  C_Heartbeat = 3,
-  S_HeartbeatAck = 4,
-  C_CreateRoom = 5,
-  S_CreateRoom = 6,
-  C_JoinRoom = 7,
-  S_JoinRoom = 8,
-  G_Move = 9,
-  H_Move = 10,
-  G_Shoot = 11,
-  H_Shoot = 12,
-  H_ItemSpawn = 13,
-  H_ItemDespawn = 14,
-  G_ItemGain = 15,
-  H_ItemGainResult = 16,
-  H_InventoryUpdate = 17,
-  G_ItemExchange = 18,
-  H_ItemExchangeResult = 19,
+  C_Logout = 3,
+  C_Heartbeat = 4,
+  S_HeartbeatAck = 5,
+  C_CreateRoom = 6,
+  S_CreateRoom = 7,
+  C_JoinRoom = 8,
+  S_JoinRoom = 9,
+  G_Move = 10,
+  H_Move = 11,
+  G_Shoot = 12,
+  H_Shoot = 13,
+  H_ItemSpawn = 14,
+  H_ItemDespawn = 15,
+  G_ItemGain = 16,
+  H_ItemGainResult = 17,
+  H_InventoryUpdate = 18,
+  G_ItemExchange = 19,
+  H_ItemExchangeResult = 20,
+  S_PeerJoined = 21,
 };
 
 public class PacketTypeUnion {
@@ -40,6 +42,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromC_Login(C_LoginT _c_login) { return new PacketTypeUnion{ Type = PacketType.C_Login, Value = _c_login }; }
   public S_LoginResultT AsS_LoginResult() { return this.As<S_LoginResultT>(); }
   public static PacketTypeUnion FromS_LoginResult(S_LoginResultT _s_loginresult) { return new PacketTypeUnion{ Type = PacketType.S_LoginResult, Value = _s_loginresult }; }
+  public C_LogoutT AsC_Logout() { return this.As<C_LogoutT>(); }
+  public static PacketTypeUnion FromC_Logout(C_LogoutT _c_logout) { return new PacketTypeUnion{ Type = PacketType.C_Logout, Value = _c_logout }; }
   public C_HeartbeatT AsC_Heartbeat() { return this.As<C_HeartbeatT>(); }
   public static PacketTypeUnion FromC_Heartbeat(C_HeartbeatT _c_heartbeat) { return new PacketTypeUnion{ Type = PacketType.C_Heartbeat, Value = _c_heartbeat }; }
   public S_HeartbeatAckT AsS_HeartbeatAck() { return this.As<S_HeartbeatAckT>(); }
@@ -74,12 +78,15 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_ItemExchange(G_ItemExchangeT _g_itemexchange) { return new PacketTypeUnion{ Type = PacketType.G_ItemExchange, Value = _g_itemexchange }; }
   public H_ItemExchangeResultT AsH_ItemExchangeResult() { return this.As<H_ItemExchangeResultT>(); }
   public static PacketTypeUnion FromH_ItemExchangeResult(H_ItemExchangeResultT _h_itemexchangeresult) { return new PacketTypeUnion{ Type = PacketType.H_ItemExchangeResult, Value = _h_itemexchangeresult }; }
+  public S_PeerJoinedT AsS_PeerJoined() { return this.As<S_PeerJoinedT>(); }
+  public static PacketTypeUnion FromS_PeerJoined(S_PeerJoinedT _s_peerjoined) { return new PacketTypeUnion{ Type = PacketType.S_PeerJoined, Value = _s_peerjoined }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
       default: return 0;
       case PacketType.C_Login: return C_Login.Pack(builder, _o.AsC_Login()).Value;
       case PacketType.S_LoginResult: return S_LoginResult.Pack(builder, _o.AsS_LoginResult()).Value;
+      case PacketType.C_Logout: return C_Logout.Pack(builder, _o.AsC_Logout()).Value;
       case PacketType.C_Heartbeat: return C_Heartbeat.Pack(builder, _o.AsC_Heartbeat()).Value;
       case PacketType.S_HeartbeatAck: return S_HeartbeatAck.Pack(builder, _o.AsS_HeartbeatAck()).Value;
       case PacketType.C_CreateRoom: return C_CreateRoom.Pack(builder, _o.AsC_CreateRoom()).Value;
@@ -97,6 +104,7 @@ public class PacketTypeUnion {
       case PacketType.H_InventoryUpdate: return H_InventoryUpdate.Pack(builder, _o.AsH_InventoryUpdate()).Value;
       case PacketType.G_ItemExchange: return G_ItemExchange.Pack(builder, _o.AsG_ItemExchange()).Value;
       case PacketType.H_ItemExchangeResult: return H_ItemExchangeResult.Pack(builder, _o.AsH_ItemExchangeResult()).Value;
+      case PacketType.S_PeerJoined: return S_PeerJoined.Pack(builder, _o.AsS_PeerJoined()).Value;
     }
   }
 }
@@ -115,6 +123,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.S_LoginResult:
         result = S_LoginResultVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.C_Logout:
+        result = C_LogoutVerify.Verify(verifier, tablePos);
         break;
       case PacketType.C_Heartbeat:
         result = C_HeartbeatVerify.Verify(verifier, tablePos);
@@ -166,6 +177,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_ItemExchangeResult:
         result = H_ItemExchangeResultVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.S_PeerJoined:
+        result = S_PeerJoinedVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

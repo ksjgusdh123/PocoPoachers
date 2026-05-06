@@ -4,17 +4,11 @@ using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
 
-// P2P Friend Mode 전체 흐름 조율:
-//   Host:  STUN → C_RegisterP2PSession → [대기] → S_PeerJoined → UdpHolePuncher
-//   Peer:  C_JoinP2PSession → S_P2PSessionInfo → UdpHolePuncher
 public class P2PManager : Singleton<P2PManager>
 {
     [Header("STUN")]
     [SerializeField] string stunHost = "stun.l.google.com";
     [SerializeField] int    stunPort = 19302;
-
-    [Header("P2P UDP")]
-    [SerializeField] int localUdpPort = 0; // 0 = OS가 자동 배정 후 STUN에서 확인
 
     public bool IsHost        { get; private set; }
     public bool IsConnected   { get; private set; }
@@ -24,7 +18,7 @@ public class P2PManager : Singleton<P2PManager>
     public event Action<string>  OnP2PFailed;
 
     Socket          _udpSocket;
-    IPEndPoint      _publicEp;
+    IPEndPoint      _myPublicEp;
     UdpHolePuncher  _puncher;
 
     protected override void Awake()
@@ -32,132 +26,90 @@ public class P2PManager : Singleton<P2PManager>
         base.Awake();
         DontDestroyOnLoad(gameObject);
     }
+    public void StartAsHost() => StartP2P(true, null);
+    public void StartAsGuest(string code) => StartP2P(false, code);
 
-    // ── Host side ─────────────────────────────────────────────────────────
-
-    public void StartAsHost(string sessionCode)
+    private void StartP2P(bool isHost, string code)
     {
-        IsHost = true;
-        ThreadPool.QueueUserWorkItem(_ => DiscoverAndRegister(sessionCode));
+        IsHost = isHost;
+        IsConnected = false;
+
+        ThreadPool.QueueUserWorkItem(_ => {
+            if (!PrepareSocket()) return;
+
+            // STUN으로 공인 IP 식별
+            if (!StunClient.TryGetPublicEndPoint(stunHost, stunPort, _udpSocket, out _myPublicEp))
+            {
+                HandleFailure("STUN 실패");
+                return;
+            }
+
+            var myInfo = GetMyPeerInfo();
+            MainThreadDispatcher.Enqueue(() => {
+                if (IsHost)
+                    PacketBuilder.Send(new C_CreateRoomT { MyInfo = myInfo }, C_CreateRoom.Pack, PacketType.C_CreateRoom);
+                else
+                    PacketBuilder.Send(new C_JoinRoomT { SessionCode = code, MyInfo = myInfo }, C_JoinRoom.Pack, PacketType.C_JoinRoom);
+            });
+        });
     }
 
-    void DiscoverAndRegister(string sessionCode)
+    public void BeginPunch(PeerInfoT target)
     {
-        _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        _udpSocket.Bind(new IPEndPoint(IPAddress.Any, localUdpPort));
+        PeerEp = SelectEndPoint(target);
 
-        if (!StunClient.TryGetPublicEndPoint(stunHost, stunPort, _udpSocket, out _publicEp))
+        _puncher = new UdpHolePuncher(_udpSocket);
+        _puncher.OnSuccess += _ => {
+            IsConnected = true;
+            MainThreadDispatcher.Enqueue(() => OnP2PConnected?.Invoke());
+        };
+        _puncher.OnFailed += (p, reason) => HandleFailure(reason);
+
+        _puncher.Start(PeerEp);
+    }
+
+    private bool PrepareSocket()
+    {
+        try
         {
-            MainThreadDispatcher.Enqueue(() => OnP2PFailed?.Invoke("STUN 실패"));
-            _udpSocket.Close();
-            return;
+            _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
+            _udpSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
+            _udpSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
+            return true;
         }
-
-        string privateIp = GetLocalPrivateIp();
-        int    privatePort = ((IPEndPoint)_udpSocket.LocalEndPoint).Port;
-
-        Debug.Log($"[P2PManager] Public={_publicEp}  Private={privateIp}:{privatePort}");
-        //TODO: Send Pkt
-
+        catch (Exception e) { HandleFailure(e.Message); return false; }
     }
-
-    // 서버가 S_RegisterP2PSessionRes를 보내면 PacketHandlers에서 호출
-    public void OnRegistered(bool success)
+    private IPEndPoint SelectEndPoint(PeerInfoT info)
     {
-        if (!success)
-        {
-            OnP2PFailed?.Invoke("세션 코드 중복");
-            _udpSocket?.Close();
-        }
-        // 성공이면 S_PeerJoined 대기
+        if (!string.IsNullOrEmpty(info.PrivateIp) && info.PrivatePort != 0 && IsOnSameLan(info.PrivateIp))
+            return new IPEndPoint(IPAddress.Parse(info.PrivateIp), info.PrivatePort);
+        return new IPEndPoint(IPAddress.Parse(info.PublicIp), info.PublicPort);
     }
 
-    // 서버가 S_PeerJoined를 보내면 PacketHandlers에서 호출
-    public void OnPeerJoined(string peerPublicIp, ushort peerPublicPort,
-                             string peerPrivateIp, ushort peerPrivatePort)
+    private bool IsOnSameLan(string otherPrivateIp)
     {
-        Debug.Log($"[P2PManager] S_PeerJoined: Public={peerPublicIp}:{peerPublicPort}  Private={peerPrivateIp}:{peerPrivatePort}");
-        var target = IsOnSameLan(peerPrivateIp)
-            ? new IPEndPoint(IPAddress.Parse(peerPrivateIp), peerPrivatePort)
-            : new IPEndPoint(IPAddress.Parse(peerPublicIp),  peerPublicPort);
-        BeginPunch(target);
+        string myIp = GetLocalPrivateIp();
+        var my = myIp.Split('.');
+        var other = otherPrivateIp.Split('.');
+        if (my.Length < 3 || other.Length < 3) return false;
+        return my[0] == other[0] && my[1] == other[1] && my[2] == other[2];
     }
 
-    // ── Peer side ─────────────────────────────────────────────────────────
-
-    public void StartAsPeer(string sessionCode)
+    private string GetLocalPrivateIp()
     {
-        IsHost = false;
-        ThreadPool.QueueUserWorkItem(_ => StunAndJoin(sessionCode));
+        using Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, 0);
+        s.Connect("8.8.8.8", 65530);
+        return (s.LocalEndPoint as IPEndPoint).Address.ToString();
     }
 
-    // Host의 DiscoverAndRegister와 동일한 흐름: STUN으로 공개 EP 확인 후 서버에 Join
-    void StunAndJoin(string sessionCode)
+    public PeerInfoT GetMyPeerInfo() => new PeerInfoT
     {
-        _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        _udpSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
-
-        if (!StunClient.TryGetPublicEndPoint(stunHost, stunPort, _udpSocket, out _publicEp))
-        {
-            MainThreadDispatcher.Enqueue(() => OnP2PFailed?.Invoke("STUN 실패"));
-            _udpSocket.Close();
-            _udpSocket = null;
-            return;
-        }
-
-        string privateIp   = GetLocalPrivateIp();
-        int    privatePort = ((IPEndPoint)_udpSocket.LocalEndPoint).Port;
-        Debug.Log($"[P2PManager] Peer Public={_publicEp}  Private={privateIp}:{privatePort}");
-
-        //TODO: Send Pkt
-
-    }
-
-    // 서버가 S_P2PSessionInfo를 보내면 PacketHandlers에서 호출
-    public void OnSessionInfo(string hostPublicIp, ushort hostPublicPort,
-                              string hostPrivateIp, ushort hostPrivatePort)
-    {
-        Debug.Log($"[P2PManager] S_P2PSessionInfo: Host Public={hostPublicIp}:{hostPublicPort}  Private={hostPrivateIp}:{hostPrivatePort}");
-        Debug.Log($"[P2PManager] My public (STUN) = {_publicEp}  ← 서버가 S_PeerJoined에 이 값을 보내야 함");
-
-        var target = IsOnSameLan(hostPrivateIp)
-            ? new IPEndPoint(IPAddress.Parse(hostPrivateIp), hostPrivatePort)
-            : new IPEndPoint(IPAddress.Parse(hostPublicIp),  hostPublicPort);
-
-        // _udpSocket은 StunAndJoin에서 이미 STUN 완료 — 새로 만들면 NAT 매핑이 깨진다
-        BeginPunch(target);
-    }
-
-    // ── Hole Punching ──────────────────────────────────────────────────────
-
-    void BeginPunch(IPEndPoint remoteEp)
-    {
-        PeerEp   = remoteEp;
-        _puncher = new UdpHolePuncher();
-        _puncher.OnSuccess += HandlePunchSuccess;
-        _puncher.OnFailed  += HandlePunchFailed;
-
-        int localPort = ((IPEndPoint)_udpSocket.LocalEndPoint).Port;
-        _udpSocket.Close(); // UdpHolePuncher가 같은 포트를 재점유
-
-        _puncher.Start(remoteEp, localPort);
-    }
-
-    void HandlePunchSuccess(UdpHolePuncher puncher)
-    {
-        IsConnected = true;
-        Debug.Log($"[P2PManager] P2P 연결 성공 ↔ {PeerEp}");
-        // puncher.LocalEndPoint / RemoteEndPoint를 이용해 게임 UDP 소켓 구성
-        OnP2PConnected?.Invoke();
-    }
-
-    void HandlePunchFailed(UdpHolePuncher puncher, string reason)
-    {
-        Debug.LogWarning($"[P2PManager] Hole punch 실패 ({reason}) → TURN 폴백 예정");
-        OnP2PFailed?.Invoke(reason);
-    }
-
-    // ── Cancel ────────────────────────────────────────────────────────────
+        PlayerId = NetworkManager.Instance.MyPlayerId,
+        PublicIp = _myPublicEp.Address.ToString(),
+        PublicPort = (ushort)_myPublicEp.Port,
+        PrivateIp = GetLocalPrivateIp(),
+        PrivatePort = (ushort)((IPEndPoint)_udpSocket.LocalEndPoint).Port
+    };
 
     public void CancelP2P()
     {
@@ -169,21 +121,9 @@ public class P2PManager : Singleton<P2PManager>
         IsHost      = false;
     }
 
-    // ── Helpers ────────────────────────────────────────────────────────────
-
-    static string GetLocalPrivateIp()
+    public void HandleFailure(string msg)
     {
-        using var tmp = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-        tmp.Connect("8.8.8.8", 80);
-        return ((IPEndPoint)tmp.LocalEndPoint).Address.ToString();
-    }
-
-    static bool IsOnSameLan(string remotePrivateIp)
-    {
-        string local = GetLocalPrivateIp();
-        // 서브넷 /24 비교 (단순 근사)
-        int lastDot = local.LastIndexOf('.');
-        return lastDot > 0 && remotePrivateIp.StartsWith(local[..lastDot]);
+        MainThreadDispatcher.Enqueue(() => OnP2PFailed?.Invoke(msg));
     }
 
     protected override void OnDestroy()

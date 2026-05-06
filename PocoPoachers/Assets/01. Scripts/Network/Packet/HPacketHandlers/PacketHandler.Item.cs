@@ -1,5 +1,4 @@
-﻿using Google.FlatBuffers;
-using UnityEngine;
+﻿using UnityEngine;
 
 public static partial class PacketHandlers
 {
@@ -33,22 +32,12 @@ public static partial class PacketHandlers
         });
     }
 
-    public static void OnG_ItemGain(FlatPacket root)
-    {
-        // TODO
-    }
-
     public static void OnH_ItemGainResult(FlatPacket root)
     {
         // TODO
     }
 
     public static void OnH_InventoryUpdate(FlatPacket root)
-    {
-        // TODO
-    }
-
-    public static void OnG_ItemExchange(FlatPacket root)
     {
         // TODO
     }
