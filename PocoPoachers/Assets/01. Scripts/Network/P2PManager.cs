@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
+using Google.FlatBuffers;
 using UnityEngine;
 
 public class P2PManager : Singleton<P2PManager>
@@ -20,6 +21,7 @@ public class P2PManager : Singleton<P2PManager>
     Socket          _udpSocket;
     IPEndPoint      _myPublicEp;
     UdpHolePuncher  _puncher;
+    Thread          _recvThread;
 
     protected override void Awake()
     {
@@ -61,11 +63,45 @@ public class P2PManager : Singleton<P2PManager>
         _puncher = new UdpHolePuncher(_udpSocket);
         _puncher.OnSuccess += _ => {
             IsConnected = true;
+            _recvThread = new Thread(ReceiveLoop) { IsBackground = true, Name = "P2P-Recv" };
+            _recvThread.Start();
             MainThreadDispatcher.Enqueue(() => OnP2PConnected?.Invoke());
         };
         _puncher.OnFailed += (p, reason) => HandleFailure(reason);
 
         _puncher.Start(PeerEp);
+    }
+
+    public void SendP2P<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+        where TTable : struct where TObj : class
+    {
+        if (!IsConnected || _udpSocket == null || PeerEp == null) return;
+        try
+        {
+            var segment = PacketBuilder.BuildSegment(data, packFunc, type);
+            _udpSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, PeerEp);
+        }
+        catch (Exception e) { Debug.LogWarning($"[P2P] Send failed: {e.Message}"); }
+    }
+
+    private void ReceiveLoop()
+    {
+        byte[] buffer = new byte[2048];
+        EndPoint remote = new IPEndPoint(IPAddress.Any, 0);
+        while (IsConnected)
+        {
+            try
+            {
+                if (_udpSocket == null) break;
+                if (!_udpSocket.Poll(100_000, SelectMode.SelectRead)) continue;
+                int len = _udpSocket.ReceiveFrom(buffer, ref remote);
+                if (len <= 1) continue;
+                byte[] copy = new byte[len];
+                Buffer.BlockCopy(buffer, 0, copy, 0, len);
+                MainThreadDispatcher.Enqueue(() => PacketManager.HandlePacket(new ArraySegment<byte>(copy)));
+            }
+            catch { break; }
+        }
     }
 
     private bool PrepareSocket()

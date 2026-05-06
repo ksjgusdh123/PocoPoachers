@@ -71,37 +71,35 @@ public class PlayerMovement : MonoBehaviour
 
     private void SendMoveToServer()
     {
-        /*var nm = NetworkManager.Instance;
-        if (nm == null || !nm.IsLoggedIn)
-        {
-            _hasSent = false;
-            _lastMoveType = -1;
-            return;
-        }
+        var p2p = P2PManager.Instance;
+        if (p2p == null || !p2p.IsConnected) return;
 
-        if (Time.unscaledTime < _nextSendTime)
-            return;
-
+        if (Time.unscaledTime < _nextSendTime) return;
         _nextSendTime = Time.unscaledTime + _sendInterval;
 
-        var tr = transform;
-        Vector3 pos = tr.position;
-        float yaw = tr.eulerAngles.y;
+        Vector3 pos = transform.position;
+        float yaw = transform.eulerAngles.y;
         sbyte moveType = _inputHandler != null && _inputHandler.MoveInput.sqrMagnitude > 0.01f ? (sbyte)1 : (sbyte)0;
 
         if (_hasSent &&
             (pos - _lastSentPos).sqrMagnitude < _minMoveSqrEpsilon &&
             Mathf.Abs(Mathf.DeltaAngle(yaw, _lastSentYaw)) < _minYawDelta &&
             moveType == _lastMoveType)
-        {
             return;
-        }
 
-        //TODO: Send
+        int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
+        var vec = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z };
 
-        _lastSentPos = pos;
-        _lastSentYaw = yaw;
+        if (p2p.IsHost)
+            p2p.SendP2P(new H_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
+                        H_Move.Pack, PacketType.H_Move);
+        else
+            p2p.SendP2P(new G_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
+                        G_Move.Pack, PacketType.G_Move);
+
+        _lastSentPos  = pos;
+        _lastSentYaw  = yaw;
         _lastMoveType = moveType;
-        _hasSent = true;*/
+        _hasSent      = true;
     }
 }
