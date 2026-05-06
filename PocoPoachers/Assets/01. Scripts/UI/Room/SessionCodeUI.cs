@@ -35,6 +35,7 @@ public class SessionCodeUI : MonoBehaviour
     [Header("Select")]
     [SerializeField] Button _btnHost;
     [SerializeField] Button _btnJoin;
+    [SerializeField] Button _btnSingle;
 
     [Header("Host")]
     [SerializeField] TextMeshProUGUI _txtCode;
@@ -60,6 +61,7 @@ public class SessionCodeUI : MonoBehaviour
         Instance = this;
         _btnHost.onClick.AddListener(OnClickHost);
         _btnJoin.onClick.AddListener(OnClickJoin);
+        _btnSingle?.onClick.AddListener(OnClickSingle);
         _btnCopy.onClick.AddListener(OnClickCopy);
         _btnHostCancel.onClick.AddListener(OnClickCancel);
         _btnConfirm.onClick.AddListener(OnClickConfirm);
@@ -82,6 +84,12 @@ public class SessionCodeUI : MonoBehaviour
         if (P2PManager.Instance == null) return;
         P2PManager.Instance.OnP2PConnected -= HandleConnected;
         P2PManager.Instance.OnP2PFailed    -= HandleFailed;
+    }
+
+    void OnClickSingle()
+    {
+        NetworkManager.Instance.StartSinglePlayer();
+        gameObject.SetActive(false);
     }
 
     void OnClickHost()

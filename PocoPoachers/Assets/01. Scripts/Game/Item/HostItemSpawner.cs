@@ -26,14 +26,29 @@ public class HostItemSpawner : MonoBehaviour
 
     void Start()
     {
+        var nm = NetworkManager.Instance;
+        if (nm != null) nm.OnSinglePlayerStarted += OnSinglePlayerStarted;
+
         var p2p = P2PManager.Instance;
         if (p2p != null) p2p.OnP2PConnected += OnPeerConnected;
     }
 
     void OnDestroy()
     {
+        var nm = NetworkManager.Instance;
+        if (nm != null) nm.OnSinglePlayerStarted -= OnSinglePlayerStarted;
+
         var p2p = P2PManager.Instance;
         if (p2p != null) p2p.OnP2PConnected -= OnPeerConnected;
+    }
+
+    void OnSinglePlayerStarted()
+    {
+        if (!_spawned)
+        {
+            SpawnAll();
+            _spawned = true;
+        }
     }
 
     void OnPeerConnected()
