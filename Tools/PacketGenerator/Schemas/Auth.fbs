@@ -1,12 +1,12 @@
 ﻿include "Common.fbs";
 
-table C_LoginReq
+table C_Login
 {
-	username : string;
+    username: string;
 }
 
-table S_LoginRes
+table S_LoginResult
 {
-	success : bool;
-	user_info : TUserInfo;
+    success:   bool;
+    player_id: int;
 }

@@ -62,7 +62,7 @@ public class NetworkManager : Singleton<NetworkManager>
     public void NotifySessionConnected()
     {
         Debug.Log("[NetworkManager] Connected");
-        PacketBuilder.Send(new C_LoginReqT { Username = userName ?? string.Empty }, C_LoginReq.Pack, PacketType.C_LoginReq);
+        PacketBuilder.Send(new C_LoginT { Username = userName ?? string.Empty }, C_Login.Pack, PacketType.C_Login);
         OnConnected?.Invoke();
     }
 
@@ -77,7 +77,8 @@ public class NetworkManager : Singleton<NetworkManager>
 
     public void SendPing()
     {
-        PacketBuilder.Send(new C_PingReqT { SendTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() }, C_PingReq.Pack, PacketType.C_PingReq);
+        //TODO: Send Pkt
+
     }
 
     IEnumerator CoPingLoop()
@@ -98,9 +99,9 @@ public class NetworkManager : Singleton<NetworkManager>
         Debug.Log($"[NetworkManager] RTT: {rtt}ms");
     }
 
-    public void OnLoginResult(bool success, int playerId, string name, int level)
+    public void OnLoginResult(bool success, int playerId)
     {
-        Debug.Log($"[NetworkManager] Login: success={success}, id={playerId}, name='{name}', level={level}");
+        Debug.Log($"[NetworkManager] Login: success={success}, id={playerId}");
         if (success)
         {
             IsLoggedIn = true;

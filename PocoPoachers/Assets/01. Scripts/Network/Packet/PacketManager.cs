@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Google.FlatBuffers;
 using UnityEngine;
@@ -19,8 +19,7 @@ public static partial class PacketManager
         var root = FlatPacket.GetRootAsFlatPacket(bb);
 
         PacketType type = root.TypeType;
-        if (type != PacketType.S_MoveNtf)
-            Debug.Log($"[PacketManager] Recv {type}");
+        Debug.Log($"[PacketManager] Recv {type}");
 
         if (!_onRecv.TryGetValue(type, out Action<FlatPacket> action))
         {

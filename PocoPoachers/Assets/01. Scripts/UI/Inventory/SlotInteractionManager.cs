@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public class SlotInteractionManager : Singleton<SlotInteractionManager>
@@ -39,16 +39,8 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         int PtoBMovedAmount, int BtoPMovedAmount, int PSlotIndex, int BSlotIndex)
     {
         player.InventoryUI.OnSlotDropped();
-        PacketBuilder.Send(new C_ExchangeItemReqT
-        {
-            BoxUid           = box.InventoryUI.Box.Id,
-            PlayerItemId     = PtoBItem?.Id ?? 0,
-            PlayerItemAmount = PtoBMovedAmount,
-            PlayerSlotIndex  = PSlotIndex,
-            BoxItemId        = BtoPItem?.Id ?? 0,
-            BoxItemAmount    = BtoPMovedAmount,
-            BoxSlotIndex     = BSlotIndex,
-        }, C_ExchangeItemReq.Pack, PacketType.C_ExchangeItemReq);
+        //TODO: Send Pkt
+
     }
 
     public void InvokeDragEmptySlot(ItemData data,int amount, int gainedSlotIndex, int removedSlotIndex)

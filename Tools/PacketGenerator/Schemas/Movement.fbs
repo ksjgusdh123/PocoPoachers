@@ -1,16 +1,17 @@
-﻿include "Common.fbs";
+include "Common.fbs";
 
-table C_MoveReq
+table G_Move
 {
-    pos: Vec3;
-    rotation: float;
+    player_id: int;
+    pos:       Vec3;
+    rotation:  float;
     move_type: byte;
 }
 
-table S_MoveNtf
+table H_Move
 {
     player_id: int;
-    pos: Vec3;
-    rotation: float;
+    pos:       Vec3;
+    rotation:  float;
     move_type: byte;
 }

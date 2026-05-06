@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -57,21 +57,8 @@ public class P2PManager : Singleton<P2PManager>
         int    privatePort = ((IPEndPoint)_udpSocket.LocalEndPoint).Port;
 
         Debug.Log($"[P2PManager] Public={_publicEp}  Private={privateIp}:{privatePort}");
+        //TODO: Send Pkt
 
-        MainThreadDispatcher.Enqueue(() =>
-        {
-            PacketBuilder.Send(
-                new C_RegisterP2PSessionT
-                {
-                    SessionCode = sessionCode,
-                    PublicIp    = _publicEp.Address.ToString(),
-                    PublicPort  = (ushort)_publicEp.Port,
-                    PrivateIp   = privateIp,
-                    PrivatePort = (ushort)privatePort,
-                },
-                C_RegisterP2PSession.Pack,
-                PacketType.C_RegisterP2PSession);
-        });
     }
 
     // 서버가 S_RegisterP2PSessionRes를 보내면 PacketHandlers에서 호출
@@ -122,18 +109,8 @@ public class P2PManager : Singleton<P2PManager>
         int    privatePort = ((IPEndPoint)_udpSocket.LocalEndPoint).Port;
         Debug.Log($"[P2PManager] Peer Public={_publicEp}  Private={privateIp}:{privatePort}");
 
-        MainThreadDispatcher.Enqueue(() =>
-            PacketBuilder.Send(
-                new C_JoinP2PSessionT
-                {
-                    SessionCode = sessionCode,
-                    PublicIp    = _publicEp.Address.ToString(),
-                    PublicPort  = (ushort)_publicEp.Port,
-                    PrivateIp   = privateIp,
-                    PrivatePort = (ushort)privatePort,
-                },
-                C_JoinP2PSession.Pack,
-                PacketType.C_JoinP2PSession));
+        //TODO: Send Pkt
+
     }
 
     // 서버가 S_P2PSessionInfo를 보내면 PacketHandlers에서 호출

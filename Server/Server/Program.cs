@@ -9,9 +9,6 @@ namespace Server
 
         static void Main(string[] args)
         {
-            GameDataLoader.Load();
-            WorldItemManager.Instance.TempInit();
-
             IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, 7000);
 
             _listener.Init(endPoint, () => { return new ClientSession(); });

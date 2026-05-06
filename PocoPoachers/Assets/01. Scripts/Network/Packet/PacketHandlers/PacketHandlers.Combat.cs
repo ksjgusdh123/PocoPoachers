@@ -1,11 +1,11 @@
-using Google.FlatBuffers;
+﻿using Google.FlatBuffers;
 using UnityEngine;
 
 public static partial class PacketHandlers
 {
-    public static void OnS_ShootNtf(FlatPacket root)
+    public static void OnG_Shoot(FlatPacket root)
     {
-        var pkt = root.TypeAsS_ShootNtf();
+        var pkt = root.TypeAsG_Shoot();
         int playerId = pkt.PlayerId;
         var o = pkt.Origin;
         var d = pkt.Direction;
@@ -46,5 +46,9 @@ public static partial class PacketHandlers
                 () => BulletPool.GetInstance().Release(prefab, bullet),
                 applyDamage: false);
         });
+    }
+    public static void OnH_Shoot(FlatPacket root)
+    {
+        // TODO
     }
 }

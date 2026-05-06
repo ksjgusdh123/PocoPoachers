@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(PlayerInputHandler))]
@@ -97,12 +97,8 @@ public class PlayerMovement : MonoBehaviour
             return;
         }
 
-        PacketBuilder.Send(new C_MoveReqT
-        {
-            Pos      = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
-            Rotation = yaw,
-            MoveType = moveType,
-        }, C_MoveReq.Pack, PacketType.C_MoveReq);
+        //TODO: Send
+
         _lastSentPos = pos;
         _lastSentYaw = yaw;
         _lastMoveType = moveType;
