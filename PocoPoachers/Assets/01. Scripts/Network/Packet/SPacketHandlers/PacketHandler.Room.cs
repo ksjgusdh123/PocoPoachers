@@ -1,4 +1,4 @@
-﻿public static partial class PacketHandlers
+public static partial class PacketHandlers
 {
     public static void OnS_CreateRoom(FlatPacket root)
     {
@@ -7,9 +7,7 @@
         bool success = pkt.Success;
 
         MainThreadDispatcher.Enqueue(() =>
-        {
-            SessionCodeUI.Instance?.HandleCreateRoom(code, success);
-        });
+            SessionCodeUI.Instance?.HandleCreateRoom(code, success));
     }
 
     public static void OnS_JoinRoom(FlatPacket root)

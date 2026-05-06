@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -11,41 +12,42 @@ public class P2PManager : Singleton<P2PManager>
     [SerializeField] string stunHost = "stun.l.google.com";
     [SerializeField] int    stunPort = 19302;
 
-    public bool IsHost        { get; private set; }
-    public bool IsConnected   { get; private set; }
-    public IPEndPoint PeerEp  { get; private set; }
+    public bool IsHost      { get; private set; }
+    public bool IsConnected => _peers.Count > 0;
+    public int  PeerCount   => _peers.Count;
 
     public event Action          OnP2PConnected;
     public event Action<string>  OnP2PFailed;
 
-    Socket          _udpSocket;
-    IPEndPoint      _myPublicEp;
-    UdpHolePuncher  _puncher;
-    Thread          _recvThread;
+    Socket     _udpSocket;
+    IPEndPoint _myPublicEp;
+    Thread     _recvThread;
+
+    readonly ConcurrentDictionary<int, IPEndPoint>     _peers    = new();
+    readonly ConcurrentDictionary<int, UdpHolePuncher> _punchers = new();
 
     protected override void Awake()
     {
         base.Awake();
         DontDestroyOnLoad(gameObject);
     }
+
     public void StartAsHost() => StartP2P(true, null);
     public void StartAsGuest(string code) => StartP2P(false, code);
 
     private void StartP2P(bool isHost, string code)
     {
         IsHost = isHost;
-        IsConnected = false;
+        _peers.Clear();
+        _punchers.Clear();
 
         ThreadPool.QueueUserWorkItem(_ => {
             if (!PrepareSocket()) return;
-
-            // STUN으로 공인 IP 식별
             if (!StunClient.TryGetPublicEndPoint(stunHost, stunPort, _udpSocket, out _myPublicEp))
             {
                 HandleFailure("STUN 실패");
                 return;
             }
-
             var myInfo = GetMyPeerInfo();
             MainThreadDispatcher.Enqueue(() => {
                 if (IsHost)
@@ -58,37 +60,61 @@ public class P2PManager : Singleton<P2PManager>
 
     public void BeginPunch(PeerInfoT target)
     {
-        PeerEp = SelectEndPoint(target);
+        int peerId = target.PlayerId;
+        IPEndPoint ep = SelectEndPoint(target);
 
-        _puncher = new UdpHolePuncher(_udpSocket);
-        _puncher.OnSuccess += _ => {
-            IsConnected = true;
-            _recvThread = new Thread(ReceiveLoop) { IsBackground = true, Name = "P2P-Recv" };
-            _recvThread.Start();
+        var puncher = new UdpHolePuncher(_udpSocket);
+        _punchers[peerId] = puncher;
+
+        puncher.OnSuccess += _ => {
+            _peers[peerId] = ep;
+            _punchers.TryRemove(peerId, out _);
+
+            if (_recvThread == null || !_recvThread.IsAlive)
+            {
+                _recvThread = new Thread(ReceiveLoop) { IsBackground = true, Name = "P2P-Recv" };
+                _recvThread.Start();
+            }
             MainThreadDispatcher.Enqueue(() => OnP2PConnected?.Invoke());
         };
-        _puncher.OnFailed += (p, reason) => HandleFailure(reason);
-
-        _puncher.Start(PeerEp);
+        puncher.OnFailed += (_, reason) => {
+            _punchers.TryRemove(peerId, out _);
+            HandleFailure(reason);
+        };
+        puncher.Start(ep);
     }
 
-    public void SendP2P<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    // 모든 피어에게 전송
+    public void SendToAll<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
         where TTable : struct where TObj : class
     {
-        if (!IsConnected || _udpSocket == null || PeerEp == null) return;
+        if (_peers.IsEmpty || _udpSocket == null) return;
         try
         {
             var segment = PacketBuilder.BuildSegment(data, packFunc, type);
-            _udpSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, PeerEp);
+            foreach (var ep in _peers.Values)
+                _udpSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, ep);
         }
-        catch (Exception e) { Debug.LogWarning($"[P2P] Send failed: {e.Message}"); }
+        catch (Exception e) { Debug.LogWarning($"[P2P] SendToAll failed: {e.Message}"); }
+    }
+
+    // 특정 피어 제외하고 raw 바이트 릴레이 (호스트가 게스트 패킷 중계 시 사용)
+    public void RelayExcept(int excludePlayerId, ArraySegment<byte> segment)
+    {
+        if (_udpSocket == null) return;
+        foreach (var kv in _peers)
+        {
+            if (kv.Key == excludePlayerId) continue;
+            try { _udpSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, kv.Value); }
+            catch (Exception e) { Debug.LogWarning($"[P2P] Relay to {kv.Key} failed: {e.Message}"); }
+        }
     }
 
     private void ReceiveLoop()
     {
         byte[] buffer = new byte[2048];
         EndPoint remote = new IPEndPoint(IPAddress.Any, 0);
-        while (IsConnected)
+        while (_peers.Count > 0 || _punchers.Count > 0)
         {
             try
             {
@@ -115,6 +141,7 @@ public class P2PManager : Singleton<P2PManager>
         }
         catch (Exception e) { HandleFailure(e.Message); return false; }
     }
+
     private IPEndPoint SelectEndPoint(PeerInfoT info)
     {
         if (!string.IsNullOrEmpty(info.PrivateIp) && info.PrivatePort != 0 && IsOnSameLan(info.PrivateIp))
@@ -140,21 +167,21 @@ public class P2PManager : Singleton<P2PManager>
 
     public PeerInfoT GetMyPeerInfo() => new PeerInfoT
     {
-        PlayerId = NetworkManager.Instance.MyPlayerId,
-        PublicIp = _myPublicEp.Address.ToString(),
+        PlayerId   = NetworkManager.Instance.MyPlayerId,
+        PublicIp   = _myPublicEp.Address.ToString(),
         PublicPort = (ushort)_myPublicEp.Port,
-        PrivateIp = GetLocalPrivateIp(),
-        PrivatePort = (ushort)((IPEndPoint)_udpSocket.LocalEndPoint).Port
+        PrivateIp   = GetLocalPrivateIp(),
+        PrivatePort = (ushort)((IPEndPoint)_udpSocket.LocalEndPoint).Port,
     };
 
     public void CancelP2P()
     {
-        _puncher?.Stop();
-        _puncher = null;
+        foreach (var p in _punchers.Values) p.Stop();
+        _punchers.Clear();
+        _peers.Clear();
         _udpSocket?.Close();
         _udpSocket = null;
-        IsConnected = false;
-        IsHost      = false;
+        IsHost = false;
     }
 
     public void HandleFailure(string msg)
@@ -164,7 +191,7 @@ public class P2PManager : Singleton<P2PManager>
 
     protected override void OnDestroy()
     {
-        _puncher?.Stop();
+        foreach (var p in _punchers.Values) p.Stop();
         _udpSocket?.Close();
         base.OnDestroy();
     }

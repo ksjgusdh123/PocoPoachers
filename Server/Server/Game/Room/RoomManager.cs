@@ -46,7 +46,7 @@ public class RoomManager
         lock (_lock)
         {
             var codes = _rooms.Values
-                .Where(r => r.Host == session || r.Guest == session)
+                .Where(r => r.Host == session || r.Guests.Any(g => g.Session == session))
                 .Select(r => r.Code)
                 .ToList();
             foreach (var code in codes)

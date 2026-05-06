@@ -91,11 +91,11 @@ public class PlayerMovement : MonoBehaviour
         var vec = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z };
 
         if (p2p.IsHost)
-            p2p.SendP2P(new H_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
-                        H_Move.Pack, PacketType.H_Move);
+            p2p.SendToAll(new H_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
+                          H_Move.Pack, PacketType.H_Move);
         else
-            p2p.SendP2P(new G_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
-                        G_Move.Pack, PacketType.G_Move);
+            p2p.SendToAll(new G_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
+                          G_Move.Pack, PacketType.G_Move);
 
         _lastSentPos  = pos;
         _lastSentYaw  = yaw;
