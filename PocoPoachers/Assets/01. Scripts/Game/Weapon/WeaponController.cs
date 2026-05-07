@@ -105,6 +105,7 @@ public class WeaponController : MonoBehaviour
         {
             _currentGun.OnShoot += _crosshairUI.OnShoot;
             _crosshairUI.UpdateBaseSpread(_currentGun.GunData, false);
+            _crosshairUI.ResetSpread();
         }
 
         _isSwitching = false;
