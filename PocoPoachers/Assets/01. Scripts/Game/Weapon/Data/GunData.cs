@@ -29,6 +29,8 @@ public class GunData : ScriptableObject
     [Header("크로스헤어 반동")]
     public float crosshairVerticalKick = 30f;
     public float crosshairHorizontalKick = 10f;
+    public float crosshairShakeIntensity = 5f;
+    public float crosshairShakeDuration = 0.1f;
 
     [Header("카메라 흔들림")]
     public float shakeIntensity = 0.2f;

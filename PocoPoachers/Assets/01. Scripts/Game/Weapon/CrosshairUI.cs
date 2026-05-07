@@ -5,7 +5,7 @@ using UnityEngine.UI;
 public class CrosshairUI : MonoBehaviour
 {
     public static CrosshairUI Instance { get; private set; }
-    public Vector2 ScreenPosition => _rectTransform.position;
+    public Vector2 ScreenPosition { get; private set; }
 
     [SerializeField] private RectTransform _top, _bottom, _left, _right;
 
@@ -33,6 +33,10 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private float _kickRecovery = 150f;
 
     private Vector2 _recoilOffset;
+    private float _shakeIntensity;
+    private float _shakeDuration;
+    private float _shakeTimer;
+    private float _shakeAngle;
 
     private void Awake()
     {
@@ -58,7 +62,12 @@ public class CrosshairUI : MonoBehaviour
             _recoilOffset = Vector2.zero;
         }
 
+        ScreenPosition = crosshairPos;
         _rectTransform.position = crosshairPos;
+
+        _shakeTimer = Mathf.Max(_shakeTimer - Time.deltaTime, 0f);
+        float shakeRotation = _shakeTimer > 0f ? _shakeAngle * (_shakeTimer / _shakeDuration) : 0f;
+        _rectTransform.localEulerAngles = new Vector3(0f, 0f, shakeRotation);
 
         if (_isCollapsing)
         {
@@ -98,7 +107,8 @@ public class CrosshairUI : MonoBehaviour
         if (gunData == null) return;
         _targetBaseSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree;
         _maxSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree + _spreadIncrement * 3f;
-
+        _shakeIntensity = gunData.crosshairShakeIntensity;
+        _shakeDuration = gunData.crosshairShakeDuration;
     }
 
     public void ResetSpread()
@@ -110,6 +120,8 @@ public class CrosshairUI : MonoBehaviour
     {
         _currentSpread = Mathf.Min(_currentSpread + _spreadIncrement, _maxSpread);
         _recoilOffset += kickVector;
+        _shakeAngle = UnityEngine.Random.Range(-_shakeIntensity, _shakeIntensity);
+        _shakeTimer = _shakeDuration;
     }
 
     private void ApplySpread()
