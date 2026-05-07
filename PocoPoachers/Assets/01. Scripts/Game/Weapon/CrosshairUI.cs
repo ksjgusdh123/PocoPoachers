@@ -30,7 +30,6 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private float _kickRecovery = 150f;
 
     private Vector2 _recoilOffset;
-    private float _kickAmount;
 
     private void Awake()
     {
@@ -95,7 +94,7 @@ public class CrosshairUI : MonoBehaviour
         if (gunData == null) return;
         _targetBaseSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree;
         _maxSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree + _spreadIncrement * 3f;
-        _kickAmount = gunData.crosshairKickAmount;
+
     }
 
     public void ResetSpread()
@@ -103,10 +102,10 @@ public class CrosshairUI : MonoBehaviour
         _isCollapsing = true;
     }
 
-    public void OnShoot(Vector2 screenDir)
+    public void OnShoot(Vector2 kickVector)
     {
         _currentSpread = Mathf.Min(_currentSpread + _spreadIncrement, _maxSpread);
-        _recoilOffset += screenDir * _kickAmount;
+        _recoilOffset += kickVector;
     }
 
     private void ApplySpread()

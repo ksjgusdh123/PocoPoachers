@@ -48,7 +48,11 @@ public abstract class GunBase : MonoBehaviour
         _recoilDist = _gunData.recoilDistance;
         Vector2 muzzleScreen = Camera.main.WorldToScreenPoint(_muzzle.position);
         Vector2 muzzleTipScreen = Camera.main.WorldToScreenPoint(_muzzle.position + _muzzle.up);
-        OnShoot?.Invoke((muzzleTipScreen - muzzleScreen).normalized);
+        Vector2 forwardDir = (muzzleTipScreen - muzzleScreen).normalized;
+        Vector2 rightDir = new Vector2(forwardDir.y, -forwardDir.x);
+        Vector2 kickVector = forwardDir * _gunData.crosshairVerticalKick
+            + rightDir * UnityEngine.Random.Range(-_gunData.crosshairHorizontalKick, _gunData.crosshairHorizontalKick);
+        OnShoot?.Invoke(kickVector);
         CameraShake.Instance?.Shake(_gunData.shakeIntensity, _gunData.shakeDuration, _muzzle.up);
 
         if (_currentAmmo <= 0) StartReload();
