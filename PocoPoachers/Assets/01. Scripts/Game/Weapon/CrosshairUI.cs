@@ -47,6 +47,7 @@ public class CrosshairUI : MonoBehaviour
         Vector2 crosshairPos = new Vector2(
             Mathf.Clamp(mousePos.x + _recoilOffset.x, 0f, Screen.width),
             Mathf.Clamp(mousePos.y + _recoilOffset.y, 0f, Screen.height));
+        _recoilOffset = crosshairPos - mousePos;
 
         if (_recoilOffset.sqrMagnitude > 0.01f && Mouse.current.delta.ReadValue().sqrMagnitude > 0f)
         {
