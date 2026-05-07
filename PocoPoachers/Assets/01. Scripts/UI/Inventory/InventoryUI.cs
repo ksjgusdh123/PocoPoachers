@@ -1,5 +1,3 @@
-﻿using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,7 +9,6 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Button _sortButton;
 
     private ItemSlotUI[] _slotUIs;
-    private HashSet<ItemSlotUI> _slotSet;
     private DescriptionUI _descriptionUI;
 
     public WorldObject Box => _inventory.GetComponent<WorldObject>();
@@ -23,7 +20,6 @@ public class InventoryUI : MonoBehaviour
         if (slots.Length > 0)
         {
             _slotUIs = slots;
-            _slotSet = new HashSet<ItemSlotUI>(slots);
             for (int i = 0; i < slots.Length; i++)
                 slots[i].SetIndex(i);
         }
@@ -43,8 +39,6 @@ public class InventoryUI : MonoBehaviour
         var manager = SlotInteractionManager.GetInstance();
         manager.OnHoverEnter += _descriptionUI.ShowDescription;
         manager.OnHoverExit += _descriptionUI.HideDescription;
-        manager.OnDoubleClick += OnSlotDoubleClicked;
-        manager.OnDragEmptySlot += OnDraggedSlot;
     }
 
     private void Start()
@@ -52,14 +46,12 @@ public class InventoryUI : MonoBehaviour
       
     }
 
-    private void OnSlotDoubleClicked()
+    public void OnSlotDoubleClicked()
     {
         var targetSlot = SlotInteractionManager.GetInstance().HoveredSlot;
         if (targetSlot == null) return;
 
-        if (!_slotSet.Contains(targetSlot)) return;
-
-        var target = _inventory._interactionInventory;
+        var target = _inventory.InteractionInventory;
         if (target == null || !target.CanAddItem(targetSlot.SlotItemData)) return;
 
         int boxUid;
@@ -80,12 +72,9 @@ public class InventoryUI : MonoBehaviour
 
     }
 
-    private void OnDraggedSlot(ItemData data, int amount, int gainedSlotIndex, int removedSlotIndex)
+    public void OnDraggedSlot(ItemData data, int amount, int gainedSlotIndex, int removedSlotIndex)
     {
-        var targetSlot = SlotInteractionManager.GetInstance().HoveredSlot;
-        if (targetSlot == null || !_slotSet.Contains(targetSlot)) return;
-
-        var target = _inventory._interactionInventory;
+        var target = _inventory.InteractionInventory;
         if (target == null) return;
 
         int boxUid;
@@ -107,7 +96,7 @@ public class InventoryUI : MonoBehaviour
 
     public void OnSlotDropped()
     {
-        GameManager.GetInstance().SaveChangeInventorys(_inventory, _inventory._interactionInventory);
+        GameManager.GetInstance().SaveChangeInventorys(_inventory, _inventory.InteractionInventory);
     }
 
     public void Bind(Inventory inventory)
@@ -132,14 +121,11 @@ public class InventoryUI : MonoBehaviour
     private void GenerateSlots()
     {
         _slotUIs = new ItemSlotUI[_inventory.MaxCapacity];
-        _slotSet = new HashSet<ItemSlotUI>();
-
 
         for (int i = 0; i < _inventory.MaxCapacity; i++)
         {
             _slotUIs[i] = Instantiate(_slotPrefab, _slotParent);
             _slotUIs[i].SetIndex(i);
-            _slotSet.Add(_slotUIs[i]);
         }
 
         _descriptionUI.HideDescription(null);

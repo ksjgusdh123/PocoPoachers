@@ -87,6 +87,15 @@ public struct FlatPacket : IFlatbufferObject
       case PacketType.C_CreateRoom:
         _o.Type.Value = this.Type<C_CreateRoom>().HasValue ? this.Type<C_CreateRoom>().Value.UnPack() : null;
         break;
+      case PacketType.C_ConsumeItem:
+        _o.Type.Value = this.Type<C_ConsumeItem>().HasValue ? this.Type<C_ConsumeItem>().Value.UnPack() : null;
+        break;
+      case PacketType.S_ConsumeItemNtf:
+        _o.Type.Value = this.Type<S_ConsumeItemNtf>().HasValue ? this.Type<S_ConsumeItemNtf>().Value.UnPack() : null;
+        break;
+      case PacketType.S_WorldItemDespawnNtf:
+        _o.Type.Value = this.Type<S_WorldItemDespawnNtf>().HasValue ? this.Type<S_WorldItemDespawnNtf>().Value.UnPack() : null;
+        break;
       case PacketType.S_CreateRoom:
         _o.Type.Value = this.Type<S_CreateRoom>().HasValue ? this.Type<S_CreateRoom>().Value.UnPack() : null;
         break;

@@ -13,5 +13,6 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.C_Heartbeat , _handler.OnC_Heartbeat);
         _onRecv.Add(PacketType.C_CreateRoom, _handler.OnC_CreateRoom);
         _onRecv.Add(PacketType.C_JoinRoom  , _handler.OnC_JoinRoom);
+        _onRecv.Add(PacketType.C_ConsumeItem    , _handler.OnC_ConsumeItem);
     }
 }

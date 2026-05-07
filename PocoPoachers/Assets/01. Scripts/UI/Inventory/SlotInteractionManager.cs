@@ -21,9 +21,6 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     public int PendingAmount { get; private set; }
 
     public Inventory InteractionInventory { get; private set; }
-    public event Action OnDoubleClick;
-    public event Action<ItemData, int, int, int> OnDragEmptySlot;
-    //public event Action<ItemSlotUI, ItemSlotUI, ItemData, int> OnSlotDrop;
 
     protected override void Awake()
     {
@@ -43,16 +40,10 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
 
     }
 
-    public void InvokeDragEmptySlot(ItemData data,int amount, int gainedSlotIndex, int removedSlotIndex)
-    {
-        if (HoveredSlot == null || HoveredSlot.IsSettedItem) return;
-        OnDragEmptySlot?.Invoke(data, amount, gainedSlotIndex, removedSlotIndex);
-    }
-
     public void InvokeDoubleClick()
     {
         if (HoveredSlot == null || !HoveredSlot.IsSettedItem) return;
-        OnDoubleClick?.Invoke();
+        HoveredSlot.InventoryUI?.OnSlotDoubleClicked();
     }
 
     public void SetHovered(ItemSlotUI slot)

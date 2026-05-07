@@ -43,16 +43,16 @@ public class PlayerController : MonoBehaviour
             boxUI.SetActive(!boxUI.activeSelf);
             if (boxUI.activeSelf)
             {
-                _inventory._interactionInventory = inven;
-                inven._interactionInventory = _inventory;
+                _inventory.InteractionInventory = inven;
+                inven.InteractionInventory = _inventory;
                 boxUI.GetComponentInChildren<InventoryUI>()?.Bind(inven);
                 boxUI.GetComponent<ItemBoxRevealUI>().Open(inven);
                 _inputHander.SwitchInputActionMap(PlayerInputMapType.Inventory);
             }
             else
             {
-                _inventory._interactionInventory = null;
-                inven._interactionInventory = null;
+                _inventory.InteractionInventory = null;
+                inven.InteractionInventory = null;
                 _inputHander.SwitchInputActionMap(PlayerInputMapType.Game);
                 UIManager.GetInstance().ChangeMouseCursor(true);
             }

@@ -13,7 +13,7 @@ public class Inventory : MonoBehaviour
 
     public event Action ChangeInventory;
 
-    public Inventory _interactionInventory {  get; set; }
+    public Inventory InteractionInventory { get; set; }
     public IReadOnlyList<ItemSlot> Slots => _slots;
     public int MaxCapacity => _maxCapacity;
     public int CurrentCapacity => _currentCapacity;
@@ -25,11 +25,9 @@ public class Inventory : MonoBehaviour
     {
         _currentCapacity = _initialCapacity;
 
-        // 최대 용량만큼 슬롯 미리 생성
         for (int i = 0; i < _maxCapacity; i++)
         {
             ItemSlot slot = isPlayer ? new ItemSlot() : new BoxItemSlot();
-            slot.OnCleared += () => ChangeInventory?.Invoke();
             _slots.Add(slot);
         }
     }
@@ -45,11 +43,7 @@ public class Inventory : MonoBehaviour
             if (!_slots[i].IsEmpty && _slots[i].ItemData == itemData)
             {
                 remaining = _slots[i].AddAmount(remaining);
-                if (remaining <= 0)
-                {
-                    ChangeInventory?.Invoke();
-                    return true;
-                }
+                if (remaining <= 0) return true;
             }
         }
 
@@ -64,7 +58,6 @@ public class Inventory : MonoBehaviour
             }
         }
 
-        ChangeInventory?.Invoke();
         return remaining <= 0;
     }
 
@@ -78,12 +71,10 @@ public class Inventory : MonoBehaviour
             if (!_slots[i].IsEmpty && _slots[i].ItemData.id == itemData.id)
             {
                 remaining -= _slots[i].RemoveAmount(remaining);
-                if (remaining <= 0)
-                    break;
+                if (remaining <= 0) break;
             }
         }
 
-        ChangeInventory?.Invoke();
         return amount - remaining;
     }
 
@@ -95,7 +86,6 @@ public class Inventory : MonoBehaviour
 
         int toAdd = Mathf.Min(amount, itemData.MaxStack);
         _slots[slotIndex].Set(itemData, toAdd);
-        ChangeInventory?.Invoke();
         return true;
     }
 
@@ -105,9 +95,7 @@ public class Inventory : MonoBehaviour
         if (slotIndex < 0 || slotIndex >= _currentCapacity) return 0;
         if (_slots[slotIndex].IsEmpty || _slots[slotIndex].ItemData.id != itemData.id) return 0;
 
-        int removed = _slots[slotIndex].RemoveAmount(amount);
-        ChangeInventory?.Invoke();
-        return removed;
+        return _slots[slotIndex].RemoveAmount(amount);
     }
 
     // 현재 용량 확장 (최대 용량 초과 불가)
@@ -148,7 +136,6 @@ public class Inventory : MonoBehaviour
     // 아이템 타입 → 이름 순으로 정렬
     public void Sort()
     {
-        // 빈 슬롯은 뒤로, 아이템 타입 → 이름 순 정렬
         _slots.Sort(0, _currentCapacity, Comparer<ItemSlot>.Create((a, b) =>
         {
             if (a.IsEmpty && b.IsEmpty) return 0;

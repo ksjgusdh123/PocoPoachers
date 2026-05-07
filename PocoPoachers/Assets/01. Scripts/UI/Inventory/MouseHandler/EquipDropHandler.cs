@@ -1,63 +1,25 @@
-using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
-// 장착 슬롯 공통 기반 클래스 - 상속받아 슬롯별 장착 로직 구현
-public class EquipDropHandler : BaseDropHandler
+public class EquipDropHandler : ItemHolderDropHandler
 {
-    [SerializeField] ItemType _itemType;
-    [SerializeField] private Image _icon;
-    [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private GameObject _itemVisual;
     [SerializeField] private int slotNumber;
-    public ItemType ItemType => _itemType;
-    public bool IsSetted => _isSetted;
 
-    protected ItemData _droppedItemData;
-    protected int _droppedAmount;
-    protected bool _isSetted;
-
-    protected override bool HandleDrop(SlotInteractionManager manager)
+    protected override bool OnItemDropped(ItemData data, int amount)
     {
-        ItemData prev = _droppedItemData;
-        int prevAmount = _droppedAmount;
-        if (!OnItemDropped(manager.DraggedSlot.SlotItemData, manager.DragAmount))
-            return false;
-        if (prev == null)
-            manager.DraggedSlot.ClearSlot();
-        else
-            manager.DraggedSlot.EquipItem(prev, prevAmount);
-        return true;
-    }
-
-    protected virtual bool OnItemDropped(ItemData data, int amount)
-    {
-        if (data.ItemType != _itemType) return false;
+        if (!base.OnItemDropped(data, amount)) return false;
 
         // temp
         FindAnyObjectByType<WeaponController>().EquipWeapon(data, slotNumber);
-
-        _droppedItemData = data;
-        _droppedAmount = amount;
-        _nameText.text = data.ItemName;
-        _icon.sprite = data.Icon;
-        _icon.gameObject.SetActive(true);
-        _isSetted = true;
 
         if (_itemVisual != null)
             _itemVisual.SetActive(true);
         return true;
     }
 
-    // 장착 해제 시 호출
-    public virtual void Unequip()
+    public override void Unequip()
     {
-        _droppedItemData = null;
-        _droppedAmount = 0;
-        _nameText.text = "";
-        _icon.sprite = null;
-        _icon.gameObject.SetActive(false);
-        _isSetted = false;
+        base.Unequip();
         if (_itemVisual != null)
             _itemVisual.SetActive(false);
     }
