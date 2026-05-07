@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 public class CrosshairUI : MonoBehaviour
 {
+    public static CrosshairUI Instance { get; private set; }
+    public Vector2 ScreenPosition => _rectTransform.position;
+
     [SerializeField] private RectTransform _top, _bottom, _left, _right;
 
     [Header("에임 점")]
@@ -33,6 +36,7 @@ public class CrosshairUI : MonoBehaviour
 
     private void Awake()
     {
+        Instance = this;
         _rectTransform = GetComponent<RectTransform>();
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Confined;
