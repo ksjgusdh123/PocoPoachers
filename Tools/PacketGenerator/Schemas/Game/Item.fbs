@@ -67,14 +67,14 @@ table H_ItemExchangeResult
     box_slot_index:     int;
 }
 
-table C_ConsumeItem
+table G_ConsumeItem
 {
     item_id: int;
     amount: int;
     inventory_index: int;
 }
 
-table S_ConsumeItemNtf
+table H_ConsumeItemResult
 {
     is_success: bool;
     item_id: int;

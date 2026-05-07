@@ -25,8 +25,8 @@ public enum PacketType : byte
   H_InventoryUpdate = 18,
   G_ItemExchange = 19,
   H_ItemExchangeResult = 20,
-  C_ConsumeItem = 21,
-  S_ConsumeItemNtf = 22,
+  G_ConsumeItem = 21,
+  H_ConsumeItemResult = 22,
   S_PeerJoined = 23,
 };
 
@@ -80,10 +80,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_ItemExchange(G_ItemExchangeT _g_itemexchange) { return new PacketTypeUnion{ Type = PacketType.G_ItemExchange, Value = _g_itemexchange }; }
   public H_ItemExchangeResultT AsH_ItemExchangeResult() { return this.As<H_ItemExchangeResultT>(); }
   public static PacketTypeUnion FromH_ItemExchangeResult(H_ItemExchangeResultT _h_itemexchangeresult) { return new PacketTypeUnion{ Type = PacketType.H_ItemExchangeResult, Value = _h_itemexchangeresult }; }
-  public C_ConsumeItemT AsC_ConsumeItem() { return this.As<C_ConsumeItemT>(); }
-  public static PacketTypeUnion FromC_ConsumeItem(C_ConsumeItemT _c_consumeitem) { return new PacketTypeUnion{ Type = PacketType.C_ConsumeItem, Value = _c_consumeitem }; }
-  public S_ConsumeItemNtfT AsS_ConsumeItemNtf() { return this.As<S_ConsumeItemNtfT>(); }
-  public static PacketTypeUnion FromS_ConsumeItemNtf(S_ConsumeItemNtfT _s_consumeitemntf) { return new PacketTypeUnion{ Type = PacketType.S_ConsumeItemNtf, Value = _s_consumeitemntf }; }
+  public G_ConsumeItemT AsG_ConsumeItem() { return this.As<G_ConsumeItemT>(); }
+  public static PacketTypeUnion FromG_ConsumeItem(G_ConsumeItemT _g_consumeitem) { return new PacketTypeUnion{ Type = PacketType.G_ConsumeItem, Value = _g_consumeitem }; }
+  public H_ConsumeItemResultT AsH_ConsumeItemResult() { return this.As<H_ConsumeItemResultT>(); }
+  public static PacketTypeUnion FromH_ConsumeItemResult(H_ConsumeItemResultT _h_consumeitemresult) { return new PacketTypeUnion{ Type = PacketType.H_ConsumeItemResult, Value = _h_consumeitemresult }; }
   public S_PeerJoinedT AsS_PeerJoined() { return this.As<S_PeerJoinedT>(); }
   public static PacketTypeUnion FromS_PeerJoined(S_PeerJoinedT _s_peerjoined) { return new PacketTypeUnion{ Type = PacketType.S_PeerJoined, Value = _s_peerjoined }; }
 
@@ -110,8 +110,8 @@ public class PacketTypeUnion {
       case PacketType.H_InventoryUpdate: return H_InventoryUpdate.Pack(builder, _o.AsH_InventoryUpdate()).Value;
       case PacketType.G_ItemExchange: return G_ItemExchange.Pack(builder, _o.AsG_ItemExchange()).Value;
       case PacketType.H_ItemExchangeResult: return H_ItemExchangeResult.Pack(builder, _o.AsH_ItemExchangeResult()).Value;
-      case PacketType.C_ConsumeItem: return C_ConsumeItem.Pack(builder, _o.AsC_ConsumeItem()).Value;
-      case PacketType.S_ConsumeItemNtf: return S_ConsumeItemNtf.Pack(builder, _o.AsS_ConsumeItemNtf()).Value;
+      case PacketType.G_ConsumeItem: return G_ConsumeItem.Pack(builder, _o.AsG_ConsumeItem()).Value;
+      case PacketType.H_ConsumeItemResult: return H_ConsumeItemResult.Pack(builder, _o.AsH_ConsumeItemResult()).Value;
       case PacketType.S_PeerJoined: return S_PeerJoined.Pack(builder, _o.AsS_PeerJoined()).Value;
     }
   }
@@ -186,11 +186,11 @@ static public class PacketTypeVerify
       case PacketType.H_ItemExchangeResult:
         result = H_ItemExchangeResultVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.C_ConsumeItem:
-        result = C_ConsumeItemVerify.Verify(verifier, tablePos);
+      case PacketType.G_ConsumeItem:
+        result = G_ConsumeItemVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_ConsumeItemNtf:
-        result = S_ConsumeItemNtfVerify.Verify(verifier, tablePos);
+      case PacketType.H_ConsumeItemResult:
+        result = H_ConsumeItemResultVerify.Verify(verifier, tablePos);
         break;
       case PacketType.S_PeerJoined:
         result = S_PeerJoinedVerify.Verify(verifier, tablePos);

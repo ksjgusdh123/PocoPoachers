@@ -21,7 +21,8 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.H_InventoryUpdate   , PacketHandlers.OnH_InventoryUpdate);
         _onRecv.Add(PacketType.G_ItemExchange      , PacketHandlers.OnG_ItemExchange);
         _onRecv.Add(PacketType.H_ItemExchangeResult, PacketHandlers.OnH_ItemExchangeResult);
-        _onRecv.Add(PacketType.S_ConsumeItemNtf    , PacketHandlers.OnS_ConsumeItemNtf);
+        _onRecv.Add(PacketType.G_ConsumeItem       , PacketHandlers.OnG_ConsumeItem);
+        _onRecv.Add(PacketType.H_ConsumeItemResult , PacketHandlers.OnH_ConsumeItemResult);
         _onRecv.Add(PacketType.S_PeerJoined        , PacketHandlers.OnS_PeerJoined);
     }
 }

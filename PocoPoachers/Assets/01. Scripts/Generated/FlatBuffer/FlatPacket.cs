@@ -39,8 +39,8 @@ public struct FlatPacket : IFlatbufferObject
   public H_InventoryUpdate TypeAsH_InventoryUpdate() { return Type<H_InventoryUpdate>().Value; }
   public G_ItemExchange TypeAsG_ItemExchange() { return Type<G_ItemExchange>().Value; }
   public H_ItemExchangeResult TypeAsH_ItemExchangeResult() { return Type<H_ItemExchangeResult>().Value; }
-  public C_ConsumeItem TypeAsC_ConsumeItem() { return Type<C_ConsumeItem>().Value; }
-  public S_ConsumeItemNtf TypeAsS_ConsumeItemNtf() { return Type<S_ConsumeItemNtf>().Value; }
+  public G_ConsumeItem TypeAsG_ConsumeItem() { return Type<G_ConsumeItem>().Value; }
+  public H_ConsumeItemResult TypeAsH_ConsumeItemResult() { return Type<H_ConsumeItemResult>().Value; }
   public S_PeerJoined TypeAsS_PeerJoined() { return Type<S_PeerJoined>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
@@ -131,11 +131,11 @@ public struct FlatPacket : IFlatbufferObject
       case PacketType.H_ItemExchangeResult:
         _o.Type.Value = this.Type<H_ItemExchangeResult>().HasValue ? this.Type<H_ItemExchangeResult>().Value.UnPack() : null;
         break;
-      case PacketType.C_ConsumeItem:
-        _o.Type.Value = this.Type<C_ConsumeItem>().HasValue ? this.Type<C_ConsumeItem>().Value.UnPack() : null;
+      case PacketType.G_ConsumeItem:
+        _o.Type.Value = this.Type<G_ConsumeItem>().HasValue ? this.Type<G_ConsumeItem>().Value.UnPack() : null;
         break;
-      case PacketType.S_ConsumeItemNtf:
-        _o.Type.Value = this.Type<S_ConsumeItemNtf>().HasValue ? this.Type<S_ConsumeItemNtf>().Value.UnPack() : null;
+      case PacketType.H_ConsumeItemResult:
+        _o.Type.Value = this.Type<H_ConsumeItemResult>().HasValue ? this.Type<H_ConsumeItemResult>().Value.UnPack() : null;
         break;
       case PacketType.S_PeerJoined:
         _o.Type.Value = this.Type<S_PeerJoined>().HasValue ? this.Type<S_PeerJoined>().Value.UnPack() : null;

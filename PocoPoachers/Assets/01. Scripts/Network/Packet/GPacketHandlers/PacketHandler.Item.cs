@@ -97,4 +97,28 @@ public static partial class PacketHandlers
             BoxSlotIndex      = pkt.BoxSlotIndex,
         }, H_ItemExchangeResult.Pack, PacketType.H_ItemExchangeResult);
     }
+
+    public static void OnG_ConsumeItem(FlatPacket root)
+    {
+        //var pkt = root.TypeAsC_ConsumeItem();
+        //if (session.Player is not { } player)
+        //    return;
+
+        //int itemTypeId = pkt.ItemId;
+        //int amount = pkt.Amount;
+        //int slotIndex = pkt.InventoryIndex;
+
+        //if (!session.Player.Inventory.RemoveItem(itemTypeId, amount))
+        //{
+        //    LOG_W($"아이템 사용 실패(ID : {itemTypeId}, 수량 : {amount}");
+        //    return;
+        //}
+        //PacketBuilder.Send(session, new S_ConsumeItemNtfT
+        //{
+        //    Amount = amount,
+        //    InventoryIndex = slotIndex,
+        //    IsSuccess = true,
+        //    ItemId = itemTypeId,
+        //}, S_ConsumeItemNtf.Pack, PacketType.S_ConsumeItemNtf);
+    }
 }

@@ -101,11 +101,9 @@ public static partial class PacketHandlers
         }
     }
 
-    public static void OnS_ConsumeItemNtf(FlatPacket root)
+    public static void OnH_ConsumeItemResult(FlatPacket root)
     {
-        //var pkt = root.TypeAsS_ConsumeItemNtf();
-
-        Debug.Log("아이템 사용 확인");
+        // TODO
     }
 
     private static Inventory FindLocalInventory()

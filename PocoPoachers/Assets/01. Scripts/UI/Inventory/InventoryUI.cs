@@ -54,22 +54,14 @@ public class InventoryUI : MonoBehaviour
         var target = _inventory.InteractionInventory;
         if (target == null || !target.CanAddItem(targetSlot.SlotItemData)) return;
 
-        int boxUid;
-        bool isPlayer;
-        if (_inventory.TryGetComponent<WorldObject>(out var worldObject))
-        {
-            boxUid = worldObject.Id;
-            isPlayer = false;
-        }
-        else
-        {
-            boxUid = target.GetComponent<WorldObject>().Id;
-            isPlayer = true;
-        }
-        int itemTypeId = targetSlot.SlotItemData.Id;
+        ItemData itemData = targetSlot.SlotItemData;
+        int amount = targetSlot.SavedAmountItem;
+
+        target.AddItem(itemData, amount);
+        _inventory.RemoveItemAtSlot(targetSlot.SlotIndex, itemData, amount);
+
         GameManager.GetInstance().SaveChangeInventorys(_inventory, target);
         //TODO: Send Pkt
-
     }
 
     public void OnDraggedSlot(ItemData data, int amount, int gainedSlotIndex, int removedSlotIndex)
