@@ -42,10 +42,19 @@ public class CrosshairUI : MonoBehaviour
     private void Update()
     {
         _recoilOffset = Vector2.MoveTowards(_recoilOffset, Vector2.zero, _kickRecovery * Time.deltaTime);
-        Vector2 rawPos = (Vector2)Mouse.current.position.ReadValue() + _recoilOffset;
-        _rectTransform.position = new Vector2(
-            Mathf.Clamp(rawPos.x, 0f, Screen.width),
-            Mathf.Clamp(rawPos.y, 0f, Screen.height));
+
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+        Vector2 crosshairPos = new Vector2(
+            Mathf.Clamp(mousePos.x + _recoilOffset.x, 0f, Screen.width),
+            Mathf.Clamp(mousePos.y + _recoilOffset.y, 0f, Screen.height));
+
+        if (_recoilOffset.sqrMagnitude > 0.01f && Mouse.current.delta.ReadValue().sqrMagnitude > 0f)
+        {
+            Mouse.current.WarpCursorPosition(crosshairPos);
+            _recoilOffset = Vector2.zero;
+        }
+
+        _rectTransform.position = crosshairPos;
 
         if (_isCollapsing)
         {
