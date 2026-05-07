@@ -4,6 +4,9 @@ using UnityEngine.UI;
 
 public class CrosshairUI : MonoBehaviour
 {
+    public static CrosshairUI Instance { get; private set; }
+    public Vector2 ScreenPosition { get; private set; }
+
     [SerializeField] private RectTransform _top, _bottom, _left, _right;
 
     [Header("에임 점")]
@@ -26,8 +29,20 @@ public class CrosshairUI : MonoBehaviour
     private bool _isCollapsing;
     private bool _isSwitchExpanding;
 
+    [Header("크로스헤어 반동")]
+    [SerializeField] private float _kickSpeed = 300f;
+    [SerializeField] private float _kickRecovery = 150f;
+
+    private Vector2 _recoilTarget;
+    private Vector2 _recoilOffset;
+    private float _shakeIntensity;
+    private float _shakeDuration;
+    private float _shakeTimer;
+    private float _shakeAngle;
+
     private void Awake()
     {
+        Instance = this;
         _rectTransform = GetComponent<RectTransform>();
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Confined;
@@ -35,7 +50,34 @@ public class CrosshairUI : MonoBehaviour
 
     private void Update()
     {
-        _rectTransform.position = Mouse.current.position.ReadValue();
+        _recoilTarget = Vector2.MoveTowards(_recoilTarget, Vector2.zero, _kickRecovery * Time.deltaTime);
+        _recoilOffset = Vector2.MoveTowards(_recoilOffset, _recoilTarget, _kickSpeed * Time.deltaTime);
+
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+
+        Vector2 targetPos = new Vector2(
+            Mathf.Clamp(mousePos.x + _recoilTarget.x, 0f, Screen.width),
+            Mathf.Clamp(mousePos.y + _recoilTarget.y, 0f, Screen.height));
+        _recoilTarget = targetPos - mousePos;
+
+        Vector2 crosshairPos = new Vector2(
+            Mathf.Clamp(mousePos.x + _recoilOffset.x, 0f, Screen.width),
+            Mathf.Clamp(mousePos.y + _recoilOffset.y, 0f, Screen.height));
+        _recoilOffset = crosshairPos - mousePos;
+
+        if (_recoilOffset.sqrMagnitude > 0.01f && Mouse.current.delta.ReadValue().sqrMagnitude > 0f)
+        {
+            Mouse.current.WarpCursorPosition(crosshairPos);
+            _recoilOffset = Vector2.zero;
+            _recoilTarget = Vector2.zero;
+        }
+
+        ScreenPosition = crosshairPos;
+        _rectTransform.position = crosshairPos;
+
+        _shakeTimer = Mathf.Max(_shakeTimer - Time.deltaTime, 0f);
+        float shakeRotation = _shakeTimer > 0f ? _shakeAngle * (_shakeTimer / _shakeDuration) : 0f;
+        _rectTransform.localEulerAngles = new Vector3(0f, 0f, shakeRotation);
 
         if (_isCollapsing)
         {
@@ -75,6 +117,8 @@ public class CrosshairUI : MonoBehaviour
         if (gunData == null) return;
         _targetBaseSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree;
         _maxSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree + _spreadIncrement * 3f;
+        _shakeIntensity = gunData.crosshairShakeIntensity;
+        _shakeDuration = gunData.crosshairShakeDuration;
     }
 
     public void ResetSpread()
@@ -82,9 +126,12 @@ public class CrosshairUI : MonoBehaviour
         _isCollapsing = true;
     }
 
-    public void OnShoot()
+    public void OnShoot(Vector2 kickVector)
     {
         _currentSpread = Mathf.Min(_currentSpread + _spreadIncrement, _maxSpread);
+        _recoilTarget += kickVector;
+        _shakeAngle = UnityEngine.Random.Range(-_shakeIntensity, _shakeIntensity);
+        _shakeTimer = _shakeDuration;
     }
 
     private void ApplySpread()

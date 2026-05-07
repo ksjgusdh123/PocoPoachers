@@ -30,7 +30,10 @@ public class PlayerRotation : MonoBehaviour
 
     private void RotateTowardMouse()
     {
-        Ray ray = Camera.main.ScreenPointToRay(Mouse.current.position.ReadValue());
+        Vector2 screenPos = CrosshairUI.Instance != null
+            ? CrosshairUI.Instance.ScreenPosition
+            : Mouse.current.position.ReadValue();
+        Ray ray = Camera.main.ScreenPointToRay(screenPos);
 
         if (!GroundPlane.Raycast(ray, out float distance)) return;
 
