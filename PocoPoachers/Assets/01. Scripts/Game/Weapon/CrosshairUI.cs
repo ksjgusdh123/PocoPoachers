@@ -26,6 +26,10 @@ public class CrosshairUI : MonoBehaviour
     private bool _isCollapsing;
     private bool _isSwitchExpanding;
 
+    private Vector2 _recoilOffset;
+    private float _kickAmount;
+    private float _kickRecovery;
+
     private void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
@@ -35,7 +39,11 @@ public class CrosshairUI : MonoBehaviour
 
     private void Update()
     {
-        _rectTransform.position = Mouse.current.position.ReadValue();
+        _recoilOffset = Vector2.MoveTowards(_recoilOffset, Vector2.zero, _kickRecovery * Time.deltaTime);
+        Vector2 rawPos = (Vector2)Mouse.current.position.ReadValue() + _recoilOffset;
+        _rectTransform.position = new Vector2(
+            Mathf.Clamp(rawPos.x, 0f, Screen.width),
+            Mathf.Clamp(rawPos.y, 0f, Screen.height));
 
         if (_isCollapsing)
         {
@@ -75,6 +83,8 @@ public class CrosshairUI : MonoBehaviour
         if (gunData == null) return;
         _targetBaseSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree;
         _maxSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree + _spreadIncrement * 3f;
+        _kickAmount = gunData.crosshairKickAmount;
+        _kickRecovery = gunData.crosshairKickRecovery;
     }
 
     public void ResetSpread()
@@ -82,9 +92,10 @@ public class CrosshairUI : MonoBehaviour
         _isCollapsing = true;
     }
 
-    public void OnShoot()
+    public void OnShoot(Vector2 screenDir)
     {
         _currentSpread = Mathf.Min(_currentSpread + _spreadIncrement, _maxSpread);
+        _recoilOffset += screenDir * _kickAmount;
     }
 
     private void ApplySpread()

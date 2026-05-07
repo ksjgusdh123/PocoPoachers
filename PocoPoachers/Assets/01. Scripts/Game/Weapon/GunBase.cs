@@ -11,7 +11,7 @@ public abstract class GunBase : MonoBehaviour
     public int CurrentAmmo => _currentAmmo;
     public bool IsReloading => _isReloading;
 
-    public event Action OnShoot;
+    public event Action<Vector2> OnShoot;
 
     private int _currentAmmo;
     private bool _isReloading;
@@ -46,7 +46,9 @@ public abstract class GunBase : MonoBehaviour
         _currentAmmo--;
         _nextFireTime = Time.time + 1f / _gunData.fireRate;
         _recoilDist = _gunData.recoilDistance;
-        OnShoot?.Invoke();
+        Vector2 muzzleScreen = Camera.main.WorldToScreenPoint(_muzzle.position);
+        Vector2 muzzleTipScreen = Camera.main.WorldToScreenPoint(_muzzle.position + _muzzle.up);
+        OnShoot?.Invoke((muzzleTipScreen - muzzleScreen).normalized);
         CameraShake.Instance?.Shake(_gunData.shakeIntensity, _gunData.shakeDuration, _muzzle.up);
 
         if (_currentAmmo <= 0) StartReload();

@@ -26,6 +26,10 @@ public class GunData : ScriptableObject
     public float recoilDistance = 0.3f;
     public float recoilReturnSpeed = 1f;
 
+    [Header("크로스헤어 반동")]
+    public float crosshairKickAmount = 30f;
+    public float crosshairKickRecovery = 150f;
+
     [Header("카메라 흔들림")]
     public float shakeIntensity = 0.2f;
     public float shakeDuration = 0.1f;
