@@ -30,8 +30,10 @@ public class CrosshairUI : MonoBehaviour
     private bool _isSwitchExpanding;
 
     [Header("크로스헤어 반동")]
+    [SerializeField] private float _kickSpeed = 300f;
     [SerializeField] private float _kickRecovery = 150f;
 
+    private Vector2 _recoilTarget;
     private Vector2 _recoilOffset;
     private float _shakeIntensity;
     private float _shakeDuration;
@@ -48,9 +50,16 @@ public class CrosshairUI : MonoBehaviour
 
     private void Update()
     {
-        _recoilOffset = Vector2.MoveTowards(_recoilOffset, Vector2.zero, _kickRecovery * Time.deltaTime);
+        _recoilTarget = Vector2.MoveTowards(_recoilTarget, Vector2.zero, _kickRecovery * Time.deltaTime);
+        _recoilOffset = Vector2.MoveTowards(_recoilOffset, _recoilTarget, _kickSpeed * Time.deltaTime);
 
         Vector2 mousePos = Mouse.current.position.ReadValue();
+
+        Vector2 targetPos = new Vector2(
+            Mathf.Clamp(mousePos.x + _recoilTarget.x, 0f, Screen.width),
+            Mathf.Clamp(mousePos.y + _recoilTarget.y, 0f, Screen.height));
+        _recoilTarget = targetPos - mousePos;
+
         Vector2 crosshairPos = new Vector2(
             Mathf.Clamp(mousePos.x + _recoilOffset.x, 0f, Screen.width),
             Mathf.Clamp(mousePos.y + _recoilOffset.y, 0f, Screen.height));
@@ -60,6 +69,7 @@ public class CrosshairUI : MonoBehaviour
         {
             Mouse.current.WarpCursorPosition(crosshairPos);
             _recoilOffset = Vector2.zero;
+            _recoilTarget = Vector2.zero;
         }
 
         ScreenPosition = crosshairPos;
@@ -119,7 +129,7 @@ public class CrosshairUI : MonoBehaviour
     public void OnShoot(Vector2 kickVector)
     {
         _currentSpread = Mathf.Min(_currentSpread + _spreadIncrement, _maxSpread);
-        _recoilOffset += kickVector;
+        _recoilTarget += kickVector;
         _shakeAngle = UnityEngine.Random.Range(-_shakeIntensity, _shakeIntensity);
         _shakeTimer = _shakeDuration;
     }
