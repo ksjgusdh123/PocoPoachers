@@ -16,6 +16,14 @@ public static class PacketBuilder
         session.Send(Build(_builder, type, innerOffset.Value));
     }
 
+    public static ArraySegment<byte> BuildSegment<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+        where TTable : struct where TObj : class
+    {
+        _builder.Clear();
+        var innerOffset = packFunc(_builder, data);
+        return Build(_builder, type, innerOffset.Value);
+    }
+
     static ArraySegment<byte> Build(FlatBufferBuilder builder, PacketType type, int innerOffset)
     {
         Offset<FlatPacket> rootOffset = FlatPacket.CreateFlatPacket(builder, type, innerOffset);

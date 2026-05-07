@@ -1,0 +1,68 @@
+﻿include "Common.fbs";
+
+table InventoryItem
+{
+    item_id: int;
+    amount:  int;
+}
+
+table H_ItemSpawn
+{
+    uid:      int;
+    type_id:  int;
+    pos:      Vec3;
+    rotation: float;
+    item_ids: [int];
+}
+
+table H_ItemDespawn
+{
+    uid: int;
+}
+
+table G_ItemGain
+{
+    box_uid:      int;
+    item_type_id: int;
+    amount:       int;
+    slot_index:   int;
+}
+
+table H_ItemGainResult
+{
+    success:            bool;
+    box_uid:            int;
+    item_type_id:       int;
+    amount:             int;
+    slot_index:         int;
+    removed_slot_index: int;
+}
+
+table H_InventoryUpdate
+{
+    player_id: int;
+    items:     [InventoryItem];
+}
+
+table G_ItemExchange
+{
+    box_uid:            int;
+    player_item_id:     int;
+    player_item_amount: int;
+    player_slot_index:  int;
+    box_item_id:        int;
+    box_item_amount:    int;
+    box_slot_index:     int;
+}
+
+table H_ItemExchangeResult
+{
+    success:            bool;
+    box_uid:            int;
+    player_item_id:     int;
+    player_item_amount: int;
+    player_slot_index:  int;
+    box_item_id:        int;
+    box_item_amount:    int;
+    box_slot_index:     int;
+}

@@ -1,0 +1,17 @@
+include "Common.fbs";
+
+table G_Move
+{
+    player_id: int;
+    pos:       Vec3;
+    rotation:  float;
+    move_type: byte;
+}
+
+table H_Move
+{
+    player_id: int;
+    pos:       Vec3;
+    rotation:  float;
+    move_type: byte;
+}

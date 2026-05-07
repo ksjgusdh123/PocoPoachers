@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Text;
 
 const string ToolName = "PacketGenerator";
@@ -8,32 +8,32 @@ return Run(args);
 static int Run(string[] args)
 {
     string schemasDir = Path.GetFullPath("Schemas");
-    string flatcExe   = Path.GetFullPath("flatc.exe");
-    string serverOut  = Path.GetFullPath(Path.Combine("..", "..", "Server", "Server", "Generated", "FlatBuffer"));
-    string clientOut  = Path.GetFullPath(Path.Combine("..", "..", "PocoPoachers", "Assets", "01. Scripts", "Generated", "FlatBuffer"));
+    string flatcExe = Path.GetFullPath("flatc.exe");
+    string serverOut = Path.GetFullPath(Path.Combine("..", "..", "Server", "Server", "Generated", "FlatBuffer"));
+    string clientOut = Path.GetFullPath(Path.Combine("..", "..", "PocoPoachers", "Assets", "01. Scripts", "Generated", "FlatBuffer"));
 
     for (int i = 0; i < args.Length; i++)
     {
         string a = args[i];
-        if      (a == "--schemas") { if (!TryReadValue(args, ref i, out var v)) return 1; schemasDir = v; }
-        else if (a == "--server")  { if (!TryReadValue(args, ref i, out var v)) return 1; serverOut  = v; }
-        else if (a == "--client")  { if (!TryReadValue(args, ref i, out var v)) return 1; clientOut  = v; }
+        if (a == "--schemas") { if (!TryReadValue(args, ref i, out var v)) return 1; schemasDir = v; }
+        else if (a == "--server") { if (!TryReadValue(args, ref i, out var v)) return 1; serverOut = v; }
+        else if (a == "--client") { if (!TryReadValue(args, ref i, out var v)) return 1; clientOut = v; }
         else { LogError($"Unknown argument: {a}"); return 1; }
     }
 
-    if (!File.Exists(flatcExe))        { LogError($"flatc.exe not found: {flatcExe}"); return 1; }
+    if (!File.Exists(flatcExe)) { LogError($"flatc.exe not found: {flatcExe}"); return 1; }
     if (!Directory.Exists(schemasDir)) { LogError($"schemas directory not found: {schemasDir}"); return 1; }
 
     Directory.CreateDirectory(serverOut);
     Directory.CreateDirectory(clientOut);
 
-    var fbsFiles = Directory.GetFiles(schemasDir, "*.fbs");
+    var fbsFiles = Directory.GetFiles(schemasDir, "*.fbs", SearchOption.AllDirectories);
     if (fbsFiles.Length == 0) { LogError("No .fbs files found."); return 1; }
 
     LogPath("schemas", schemasDir);
-    LogPath("flatc",   flatcExe);
-    LogPath("server",  serverOut);
-    LogPath("client",  clientOut);
+    LogPath("flatc", flatcExe);
+    LogPath("server", serverOut);
+    LogPath("client", clientOut);
     Console.WriteLine();
 
     foreach (var fbs in fbsFiles)
@@ -51,6 +51,7 @@ static int Run(string[] args)
     return 0;
 }
 
+// C_ → 서버 등록, S_/G_/H_ → 클라이언트 등록
 static bool ParseMainFbs(string schemasDir, out List<string> cPackets, out List<string> sPackets)
 {
     cPackets = new List<string>();
@@ -65,9 +66,9 @@ static bool ParseMainFbs(string schemasDir, out List<string> cPackets, out List<
         if (t.StartsWith("union PacketType")) { inUnion = true; continue; }
         if (!inUnion) continue;
         if (t == "}") break;
-        string name = t.TrimEnd(',');
-        if      (name.StartsWith("C_")) cPackets.Add(name);
-        else if (name.StartsWith("S_")) sPackets.Add(name);
+        string name = t.Split("//")[0].Trim().TrimEnd(',');
+        if (name.StartsWith("C_")) cPackets.Add(name);
+        else if (name.StartsWith("S_") || name.StartsWith("G_") || name.StartsWith("H_")) sPackets.Add(name);
     }
     return true;
 }
@@ -136,46 +137,77 @@ static string BuildClientPacketManager(List<string> sPackets)
 
 static int GenerateHandlerStubs(string schemasDir, string serverOut, string clientOut)
 {
+    // 1. 디렉터리 경로 설정
     string serverHandlerDir = Path.GetFullPath(Path.Combine(serverOut, "..", "..", "Net", "Packet", "PacketHandler"));
-    string clientHandlerDir = Path.GetFullPath(Path.Combine(clientOut, "..", "..", "Network", "Packet", "PacketHandlers"));
 
+    // 클라이언트용 세분화된 경로
+    string clientHandlerSDir = Path.GetFullPath(Path.Combine(clientOut, "..", "..", "Network", "Packet", "SPacketHandlers"));
+    string clientHandlerGDir = Path.GetFullPath(Path.Combine(clientOut, "..", "..", "Network", "Packet", "GPacketHandlers"));
+    string clientHandlerHDir = Path.GetFullPath(Path.Combine(clientOut, "..", "..", "Network", "Packet", "HPacketHandlers"));
+
+    // 2. 디렉터리 생성
     Directory.CreateDirectory(serverHandlerDir);
-    Directory.CreateDirectory(clientHandlerDir);
+    Directory.CreateDirectory(clientHandlerSDir);
+    Directory.CreateDirectory(clientHandlerGDir);
+    Directory.CreateDirectory(clientHandlerHDir);
 
+    // 3. 기존 구현된 메서드 수집
     var existingServer = CollectImplementedMethods(serverHandlerDir, "OnC_");
-    var existingClient = CollectImplementedMethods(clientHandlerDir, "OnS_");
 
-    // 스키마 파일별로 패킷 그룹화 (Main, Common 제외)
+    // 클라이언트는 S/G/H 디렉터리 모두에서 수집
+    var existingClient = new HashSet<string>();
+    existingClient.UnionWith(CollectImplementedMethods(clientHandlerSDir, "OnS_"));
+    existingClient.UnionWith(CollectImplementedMethods(clientHandlerGDir, "OnG_"));
+    existingClient.UnionWith(CollectImplementedMethods(clientHandlerHDir, "OnH_"));
+
     var skip = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "Main.fbs", "Common.fbs" };
-    foreach (var fbsPath in Directory.GetFiles(schemasDir, "*.fbs"))
+
+    foreach (var fbsPath in Directory.GetFiles(schemasDir, "*.fbs", SearchOption.AllDirectories))
     {
         if (skip.Contains(Path.GetFileName(fbsPath))) continue;
 
-        string schema    = Path.GetFileNameWithoutExtension(fbsPath);
+        string schema = Path.GetFileNameWithoutExtension(fbsPath);
         var cPackets = new List<string>();
         var sPackets = new List<string>();
+        var gPackets = new List<string>();
+        var hPackets = new List<string>();
 
+        // FBS 파일 파싱
         foreach (var line in File.ReadAllLines(fbsPath))
         {
             string t = line.Trim();
             if (!t.StartsWith("table ")) continue;
             string name = t["table ".Length..].TrimEnd('{').Trim();
-            if      (name.StartsWith("C_")) cPackets.Add(name);
+
+            if (name.StartsWith("C_")) cPackets.Add(name);
             else if (name.StartsWith("S_")) sPackets.Add(name);
+            else if (name.StartsWith("G_")) gPackets.Add(name);
+            else if (name.StartsWith("H_")) hPackets.Add(name);
         }
 
-        // 서버: C_ 패킷 중 미구현만
-        var newServer = cPackets.Where(n => !existingServer.Contains($"On{n}")).ToList();
-        WriteHandlerFile(
-            serverHandlerDir, $"PacketHandler.{schema}",
-            BuildServerHandlerStubs(schema, newServer));
+        // --- 파일 쓰기 (미구현 패킷이 있을 때만 생성) ---
 
-        // 클라: S_ 패킷 중 미구현만
-        var newClient = sPackets.Where(n => !existingClient.Contains($"On{n}")).ToList();
-        WriteHandlerFile(
-            clientHandlerDir, $"PacketHandlers.{schema}",
-            BuildClientHandlerStubs(schema, newClient));
+        // 서버 (C_)
+        var cPkt = cPackets.Where(n => !existingServer.Contains($"On{n}")).ToList();
+        if (cPkt.Count > 0)
+            WriteHandlerFile(serverHandlerDir, $"PacketHandler.{schema}", BuildServerHandlerStubs(schema, cPkt));
+
+        // 클라 (S_) -> SPacketHandlers 폴더로
+        var sPkt = sPackets.Where(n => !existingClient.Contains($"On{n}")).ToList();
+        if (sPkt.Count > 0)
+            WriteHandlerFile(clientHandlerSDir, $"PacketHandler.{schema}", BuildClientHandlerStubs(schema, sPkt));
+
+        // 클라 (G_) -> GPacketHandlers 폴더로
+        var gPkt = gPackets.Where(n => !existingClient.Contains($"On{n}")).ToList();
+        if (gPkt.Count > 0)
+            WriteHandlerFile(clientHandlerGDir, $"PacketHandler.{schema}", BuildClientHandlerStubs(schema, gPkt));
+
+        // 클라 (H_) -> HPacketHandlers 폴더로
+        var hPkt = hPackets.Where(n => !existingClient.Contains($"On{n}")).ToList();
+        if (hPkt.Count > 0)
+            WriteHandlerFile(clientHandlerHDir, $"PacketHandler.{schema}", BuildClientHandlerStubs(schema, hPkt));
     }
+
     return 0;
 }
 
@@ -183,7 +215,7 @@ static int GenerateHandlerStubs(string schemasDir, string serverOut, string clie
 static void WriteHandlerFile(string dir, string baseName, string content)
 {
     string normal = Path.Combine(dir, $"{baseName}.cs");
-    string temp   = Path.Combine(dir, $"{baseName}.temp.cs");
+    string temp = Path.Combine(dir, $"{baseName}.temp.cs");
 
     if (File.Exists(normal))
     {
@@ -218,8 +250,8 @@ static HashSet<string> CollectImplementedMethods(string dir, string prefix)
         {
             int idx = line.IndexOf(prefix, StringComparison.Ordinal);
             if (idx < 0 || !line.Contains('(')) continue;
-            int end        = line.IndexOf('(', idx);
-            string method  = line[idx..end].Trim();
+            int end = line.IndexOf('(', idx);
+            string method = line[idx..end].Trim();
             if (method.Length > prefix.Length) result.Add(method);
         }
     }

@@ -1,76 +1,65 @@
+using System.Linq;
+
 namespace Server;
-
-public class P2PRoom
-{
-    public string SessionCode { get; }
-    public ClientSession Host { get; }
-    public string HostPublicIp { get; }
-    public ushort HostPublicPort { get; }
-    public string HostPrivateIp { get; }
-    public ushort HostPrivatePort { get; }
-
-    public P2PRoom(string sessionCode, ClientSession host,
-        string hostPublicIp, ushort hostPublicPort,
-        string hostPrivateIp, ushort hostPrivatePort)
-    {
-        SessionCode    = sessionCode;
-        Host           = host;
-        HostPublicIp   = hostPublicIp;
-        HostPublicPort = hostPublicPort;
-        HostPrivateIp  = hostPrivateIp;
-        HostPrivatePort = hostPrivatePort;
-    }
-}
 
 public class RoomManager
 {
     public static RoomManager Instance { get; } = new();
 
     private readonly object _lock = new();
-    private readonly Dictionary<string, P2PRoom> _rooms = new();
-    private readonly Dictionary<int, string> _hostToCode = new();
+    private readonly Dictionary<string, Room> _rooms = new();
 
-    private RoomManager() { }
+    RoomManager() { }
 
-    public bool TryRegister(string sessionCode, ClientSession host,
-        string publicIp, ushort publicPort, string privateIp, ushort privatePort)
+    public Room CreateRoom(ClientSession host, PeerInfoT hostInfo)
     {
         lock (_lock)
         {
-            if (_rooms.ContainsKey(sessionCode)) return false;
-
-            var room = new P2PRoom(sessionCode, host, publicIp, publicPort, privateIp, privatePort);
-            _rooms[sessionCode] = room;
-            _hostToCode[host.PlayerId] = sessionCode;
+            string code;
+            do { code = GenerateCode(); } while (_rooms.ContainsKey(code));
+            var room = new Room(code, host, hostInfo);
+            _rooms[code] = room;
+            LOG($"RoomManager.Create: code={code} host={host.PlayerId}");
+            return room;
         }
-        LOG($"[RoomManager] Register session={sessionCode} host={host.PlayerId}");
-        return true;
     }
 
-    public P2PRoom? TryJoin(string sessionCode, ClientSession peer)
+    public Room? FindRoom(string code)
     {
-        P2PRoom? room;
         lock (_lock)
         {
-            _rooms.TryGetValue(sessionCode, out room);
+            return _rooms.TryGetValue(code, out var room) ? room : null;
         }
-        if (room == null)
-        {
-            LOG_W($"[RoomManager] Join failed — session not found: {sessionCode}");
-            return null;
-        }
-        LOG($"[RoomManager] Peer joined session={sessionCode} peer={peer.PlayerId}");
-        return room;
     }
 
-    public void RemoveByHost(int hostPlayerId)
+    public void RemoveRoom(string code)
     {
         lock (_lock)
         {
-            if (!_hostToCode.TryGetValue(hostPlayerId, out var code)) return;
-            _rooms.Remove(code);
-            _hostToCode.Remove(hostPlayerId);
-            LOG($"[RoomManager] Removed session={code} (host disconnected)");
+            if (_rooms.Remove(code))
+                LOG($"RoomManager.Remove: code={code}");
         }
+    }
+
+    public void RemoveBySession(ClientSession session)
+    {
+        lock (_lock)
+        {
+            var codes = _rooms.Values
+                .Where(r => r.Host == session || r.Guests.Any(g => g.Session == session))
+                .Select(r => r.Code)
+                .ToList();
+            foreach (var code in codes)
+            {
+                _rooms.Remove(code);
+                LOG($"RoomManager.Remove: code={code} (session disconnected)");
+            }
+        }
+    }
+
+    private static string GenerateCode()
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        return new string(Enumerable.Range(0, 6).Select(_ => chars[Random.Shared.Next(chars.Length)]).ToArray());
     }
 }

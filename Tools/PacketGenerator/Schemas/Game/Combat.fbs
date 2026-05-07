@@ -1,0 +1,21 @@
+﻿include "Common.fbs";
+
+table G_Shoot
+{
+    player_id:    int;
+    origin:       Vec3;
+    direction:    Vec3;
+    bullet_speed: float;
+    damage:       float;
+    max_range:    float;
+}
+
+table H_Shoot
+{
+    player_id:    int;
+    origin:       Vec3;
+    direction:    Vec3;
+    bullet_speed: float;
+    damage:       float;
+    max_range:    float;
+}

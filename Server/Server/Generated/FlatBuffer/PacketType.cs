@@ -5,26 +5,26 @@
 public enum PacketType : byte
 {
   NONE = 0,
-  C_LoginReq = 1,
-  S_LoginRes = 2,
-  C_MoveReq = 3,
-  S_MoveNtf = 4,
-  S_InventoryNtf = 5,
-  S_WorldItemDespawnNtf = 6,
-  C_ShootReq = 7,
-  S_ShootNtf = 8,
-  S_SpawnItemBoxNtf = 9,
-  C_GainItemReq = 10,
-  S_ChangeItemBox = 11,
-  S_SuccessGainItemNtf = 12,
-  C_ExchangeItemReq = 13,
-  S_ExchangeItemResultNtf = 14,
-  C_PingReq = 15,
-  S_PongRes = 16,
-  C_RegisterP2PSession = 17,
-  S_RegisterP2PSessionRes = 18,
-  C_JoinP2PSession = 19,
-  S_P2PSessionInfo = 20,
+  C_Login = 1,
+  S_LoginResult = 2,
+  C_Logout = 3,
+  C_Heartbeat = 4,
+  S_HeartbeatAck = 5,
+  C_CreateRoom = 6,
+  S_CreateRoom = 7,
+  C_JoinRoom = 8,
+  S_JoinRoom = 9,
+  G_Move = 10,
+  H_Move = 11,
+  G_Shoot = 12,
+  H_Shoot = 13,
+  H_ItemSpawn = 14,
+  H_ItemDespawn = 15,
+  G_ItemGain = 16,
+  H_ItemGainResult = 17,
+  H_InventoryUpdate = 18,
+  G_ItemExchange = 19,
+  H_ItemExchangeResult = 20,
   S_PeerJoined = 21,
 };
 
@@ -38,72 +38,72 @@ public class PacketTypeUnion {
   }
 
   public T As<T>() where T : class { return this.Value as T; }
-  public C_LoginReqT AsC_LoginReq() { return this.As<C_LoginReqT>(); }
-  public static PacketTypeUnion FromC_LoginReq(C_LoginReqT _c_loginreq) { return new PacketTypeUnion{ Type = PacketType.C_LoginReq, Value = _c_loginreq }; }
-  public S_LoginResT AsS_LoginRes() { return this.As<S_LoginResT>(); }
-  public static PacketTypeUnion FromS_LoginRes(S_LoginResT _s_loginres) { return new PacketTypeUnion{ Type = PacketType.S_LoginRes, Value = _s_loginres }; }
-  public C_MoveReqT AsC_MoveReq() { return this.As<C_MoveReqT>(); }
-  public static PacketTypeUnion FromC_MoveReq(C_MoveReqT _c_movereq) { return new PacketTypeUnion{ Type = PacketType.C_MoveReq, Value = _c_movereq }; }
-  public S_MoveNtfT AsS_MoveNtf() { return this.As<S_MoveNtfT>(); }
-  public static PacketTypeUnion FromS_MoveNtf(S_MoveNtfT _s_moventf) { return new PacketTypeUnion{ Type = PacketType.S_MoveNtf, Value = _s_moventf }; }
-  public S_InventoryNtfT AsS_InventoryNtf() { return this.As<S_InventoryNtfT>(); }
-  public static PacketTypeUnion FromS_InventoryNtf(S_InventoryNtfT _s_inventoryntf) { return new PacketTypeUnion{ Type = PacketType.S_InventoryNtf, Value = _s_inventoryntf }; }
-  public S_WorldItemDespawnNtfT AsS_WorldItemDespawnNtf() { return this.As<S_WorldItemDespawnNtfT>(); }
-  public static PacketTypeUnion FromS_WorldItemDespawnNtf(S_WorldItemDespawnNtfT _s_worlditemdespawnntf) { return new PacketTypeUnion{ Type = PacketType.S_WorldItemDespawnNtf, Value = _s_worlditemdespawnntf }; }
-  public C_ShootReqT AsC_ShootReq() { return this.As<C_ShootReqT>(); }
-  public static PacketTypeUnion FromC_ShootReq(C_ShootReqT _c_shootreq) { return new PacketTypeUnion{ Type = PacketType.C_ShootReq, Value = _c_shootreq }; }
-  public S_ShootNtfT AsS_ShootNtf() { return this.As<S_ShootNtfT>(); }
-  public static PacketTypeUnion FromS_ShootNtf(S_ShootNtfT _s_shootntf) { return new PacketTypeUnion{ Type = PacketType.S_ShootNtf, Value = _s_shootntf }; }
-  public S_SpawnItemBoxNtfT AsS_SpawnItemBoxNtf() { return this.As<S_SpawnItemBoxNtfT>(); }
-  public static PacketTypeUnion FromS_SpawnItemBoxNtf(S_SpawnItemBoxNtfT _s_spawnitemboxntf) { return new PacketTypeUnion{ Type = PacketType.S_SpawnItemBoxNtf, Value = _s_spawnitemboxntf }; }
-  public C_GainItemReqT AsC_GainItemReq() { return this.As<C_GainItemReqT>(); }
-  public static PacketTypeUnion FromC_GainItemReq(C_GainItemReqT _c_gainitemreq) { return new PacketTypeUnion{ Type = PacketType.C_GainItemReq, Value = _c_gainitemreq }; }
-  public S_ChangeItemBoxT AsS_ChangeItemBox() { return this.As<S_ChangeItemBoxT>(); }
-  public static PacketTypeUnion FromS_ChangeItemBox(S_ChangeItemBoxT _s_changeitembox) { return new PacketTypeUnion{ Type = PacketType.S_ChangeItemBox, Value = _s_changeitembox }; }
-  public S_SuccessGainItemNtfT AsS_SuccessGainItemNtf() { return this.As<S_SuccessGainItemNtfT>(); }
-  public static PacketTypeUnion FromS_SuccessGainItemNtf(S_SuccessGainItemNtfT _s_successgainitemntf) { return new PacketTypeUnion{ Type = PacketType.S_SuccessGainItemNtf, Value = _s_successgainitemntf }; }
-  public C_ExchangeItemReqT AsC_ExchangeItemReq() { return this.As<C_ExchangeItemReqT>(); }
-  public static PacketTypeUnion FromC_ExchangeItemReq(C_ExchangeItemReqT _c_exchangeitemreq) { return new PacketTypeUnion{ Type = PacketType.C_ExchangeItemReq, Value = _c_exchangeitemreq }; }
-  public S_ExchangeItemResultNtfT AsS_ExchangeItemResultNtf() { return this.As<S_ExchangeItemResultNtfT>(); }
-  public static PacketTypeUnion FromS_ExchangeItemResultNtf(S_ExchangeItemResultNtfT _s_exchangeitemresultntf) { return new PacketTypeUnion{ Type = PacketType.S_ExchangeItemResultNtf, Value = _s_exchangeitemresultntf }; }
-  public C_PingReqT AsC_PingReq() { return this.As<C_PingReqT>(); }
-  public static PacketTypeUnion FromC_PingReq(C_PingReqT _c_pingreq) { return new PacketTypeUnion{ Type = PacketType.C_PingReq, Value = _c_pingreq }; }
-  public S_PongResT AsS_PongRes() { return this.As<S_PongResT>(); }
-  public static PacketTypeUnion FromS_PongRes(S_PongResT _s_pongres) { return new PacketTypeUnion{ Type = PacketType.S_PongRes, Value = _s_pongres }; }
-  public C_RegisterP2PSessionT AsC_RegisterP2PSession() { return this.As<C_RegisterP2PSessionT>(); }
-  public static PacketTypeUnion FromC_RegisterP2PSession(C_RegisterP2PSessionT _c_registerp2psession) { return new PacketTypeUnion{ Type = PacketType.C_RegisterP2PSession, Value = _c_registerp2psession }; }
-  public S_RegisterP2PSessionResT AsS_RegisterP2PSessionRes() { return this.As<S_RegisterP2PSessionResT>(); }
-  public static PacketTypeUnion FromS_RegisterP2PSessionRes(S_RegisterP2PSessionResT _s_registerp2psessionres) { return new PacketTypeUnion{ Type = PacketType.S_RegisterP2PSessionRes, Value = _s_registerp2psessionres }; }
-  public C_JoinP2PSessionT AsC_JoinP2PSession() { return this.As<C_JoinP2PSessionT>(); }
-  public static PacketTypeUnion FromC_JoinP2PSession(C_JoinP2PSessionT _c_joinp2psession) { return new PacketTypeUnion{ Type = PacketType.C_JoinP2PSession, Value = _c_joinp2psession }; }
-  public S_P2PSessionInfoT AsS_P2PSessionInfo() { return this.As<S_P2PSessionInfoT>(); }
-  public static PacketTypeUnion FromS_P2PSessionInfo(S_P2PSessionInfoT _s_p2psessioninfo) { return new PacketTypeUnion{ Type = PacketType.S_P2PSessionInfo, Value = _s_p2psessioninfo }; }
+  public C_LoginT AsC_Login() { return this.As<C_LoginT>(); }
+  public static PacketTypeUnion FromC_Login(C_LoginT _c_login) { return new PacketTypeUnion{ Type = PacketType.C_Login, Value = _c_login }; }
+  public S_LoginResultT AsS_LoginResult() { return this.As<S_LoginResultT>(); }
+  public static PacketTypeUnion FromS_LoginResult(S_LoginResultT _s_loginresult) { return new PacketTypeUnion{ Type = PacketType.S_LoginResult, Value = _s_loginresult }; }
+  public C_LogoutT AsC_Logout() { return this.As<C_LogoutT>(); }
+  public static PacketTypeUnion FromC_Logout(C_LogoutT _c_logout) { return new PacketTypeUnion{ Type = PacketType.C_Logout, Value = _c_logout }; }
+  public C_HeartbeatT AsC_Heartbeat() { return this.As<C_HeartbeatT>(); }
+  public static PacketTypeUnion FromC_Heartbeat(C_HeartbeatT _c_heartbeat) { return new PacketTypeUnion{ Type = PacketType.C_Heartbeat, Value = _c_heartbeat }; }
+  public S_HeartbeatAckT AsS_HeartbeatAck() { return this.As<S_HeartbeatAckT>(); }
+  public static PacketTypeUnion FromS_HeartbeatAck(S_HeartbeatAckT _s_heartbeatack) { return new PacketTypeUnion{ Type = PacketType.S_HeartbeatAck, Value = _s_heartbeatack }; }
+  public C_CreateRoomT AsC_CreateRoom() { return this.As<C_CreateRoomT>(); }
+  public static PacketTypeUnion FromC_CreateRoom(C_CreateRoomT _c_createroom) { return new PacketTypeUnion{ Type = PacketType.C_CreateRoom, Value = _c_createroom }; }
+  public S_CreateRoomT AsS_CreateRoom() { return this.As<S_CreateRoomT>(); }
+  public static PacketTypeUnion FromS_CreateRoom(S_CreateRoomT _s_createroom) { return new PacketTypeUnion{ Type = PacketType.S_CreateRoom, Value = _s_createroom }; }
+  public C_JoinRoomT AsC_JoinRoom() { return this.As<C_JoinRoomT>(); }
+  public static PacketTypeUnion FromC_JoinRoom(C_JoinRoomT _c_joinroom) { return new PacketTypeUnion{ Type = PacketType.C_JoinRoom, Value = _c_joinroom }; }
+  public S_JoinRoomT AsS_JoinRoom() { return this.As<S_JoinRoomT>(); }
+  public static PacketTypeUnion FromS_JoinRoom(S_JoinRoomT _s_joinroom) { return new PacketTypeUnion{ Type = PacketType.S_JoinRoom, Value = _s_joinroom }; }
+  public G_MoveT AsG_Move() { return this.As<G_MoveT>(); }
+  public static PacketTypeUnion FromG_Move(G_MoveT _g_move) { return new PacketTypeUnion{ Type = PacketType.G_Move, Value = _g_move }; }
+  public H_MoveT AsH_Move() { return this.As<H_MoveT>(); }
+  public static PacketTypeUnion FromH_Move(H_MoveT _h_move) { return new PacketTypeUnion{ Type = PacketType.H_Move, Value = _h_move }; }
+  public G_ShootT AsG_Shoot() { return this.As<G_ShootT>(); }
+  public static PacketTypeUnion FromG_Shoot(G_ShootT _g_shoot) { return new PacketTypeUnion{ Type = PacketType.G_Shoot, Value = _g_shoot }; }
+  public H_ShootT AsH_Shoot() { return this.As<H_ShootT>(); }
+  public static PacketTypeUnion FromH_Shoot(H_ShootT _h_shoot) { return new PacketTypeUnion{ Type = PacketType.H_Shoot, Value = _h_shoot }; }
+  public H_ItemSpawnT AsH_ItemSpawn() { return this.As<H_ItemSpawnT>(); }
+  public static PacketTypeUnion FromH_ItemSpawn(H_ItemSpawnT _h_itemspawn) { return new PacketTypeUnion{ Type = PacketType.H_ItemSpawn, Value = _h_itemspawn }; }
+  public H_ItemDespawnT AsH_ItemDespawn() { return this.As<H_ItemDespawnT>(); }
+  public static PacketTypeUnion FromH_ItemDespawn(H_ItemDespawnT _h_itemdespawn) { return new PacketTypeUnion{ Type = PacketType.H_ItemDespawn, Value = _h_itemdespawn }; }
+  public G_ItemGainT AsG_ItemGain() { return this.As<G_ItemGainT>(); }
+  public static PacketTypeUnion FromG_ItemGain(G_ItemGainT _g_itemgain) { return new PacketTypeUnion{ Type = PacketType.G_ItemGain, Value = _g_itemgain }; }
+  public H_ItemGainResultT AsH_ItemGainResult() { return this.As<H_ItemGainResultT>(); }
+  public static PacketTypeUnion FromH_ItemGainResult(H_ItemGainResultT _h_itemgainresult) { return new PacketTypeUnion{ Type = PacketType.H_ItemGainResult, Value = _h_itemgainresult }; }
+  public H_InventoryUpdateT AsH_InventoryUpdate() { return this.As<H_InventoryUpdateT>(); }
+  public static PacketTypeUnion FromH_InventoryUpdate(H_InventoryUpdateT _h_inventoryupdate) { return new PacketTypeUnion{ Type = PacketType.H_InventoryUpdate, Value = _h_inventoryupdate }; }
+  public G_ItemExchangeT AsG_ItemExchange() { return this.As<G_ItemExchangeT>(); }
+  public static PacketTypeUnion FromG_ItemExchange(G_ItemExchangeT _g_itemexchange) { return new PacketTypeUnion{ Type = PacketType.G_ItemExchange, Value = _g_itemexchange }; }
+  public H_ItemExchangeResultT AsH_ItemExchangeResult() { return this.As<H_ItemExchangeResultT>(); }
+  public static PacketTypeUnion FromH_ItemExchangeResult(H_ItemExchangeResultT _h_itemexchangeresult) { return new PacketTypeUnion{ Type = PacketType.H_ItemExchangeResult, Value = _h_itemexchangeresult }; }
   public S_PeerJoinedT AsS_PeerJoined() { return this.As<S_PeerJoinedT>(); }
   public static PacketTypeUnion FromS_PeerJoined(S_PeerJoinedT _s_peerjoined) { return new PacketTypeUnion{ Type = PacketType.S_PeerJoined, Value = _s_peerjoined }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
       default: return 0;
-      case PacketType.C_LoginReq: return C_LoginReq.Pack(builder, _o.AsC_LoginReq()).Value;
-      case PacketType.S_LoginRes: return S_LoginRes.Pack(builder, _o.AsS_LoginRes()).Value;
-      case PacketType.C_MoveReq: return C_MoveReq.Pack(builder, _o.AsC_MoveReq()).Value;
-      case PacketType.S_MoveNtf: return S_MoveNtf.Pack(builder, _o.AsS_MoveNtf()).Value;
-      case PacketType.S_InventoryNtf: return S_InventoryNtf.Pack(builder, _o.AsS_InventoryNtf()).Value;
-      case PacketType.S_WorldItemDespawnNtf: return S_WorldItemDespawnNtf.Pack(builder, _o.AsS_WorldItemDespawnNtf()).Value;
-      case PacketType.C_ShootReq: return C_ShootReq.Pack(builder, _o.AsC_ShootReq()).Value;
-      case PacketType.S_ShootNtf: return S_ShootNtf.Pack(builder, _o.AsS_ShootNtf()).Value;
-      case PacketType.S_SpawnItemBoxNtf: return S_SpawnItemBoxNtf.Pack(builder, _o.AsS_SpawnItemBoxNtf()).Value;
-      case PacketType.C_GainItemReq: return C_GainItemReq.Pack(builder, _o.AsC_GainItemReq()).Value;
-      case PacketType.S_ChangeItemBox: return S_ChangeItemBox.Pack(builder, _o.AsS_ChangeItemBox()).Value;
-      case PacketType.S_SuccessGainItemNtf: return S_SuccessGainItemNtf.Pack(builder, _o.AsS_SuccessGainItemNtf()).Value;
-      case PacketType.C_ExchangeItemReq: return C_ExchangeItemReq.Pack(builder, _o.AsC_ExchangeItemReq()).Value;
-      case PacketType.S_ExchangeItemResultNtf: return S_ExchangeItemResultNtf.Pack(builder, _o.AsS_ExchangeItemResultNtf()).Value;
-      case PacketType.C_PingReq: return C_PingReq.Pack(builder, _o.AsC_PingReq()).Value;
-      case PacketType.S_PongRes: return S_PongRes.Pack(builder, _o.AsS_PongRes()).Value;
-      case PacketType.C_RegisterP2PSession: return C_RegisterP2PSession.Pack(builder, _o.AsC_RegisterP2PSession()).Value;
-      case PacketType.S_RegisterP2PSessionRes: return S_RegisterP2PSessionRes.Pack(builder, _o.AsS_RegisterP2PSessionRes()).Value;
-      case PacketType.C_JoinP2PSession: return C_JoinP2PSession.Pack(builder, _o.AsC_JoinP2PSession()).Value;
-      case PacketType.S_P2PSessionInfo: return S_P2PSessionInfo.Pack(builder, _o.AsS_P2PSessionInfo()).Value;
+      case PacketType.C_Login: return C_Login.Pack(builder, _o.AsC_Login()).Value;
+      case PacketType.S_LoginResult: return S_LoginResult.Pack(builder, _o.AsS_LoginResult()).Value;
+      case PacketType.C_Logout: return C_Logout.Pack(builder, _o.AsC_Logout()).Value;
+      case PacketType.C_Heartbeat: return C_Heartbeat.Pack(builder, _o.AsC_Heartbeat()).Value;
+      case PacketType.S_HeartbeatAck: return S_HeartbeatAck.Pack(builder, _o.AsS_HeartbeatAck()).Value;
+      case PacketType.C_CreateRoom: return C_CreateRoom.Pack(builder, _o.AsC_CreateRoom()).Value;
+      case PacketType.S_CreateRoom: return S_CreateRoom.Pack(builder, _o.AsS_CreateRoom()).Value;
+      case PacketType.C_JoinRoom: return C_JoinRoom.Pack(builder, _o.AsC_JoinRoom()).Value;
+      case PacketType.S_JoinRoom: return S_JoinRoom.Pack(builder, _o.AsS_JoinRoom()).Value;
+      case PacketType.G_Move: return G_Move.Pack(builder, _o.AsG_Move()).Value;
+      case PacketType.H_Move: return H_Move.Pack(builder, _o.AsH_Move()).Value;
+      case PacketType.G_Shoot: return G_Shoot.Pack(builder, _o.AsG_Shoot()).Value;
+      case PacketType.H_Shoot: return H_Shoot.Pack(builder, _o.AsH_Shoot()).Value;
+      case PacketType.H_ItemSpawn: return H_ItemSpawn.Pack(builder, _o.AsH_ItemSpawn()).Value;
+      case PacketType.H_ItemDespawn: return H_ItemDespawn.Pack(builder, _o.AsH_ItemDespawn()).Value;
+      case PacketType.G_ItemGain: return G_ItemGain.Pack(builder, _o.AsG_ItemGain()).Value;
+      case PacketType.H_ItemGainResult: return H_ItemGainResult.Pack(builder, _o.AsH_ItemGainResult()).Value;
+      case PacketType.H_InventoryUpdate: return H_InventoryUpdate.Pack(builder, _o.AsH_InventoryUpdate()).Value;
+      case PacketType.G_ItemExchange: return G_ItemExchange.Pack(builder, _o.AsG_ItemExchange()).Value;
+      case PacketType.H_ItemExchangeResult: return H_ItemExchangeResult.Pack(builder, _o.AsH_ItemExchangeResult()).Value;
       case PacketType.S_PeerJoined: return S_PeerJoined.Pack(builder, _o.AsS_PeerJoined()).Value;
     }
   }
@@ -118,65 +118,65 @@ static public class PacketTypeVerify
     bool result = true;
     switch((PacketType)typeId)
     {
-      case PacketType.C_LoginReq:
-        result = C_LoginReqVerify.Verify(verifier, tablePos);
+      case PacketType.C_Login:
+        result = C_LoginVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_LoginRes:
-        result = S_LoginResVerify.Verify(verifier, tablePos);
+      case PacketType.S_LoginResult:
+        result = S_LoginResultVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.C_MoveReq:
-        result = C_MoveReqVerify.Verify(verifier, tablePos);
+      case PacketType.C_Logout:
+        result = C_LogoutVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_MoveNtf:
-        result = S_MoveNtfVerify.Verify(verifier, tablePos);
+      case PacketType.C_Heartbeat:
+        result = C_HeartbeatVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_InventoryNtf:
-        result = S_InventoryNtfVerify.Verify(verifier, tablePos);
+      case PacketType.S_HeartbeatAck:
+        result = S_HeartbeatAckVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_WorldItemDespawnNtf:
-        result = S_WorldItemDespawnNtfVerify.Verify(verifier, tablePos);
+      case PacketType.C_CreateRoom:
+        result = C_CreateRoomVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.C_ShootReq:
-        result = C_ShootReqVerify.Verify(verifier, tablePos);
+      case PacketType.S_CreateRoom:
+        result = S_CreateRoomVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_ShootNtf:
-        result = S_ShootNtfVerify.Verify(verifier, tablePos);
+      case PacketType.C_JoinRoom:
+        result = C_JoinRoomVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_SpawnItemBoxNtf:
-        result = S_SpawnItemBoxNtfVerify.Verify(verifier, tablePos);
+      case PacketType.S_JoinRoom:
+        result = S_JoinRoomVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.C_GainItemReq:
-        result = C_GainItemReqVerify.Verify(verifier, tablePos);
+      case PacketType.G_Move:
+        result = G_MoveVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_ChangeItemBox:
-        result = S_ChangeItemBoxVerify.Verify(verifier, tablePos);
+      case PacketType.H_Move:
+        result = H_MoveVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_SuccessGainItemNtf:
-        result = S_SuccessGainItemNtfVerify.Verify(verifier, tablePos);
+      case PacketType.G_Shoot:
+        result = G_ShootVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.C_ExchangeItemReq:
-        result = C_ExchangeItemReqVerify.Verify(verifier, tablePos);
+      case PacketType.H_Shoot:
+        result = H_ShootVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_ExchangeItemResultNtf:
-        result = S_ExchangeItemResultNtfVerify.Verify(verifier, tablePos);
+      case PacketType.H_ItemSpawn:
+        result = H_ItemSpawnVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.C_PingReq:
-        result = C_PingReqVerify.Verify(verifier, tablePos);
+      case PacketType.H_ItemDespawn:
+        result = H_ItemDespawnVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_PongRes:
-        result = S_PongResVerify.Verify(verifier, tablePos);
+      case PacketType.G_ItemGain:
+        result = G_ItemGainVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.C_RegisterP2PSession:
-        result = C_RegisterP2PSessionVerify.Verify(verifier, tablePos);
+      case PacketType.H_ItemGainResult:
+        result = H_ItemGainResultVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_RegisterP2PSessionRes:
-        result = S_RegisterP2PSessionResVerify.Verify(verifier, tablePos);
+      case PacketType.H_InventoryUpdate:
+        result = H_InventoryUpdateVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.C_JoinP2PSession:
-        result = C_JoinP2PSessionVerify.Verify(verifier, tablePos);
+      case PacketType.G_ItemExchange:
+        result = G_ItemExchangeVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_P2PSessionInfo:
-        result = S_P2PSessionInfoVerify.Verify(verifier, tablePos);
+      case PacketType.H_ItemExchangeResult:
+        result = H_ItemExchangeResultVerify.Verify(verifier, tablePos);
         break;
       case PacketType.S_PeerJoined:
         result = S_PeerJoinedVerify.Verify(verifier, tablePos);

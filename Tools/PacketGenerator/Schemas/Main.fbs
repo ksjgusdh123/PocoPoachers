@@ -1,41 +1,47 @@
 ﻿include "Common.fbs";
-include "Auth.fbs";
-include "Movement.fbs";
-include "Inventory.fbs";
-include "WorldItem.fbs";
-include "Combat.fbs";
-include "Ping.fbs";
-include "P2PConnect.fbs";
+include "Master/Auth.fbs";
+include "Master/Heartbeat.fbs";
+include "Master/Room.fbs";
+include "Game/Movement.fbs";
+include "Game/Combat.fbs";
+include "Game/Item.fbs";
 
 union PacketType
 {
-    C_LoginReq,
-    S_LoginRes,
+    // --- [SECTION 1] 중앙 서버 (Lobby / Auth) ---
+    C_Login,
+    S_LoginResult,
+    C_Logout,
 
-    C_MoveReq,
-    S_MoveNtf,
+    C_Heartbeat,
+    S_HeartbeatAck,
 
-    S_InventoryNtf,
+    // --- [SECTION 2] P2P 시그널링 (Matching) ---
+    C_CreateRoom,
+    S_CreateRoom,
 
-    S_WorldItemDespawnNtf,
+    C_JoinRoom,
+    S_JoinRoom,
 
-    C_ShootReq,
-    S_ShootNtf,
+    // --- [SECTION 3] 인게임 동기화 (P2P - UDP) ---
+    G_Move,
+    H_Move,
 
-    S_SpawnItemBoxNtf,
-    C_GainItemReq,
-    S_ChangeItemBox,
-    S_SuccessGainItemNtf,
-    C_ExchangeItemReq,
-    S_ExchangeItemResultNtf,
+    G_Shoot,
+    H_Shoot,
 
-    C_PingReq,
-    S_PongRes,
+    // --- [SECTION 4] 월드 및 아이템 (P2P - Reliable) ---
+    H_ItemSpawn,
+    H_ItemDespawn,
 
-    C_RegisterP2PSession,
-    S_RegisterP2PSessionRes,
-    C_JoinP2PSession,
-    S_P2PSessionInfo,
+    G_ItemGain,
+    H_ItemGainResult,
+
+    H_InventoryUpdate,
+
+    G_ItemExchange,
+    H_ItemExchangeResult,
+
     S_PeerJoined,
 }
 

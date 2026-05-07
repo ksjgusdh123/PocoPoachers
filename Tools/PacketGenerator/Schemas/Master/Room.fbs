@@ -1,0 +1,36 @@
+﻿table PeerInfo
+{
+    player_id: int;
+    public_ip: string;
+    public_port: ushort;
+    private_ip: string;
+    private_port: ushort;
+}
+
+table C_CreateRoom
+{
+    my_info: PeerInfo;
+}
+
+table S_CreateRoom
+{
+    session_code: string;
+    success: bool;
+}
+
+table C_JoinRoom
+{
+    session_code: string;
+    my_info: PeerInfo;
+}
+
+table S_JoinRoom
+{
+    success: bool;
+    host_info: PeerInfo;
+}
+
+table S_PeerJoined
+{
+    info: PeerInfo;
+}

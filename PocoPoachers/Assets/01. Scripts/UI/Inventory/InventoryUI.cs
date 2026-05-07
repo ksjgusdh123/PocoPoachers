@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
@@ -76,15 +76,8 @@ public class InventoryUI : MonoBehaviour
         }
         int itemTypeId = targetSlot.SlotItemData.Id;
         GameManager.GetInstance().SaveChangeInventorys(_inventory, target);
-        PacketBuilder.Send(new C_GainItemReqT
-        {
-            IsPlayer         = isPlayer,
-            BoxUid           = boxUid,
-            ItemUid          = itemTypeId,
-            Amount           = targetSlot.SavedAmountItem,
-            SlotIndex        = -1,
-            RemovedSlotIndex = -1,
-        }, C_GainItemReq.Pack, PacketType.C_GainItemReq);
+        //TODO: Send Pkt
+
     }
 
     private void OnDraggedSlot(ItemData data, int amount, int gainedSlotIndex, int removedSlotIndex)
@@ -109,15 +102,7 @@ public class InventoryUI : MonoBehaviour
         }
         int itemTypeId = data.Id;
         GameManager.GetInstance().SaveChangeInventorys(target, _inventory);
-        PacketBuilder.Send(new C_GainItemReqT
-        {
-            IsPlayer         = isPlayer,
-            BoxUid           = boxUid,
-            ItemUid          = itemTypeId,
-            Amount           = amount,
-            SlotIndex        = gainedSlotIndex,
-            RemovedSlotIndex = removedSlotIndex,
-        }, C_GainItemReq.Pack, PacketType.C_GainItemReq);
+        //TODO: Send Pkt
     }
 
     public void OnSlotDropped()

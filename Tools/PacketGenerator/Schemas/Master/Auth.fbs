@@ -1,0 +1,16 @@
+﻿include "Common.fbs";
+
+table C_Login
+{
+    username: string;
+}
+
+table S_LoginResult
+{
+    success:   bool;
+    player_id: int;
+}
+
+table C_Logout
+{
+}

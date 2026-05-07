@@ -19,26 +19,26 @@ public struct FlatPacket : IFlatbufferObject
 
   public PacketType TypeType { get { int o = __p.__offset(4); return o != 0 ? (PacketType)__p.bb.Get(o + __p.bb_pos) : PacketType.NONE; } }
   public TTable? Type<TTable>() where TTable : struct, IFlatbufferObject { int o = __p.__offset(6); return o != 0 ? (TTable?)__p.__union<TTable>(o + __p.bb_pos) : null; }
-  public C_LoginReq TypeAsC_LoginReq() { return Type<C_LoginReq>().Value; }
-  public S_LoginRes TypeAsS_LoginRes() { return Type<S_LoginRes>().Value; }
-  public C_MoveReq TypeAsC_MoveReq() { return Type<C_MoveReq>().Value; }
-  public S_MoveNtf TypeAsS_MoveNtf() { return Type<S_MoveNtf>().Value; }
-  public S_InventoryNtf TypeAsS_InventoryNtf() { return Type<S_InventoryNtf>().Value; }
-  public S_WorldItemDespawnNtf TypeAsS_WorldItemDespawnNtf() { return Type<S_WorldItemDespawnNtf>().Value; }
-  public C_ShootReq TypeAsC_ShootReq() { return Type<C_ShootReq>().Value; }
-  public S_ShootNtf TypeAsS_ShootNtf() { return Type<S_ShootNtf>().Value; }
-  public S_SpawnItemBoxNtf TypeAsS_SpawnItemBoxNtf() { return Type<S_SpawnItemBoxNtf>().Value; }
-  public C_GainItemReq TypeAsC_GainItemReq() { return Type<C_GainItemReq>().Value; }
-  public S_ChangeItemBox TypeAsS_ChangeItemBox() { return Type<S_ChangeItemBox>().Value; }
-  public S_SuccessGainItemNtf TypeAsS_SuccessGainItemNtf() { return Type<S_SuccessGainItemNtf>().Value; }
-  public C_ExchangeItemReq TypeAsC_ExchangeItemReq() { return Type<C_ExchangeItemReq>().Value; }
-  public S_ExchangeItemResultNtf TypeAsS_ExchangeItemResultNtf() { return Type<S_ExchangeItemResultNtf>().Value; }
-  public C_PingReq TypeAsC_PingReq() { return Type<C_PingReq>().Value; }
-  public S_PongRes TypeAsS_PongRes() { return Type<S_PongRes>().Value; }
-  public C_RegisterP2PSession TypeAsC_RegisterP2PSession() { return Type<C_RegisterP2PSession>().Value; }
-  public S_RegisterP2PSessionRes TypeAsS_RegisterP2PSessionRes() { return Type<S_RegisterP2PSessionRes>().Value; }
-  public C_JoinP2PSession TypeAsC_JoinP2PSession() { return Type<C_JoinP2PSession>().Value; }
-  public S_P2PSessionInfo TypeAsS_P2PSessionInfo() { return Type<S_P2PSessionInfo>().Value; }
+  public C_Login TypeAsC_Login() { return Type<C_Login>().Value; }
+  public S_LoginResult TypeAsS_LoginResult() { return Type<S_LoginResult>().Value; }
+  public C_Logout TypeAsC_Logout() { return Type<C_Logout>().Value; }
+  public C_Heartbeat TypeAsC_Heartbeat() { return Type<C_Heartbeat>().Value; }
+  public S_HeartbeatAck TypeAsS_HeartbeatAck() { return Type<S_HeartbeatAck>().Value; }
+  public C_CreateRoom TypeAsC_CreateRoom() { return Type<C_CreateRoom>().Value; }
+  public S_CreateRoom TypeAsS_CreateRoom() { return Type<S_CreateRoom>().Value; }
+  public C_JoinRoom TypeAsC_JoinRoom() { return Type<C_JoinRoom>().Value; }
+  public S_JoinRoom TypeAsS_JoinRoom() { return Type<S_JoinRoom>().Value; }
+  public G_Move TypeAsG_Move() { return Type<G_Move>().Value; }
+  public H_Move TypeAsH_Move() { return Type<H_Move>().Value; }
+  public G_Shoot TypeAsG_Shoot() { return Type<G_Shoot>().Value; }
+  public H_Shoot TypeAsH_Shoot() { return Type<H_Shoot>().Value; }
+  public H_ItemSpawn TypeAsH_ItemSpawn() { return Type<H_ItemSpawn>().Value; }
+  public H_ItemDespawn TypeAsH_ItemDespawn() { return Type<H_ItemDespawn>().Value; }
+  public G_ItemGain TypeAsG_ItemGain() { return Type<G_ItemGain>().Value; }
+  public H_ItemGainResult TypeAsH_ItemGainResult() { return Type<H_ItemGainResult>().Value; }
+  public H_InventoryUpdate TypeAsH_InventoryUpdate() { return Type<H_InventoryUpdate>().Value; }
+  public G_ItemExchange TypeAsG_ItemExchange() { return Type<G_ItemExchange>().Value; }
+  public H_ItemExchangeResult TypeAsH_ItemExchangeResult() { return Type<H_ItemExchangeResult>().Value; }
   public S_PeerJoined TypeAsS_PeerJoined() { return Type<S_PeerJoined>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
@@ -69,65 +69,65 @@ public struct FlatPacket : IFlatbufferObject
     _o.Type.Type = this.TypeType;
     switch (this.TypeType) {
       default: break;
-      case PacketType.C_LoginReq:
-        _o.Type.Value = this.Type<C_LoginReq>().HasValue ? this.Type<C_LoginReq>().Value.UnPack() : null;
+      case PacketType.C_Login:
+        _o.Type.Value = this.Type<C_Login>().HasValue ? this.Type<C_Login>().Value.UnPack() : null;
         break;
-      case PacketType.S_LoginRes:
-        _o.Type.Value = this.Type<S_LoginRes>().HasValue ? this.Type<S_LoginRes>().Value.UnPack() : null;
+      case PacketType.S_LoginResult:
+        _o.Type.Value = this.Type<S_LoginResult>().HasValue ? this.Type<S_LoginResult>().Value.UnPack() : null;
         break;
-      case PacketType.C_MoveReq:
-        _o.Type.Value = this.Type<C_MoveReq>().HasValue ? this.Type<C_MoveReq>().Value.UnPack() : null;
+      case PacketType.C_Logout:
+        _o.Type.Value = this.Type<C_Logout>().HasValue ? this.Type<C_Logout>().Value.UnPack() : null;
         break;
-      case PacketType.S_MoveNtf:
-        _o.Type.Value = this.Type<S_MoveNtf>().HasValue ? this.Type<S_MoveNtf>().Value.UnPack() : null;
+      case PacketType.C_Heartbeat:
+        _o.Type.Value = this.Type<C_Heartbeat>().HasValue ? this.Type<C_Heartbeat>().Value.UnPack() : null;
         break;
-      case PacketType.S_InventoryNtf:
-        _o.Type.Value = this.Type<S_InventoryNtf>().HasValue ? this.Type<S_InventoryNtf>().Value.UnPack() : null;
+      case PacketType.S_HeartbeatAck:
+        _o.Type.Value = this.Type<S_HeartbeatAck>().HasValue ? this.Type<S_HeartbeatAck>().Value.UnPack() : null;
         break;
-      case PacketType.S_WorldItemDespawnNtf:
-        _o.Type.Value = this.Type<S_WorldItemDespawnNtf>().HasValue ? this.Type<S_WorldItemDespawnNtf>().Value.UnPack() : null;
+      case PacketType.C_CreateRoom:
+        _o.Type.Value = this.Type<C_CreateRoom>().HasValue ? this.Type<C_CreateRoom>().Value.UnPack() : null;
         break;
-      case PacketType.C_ShootReq:
-        _o.Type.Value = this.Type<C_ShootReq>().HasValue ? this.Type<C_ShootReq>().Value.UnPack() : null;
+      case PacketType.S_CreateRoom:
+        _o.Type.Value = this.Type<S_CreateRoom>().HasValue ? this.Type<S_CreateRoom>().Value.UnPack() : null;
         break;
-      case PacketType.S_ShootNtf:
-        _o.Type.Value = this.Type<S_ShootNtf>().HasValue ? this.Type<S_ShootNtf>().Value.UnPack() : null;
+      case PacketType.C_JoinRoom:
+        _o.Type.Value = this.Type<C_JoinRoom>().HasValue ? this.Type<C_JoinRoom>().Value.UnPack() : null;
         break;
-      case PacketType.S_SpawnItemBoxNtf:
-        _o.Type.Value = this.Type<S_SpawnItemBoxNtf>().HasValue ? this.Type<S_SpawnItemBoxNtf>().Value.UnPack() : null;
+      case PacketType.S_JoinRoom:
+        _o.Type.Value = this.Type<S_JoinRoom>().HasValue ? this.Type<S_JoinRoom>().Value.UnPack() : null;
         break;
-      case PacketType.C_GainItemReq:
-        _o.Type.Value = this.Type<C_GainItemReq>().HasValue ? this.Type<C_GainItemReq>().Value.UnPack() : null;
+      case PacketType.G_Move:
+        _o.Type.Value = this.Type<G_Move>().HasValue ? this.Type<G_Move>().Value.UnPack() : null;
         break;
-      case PacketType.S_ChangeItemBox:
-        _o.Type.Value = this.Type<S_ChangeItemBox>().HasValue ? this.Type<S_ChangeItemBox>().Value.UnPack() : null;
+      case PacketType.H_Move:
+        _o.Type.Value = this.Type<H_Move>().HasValue ? this.Type<H_Move>().Value.UnPack() : null;
         break;
-      case PacketType.S_SuccessGainItemNtf:
-        _o.Type.Value = this.Type<S_SuccessGainItemNtf>().HasValue ? this.Type<S_SuccessGainItemNtf>().Value.UnPack() : null;
+      case PacketType.G_Shoot:
+        _o.Type.Value = this.Type<G_Shoot>().HasValue ? this.Type<G_Shoot>().Value.UnPack() : null;
         break;
-      case PacketType.C_ExchangeItemReq:
-        _o.Type.Value = this.Type<C_ExchangeItemReq>().HasValue ? this.Type<C_ExchangeItemReq>().Value.UnPack() : null;
+      case PacketType.H_Shoot:
+        _o.Type.Value = this.Type<H_Shoot>().HasValue ? this.Type<H_Shoot>().Value.UnPack() : null;
         break;
-      case PacketType.S_ExchangeItemResultNtf:
-        _o.Type.Value = this.Type<S_ExchangeItemResultNtf>().HasValue ? this.Type<S_ExchangeItemResultNtf>().Value.UnPack() : null;
+      case PacketType.H_ItemSpawn:
+        _o.Type.Value = this.Type<H_ItemSpawn>().HasValue ? this.Type<H_ItemSpawn>().Value.UnPack() : null;
         break;
-      case PacketType.C_PingReq:
-        _o.Type.Value = this.Type<C_PingReq>().HasValue ? this.Type<C_PingReq>().Value.UnPack() : null;
+      case PacketType.H_ItemDespawn:
+        _o.Type.Value = this.Type<H_ItemDespawn>().HasValue ? this.Type<H_ItemDespawn>().Value.UnPack() : null;
         break;
-      case PacketType.S_PongRes:
-        _o.Type.Value = this.Type<S_PongRes>().HasValue ? this.Type<S_PongRes>().Value.UnPack() : null;
+      case PacketType.G_ItemGain:
+        _o.Type.Value = this.Type<G_ItemGain>().HasValue ? this.Type<G_ItemGain>().Value.UnPack() : null;
         break;
-      case PacketType.C_RegisterP2PSession:
-        _o.Type.Value = this.Type<C_RegisterP2PSession>().HasValue ? this.Type<C_RegisterP2PSession>().Value.UnPack() : null;
+      case PacketType.H_ItemGainResult:
+        _o.Type.Value = this.Type<H_ItemGainResult>().HasValue ? this.Type<H_ItemGainResult>().Value.UnPack() : null;
         break;
-      case PacketType.S_RegisterP2PSessionRes:
-        _o.Type.Value = this.Type<S_RegisterP2PSessionRes>().HasValue ? this.Type<S_RegisterP2PSessionRes>().Value.UnPack() : null;
+      case PacketType.H_InventoryUpdate:
+        _o.Type.Value = this.Type<H_InventoryUpdate>().HasValue ? this.Type<H_InventoryUpdate>().Value.UnPack() : null;
         break;
-      case PacketType.C_JoinP2PSession:
-        _o.Type.Value = this.Type<C_JoinP2PSession>().HasValue ? this.Type<C_JoinP2PSession>().Value.UnPack() : null;
+      case PacketType.G_ItemExchange:
+        _o.Type.Value = this.Type<G_ItemExchange>().HasValue ? this.Type<G_ItemExchange>().Value.UnPack() : null;
         break;
-      case PacketType.S_P2PSessionInfo:
-        _o.Type.Value = this.Type<S_P2PSessionInfo>().HasValue ? this.Type<S_P2PSessionInfo>().Value.UnPack() : null;
+      case PacketType.H_ItemExchangeResult:
+        _o.Type.Value = this.Type<H_ItemExchangeResult>().HasValue ? this.Type<H_ItemExchangeResult>().Value.UnPack() : null;
         break;
       case PacketType.S_PeerJoined:
         _o.Type.Value = this.Type<S_PeerJoined>().HasValue ? this.Type<S_PeerJoined>().Value.UnPack() : null;

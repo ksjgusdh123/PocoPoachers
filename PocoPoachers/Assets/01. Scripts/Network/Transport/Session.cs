@@ -30,12 +30,12 @@ public class Session
 
     public void OnConnected(EndPoint endPoint)
     {
-        MainThreadDispatcher.Enqueue(() => NetworkManager.Instance?.NotifySessionConnected());
+        MainThreadDispatcher.Enqueue(() => NetworkManager.Instance?.OnSessionConnected());
     }
 
     public void OnDisconnected(EndPoint endPoint)
     {
-        MainThreadDispatcher.Enqueue(() => NetworkManager.Instance?.NotifySessionDisconnected());
+        MainThreadDispatcher.Enqueue(() => NetworkManager.Instance?.OnSessionDisconnected());
     }
 
     public virtual void OnSend(int numOfBytes) { }

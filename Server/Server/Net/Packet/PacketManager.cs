@@ -21,7 +21,7 @@ public static partial class PacketManager
         var root = FlatPacket.GetRootAsFlatPacket(bb);
 
         PacketType type = root.TypeType;
-        if (!(type == PacketType.C_MoveReq || type == PacketType.C_PingReq))
+        if (type != PacketType.C_Heartbeat)
             LOG($"Recv {type}");
 
         if (!_onRecv.TryGetValue(type, out var action))

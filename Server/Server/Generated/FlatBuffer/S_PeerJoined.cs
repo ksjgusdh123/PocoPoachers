@@ -16,41 +16,17 @@ public struct S_PeerJoined : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public S_PeerJoined __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string PeerPublicIp { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetPeerPublicIpBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetPeerPublicIpBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetPeerPublicIpArray() { return __p.__vector_as_array<byte>(4); }
-  public ushort PeerPublicPort { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
-  public string PeerPrivateIp { get { int o = __p.__offset(8); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetPeerPrivateIpBytes() { return __p.__vector_as_span<byte>(8, 1); }
-#else
-  public ArraySegment<byte>? GetPeerPrivateIpBytes() { return __p.__vector_as_arraysegment(8); }
-#endif
-  public byte[] GetPeerPrivateIpArray() { return __p.__vector_as_array<byte>(8); }
-  public ushort PeerPrivatePort { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
+  public PeerInfo? Info { get { int o = __p.__offset(4); return o != 0 ? (PeerInfo?)(new PeerInfo()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<S_PeerJoined> CreateS_PeerJoined(FlatBufferBuilder builder,
-      StringOffset peer_public_ipOffset = default(StringOffset),
-      ushort peer_public_port = 0,
-      StringOffset peer_private_ipOffset = default(StringOffset),
-      ushort peer_private_port = 0) {
-    builder.StartTable(4);
-    S_PeerJoined.AddPeerPrivateIp(builder, peer_private_ipOffset);
-    S_PeerJoined.AddPeerPublicIp(builder, peer_public_ipOffset);
-    S_PeerJoined.AddPeerPrivatePort(builder, peer_private_port);
-    S_PeerJoined.AddPeerPublicPort(builder, peer_public_port);
+      Offset<PeerInfo> infoOffset = default(Offset<PeerInfo>)) {
+    builder.StartTable(1);
+    S_PeerJoined.AddInfo(builder, infoOffset);
     return S_PeerJoined.EndS_PeerJoined(builder);
   }
 
-  public static void StartS_PeerJoined(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddPeerPublicIp(FlatBufferBuilder builder, StringOffset peerPublicIpOffset) { builder.AddOffset(0, peerPublicIpOffset.Value, 0); }
-  public static void AddPeerPublicPort(FlatBufferBuilder builder, ushort peerPublicPort) { builder.AddUshort(1, peerPublicPort, 0); }
-  public static void AddPeerPrivateIp(FlatBufferBuilder builder, StringOffset peerPrivateIpOffset) { builder.AddOffset(2, peerPrivateIpOffset.Value, 0); }
-  public static void AddPeerPrivatePort(FlatBufferBuilder builder, ushort peerPrivatePort) { builder.AddUshort(3, peerPrivatePort, 0); }
+  public static void StartS_PeerJoined(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void AddInfo(FlatBufferBuilder builder, Offset<PeerInfo> infoOffset) { builder.AddOffset(0, infoOffset.Value, 0); }
   public static Offset<S_PeerJoined> EndS_PeerJoined(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<S_PeerJoined>(o);
@@ -61,36 +37,23 @@ public struct S_PeerJoined : IFlatbufferObject
     return _o;
   }
   public void UnPackTo(S_PeerJoinedT _o) {
-    _o.PeerPublicIp = this.PeerPublicIp;
-    _o.PeerPublicPort = this.PeerPublicPort;
-    _o.PeerPrivateIp = this.PeerPrivateIp;
-    _o.PeerPrivatePort = this.PeerPrivatePort;
+    _o.Info = this.Info.HasValue ? this.Info.Value.UnPack() : null;
   }
   public static Offset<S_PeerJoined> Pack(FlatBufferBuilder builder, S_PeerJoinedT _o) {
     if (_o == null) return default(Offset<S_PeerJoined>);
-    var _peer_public_ip = _o.PeerPublicIp == null ? default(StringOffset) : builder.CreateString(_o.PeerPublicIp);
-    var _peer_private_ip = _o.PeerPrivateIp == null ? default(StringOffset) : builder.CreateString(_o.PeerPrivateIp);
+    var _info = _o.Info == null ? default(Offset<PeerInfo>) : PeerInfo.Pack(builder, _o.Info);
     return CreateS_PeerJoined(
       builder,
-      _peer_public_ip,
-      _o.PeerPublicPort,
-      _peer_private_ip,
-      _o.PeerPrivatePort);
+      _info);
   }
 }
 
 public class S_PeerJoinedT
 {
-  public string PeerPublicIp { get; set; }
-  public ushort PeerPublicPort { get; set; }
-  public string PeerPrivateIp { get; set; }
-  public ushort PeerPrivatePort { get; set; }
+  public PeerInfoT Info { get; set; }
 
   public S_PeerJoinedT() {
-    this.PeerPublicIp = null;
-    this.PeerPublicPort = 0;
-    this.PeerPrivateIp = null;
-    this.PeerPrivatePort = 0;
+    this.Info = null;
   }
 }
 
@@ -100,10 +63,7 @@ static public class S_PeerJoinedVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*PeerPublicIp*/, false)
-      && verifier.VerifyField(tablePos, 6 /*PeerPublicPort*/, 2 /*ushort*/, 2, false)
-      && verifier.VerifyString(tablePos, 8 /*PeerPrivateIp*/, false)
-      && verifier.VerifyField(tablePos, 10 /*PeerPrivatePort*/, 2 /*ushort*/, 2, false)
+      && verifier.VerifyTable(tablePos, 4 /*Info*/, PeerInfoVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

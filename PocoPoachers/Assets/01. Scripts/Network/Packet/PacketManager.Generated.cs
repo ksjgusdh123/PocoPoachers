@@ -6,18 +6,21 @@ public static partial class PacketManager
 {
     static void Register()
     {
-        _onRecv.Add(PacketType.S_LoginRes             , PacketHandlers.OnS_LoginRes);
-        _onRecv.Add(PacketType.S_MoveNtf              , PacketHandlers.OnS_MoveNtf);
-        _onRecv.Add(PacketType.S_InventoryNtf         , PacketHandlers.OnS_InventoryNtf);
-        _onRecv.Add(PacketType.S_WorldItemDespawnNtf  , PacketHandlers.OnS_WorldItemDespawnNtf);
-        _onRecv.Add(PacketType.S_ShootNtf             , PacketHandlers.OnS_ShootNtf);
-        _onRecv.Add(PacketType.S_SpawnItemBoxNtf      , PacketHandlers.OnS_SpawnItemBoxNtf);
-        _onRecv.Add(PacketType.S_ChangeItemBox        , PacketHandlers.OnS_ChangeItemBox);
-        _onRecv.Add(PacketType.S_SuccessGainItemNtf   , PacketHandlers.OnS_SuccessGainItemNtf);
-        _onRecv.Add(PacketType.S_ExchangeItemResultNtf, PacketHandlers.OnS_ExchangeItemResultNtf);
-        _onRecv.Add(PacketType.S_PongRes              , PacketHandlers.OnS_PongRes);
-        _onRecv.Add(PacketType.S_RegisterP2PSessionRes, PacketHandlers.OnS_RegisterP2PSessionRes);
-        _onRecv.Add(PacketType.S_P2PSessionInfo       , PacketHandlers.OnS_P2PSessionInfo);
-        _onRecv.Add(PacketType.S_PeerJoined           , PacketHandlers.OnS_PeerJoined);
+        _onRecv.Add(PacketType.S_LoginResult       , PacketHandlers.OnS_LoginResult);
+        _onRecv.Add(PacketType.S_HeartbeatAck      , PacketHandlers.OnS_HeartbeatAck);
+        _onRecv.Add(PacketType.S_CreateRoom        , PacketHandlers.OnS_CreateRoom);
+        _onRecv.Add(PacketType.S_JoinRoom          , PacketHandlers.OnS_JoinRoom);
+        _onRecv.Add(PacketType.G_Move              , PacketHandlers.OnG_Move);
+        _onRecv.Add(PacketType.H_Move              , PacketHandlers.OnH_Move);
+        _onRecv.Add(PacketType.G_Shoot             , PacketHandlers.OnG_Shoot);
+        _onRecv.Add(PacketType.H_Shoot             , PacketHandlers.OnH_Shoot);
+        _onRecv.Add(PacketType.H_ItemSpawn         , PacketHandlers.OnH_ItemSpawn);
+        _onRecv.Add(PacketType.H_ItemDespawn       , PacketHandlers.OnH_ItemDespawn);
+        _onRecv.Add(PacketType.G_ItemGain          , PacketHandlers.OnG_ItemGain);
+        _onRecv.Add(PacketType.H_ItemGainResult    , PacketHandlers.OnH_ItemGainResult);
+        _onRecv.Add(PacketType.H_InventoryUpdate   , PacketHandlers.OnH_InventoryUpdate);
+        _onRecv.Add(PacketType.G_ItemExchange      , PacketHandlers.OnG_ItemExchange);
+        _onRecv.Add(PacketType.H_ItemExchangeResult, PacketHandlers.OnH_ItemExchangeResult);
+        _onRecv.Add(PacketType.S_PeerJoined        , PacketHandlers.OnS_PeerJoined);
     }
 }

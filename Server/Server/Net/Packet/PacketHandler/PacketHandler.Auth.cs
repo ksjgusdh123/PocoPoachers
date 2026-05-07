@@ -1,41 +1,30 @@
-﻿using System.Linq;
-
-namespace Server;
+﻿namespace Server;
 
 public partial class PacketHandler
 {
-    public void OnC_LoginReq(ClientSession session, FlatPacket root)
+    public void OnC_Login(ClientSession session, FlatPacket root)
     {
-        var pkt = root.TypeAsC_LoginReq();
+        var pkt = root.TypeAsC_Login();
         string userName = pkt.Username ?? string.Empty;
         bool success = !string.IsNullOrWhiteSpace(userName);
+        int playerId = -1;
 
         if (success)
         {
-            int playerId = SessionManager.Instance.GenerateId();
-            session.Player = PlayerManager.Instance.CreatePlayer(playerId, userName);
+            playerId = SessionManager.Instance.GenerateId();
+            session.Player = new Player { PlayerId = playerId, UserName = userName };
             SessionManager.Instance.Add(session);
         }
 
-        PacketBuilder.Send(session, new S_LoginResT
+        PacketBuilder.Send(session, new S_LoginResultT
         {
             Success  = success,
-            UserInfo = new TUserInfoT
-            {
-                Id    = success ? session.PlayerId : 0,
-                Name  = success ? session.UserName : "",
-                Level = success ? session.Player!.Stat.Level : 1,
-            },
-        }, S_LoginRes.Pack, PacketType.S_LoginRes);
+            PlayerId = playerId
+        }, S_LoginResult.Pack, PacketType.S_LoginResult);
+    }
 
-        if (success)
-        {
-            var snapshot = session.Player!.Inventory.GetSnapshot();
-            PacketBuilder.Send(session, new S_InventoryNtfT
-            {
-                Items = snapshot.Select(kv => new InventoryItemT { ItemId = kv.Key, Amount = kv.Value }).ToList(),
-            }, S_InventoryNtf.Pack, PacketType.S_InventoryNtf);
-            WorldItemManager.Instance.SyncTo(session);
-        }
+    public void OnC_Logout(ClientSession session, FlatPacket root)
+    {
+        SessionManager.Instance.Remove(session);
     }
 }

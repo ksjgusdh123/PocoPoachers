@@ -7,6 +7,9 @@ public class BulletPool : Singleton<BulletPool>
     private const int DefaultCapacity = 20;
     private const int MaxSize = 100;
 
+    [SerializeField] private GameObject _networkBulletPrefab;
+    public GameObject NetworkBulletPrefab => _networkBulletPrefab;
+
     private readonly Dictionary<GameObject, ObjectPool<Bullet>> _pools = new();
 
     public Bullet Get(GameObject prefab, Vector3 position, Quaternion rotation)

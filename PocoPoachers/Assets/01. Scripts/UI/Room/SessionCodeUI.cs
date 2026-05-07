@@ -1,8 +1,9 @@
+﻿using Mono.Cecil.Cil;
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
 //  SessionCodeUI (Canvas > Panel)
@@ -34,6 +35,7 @@ public class SessionCodeUI : MonoBehaviour
     [Header("Select")]
     [SerializeField] Button _btnHost;
     [SerializeField] Button _btnJoin;
+    [SerializeField] Button _btnSingle;
 
     [Header("Host")]
     [SerializeField] TextMeshProUGUI _txtCode;
@@ -50,12 +52,16 @@ public class SessionCodeUI : MonoBehaviour
     [SerializeField] TextMeshProUGUI _txtStatus;
     [SerializeField] Button          _btnClose;
 
+    public static SessionCodeUI Instance { get; private set; }
+
     string _sessionCode;
 
     void Awake()
     {
+        Instance = this;
         _btnHost.onClick.AddListener(OnClickHost);
         _btnJoin.onClick.AddListener(OnClickJoin);
+        _btnSingle?.onClick.AddListener(OnClickSingle);
         _btnCopy.onClick.AddListener(OnClickCopy);
         _btnHostCancel.onClick.AddListener(OnClickCancel);
         _btnConfirm.onClick.AddListener(OnClickConfirm);
@@ -69,26 +75,29 @@ public class SessionCodeUI : MonoBehaviour
 
         P2PManager.Instance.OnP2PConnected += HandleConnected;
         P2PManager.Instance.OnP2PFailed    += HandleFailed;
-
         ShowView(_selectView);
     }
 
     void OnDestroy()
     {
+        if (Instance == this) Instance = null;
         if (P2PManager.Instance == null) return;
         P2PManager.Instance.OnP2PConnected -= HandleConnected;
         P2PManager.Instance.OnP2PFailed    -= HandleFailed;
     }
 
-    // ── Select ────────────────────────────────────────────────────────────
+    void OnClickSingle()
+    {
+        NetworkManager.Instance.StartSinglePlayer();
+        gameObject.SetActive(false);
+    }
 
     void OnClickHost()
     {
-        _sessionCode  = GenerateCode();
-        _txtCode.text = _sessionCode;
-        _txtHostStatus.text = "친구를 기다리는 중...";
+        _txtHostStatus.text = "방 생성 중...";
         ShowView(_hostView);
-        P2PManager.Instance.StartAsHost(_sessionCode);
+
+        P2PManager.Instance.StartAsHost();
     }
 
     void OnClickJoin()
@@ -96,8 +105,6 @@ public class SessionCodeUI : MonoBehaviour
         _inputCode.text = "";
         ShowView(_joinView);
     }
-
-    // ── Host ──────────────────────────────────────────────────────────────
 
     void OnClickCopy()
     {
@@ -113,18 +120,15 @@ public class SessionCodeUI : MonoBehaviour
         if (_txtHostStatus != null) _txtHostStatus.text = original;
     }
 
-    // ── Join ──────────────────────────────────────────────────────────────
-
     void OnClickConfirm()
     {
         _sessionCode = _inputCode.text.ToUpper();
         SetStatus("연결 중...", false);
-        P2PManager.Instance.StartAsPeer(_sessionCode);
+        P2PManager.Instance.StartAsGuest(_sessionCode);
     }
 
     void OnClickBack() => ShowView(_selectView);
 
-    // ── Cancel / Close ────────────────────────────────────────────────────
 
     void OnClickCancel()
     {
@@ -132,7 +136,33 @@ public class SessionCodeUI : MonoBehaviour
         ShowView(_selectView);
     }
 
-    // ── P2PManager 콜백 ───────────────────────────────────────────────────
+    public void HandleCreateRoom(string code, bool success)
+    {
+        if (success)
+        {
+            _sessionCode = code;
+            _txtCode.text = _sessionCode;
+            _txtHostStatus.text = "게스트 대기 중...";
+        }
+        else
+        {
+            _txtStatus.text = "방 생성에 실패했습니다.";
+            ShowView(_statusView);
+        }
+    }
+
+    public void HandleJoinRoom(bool success)
+    {
+        if (success)
+        {
+            _txtStatus.text = "방장 정보를 찾았습니다. 연결 중...";
+        }
+        else
+        {
+            _txtStatus.text = "방이 존재하지 않거나 입장이 불가능합니다.";
+            ShowView(_statusView);
+        }
+    }
 
     void HandleConnected()
     {
@@ -144,8 +174,6 @@ public class SessionCodeUI : MonoBehaviour
     {
         SetStatus($"연결 실패: {reason}", true);
     }
-
-    // ── Helpers ───────────────────────────────────────────────────────────
 
     void SetStatus(string msg, bool showClose)
     {
@@ -160,15 +188,5 @@ public class SessionCodeUI : MonoBehaviour
         _hostView  .SetActive(target == _hostView);
         _joinView  .SetActive(target == _joinView);
         _statusView.SetActive(target == _statusView);
-    }
-
-    static string GenerateCode()
-    {
-        const string chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // 혼동 문자 제외
-        var rng  = new System.Random();
-        var code = new char[6];
-        for (int i = 0; i < 6; i++)
-            code[i] = chars[rng.Next(chars.Length)];
-        return new string(code);
     }
 }
