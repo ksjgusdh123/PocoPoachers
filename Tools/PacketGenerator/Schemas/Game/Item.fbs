@@ -66,3 +66,18 @@ table H_ItemExchangeResult
     box_item_amount:    int;
     box_slot_index:     int;
 }
+
+table C_ConsumeItem
+{
+    item_id: int;
+    amount: int;
+    inventory_index: int;
+}
+
+table S_ConsumeItemNtf
+{
+    is_success: bool;
+    item_id: int;
+    amount: int;
+    inventory_index: int;
+}

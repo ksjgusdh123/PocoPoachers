@@ -5,23 +5,3 @@ table InventoryItem
     item_id: int;
     amount: int;
 }
-
-table S_InventoryNtf
-{
-    items: [InventoryItem];
-}
-
-table C_ConsumeItem
-{
-    item_id: int;
-    amount: int;
-    inventory_index: int;
-}
-
-table S_ConsumeItemNtf
-{
-    is_success: bool;
-    item_id: int;
-    amount: int;
-    inventory_index: int;
-}

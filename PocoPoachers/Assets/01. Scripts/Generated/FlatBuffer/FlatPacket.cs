@@ -39,6 +39,8 @@ public struct FlatPacket : IFlatbufferObject
   public H_InventoryUpdate TypeAsH_InventoryUpdate() { return Type<H_InventoryUpdate>().Value; }
   public G_ItemExchange TypeAsG_ItemExchange() { return Type<G_ItemExchange>().Value; }
   public H_ItemExchangeResult TypeAsH_ItemExchangeResult() { return Type<H_ItemExchangeResult>().Value; }
+  public C_ConsumeItem TypeAsC_ConsumeItem() { return Type<C_ConsumeItem>().Value; }
+  public S_ConsumeItemNtf TypeAsS_ConsumeItemNtf() { return Type<S_ConsumeItemNtf>().Value; }
   public S_PeerJoined TypeAsS_PeerJoined() { return Type<S_PeerJoined>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
@@ -87,15 +89,6 @@ public struct FlatPacket : IFlatbufferObject
       case PacketType.C_CreateRoom:
         _o.Type.Value = this.Type<C_CreateRoom>().HasValue ? this.Type<C_CreateRoom>().Value.UnPack() : null;
         break;
-      case PacketType.C_ConsumeItem:
-        _o.Type.Value = this.Type<C_ConsumeItem>().HasValue ? this.Type<C_ConsumeItem>().Value.UnPack() : null;
-        break;
-      case PacketType.S_ConsumeItemNtf:
-        _o.Type.Value = this.Type<S_ConsumeItemNtf>().HasValue ? this.Type<S_ConsumeItemNtf>().Value.UnPack() : null;
-        break;
-      case PacketType.S_WorldItemDespawnNtf:
-        _o.Type.Value = this.Type<S_WorldItemDespawnNtf>().HasValue ? this.Type<S_WorldItemDespawnNtf>().Value.UnPack() : null;
-        break;
       case PacketType.S_CreateRoom:
         _o.Type.Value = this.Type<S_CreateRoom>().HasValue ? this.Type<S_CreateRoom>().Value.UnPack() : null;
         break;
@@ -137,6 +130,12 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_ItemExchangeResult:
         _o.Type.Value = this.Type<H_ItemExchangeResult>().HasValue ? this.Type<H_ItemExchangeResult>().Value.UnPack() : null;
+        break;
+      case PacketType.C_ConsumeItem:
+        _o.Type.Value = this.Type<C_ConsumeItem>().HasValue ? this.Type<C_ConsumeItem>().Value.UnPack() : null;
+        break;
+      case PacketType.S_ConsumeItemNtf:
+        _o.Type.Value = this.Type<S_ConsumeItemNtf>().HasValue ? this.Type<S_ConsumeItemNtf>().Value.UnPack() : null;
         break;
       case PacketType.S_PeerJoined:
         _o.Type.Value = this.Type<S_PeerJoined>().HasValue ? this.Type<S_PeerJoined>().Value.UnPack() : null;

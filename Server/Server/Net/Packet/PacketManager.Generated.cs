@@ -8,11 +8,11 @@ public static partial class PacketManager
 {
     static void Register()
     {
-        _onRecv.Add(PacketType.C_Login     , _handler.OnC_Login);
-        _onRecv.Add(PacketType.C_Logout    , _handler.OnC_Logout);
-        _onRecv.Add(PacketType.C_Heartbeat , _handler.OnC_Heartbeat);
-        _onRecv.Add(PacketType.C_CreateRoom, _handler.OnC_CreateRoom);
-        _onRecv.Add(PacketType.C_JoinRoom  , _handler.OnC_JoinRoom);
-        _onRecv.Add(PacketType.C_ConsumeItem    , _handler.OnC_ConsumeItem);
+        _onRecv.Add(PacketType.C_Login      , _handler.OnC_Login);
+        _onRecv.Add(PacketType.C_Logout     , _handler.OnC_Logout);
+        _onRecv.Add(PacketType.C_Heartbeat  , _handler.OnC_Heartbeat);
+        _onRecv.Add(PacketType.C_CreateRoom , _handler.OnC_CreateRoom);
+        _onRecv.Add(PacketType.C_JoinRoom   , _handler.OnC_JoinRoom);
+        _onRecv.Add(PacketType.C_ConsumeItem, _handler.OnC_ConsumeItem);
     }
 }

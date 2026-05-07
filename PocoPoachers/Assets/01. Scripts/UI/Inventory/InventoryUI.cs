@@ -78,16 +78,13 @@ public class InventoryUI : MonoBehaviour
         if (target == null) return;
 
         int boxUid;
-        bool isPlayer;
         if (_inventory.TryGetComponent<WorldObject>(out var worldObject))
         {
             boxUid = worldObject.Id;
-            isPlayer = true;
         }
         else
         {
             boxUid = target.GetComponent<WorldObject>().Id;
-            isPlayer = false;
         }
         int itemTypeId = data.Id;
         GameManager.GetInstance().SaveChangeInventorys(target, _inventory);
