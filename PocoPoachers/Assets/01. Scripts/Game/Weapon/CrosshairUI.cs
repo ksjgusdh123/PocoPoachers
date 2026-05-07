@@ -26,9 +26,11 @@ public class CrosshairUI : MonoBehaviour
     private bool _isCollapsing;
     private bool _isSwitchExpanding;
 
+    [Header("크로스헤어 반동")]
+    [SerializeField] private float _kickRecovery = 150f;
+
     private Vector2 _recoilOffset;
     private float _kickAmount;
-    private float _kickRecovery;
 
     private void Awake()
     {
@@ -84,7 +86,6 @@ public class CrosshairUI : MonoBehaviour
         _targetBaseSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree;
         _maxSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree + _spreadIncrement * 3f;
         _kickAmount = gunData.crosshairKickAmount;
-        _kickRecovery = gunData.crosshairKickRecovery;
     }
 
     public void ResetSpread()
