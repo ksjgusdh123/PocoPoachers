@@ -2870,7 +2870,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0.74301, y: 0.26441, z: 0.80601}
-  m_LocalScale: {x: 10, y: 10, z: 10}
+  m_LocalScale: {x: 50, y: 50, z: 50}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
@@ -4187,6 +4187,8 @@ MonoBehaviour:
   m_BlackboardVariableOverridesList:
   - rid: 8932840512478773505
   - rid: 8932840514625732838
+  - rid: 8932840551967359048
+  - rid: 8932840551967359049
   m_OriginalGraph: {fileID: 4654008035634704781, guid: bccafd8495c963d498ff7b074fe6bd0e, type: 2}
   m_IsInitialised: 0
   m_IsStarted: 0
@@ -4209,6 +4211,22 @@ MonoBehaviour:
           m_Value1: 3420101722484895464
         Name: TargetDetector
         m_Value: {fileID: 2505875333788670752}
+    - rid: 8932840551967359048
+      type: {class: 'BlackboardVariable`1[[System.Single, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 5366528922557517632
+          m_Value1: 13231628202060613841
+        Name: TestAttackRange
+        m_Value: 10
+    - rid: 8932840551967359049
+      type: {class: 'BlackboardVariable`1[[System.Single, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 11370971907091342431
+          m_Value1: 7343192557752250411
+        Name: Speed
+        m_Value: 3.5
 --- !u!195 &2505875333788670747
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -4244,6 +4262,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TargetDetector
   _detectRange: 10
+  _forgetRange: 100
+  _fovAngle: 120
   _targetLayer:
     serializedVersion: 2
     m_Bits: 64
