@@ -12,6 +12,9 @@ GameObject:
   - component: {fileID: 2372178551556888920}
   - component: {fileID: 3121612454067959545}
   - component: {fileID: 1616631178531661169}
+  - component: {fileID: 4920036641651269016}
+  - component: {fileID: 8933119419852236343}
+  - component: {fileID: 2561804450176526631}
   m_Layer: 0
   m_Name: TestAI
   m_TagString: Untagged
@@ -114,3 +117,100 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!195 &4920036641651269016
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8142405357438552423}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.5
+  m_Speed: 3.5
+  m_Acceleration: 8
+  avoidancePriority: 50
+  m_AngularSpeed: 120
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 2
+  m_BaseOffset: 1
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 4
+--- !u!114 &8933119419852236343
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8142405357438552423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0038c16c34866b4f9e25c9c0dc0f7e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.Behavior::Unity.Behavior.BehaviorGraphAgent
+  m_Graph: {fileID: 4654008035634704781, guid: bccafd8495c963d498ff7b074fe6bd0e, type: 2}
+  m_BlackboardVariableOverridesList:
+  - rid: 8932840512478773505
+  - rid: 8932840514625732838
+  - rid: 8932840551967359048
+  - rid: 8932840551967359049
+  m_OriginalGraph: {fileID: 4654008035634704781, guid: bccafd8495c963d498ff7b074fe6bd0e, type: 2}
+  m_IsInitialised: 0
+  m_IsStarted: 0
+  references:
+    version: 2
+    RefIds:
+    - rid: 8932840512478773505
+      type: {class: 'BlackboardVariable`1[[UnityEngine.GameObject, UnityEngine.CoreModule]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 1
+          m_Value1: 0
+        Name: Self
+        m_Value: {fileID: 8142405357438552423}
+    - rid: 8932840514625732838
+      type: {class: 'BlackboardVariable`1[[TargetDetector, Assembly-CSharp]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 4395672679137435310
+          m_Value1: 3420101722484895464
+        Name: TargetDetector
+        m_Value: {fileID: 2561804450176526631}
+    - rid: 8932840551967359048
+      type: {class: 'BlackboardVariable`1[[System.Single, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 5366528922557517632
+          m_Value1: 13231628202060613841
+        Name: TestAttackRange
+        m_Value: 10
+    - rid: 8932840551967359049
+      type: {class: 'BlackboardVariable`1[[System.Single, mscorlib]]', ns: Unity.Behavior, asm: Unity.Behavior}
+      data:
+        GUID:
+          m_Value0: 11370971907091342431
+          m_Value1: 7343192557752250411
+        Name: Speed
+        m_Value: 3.5
+--- !u!114 &2561804450176526631
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8142405357438552423}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8ae19885239136b4c8f25e7a595c3f06, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TargetDetector
+  _detectRange: 10
+  _forgetRange: 100
+  _fovAngle: 120
+  _targetLayer:
+    serializedVersion: 2
+    m_Bits: 64
+  _blackboardTarget: Target
