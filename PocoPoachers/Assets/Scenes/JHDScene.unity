@@ -240,6 +240,7 @@ GameObject:
   - component: {fileID: 108665973}
   - component: {fileID: 108665970}
   - component: {fileID: 108665972}
+  - component: {fileID: 108665981}
   m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
@@ -271,7 +272,7 @@ Transform:
   m_GameObject: {fileID: 108665969}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 8.55, y: 0.35, z: 23.96}
+  m_LocalPosition: {x: 27.27, y: 0.35, z: 23.51}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -311,6 +312,7 @@ MonoBehaviour:
   _dodgeSpeed: 10
   _dodgeDuration: 0.5
   _cooldown: 1
+  _dodgeStaminaCost: 25
   _recoveryDuration: 0.4
 --- !u!114 &108665974
 MonoBehaviour:
@@ -342,6 +344,7 @@ MonoBehaviour:
   _moveSpeed: 5
   _sprintSpeed: 8
   _acceleration: 10
+  _sprintStaminaDrain: 20
   _sendInterval: 0.1
   _minMoveSqrEpsilon: 0.0004
   _minYawDelta: 0.5
@@ -448,6 +451,22 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &108665981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 108665969}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eb17c8a37c53fb4692589dae15a165e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStat
+  _maxHp: 100
+  _maxStamina: 100
+  _staminaRegenRate: 15
+  _staminaRegenDelay: 1
 --- !u!1 &156235886
 GameObject:
   m_ObjectHideFlags: 0
@@ -676,9 +695,8 @@ MonoBehaviour:
   localHost: 127.0.0.1
   remoteHost: 34.47.102.176
   port: 7000
-  userName: Player
   remoteConnection: 0
-  remoteBulletPrefab: {fileID: 0}
+  userName: Player
 --- !u!114 &292225439
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2648,10 +2666,16 @@ MonoBehaviour:
   _bottom: {fileID: 1643260044}
   _left: {fileID: 1252074608}
   _right: {fileID: 1983681393}
+  _dot: {fileID: 0}
+  _dotThreshold: 0.75
+  _dotFadeSpeed: 10
   _pixelsPerDegree: 10
   _spreadIncrement: 20
-  _maxSpread: 150
   _recoverySpeed: 80
+  _collapseSpeed: 200
+  _collapseTargetSpread: 0
+  _kickSpeed: 300
+  _kickRecovery: 150
 --- !u!222 &986249425
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -3063,6 +3087,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1309445961 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8142405357438552423, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+  m_PrefabInstance: {fileID: 2505875333788670744}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1309445969
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1309445961}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 67eceae41350b1849b2eb8cfeac7283a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MonsterStat
+  _monsterId: 1
 --- !u!1001 &1348749932
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3194,6 +3236,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc0d563c725ad604ca1e3416e6cc3faf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BulletPool
+  _networkBulletPrefab: {fileID: 0}
 --- !u!4 &1402948246
 Transform:
   m_ObjectHideFlags: 0
@@ -4155,7 +4198,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8142405357438552423, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1309445969}
   m_SourcePrefab: {fileID: 100100000, guid: 7eb711371b281a44c82543b723192d54, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
