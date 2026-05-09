@@ -6,10 +6,12 @@ Shader "Custom/FovMask"
 
         ColorMask 0
         ZWrite Off
+        ZTest Always
 
         Stencil
         {
             Ref 1
+            WriteMask 1
             Comp Always
             Pass Replace
         }
