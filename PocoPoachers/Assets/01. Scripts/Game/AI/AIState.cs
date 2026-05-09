@@ -9,3 +9,10 @@ public enum AIState
 	Chase,
 	Attack
 }
+
+[BlackboardEnum]
+public enum AIAnimState
+{
+	Idle,
+	Walk
+}
