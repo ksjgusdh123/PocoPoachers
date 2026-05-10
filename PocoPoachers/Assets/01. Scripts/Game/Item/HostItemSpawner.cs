@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -26,20 +26,20 @@ public class HostItemSpawner : MonoBehaviour
 
     void Start()
     {
-        var nm = NetworkManager.Instance;
-        if (nm != null) nm.OnSinglePlayerStarted += OnSinglePlayerStarted;
+        var nmgr = NetworkManager.Instance;
+        if (nmgr != null) nmgr.OnSinglePlayerStarted += OnSinglePlayerStarted;
 
-        var p2p = P2PManager.Instance;
-        if (p2p != null) p2p.OnP2PConnected += OnPeerConnected;
+        var rmgr = RoomManager.Instance;
+        if (rmgr != null) rmgr.OnRoomJoined += OnJoin;
     }
 
     void OnDestroy()
     {
-        var nm = NetworkManager.Instance;
-        if (nm != null) nm.OnSinglePlayerStarted -= OnSinglePlayerStarted;
+        var nmgr = NetworkManager.Instance;
+        if (nmgr != null) nmgr.OnSinglePlayerStarted -= OnSinglePlayerStarted;
 
-        var p2p = P2PManager.Instance;
-        if (p2p != null) p2p.OnP2PConnected -= OnPeerConnected;
+        var rmgr = RoomManager.Instance;
+        if (rmgr != null) rmgr.OnRoomJoined -= OnJoin;
     }
 
     void OnSinglePlayerStarted()
@@ -51,10 +51,10 @@ public class HostItemSpawner : MonoBehaviour
         }
     }
 
-    void OnPeerConnected()
+    void OnJoin()
     {
-        var p2p = P2PManager.Instance;
-        if (p2p == null || !p2p.IsHost) return;
+        var mgr = RoomManager.Instance;
+        if (mgr == null || !mgr.IsHost) return;
 
         if (!_spawned)
         {
@@ -63,18 +63,16 @@ public class HostItemSpawner : MonoBehaviour
         }
         else
         {
-            // 새로 연결된 게스트에게 기존 박스 정보 재전송
             foreach (var data in _spawnedBoxes)
-                p2p.SendToAll(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
+                mgr.SendToAllGuests(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
     }
 
-    // Inspector 버튼이나 외부 코드에서 직접 호출 가능
     public void SpawnAll()
     {
         if (_boxes == null) return;
-        var p2p = P2PManager.Instance;
-        var om  = ObjectManager.Instance;
+        var rmgr = RoomManager.Instance;
+        var omgr  = ObjectManager.Instance;
 
         foreach (var cfg in _boxes)
         {
@@ -90,16 +88,13 @@ public class HostItemSpawner : MonoBehaviour
             };
             _spawnedBoxes.Add(data);
 
-            // 호스트 로컬 스폰
-            om?.SpawnItemBox(uid, 301, cfg.Position, cfg.Rotation)
+            omgr?.SpawnItemBox(uid, 301, cfg.Position, cfg.Rotation)
               ?.Initialize(cfg.ItemIds);
 
-            // 연결된 게스트에게 전송
-            p2p?.SendToAll(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
+            rmgr?.SendToAllGuests(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
     }
 
-    // P2P 세션 초기화 시 상태 리셋
     public void ResetSpawnState()
     {
         _spawnedBoxes.Clear();

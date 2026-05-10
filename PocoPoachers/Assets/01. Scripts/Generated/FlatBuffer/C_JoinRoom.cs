@@ -23,11 +23,11 @@ public struct C_JoinRoom : IFlatbufferObject
   public ArraySegment<byte>? GetSessionCodeBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
   public byte[] GetSessionCodeArray() { return __p.__vector_as_array<byte>(4); }
-  public PeerInfo? MyInfo { get { int o = __p.__offset(6); return o != 0 ? (PeerInfo?)(new PeerInfo()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public MemberInfo? MyInfo { get { int o = __p.__offset(6); return o != 0 ? (MemberInfo?)(new MemberInfo()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<C_JoinRoom> CreateC_JoinRoom(FlatBufferBuilder builder,
       StringOffset session_codeOffset = default(StringOffset),
-      Offset<PeerInfo> my_infoOffset = default(Offset<PeerInfo>)) {
+      Offset<MemberInfo> my_infoOffset = default(Offset<MemberInfo>)) {
     builder.StartTable(2);
     C_JoinRoom.AddMyInfo(builder, my_infoOffset);
     C_JoinRoom.AddSessionCode(builder, session_codeOffset);
@@ -36,7 +36,7 @@ public struct C_JoinRoom : IFlatbufferObject
 
   public static void StartC_JoinRoom(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddSessionCode(FlatBufferBuilder builder, StringOffset sessionCodeOffset) { builder.AddOffset(0, sessionCodeOffset.Value, 0); }
-  public static void AddMyInfo(FlatBufferBuilder builder, Offset<PeerInfo> myInfoOffset) { builder.AddOffset(1, myInfoOffset.Value, 0); }
+  public static void AddMyInfo(FlatBufferBuilder builder, Offset<MemberInfo> myInfoOffset) { builder.AddOffset(1, myInfoOffset.Value, 0); }
   public static Offset<C_JoinRoom> EndC_JoinRoom(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<C_JoinRoom>(o);
@@ -53,7 +53,7 @@ public struct C_JoinRoom : IFlatbufferObject
   public static Offset<C_JoinRoom> Pack(FlatBufferBuilder builder, C_JoinRoomT _o) {
     if (_o == null) return default(Offset<C_JoinRoom>);
     var _session_code = _o.SessionCode == null ? default(StringOffset) : builder.CreateString(_o.SessionCode);
-    var _my_info = _o.MyInfo == null ? default(Offset<PeerInfo>) : PeerInfo.Pack(builder, _o.MyInfo);
+    var _my_info = _o.MyInfo == null ? default(Offset<MemberInfo>) : MemberInfo.Pack(builder, _o.MyInfo);
     return CreateC_JoinRoom(
       builder,
       _session_code,
@@ -64,7 +64,7 @@ public struct C_JoinRoom : IFlatbufferObject
 public class C_JoinRoomT
 {
   public string SessionCode { get; set; }
-  public PeerInfoT MyInfo { get; set; }
+  public MemberInfoT MyInfo { get; set; }
 
   public C_JoinRoomT() {
     this.SessionCode = null;
@@ -79,7 +79,7 @@ static public class C_JoinRoomVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyString(tablePos, 4 /*SessionCode*/, false)
-      && verifier.VerifyTable(tablePos, 6 /*MyInfo*/, PeerInfoVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 6 /*MyInfo*/, MemberInfoVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

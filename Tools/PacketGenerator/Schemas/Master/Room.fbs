@@ -1,4 +1,4 @@
-﻿table PeerInfo
+﻿table MemberInfo
 {
     player_id: int;
     public_ip: string;
@@ -9,7 +9,7 @@
 
 table C_CreateRoom
 {
-    my_info: PeerInfo;
+    my_info: MemberInfo;
 }
 
 table S_CreateRoom
@@ -21,16 +21,16 @@ table S_CreateRoom
 table C_JoinRoom
 {
     session_code: string;
-    my_info: PeerInfo;
+    my_info: MemberInfo;
 }
 
 table S_JoinRoom
 {
     success: bool;
-    host_info: PeerInfo;
+    host_info: MemberInfo;
 }
 
-table S_PeerJoined
+table S_GuestJoined
 {
-    info: PeerInfo;
+    info: MemberInfo;
 }

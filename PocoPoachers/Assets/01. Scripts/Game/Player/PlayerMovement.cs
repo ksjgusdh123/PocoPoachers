@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(PlayerInputHandler))]
@@ -81,8 +81,8 @@ public class PlayerMovement : MonoBehaviour
 
     private void SendMoveToServer()
     {
-        var p2p = P2PManager.Instance;
-        if (p2p == null || !p2p.IsConnected) return;
+        var rmgr = RoomManager.Instance;
+        if (rmgr == null || !rmgr.IsConnected) return;
 
         if (Time.unscaledTime < _nextSendTime) return;
         _nextSendTime = Time.unscaledTime + _sendInterval;
@@ -100,11 +100,11 @@ public class PlayerMovement : MonoBehaviour
         int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
         var vec = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z };
 
-        if (p2p.IsHost)
-            p2p.SendToAll(new H_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
+        if (rmgr.IsHost)
+            rmgr.SendToAllGuests(new H_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
                           H_Move.Pack, PacketType.H_Move);
         else
-            p2p.SendToAll(new G_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
+            rmgr.SendToAllGuests(new G_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
                           G_Move.Pack, PacketType.G_Move);
 
         _lastSentPos  = pos;

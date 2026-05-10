@@ -28,7 +28,7 @@ public enum PacketType : byte
   H_ItemExchangeResult = 21,
   G_ConsumeItem = 22,
   H_ConsumeItemResult = 23,
-  S_PeerJoined = 24,
+  S_GuestJoined = 24,
 };
 
 public class PacketTypeUnion {
@@ -87,8 +87,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_ConsumeItem(G_ConsumeItemT _g_consumeitem) { return new PacketTypeUnion{ Type = PacketType.G_ConsumeItem, Value = _g_consumeitem }; }
   public H_ConsumeItemResultT AsH_ConsumeItemResult() { return this.As<H_ConsumeItemResultT>(); }
   public static PacketTypeUnion FromH_ConsumeItemResult(H_ConsumeItemResultT _h_consumeitemresult) { return new PacketTypeUnion{ Type = PacketType.H_ConsumeItemResult, Value = _h_consumeitemresult }; }
-  public S_PeerJoinedT AsS_PeerJoined() { return this.As<S_PeerJoinedT>(); }
-  public static PacketTypeUnion FromS_PeerJoined(S_PeerJoinedT _s_peerjoined) { return new PacketTypeUnion{ Type = PacketType.S_PeerJoined, Value = _s_peerjoined }; }
+  public S_GuestJoinedT AsS_GuestJoined() { return this.As<S_GuestJoinedT>(); }
+  public static PacketTypeUnion FromS_GuestJoined(S_GuestJoinedT _s_guestjoined) { return new PacketTypeUnion{ Type = PacketType.S_GuestJoined, Value = _s_guestjoined }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -116,7 +116,7 @@ public class PacketTypeUnion {
       case PacketType.H_ItemExchangeResult: return H_ItemExchangeResult.Pack(builder, _o.AsH_ItemExchangeResult()).Value;
       case PacketType.G_ConsumeItem: return G_ConsumeItem.Pack(builder, _o.AsG_ConsumeItem()).Value;
       case PacketType.H_ConsumeItemResult: return H_ConsumeItemResult.Pack(builder, _o.AsH_ConsumeItemResult()).Value;
-      case PacketType.S_PeerJoined: return S_PeerJoined.Pack(builder, _o.AsS_PeerJoined()).Value;
+      case PacketType.S_GuestJoined: return S_GuestJoined.Pack(builder, _o.AsS_GuestJoined()).Value;
     }
   }
 }
@@ -199,8 +199,8 @@ static public class PacketTypeVerify
       case PacketType.H_ConsumeItemResult:
         result = H_ConsumeItemResultVerify.Verify(verifier, tablePos);
         break;
-      case PacketType.S_PeerJoined:
-        result = S_PeerJoinedVerify.Verify(verifier, tablePos);
+      case PacketType.S_GuestJoined:
+        result = S_GuestJoinedVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

@@ -1,14 +1,14 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public static partial class PacketHandlers
 {
     public static void OnG_ItemGain(FlatPacket root)
     {
         var pkt = root.TypeAsG_ItemGain();
-        var p2p = P2PManager.Instance;
-        if (p2p == null || !p2p.IsHost) return;
+        var rmgr = RoomManager.Instance;
+        if (rmgr == null || !rmgr.IsHost) return;
 
-        int requesterId  = p2p.LastSenderPlayerId;
+        int requesterId  = rmgr.LastGuestId;
         bool success     = false;
         int changedSlot  = -1;
 
@@ -47,7 +47,7 @@ public static partial class PacketHandlers
         }
 
         // 요청자에게 결과 응답
-        p2p.SendTo(requesterId, new H_ItemGainResultT
+        rmgr.SendToGuest(requesterId, new H_ItemGainResultT
         {
             Success          = success,
             BoxUid           = pkt.BoxUid,
@@ -70,17 +70,17 @@ public static partial class PacketHandlers
                 SlotIndex  = changedSlot,
             }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
             int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
-            p2p.RelayExcept(myId, segment);
+            rmgr.RelayToOtherGuests(myId, segment);
         }
     }
 
     public static void OnG_ItemExchange(FlatPacket root)
     {
         var pkt = root.TypeAsG_ItemExchange();
-        var p2p = P2PManager.Instance;
-        if (p2p == null || !p2p.IsHost) return;
+        var rmgr = RoomManager.Instance;
+        if (rmgr == null || !rmgr.IsHost) return;
 
-        int requesterId = p2p.LastSenderPlayerId;
+        int requesterId = rmgr.LastGuestId;
         bool success    = false;
 
         var om = ObjectManager.Instance;
@@ -109,7 +109,7 @@ public static partial class PacketHandlers
             }
         }
 
-        p2p.SendTo(requesterId, new H_ItemExchangeResultT
+        rmgr.SendToGuest(requesterId, new H_ItemExchangeResultT
         {
             Success           = success,
             BoxUid            = pkt.BoxUid,

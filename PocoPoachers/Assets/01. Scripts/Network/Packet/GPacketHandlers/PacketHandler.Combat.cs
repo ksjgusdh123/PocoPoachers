@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public static partial class PacketHandlers
 {
@@ -15,10 +15,10 @@ public static partial class PacketHandlers
         SpawnNetworkBullet(origin, direction, pkt.BulletSpeed, pkt.Damage, pkt.MaxRange);
 
         // 호스트: 나머지 게스트에게 H_Shoot 릴레이
-        var p2p = P2PManager.Instance;
-        if (p2p != null && p2p.IsHost)
+        var rmgr = RoomManager.Instance;
+        if (rmgr != null && rmgr.IsHost)
         {
-            p2p.RelayExcept(pkt.PlayerId, PacketBuilder.BuildSegment(
+            rmgr.RelayToOtherGuests(pkt.PlayerId, PacketBuilder.BuildSegment(
                 new H_ShootT
                 {
                     PlayerId    = pkt.PlayerId,

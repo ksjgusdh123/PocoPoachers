@@ -73,17 +73,17 @@ public class SessionCodeUI : MonoBehaviour
             _btnConfirm.interactable = v.Length == 6);
         _btnConfirm.interactable = false;
 
-        P2PManager.Instance.OnP2PConnected += HandleConnected;
-        P2PManager.Instance.OnP2PFailed    += HandleFailed;
+        RoomManager.Instance.OnRoomJoined += HandleConnected;
+        RoomManager.Instance.OnRoomJoinFailed    += HandleFailed;
         ShowView(_selectView);
     }
 
     void OnDestroy()
     {
         if (Instance == this) Instance = null;
-        if (P2PManager.Instance == null) return;
-        P2PManager.Instance.OnP2PConnected -= HandleConnected;
-        P2PManager.Instance.OnP2PFailed    -= HandleFailed;
+        if (RoomManager.Instance == null) return;
+        RoomManager.Instance.OnRoomJoined -= HandleConnected;
+        RoomManager.Instance.OnRoomJoinFailed    -= HandleFailed;
     }
 
     void OnClickSingle()
@@ -97,7 +97,7 @@ public class SessionCodeUI : MonoBehaviour
         _txtHostStatus.text = "방 생성 중...";
         ShowView(_hostView);
 
-        P2PManager.Instance.StartAsHost();
+        RoomManager.Instance.StartAsHost();
     }
 
     void OnClickJoin()
@@ -124,7 +124,7 @@ public class SessionCodeUI : MonoBehaviour
     {
         _sessionCode = _inputCode.text.ToUpper();
         SetStatus("연결 중...", false);
-        P2PManager.Instance.StartAsGuest(_sessionCode);
+        RoomManager.Instance.StartAsGuest(_sessionCode);
     }
 
     void OnClickBack() => ShowView(_selectView);
@@ -132,7 +132,7 @@ public class SessionCodeUI : MonoBehaviour
 
     void OnClickCancel()
     {
-        P2PManager.Instance.CancelP2P();
+        RoomManager.Instance.LeaveRoom();
         ShowView(_selectView);
     }
 

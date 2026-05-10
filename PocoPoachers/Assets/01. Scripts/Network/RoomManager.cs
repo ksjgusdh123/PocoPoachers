@@ -1,30 +1,31 @@
+﻿using Google.FlatBuffers;
 using System;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
-using Google.FlatBuffers;
 using UnityEngine;
+using static UnityEngine.Rendering.HableCurve;
 
-public class P2PManager : Singleton<P2PManager>
+public class RoomManager : Singleton<RoomManager>
 {
     [Header("STUN")]
     [SerializeField] string stunHost = "stun.l.google.com";
     [SerializeField] int    stunPort = 19302;
 
     public bool IsHost             { get; private set; }
-    public bool IsConnected        => _peers.Count > 0;
-    public int  PeerCount          => _peers.Count;
-    public int  LastSenderPlayerId { get; private set; }
+    public bool IsConnected        => _guests.Count > 0;
+    public int  GuestCount          => _guests.Count;
+    public int  LastGuestId { get; private set; }
 
-    public event Action          OnP2PConnected;
-    public event Action<string>  OnP2PFailed;
+    public event Action          OnRoomJoined;
+    public event Action<string>  OnRoomJoinFailed;
 
     Socket     _udpSocket;
     IPEndPoint _myPublicEp;
     Thread     _recvThread;
 
-    readonly ConcurrentDictionary<int, IPEndPoint>     _peers    = new();
+    readonly ConcurrentDictionary<int, IPEndPoint>     _guests    = new();
     readonly ConcurrentDictionary<int, UdpHolePuncher> _punchers = new();
 
     protected override void Awake()
@@ -33,13 +34,13 @@ public class P2PManager : Singleton<P2PManager>
         DontDestroyOnLoad(gameObject);
     }
 
-    public void StartAsHost() => StartP2P(true, null);
-    public void StartAsGuest(string code) => StartP2P(false, code);
+    public void StartAsHost() => CreateOrJoinRoom(true, null);
+    public void StartAsGuest(string code) => CreateOrJoinRoom(false, code);
 
-    private void StartP2P(bool isHost, string code)
+    private void CreateOrJoinRoom(bool isHost, string code)
     {
         IsHost = isHost;
-        _peers.Clear();
+        _guests.Clear();
         _punchers.Clear();
 
         ThreadPool.QueueUserWorkItem(_ => {
@@ -49,7 +50,7 @@ public class P2PManager : Singleton<P2PManager>
                 HandleFailure("STUN 실패");
                 return;
             }
-            var myInfo = GetMyPeerInfo();
+            var myInfo = GetMySessionInfo();
             MainThreadDispatcher.Enqueue(() => {
                 if (IsHost)
                     PacketBuilder.Send(new C_CreateRoomT { MyInfo = myInfo }, C_CreateRoom.Pack, PacketType.C_CreateRoom);
@@ -59,69 +60,62 @@ public class P2PManager : Singleton<P2PManager>
         });
     }
 
-    public void BeginPunch(PeerInfoT target)
+    public void ConnectToGuest(MemberInfoT target)
     {
-        int peerId = target.PlayerId;
+        int id = target.PlayerId;
         IPEndPoint ep = SelectEndPoint(target);
 
         var puncher = new UdpHolePuncher(_udpSocket);
-        _punchers[peerId] = puncher;
+        _punchers[id] = puncher;
 
         puncher.OnSuccess += _ => {
-            _peers[peerId] = ep;
-            _punchers.TryRemove(peerId, out _);
+            _guests[id] = ep;
+            _punchers.TryRemove(id, out _);
 
             if (_recvThread == null || !_recvThread.IsAlive)
             {
-                _recvThread = new Thread(ReceiveLoop) { IsBackground = true, Name = "P2P-Recv" };
+                _recvThread = new Thread(ReceiveLoop) { IsBackground = true, Name = "Room-Recv" };
                 _recvThread.Start();
             }
-            MainThreadDispatcher.Enqueue(() => OnP2PConnected?.Invoke());
+            MainThreadDispatcher.Enqueue(() => OnRoomJoined?.Invoke());
         };
         puncher.OnFailed += (_, reason) => {
-            _punchers.TryRemove(peerId, out _);
+            _punchers.TryRemove(id, out _);
             HandleFailure(reason);
         };
         puncher.Start(ep);
     }
 
-    // 모든 피어에게 전송
-    public void SendToAll<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public void SendToAllGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
         where TTable : struct where TObj : class
     {
-        if (_peers.IsEmpty || _udpSocket == null) return;
+        if (_guests.IsEmpty || _udpSocket == null) return;
         try
         {
             var segment = PacketBuilder.BuildSegment(data, packFunc, type);
-            foreach (var ep in _peers.Values)
+            foreach (var ep in _guests.Values)
                 _udpSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, ep);
         }
-        catch (Exception e) { Debug.LogWarning($"[P2P] SendToAll failed: {e.Message}"); }
+        catch (Exception e) { Debug.LogWarning($"[Room] SendToAll failed: {e.Message}"); }
     }
 
-    // 특정 피어에게만 raw 바이트 전송
-    public void SendTo(int playerId, ArraySegment<byte> segment)
-    {
-        if (_udpSocket == null || !_peers.TryGetValue(playerId, out var ep)) return;
-        try { _udpSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, ep); }
-        catch (Exception e) { Debug.LogWarning($"[P2P] SendTo {playerId} failed: {e.Message}"); }
-    }
-
-    public void SendTo<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public void SendToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
         where TTable : struct where TObj : class
     {
-        SendTo(playerId, PacketBuilder.BuildSegment(data, packFunc, type));
+        var segment = PacketBuilder.BuildSegment(data, packFunc, type);
+        if (_udpSocket == null || !_guests.TryGetValue(playerId, out var ep)) return;
+        try { _udpSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, ep); }
+        catch (Exception e) { Debug.LogWarning($"[Room] SendTo {playerId} failed: {e.Message}"); }
     }
 
-    // 특정 피어 제외하고 raw 바이트 릴레이 (호스트가 게스트 패킷 중계 시 사용)
-    public void RelayExcept(int excludePlayerId, ArraySegment<byte> segment)
+    public void RelayToOtherGuests(int excludePlayerId, ArraySegment<byte> segment)
     {
         if (_udpSocket == null) return;
-        foreach (var kv in _peers)
+        foreach (var kv in _guests)
         {
             if (kv.Key == excludePlayerId) continue;
             try { _udpSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, kv.Value); }
-            catch (Exception e) { Debug.LogWarning($"[P2P] Relay to {kv.Key} failed: {e.Message}"); }
+            catch (Exception e) { Debug.LogWarning($"[Room] Relay to {kv.Key} failed: {e.Message}"); }
         }
     }
 
@@ -129,7 +123,7 @@ public class P2PManager : Singleton<P2PManager>
     {
         byte[] buffer = new byte[2048];
         EndPoint remote = new IPEndPoint(IPAddress.Any, 0);
-        while (_peers.Count > 0 || _punchers.Count > 0)
+        while (_guests.Count > 0 || _punchers.Count > 0)
         {
             try
             {
@@ -140,7 +134,7 @@ public class P2PManager : Singleton<P2PManager>
 
                 // 발신자 PlayerId 확인
                 int senderId = 0;
-                foreach (var kv in _peers)
+                foreach (var kv in _guests)
                     if (kv.Value.Equals(remote)) { senderId = kv.Key; break; }
 
                 byte[] copy = new byte[len];
@@ -148,9 +142,9 @@ public class P2PManager : Singleton<P2PManager>
                 int captured = senderId;
                 MainThreadDispatcher.Enqueue(() =>
                 {
-                    LastSenderPlayerId = captured;
+                    LastGuestId = captured;
                     PacketManager.HandlePacket(new ArraySegment<byte>(copy));
-                    LastSenderPlayerId = 0;
+                    LastGuestId = 0;
                 });
             }
             catch { break; }
@@ -169,7 +163,7 @@ public class P2PManager : Singleton<P2PManager>
         catch (Exception e) { HandleFailure(e.Message); return false; }
     }
 
-    private IPEndPoint SelectEndPoint(PeerInfoT info)
+    private IPEndPoint SelectEndPoint(MemberInfoT info)
     {
         if (!string.IsNullOrEmpty(info.PrivateIp) && info.PrivatePort != 0 && IsOnSameLan(info.PrivateIp))
             return new IPEndPoint(IPAddress.Parse(info.PrivateIp), info.PrivatePort);
@@ -192,7 +186,7 @@ public class P2PManager : Singleton<P2PManager>
         return (s.LocalEndPoint as IPEndPoint).Address.ToString();
     }
 
-    public PeerInfoT GetMyPeerInfo() => new PeerInfoT
+    public MemberInfoT GetMySessionInfo() => new MemberInfoT
     {
         PlayerId   = NetworkManager.Instance.MyPlayerId,
         PublicIp   = _myPublicEp.Address.ToString(),
@@ -201,11 +195,11 @@ public class P2PManager : Singleton<P2PManager>
         PrivatePort = (ushort)((IPEndPoint)_udpSocket.LocalEndPoint).Port,
     };
 
-    public void CancelP2P()
+    public void LeaveRoom()
     {
         foreach (var p in _punchers.Values) p.Stop();
         _punchers.Clear();
-        _peers.Clear();
+        _guests.Clear();
         _udpSocket?.Close();
         _udpSocket = null;
         IsHost = false;
@@ -213,7 +207,7 @@ public class P2PManager : Singleton<P2PManager>
 
     public void HandleFailure(string msg)
     {
-        MainThreadDispatcher.Enqueue(() => OnP2PFailed?.Invoke(msg));
+        MainThreadDispatcher.Enqueue(() => OnRoomJoinFailed?.Invoke(msg));
     }
 
     protected override void OnDestroy()

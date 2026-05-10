@@ -42,7 +42,7 @@ public struct FlatPacket : IFlatbufferObject
   public H_ItemExchangeResult TypeAsH_ItemExchangeResult() { return Type<H_ItemExchangeResult>().Value; }
   public G_ConsumeItem TypeAsG_ConsumeItem() { return Type<G_ConsumeItem>().Value; }
   public H_ConsumeItemResult TypeAsH_ConsumeItemResult() { return Type<H_ConsumeItemResult>().Value; }
-  public S_PeerJoined TypeAsS_PeerJoined() { return Type<S_PeerJoined>().Value; }
+  public S_GuestJoined TypeAsS_GuestJoined() { return Type<S_GuestJoined>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -141,8 +141,8 @@ public struct FlatPacket : IFlatbufferObject
       case PacketType.H_ConsumeItemResult:
         _o.Type.Value = this.Type<H_ConsumeItemResult>().HasValue ? this.Type<H_ConsumeItemResult>().Value.UnPack() : null;
         break;
-      case PacketType.S_PeerJoined:
-        _o.Type.Value = this.Type<S_PeerJoined>().HasValue ? this.Type<S_PeerJoined>().Value.UnPack() : null;
+      case PacketType.S_GuestJoined:
+        _o.Type.Value = this.Type<S_GuestJoined>().HasValue ? this.Type<S_GuestJoined>().Value.UnPack() : null;
         break;
     }
   }
