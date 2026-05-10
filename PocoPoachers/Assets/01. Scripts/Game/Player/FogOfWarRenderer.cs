@@ -22,6 +22,8 @@ public class FogOfWarRenderer : MonoBehaviour
 
     private Transform _fovMeshTrans;
     private Mesh _fovMesh;
+    private Transform _circleMeshTrans;
+    private Mesh _circleMesh;
     private Transform _overlayTrans;
     private CommandBuffer _cmd;
 
@@ -35,6 +37,7 @@ public class FogOfWarRenderer : MonoBehaviour
 
         CreateRenderTextures();
         CreateFovMeshObject();
+        CreateCircleMeshObject();
         CreateDarkOverlayObject();
 
         _mainCam.cullingMask &= ~LayerMask.GetMask("FogMask");
@@ -47,8 +50,9 @@ public class FogOfWarRenderer : MonoBehaviour
     {
         RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
 
-        if (_fovMeshTrans != null) Destroy(_fovMeshTrans.gameObject);
-        if (_overlayTrans != null) Destroy(_overlayTrans.gameObject);
+        if (_fovMeshTrans    != null) Destroy(_fovMeshTrans.gameObject);
+        if (_circleMeshTrans != null) Destroy(_circleMeshTrans.gameObject);
+        if (_overlayTrans    != null) Destroy(_overlayTrans.gameObject);
 
         if (_fogMaskRT  != null) { _fogMaskRT.Release();  Destroy(_fogMaskRT); }
         if (_blurTempRT != null) { _blurTempRT.Release(); Destroy(_blurTempRT); }
@@ -63,29 +67,30 @@ public class FogOfWarRenderer : MonoBehaviour
             transform.position.y + _groundOffset,
             transform.position.z);
 
-        _fovMeshTrans.position = groundPos;
-        _fovMeshTrans.rotation = Quaternion.identity;
-        _overlayTrans.position = groundPos;
+        _fovMeshTrans.position    = groundPos;
+        _fovMeshTrans.rotation    = Quaternion.identity;
+        _circleMeshTrans.position = groundPos;
+        _overlayTrans.position    = groundPos;
 
         UpdateFovMesh();
+        UpdateCircleMesh();
     }
 
-    // 메인 카메라 렌더 직전에 호출 → 정확한 VP 행렬 사용 가능
     private void OnBeginCameraRendering(ScriptableRenderContext ctx, Camera cam)
     {
         if (cam != _mainCam) return;
 
-        // FovMesh → _fogMaskRT
         _cmd.Clear();
         _cmd.SetRenderTarget(_fogMaskRT);
         _cmd.ClearRenderTarget(false, true, Color.black);
-        _cmd.SetViewProjectionMatrices(
-            cam.worldToCameraMatrix,
-            cam.projectionMatrix);
-        _cmd.DrawMesh(_fovMesh, _fovMeshTrans.localToWorldMatrix, _fovMaskMat);
+        _cmd.SetViewProjectionMatrices(cam.worldToCameraMatrix, cam.projectionMatrix);
+
+        // 부채꼴 FOV + 주변 원형 시야를 같은 RT에 렌더
+        _cmd.DrawMesh(_fovMesh,    _fovMeshTrans.localToWorldMatrix,    _fovMaskMat);
+        _cmd.DrawMesh(_circleMesh, _circleMeshTrans.localToWorldMatrix, _fovMaskMat);
+
         Graphics.ExecuteCommandBuffer(_cmd);
 
-        // Gaussian blur
         _blurMat.SetFloat(BlurSizeProp, _blurSize);
         for (int i = 0; i < _blurIterations; i++)
         {
@@ -115,6 +120,21 @@ public class FogOfWarRenderer : MonoBehaviour
         _fovMaskMat = new Material(Shader.Find("Custom/FovMask"));
         var mr = go.AddComponent<MeshRenderer>();
         mr.material          = _fovMaskMat;
+        mr.shadowCastingMode = ShadowCastingMode.Off;
+        mr.receiveShadows    = false;
+    }
+
+    private void CreateCircleMeshObject()
+    {
+        var go = new GameObject("CircleMask");
+        go.layer = LayerMask.NameToLayer("FogMask");
+        _circleMeshTrans = go.transform;
+
+        _circleMesh = new Mesh { name = "CircleMesh" };
+        go.AddComponent<MeshFilter>().mesh = _circleMesh;
+
+        var mr = go.AddComponent<MeshRenderer>();
+        mr.material          = _fovMaskMat; // 동일한 흰색 셰이더 재사용
         mr.shadowCastingMode = ShadowCastingMode.Off;
         mr.receiveShadows    = false;
     }
@@ -178,5 +198,40 @@ public class FogOfWarRenderer : MonoBehaviour
         _fovMesh.vertices  = vertices;
         _fovMesh.triangles = triangles;
         _fovMesh.RecalculateNormals();
+    }
+
+    private void UpdateCircleMesh()
+    {
+        const int segments = 32;
+        float     radius   = _visionConfig.circleRadius;
+        Vector3   origin   = _circleMeshTrans.position;
+
+        Vector3[] vertices  = new Vector3[segments + 2];
+        vertices[0] = Vector3.zero;
+
+        for (int i = 0; i <= segments; i++)
+        {
+            float   angle = 360f / segments * i;
+            Vector3 dir   = Quaternion.Euler(0, angle, 0) * Vector3.forward;
+
+            float dist = Physics.Raycast(origin, dir, out RaycastHit hit, radius, _wallLayer)
+                ? hit.distance
+                : radius;
+
+            vertices[i + 1] = dir * dist;
+        }
+
+        int[] triangles = new int[segments * 3];
+        for (int i = 0; i < segments; i++)
+        {
+            triangles[i * 3]     = 0;
+            triangles[i * 3 + 1] = i + 1;
+            triangles[i * 3 + 2] = i + 2;
+        }
+
+        _circleMesh.Clear();
+        _circleMesh.vertices  = vertices;
+        _circleMesh.triangles = triangles;
+        _circleMesh.RecalculateNormals();
     }
 }
