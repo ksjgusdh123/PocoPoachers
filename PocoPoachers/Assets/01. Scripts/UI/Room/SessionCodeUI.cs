@@ -35,7 +35,6 @@ public class SessionCodeUI : MonoBehaviour
     [Header("Select")]
     [SerializeField] Button _btnHost;
     [SerializeField] Button _btnJoin;
-    [SerializeField] Button _btnSingle;
 
     [Header("Host")]
     [SerializeField] TextMeshProUGUI _txtCode;
@@ -61,7 +60,6 @@ public class SessionCodeUI : MonoBehaviour
         Instance = this;
         _btnHost.onClick.AddListener(OnClickHost);
         _btnJoin.onClick.AddListener(OnClickJoin);
-        _btnSingle?.onClick.AddListener(OnClickSingle);
         _btnCopy.onClick.AddListener(OnClickCopy);
         _btnHostCancel.onClick.AddListener(OnClickCancel);
         _btnConfirm.onClick.AddListener(OnClickConfirm);
@@ -73,8 +71,8 @@ public class SessionCodeUI : MonoBehaviour
             _btnConfirm.interactable = v.Length == 6);
         _btnConfirm.interactable = false;
 
-        RoomManager.Instance.OnRoomJoined += HandleConnected;
-        RoomManager.Instance.OnRoomJoinFailed    += HandleFailed;
+        RoomManager.Instance.OnGameStarted   += HandleGameStarted;
+        RoomManager.Instance.OnRoomJoinFailed += HandleFailed;
         ShowView(_selectView);
     }
 
@@ -82,22 +80,25 @@ public class SessionCodeUI : MonoBehaviour
     {
         if (Instance == this) Instance = null;
         if (RoomManager.Instance == null) return;
-        RoomManager.Instance.OnRoomJoined -= HandleConnected;
-        RoomManager.Instance.OnRoomJoinFailed    -= HandleFailed;
-    }
-
-    void OnClickSingle()
-    {
-        NetworkManager.Instance.StartSinglePlayer();
-        gameObject.SetActive(false);
+        RoomManager.Instance.OnGameStarted   -= HandleGameStarted;
+        RoomManager.Instance.OnRoomJoinFailed -= HandleFailed;
     }
 
     void OnClickHost()
     {
-        _txtHostStatus.text = "방 생성 중...";
-        ShowView(_hostView);
-
-        RoomManager.Instance.StartAsHost();
+        var nm = NetworkManager.Instance;
+        if (nm != null && nm.Session != null && nm.Session.IsConnected)
+        {
+            _txtHostStatus.text = "방 생성 중...";
+            ShowView(_hostView);
+            RoomManager.Instance.StartAsHost();
+        }
+        else
+        {
+            // TEMP: 서버 미연결 시 로컬 즉시 시작
+            RoomManager.Instance.StartLocalHost();
+            gameObject.SetActive(false);
+        }
     }
 
     void OnClickJoin()
@@ -140,9 +141,9 @@ public class SessionCodeUI : MonoBehaviour
     {
         if (success)
         {
-            _sessionCode = code;
+            _sessionCode  = code;
             _txtCode.text = _sessionCode;
-            _txtHostStatus.text = "게스트 대기 중...";
+            // OnGameStarted 이후 HandleGameStarted에서 상태 문자 갱신
         }
         else
         {
@@ -164,10 +165,18 @@ public class SessionCodeUI : MonoBehaviour
         }
     }
 
-    void HandleConnected()
+    void HandleGameStarted()
     {
-        SetStatus("연결 성공!", false);
-        // TODO: 씬 전환 또는 게임 시작 처리
+        if (RoomManager.IsHost)
+        {
+            // 게임 시작 - HostView에서 코드를 공유하고 닫기 버튼으로 계속
+            _txtHostStatus.text = "게임 시작! 코드를 친구에게 공유하세요.";
+        }
+        else
+        {
+            SetStatus("연결 성공!", false);
+            // TODO: 씬 전환 또는 게임 시작 처리
+        }
     }
 
     void HandleFailed(string reason)

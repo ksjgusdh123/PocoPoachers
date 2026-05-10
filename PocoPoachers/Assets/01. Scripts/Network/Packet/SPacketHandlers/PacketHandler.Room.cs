@@ -6,8 +6,11 @@ public static partial class PacketHandlers
         string code = pkt.SessionCode ?? string.Empty;
         bool success = pkt.Success;
 
-        MainThreadDispatcher.Enqueue(() =>
-            SessionCodeUI.Instance?.HandleCreateRoom(code, success));
+        MainThreadDispatcher.Enqueue(() => {
+            SessionCodeUI.Instance?.HandleCreateRoom(code, success);
+            if (success)
+                RoomManager.Instance?.NotifyGameStarted();
+        });
     }
 
     public static void OnS_JoinRoom(FlatPacket root)

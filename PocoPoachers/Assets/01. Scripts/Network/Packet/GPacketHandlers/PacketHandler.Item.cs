@@ -61,8 +61,7 @@ public static partial class PacketHandlers
         if (success)
         {
             int updateAmount = pkt.IsPlayerGained ? -pkt.Amount : pkt.Amount;
-            int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
-            PacketBuilder.BroadcastToGuests(myId, new H_ItemBoxUpdateT
+            PacketBuilder.BroadcastToGuests(requesterId, new H_ItemBoxUpdateT
             {
                 BoxUid     = pkt.BoxUid,
                 ItemTypeId = pkt.ItemTypeId,

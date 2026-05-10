@@ -17,11 +17,14 @@ public class RoomManager : Singleton<RoomManager>
     public static int LastGuestId => Instance != null ? Instance._lastGuestId : 0;
 
     public bool _hasGuests => _guests.Count > 0;
-    private bool _isHost;
+    private bool _isHost = true;
     public int  _lastGuestId { get; private set; }
 
+    public event Action          OnGameStarted;
     public event Action          OnRoomJoined;
     public event Action<string>  OnRoomJoinFailed;
+
+    public void NotifyGameStarted() => OnGameStarted?.Invoke();
 
     UdpSession _udpSession;
     IPEndPoint _myPublicEp;
@@ -38,6 +41,15 @@ public class RoomManager : Singleton<RoomManager>
 
     public void StartAsHost() => CreateOrJoinRoom(true, null);
     public void StartAsGuest(string code) => CreateOrJoinRoom(false, code);
+
+    // TEMP: 마스터 서버 없이 로컬에서 즉시 호스트로 시작
+    public void StartLocalHost()
+    {
+        _isHost = true;
+        _guests.Clear();
+        _punchers.Clear();
+        NotifyGameStarted();
+    }
 
     private void CreateOrJoinRoom(bool isHost, string code)
     {
@@ -84,7 +96,10 @@ public class RoomManager : Singleton<RoomManager>
             _guests[id] = ep;
             _punchers.TryRemove(id, out _);
             _udpSession.StartReceive();
-            MainThreadDispatcher.Enqueue(() => OnRoomJoined?.Invoke());
+            MainThreadDispatcher.Enqueue(() => {
+                if (_isHost) OnRoomJoined?.Invoke();
+                else         OnGameStarted?.Invoke();
+            });
         };
         puncher.OnFailed += (_, reason) => {
             _punchers.TryRemove(id, out _);

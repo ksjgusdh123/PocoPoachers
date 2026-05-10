@@ -2,7 +2,7 @@
 using UnityEngine;
 
 /// <summary>
-/// 호스트가 게임 시작 시 더미 아이템 박스를 스폰하고 게스트에게 H_ItemSpawn을 전송합니다.
+/// 호스트가 게임 시작 시 아이템 박스를 스폰하고 게스트에게 H_ItemSpawn을 전송합니다.
 /// Inspector에서 박스 위치·회전·아이템 ID를 설정하세요.
 /// </summary>
 public class HostItemSpawner : MonoBehaviour
@@ -17,84 +17,79 @@ public class HostItemSpawner : MonoBehaviour
 
     [SerializeField] BoxConfig[] _boxes;
 
-    // 박스 UID는 1000번부터 할당
     int _nextUid = 1000;
-
-    // 스폰된 박스 데이터 캐시 (나중에 연결되는 게스트에게 재전송)
     readonly List<H_ItemSpawnT> _spawnedBoxes = new();
     bool _spawned;
 
     void Start()
     {
-        var nmgr = NetworkManager.Instance;
-        if (nmgr != null) nmgr.OnSinglePlayerStarted += HandleSinglePlayerStarted;
-
         var rmgr = RoomManager.Instance;
-        if (rmgr != null) rmgr.OnRoomJoined += HandleRoomJoined;
+        if (rmgr != null)
+        {
+            rmgr.OnGameStarted += HandleGameStarted;
+            rmgr.OnRoomJoined  += HandleRoomJoined;
+        }
     }
 
     void OnDestroy()
     {
-        var nmgr = NetworkManager.Instance;
-        if (nmgr != null) nmgr.OnSinglePlayerStarted -= HandleSinglePlayerStarted;
-
         var rmgr = RoomManager.Instance;
-        if (rmgr != null) rmgr.OnRoomJoined -= HandleRoomJoined;
-    }
-
-    void HandleSinglePlayerStarted()
-    {
-        if (!_spawned)
+        if (rmgr != null)
         {
-            SpawnInitBoxes(true);
-            _spawned = true;
+            rmgr.OnGameStarted -= HandleGameStarted;
+            rmgr.OnRoomJoined  -= HandleRoomJoined;
         }
     }
 
+    // 방 생성 즉시 (호스트) 또는 방장 연결 완료 시 (게스트) 발동
+    void HandleGameStarted()
+    {
+        if (!RoomManager.IsHost || _spawned) return;
+        SpawnInitBoxes();
+        _spawned = true;
+    }
+
+    // 새 게스트가 참여할 때마다 현재 박스 상태 동기화
     void HandleRoomJoined()
     {
         if (!RoomManager.IsHost) return;
 
-        if (!_spawned)
+        int newGuestId = RoomManager.LastGuestId;
+        foreach (var data in _spawnedBoxes)
         {
-            SpawnInitBoxes(false);
-            _spawned = true;
-        }
-        else
-        {
-            foreach (var data in _spawnedBoxes)
+            if (newGuestId != 0)
+                PacketBuilder.SendToGuest(newGuestId, data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
+            else
                 PacketBuilder.BroadcastToGuests(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
     }
-
-    public void SpawnInitBoxes(bool isSinglePlayer = false)
+    public void SpawnInitBoxes()
     {
-        if (!isSinglePlayer && !RoomManager.IsHost) return;
+        if (!RoomManager.IsHost || _boxes == null) return;
 
-        if (_boxes == null) return;
-        var rmgr = RoomManager.Instance;
         var omgr = ObjectManager.Instance;
 
         foreach (var cfg in _boxes)
         {
             int uid = _nextUid++;
+            var boxTypeId = 301;
 
             var data = new H_ItemSpawnT
             {
                 Uid = uid,
-                TypeId = 301, // 상자 타입
+                TypeId = boxTypeId,
                 Pos = new Vec3T { X = cfg.Position.x, Y = cfg.Position.y, Z = cfg.Position.z },
                 Rotation = cfg.Rotation,
                 ItemIds = new List<int>(cfg.ItemIds),
             };
             _spawnedBoxes.Add(data);
 
-            omgr?.SpawnItemBox(uid, 301, cfg.Position, cfg.Rotation)
+            omgr?.SpawnItemBox(uid, boxTypeId, cfg.Position, cfg.Rotation)
               ?.Initialize(cfg.ItemIds);
 
             PacketBuilder.BroadcastToGuests(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
-        Debug.Log("[HostItemSpawner] 아이템 박스 스폰!");
+        Debug.Log($"[HostItemSpawner] 아이템 박스 스폰 완료!");
     }
 
     public void ResetSpawnState()
@@ -104,4 +99,3 @@ public class HostItemSpawner : MonoBehaviour
         _nextUid = 1000;
     }
 }
-

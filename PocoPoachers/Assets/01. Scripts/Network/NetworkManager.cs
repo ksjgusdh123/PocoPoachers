@@ -17,13 +17,10 @@ public class NetworkManager : Singleton<NetworkManager>
     public int MyPlayerId { get; private set; }
     public bool IsLoggedIn { get; private set; }
 
-    public bool IsSinglePlayer { get; private set; }
-
     public long Rtt { get; private set; }
 
     public event Action OnConnected;
     public event Action OnDisconnected;
-    public event Action OnSinglePlayerStarted;
 
     public string TargetHost => remoteConnection ? remoteHost : localHost;
 
@@ -67,26 +64,14 @@ public class NetworkManager : Singleton<NetworkManager>
             return Session;
         });
     }
-    public void StartSinglePlayer()
-    {
-        IsSinglePlayer = true;
-        MyPlayerId     = 1;
-        IsLoggedIn     = true;
-        Session?.Disconnect();
-        Session = null;
-        OnSinglePlayerStarted?.Invoke();
-    }
-
     public void LeaveGame()
     {
         if (!IsLoggedIn) return;
 
-        if (!IsSinglePlayer)
-            PacketBuilder.SendToMaster(new C_LogoutT(), C_Logout.Pack, PacketType.C_Logout);
+        PacketBuilder.SendToMaster(new C_LogoutT(), C_Logout.Pack, PacketType.C_Logout);
 
-        IsSinglePlayer = false;
-        IsLoggedIn     = false;
-        MyPlayerId     = 0;
+        IsLoggedIn = false;
+        MyPlayerId = 0;
         Session?.Disconnect();
     }
 
@@ -120,7 +105,7 @@ public class NetworkManager : Singleton<NetworkManager>
     {
         while (true)
         {
-            if (!IsSinglePlayer && Session != null && Session.IsConnected)
+            if (Session != null && Session.IsConnected)
                 SendHeartbeat();
             yield return new WaitForSeconds(3.0f);
         }
