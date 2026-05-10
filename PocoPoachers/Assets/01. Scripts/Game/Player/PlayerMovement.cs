@@ -81,8 +81,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void BroadcastMove()
     {
-        var rmgr = RoomManager.Instance;
-        if (rmgr == null || !rmgr.IsConnected) return;
+        if (RoomManager.HasGuests) return;
 
         if (Time.unscaledTime < _nextSendTime) return;
         _nextSendTime = Time.unscaledTime + _sendInterval;
@@ -100,7 +99,7 @@ public class PlayerMovement : MonoBehaviour
         int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
         var vec = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z };
 
-        if (rmgr.IsHost)
+        if (RoomManager.IsHost)
             PacketBuilder.BroadcastToGuests(new H_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
                                             H_Move.Pack, PacketType.H_Move);
         else

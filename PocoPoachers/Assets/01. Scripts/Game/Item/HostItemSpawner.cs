@@ -11,8 +11,8 @@ public class HostItemSpawner : MonoBehaviour
     public class BoxConfig
     {
         public Vector3 Position;
-        public float   Rotation;
-        public int[]   ItemIds;
+        public float Rotation;
+        public int[] ItemIds;
     }
 
     [SerializeField] BoxConfig[] _boxes;
@@ -27,38 +27,37 @@ public class HostItemSpawner : MonoBehaviour
     void Start()
     {
         var nmgr = NetworkManager.Instance;
-        if (nmgr != null) nmgr.OnSinglePlayerStarted += OnSinglePlayerStarted;
+        if (nmgr != null) nmgr.OnSinglePlayerStarted += HandleSinglePlayerStarted;
 
         var rmgr = RoomManager.Instance;
-        if (rmgr != null) rmgr.OnRoomJoined += OnJoin;
+        if (rmgr != null) rmgr.OnRoomJoined += HandleRoomJoined;
     }
 
     void OnDestroy()
     {
         var nmgr = NetworkManager.Instance;
-        if (nmgr != null) nmgr.OnSinglePlayerStarted -= OnSinglePlayerStarted;
+        if (nmgr != null) nmgr.OnSinglePlayerStarted -= HandleSinglePlayerStarted;
 
         var rmgr = RoomManager.Instance;
-        if (rmgr != null) rmgr.OnRoomJoined -= OnJoin;
+        if (rmgr != null) rmgr.OnRoomJoined -= HandleRoomJoined;
     }
 
-    void OnSinglePlayerStarted()
+    void HandleSinglePlayerStarted()
     {
         if (!_spawned)
         {
-            SpawnAll();
+            SpawnInitBoxes(true);
             _spawned = true;
         }
     }
 
-    void OnJoin()
+    void HandleRoomJoined()
     {
-        var mgr = RoomManager.Instance;
-        if (mgr == null || !mgr.IsHost) return;
+        if (!RoomManager.IsHost) return;
 
         if (!_spawned)
         {
-            SpawnAll();
+            SpawnInitBoxes(false);
             _spawned = true;
         }
         else
@@ -68,11 +67,13 @@ public class HostItemSpawner : MonoBehaviour
         }
     }
 
-    public void SpawnAll()
+    public void SpawnInitBoxes(bool isSinglePlayer = false)
     {
+        if (!isSinglePlayer && !RoomManager.IsHost) return;
+
         if (_boxes == null) return;
         var rmgr = RoomManager.Instance;
-        var omgr  = ObjectManager.Instance;
+        var omgr = ObjectManager.Instance;
 
         foreach (var cfg in _boxes)
         {
@@ -80,11 +81,11 @@ public class HostItemSpawner : MonoBehaviour
 
             var data = new H_ItemSpawnT
             {
-                Uid      = uid,
-                TypeId   = 301, // 상자 타입
-                Pos      = new Vec3T { X = cfg.Position.x, Y = cfg.Position.y, Z = cfg.Position.z },
+                Uid = uid,
+                TypeId = 301, // 상자 타입
+                Pos = new Vec3T { X = cfg.Position.x, Y = cfg.Position.y, Z = cfg.Position.z },
                 Rotation = cfg.Rotation,
-                ItemIds  = new List<int>(cfg.ItemIds),
+                ItemIds = new List<int>(cfg.ItemIds),
             };
             _spawnedBoxes.Add(data);
 
@@ -93,13 +94,14 @@ public class HostItemSpawner : MonoBehaviour
 
             PacketBuilder.BroadcastToGuests(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
+        Debug.Log("[HostItemSpawner] 아이템 박스 스폰!");
     }
 
     public void ResetSpawnState()
     {
         _spawnedBoxes.Clear();
-        _spawned  = false;
-        _nextUid  = 1000;
+        _spawned = false;
+        _nextUid = 1000;
     }
 }
 

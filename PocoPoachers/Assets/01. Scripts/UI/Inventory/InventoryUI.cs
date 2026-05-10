@@ -62,7 +62,7 @@ public class InventoryUI : MonoBehaviour
         Inventory boxInventory = _inventory.TryGetComponent<WorldObject>(out _) ? _inventory : target;
         bool isNetworked = boxInventory.TryGetComponent<WorldObject>(out var boxWo);
 
-        if (isNetworked && !(RoomManager.Instance?.IsHost ?? false))
+        if (isNetworked && !(RoomManager.IsHost))
         {
             // 게스트: 호스트에게 요청 → H_ItemGainResult에서 실제 적용
             PacketBuilder.SendToHost(new G_ItemGainT

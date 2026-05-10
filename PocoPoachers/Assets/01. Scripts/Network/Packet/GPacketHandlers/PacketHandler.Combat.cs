@@ -19,8 +19,7 @@ public static partial class PacketHandlers
         var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(direction));
         bullet.Initialize(pkt.BulletSpeed, pkt.Damage, pkt.MaxRange, direction, () => pool.Release(prefab, bullet), applyDamage: false);
 
-        // 호스트: 나머지 게스트에게 H_Shoot 릴레이
-        if (RoomManager.Instance?.IsHost ?? false)
+        if (RoomManager.IsHost)
         {
             PacketBuilder.BroadcastToGuests(pkt.PlayerId,
                 new H_ShootT

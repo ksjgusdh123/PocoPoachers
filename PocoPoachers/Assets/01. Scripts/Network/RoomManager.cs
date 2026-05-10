@@ -12,10 +12,13 @@ public class RoomManager : Singleton<RoomManager>
     [SerializeField] string stunHost = "stun.l.google.com";
     [SerializeField] int    stunPort = 19302;
 
-    public bool IsHost      { get; private set; }
-    public bool IsConnected => _guests.Count > 0;
-    public int  GuestCount  => _guests.Count;
-    public int  LastGuestId { get; private set; }
+    public static bool IsHost => Instance != null && Instance._isHost;
+    public static bool HasGuests => Instance != null && Instance._hasGuests;
+    public static int LastGuestId => Instance != null ? Instance._lastGuestId : 0;
+
+    public bool _hasGuests => _guests.Count > 0;
+    private bool _isHost;
+    public int  _lastGuestId { get; private set; }
 
     public event Action          OnRoomJoined;
     public event Action<string>  OnRoomJoinFailed;
@@ -38,7 +41,7 @@ public class RoomManager : Singleton<RoomManager>
 
     private void CreateOrJoinRoom(bool isHost, string code)
     {
-        IsHost = isHost;
+        _isHost = isHost;
         _guests.Clear();
         _punchers.Clear();
 
@@ -58,7 +61,7 @@ public class RoomManager : Singleton<RoomManager>
             }
             var myInfo = GetMySessionInfo();
             MainThreadDispatcher.Enqueue(() => {
-                if (IsHost)
+                if (_isHost)
                     PacketBuilder.SendToMaster(new C_CreateRoomT { MyInfo = myInfo }, C_CreateRoom.Pack, PacketType.C_CreateRoom);
                 else
                     PacketBuilder.SendToMaster(new C_JoinRoomT { SessionCode = code, MyInfo = myInfo }, C_JoinRoom.Pack, PacketType.C_JoinRoom);
@@ -71,7 +74,7 @@ public class RoomManager : Singleton<RoomManager>
         int id = target.PlayerId;
         IPEndPoint ep = SelectEndPoint(target);
 
-        if (!IsHost)
+        if (!_isHost)
             _hostEp = ep;
 
         var puncher = new UdpHolePuncher(_udpSession.Socket);
@@ -125,9 +128,9 @@ public class RoomManager : Singleton<RoomManager>
         int captured = senderId;
         MainThreadDispatcher.Enqueue(() =>
         {
-            LastGuestId = captured;
+            _lastGuestId = captured;
             PacketManager.HandlePacket(data);
-            LastGuestId = 0;
+            _lastGuestId = 0;
         });
     }
 
@@ -171,7 +174,7 @@ public class RoomManager : Singleton<RoomManager>
         _udpSession?.Close();
         _udpSession = null;
         _hostEp = null;
-        IsHost = false;
+        _isHost = false;
     }
 
     public void HandleFailure(string msg)

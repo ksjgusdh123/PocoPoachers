@@ -5,10 +5,9 @@ public static partial class PacketHandlers
     public static void OnG_ItemGain(FlatPacket root)
     {
         var pkt = root.TypeAsG_ItemGain();
-        var rmgr = RoomManager.Instance;
-        if (rmgr == null || !rmgr.IsHost) return;
+        if (!RoomManager.IsHost) return;
 
-        int requesterId  = rmgr.LastGuestId;
+        int requesterId  = RoomManager.LastGuestId;
         bool success     = false;
         int changedSlot  = -1;
 
@@ -76,10 +75,9 @@ public static partial class PacketHandlers
     public static void OnG_ItemExchange(FlatPacket root)
     {
         var pkt = root.TypeAsG_ItemExchange();
-        var rmgr = RoomManager.Instance;
-        if (rmgr == null || !rmgr.IsHost) return;
+        if (!RoomManager.IsHost) return;
 
-        int requesterId = rmgr.LastGuestId;
+        int requesterId = RoomManager.LastGuestId;
         bool success    = false;
 
         var om = ObjectManager.Instance;

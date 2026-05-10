@@ -12,8 +12,7 @@ public static partial class PacketHandlers
 
         ObjectManager.Instance?.QueueMove(ObjectKind.Player, pkt.PlayerId, pos, pkt.Rotation, pkt.MoveType);
 
-        // 호스트는 해당 게스트의 이동을 나머지 게스트에게 H_Move로 릴레이
-        if (RoomManager.Instance?.IsHost ?? false)
+        if (RoomManager.IsHost)
         {
             PacketBuilder.BroadcastToGuests(pkt.PlayerId,
                 new H_MoveT
