@@ -2,19 +2,11 @@ Shader "Custom/FovMask"
 {
     SubShader
     {
-        Tags { "RenderType" = "Transparent" "Queue" = "Transparent+1" }
+        Tags { "RenderType" = "Opaque" "Queue" = "Geometry" }
 
-        ColorMask 0
         ZWrite Off
         ZTest Always
-
-        Stencil
-        {
-            Ref 1
-            WriteMask 1
-            Comp Always
-            Pass Replace
-        }
+        Cull Off
 
         Pass
         {
@@ -33,7 +25,7 @@ Shader "Custom/FovMask"
                 return OUT;
             }
 
-            half4 frag(Varyings IN) : SV_Target { return 0; }
+            half4 frag(Varyings IN) : SV_Target { return half4(1, 1, 1, 1); }
             ENDHLSL
         }
     }

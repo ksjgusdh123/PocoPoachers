@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class FogOfWarRenderer : MonoBehaviour
 {
@@ -9,31 +9,59 @@ public class FogOfWarRenderer : MonoBehaviour
     [SerializeField] private Color _darkColor = new Color(0f, 0f, 0f, 0.6f);
     [SerializeField] private LayerMask _wallLayer;
 
+    [Header("Blur")]
+    [SerializeField] private float _blurSize = 3f;
+    [SerializeField, Range(1, 4)] private int _blurIterations = 2;
+
+    private Camera _mainCam;
+    private RenderTexture _fogMaskRT;
+    private RenderTexture _blurTempRT;
+    private Material _blurMat;
+    private Material _fovMaskMat;
+    private Material _darkOverlayMat;
+
     private Transform _fovMeshTrans;
     private Mesh _fovMesh;
     private Transform _overlayTrans;
+    private CommandBuffer _cmd;
 
-    private Material _wallMaskMat;
-    private readonly List<(MeshRenderer renderer, Material[] origMats)> _wallRenderers = new();
+    private static readonly int FogMaskProp  = Shader.PropertyToID("_FogMask");
+    private static readonly int BlurSizeProp = Shader.PropertyToID("_BlurSize");
 
     private void Awake()
     {
         _wallLayer = 1 << LayerMask.NameToLayer("Wall");
+        _mainCam   = Camera.main;
+
+        CreateRenderTextures();
         CreateFovMeshObject();
         CreateDarkOverlayObject();
-        InitWallStencils();
+
+        _mainCam.cullingMask &= ~LayerMask.GetMask("FogMask");
+
+        _cmd = new CommandBuffer { name = "FogMaskRender" };
+        RenderPipelineManager.beginCameraRendering += OnBeginCameraRendering;
     }
 
     private void OnDestroy()
     {
+        RenderPipelineManager.beginCameraRendering -= OnBeginCameraRendering;
+
         if (_fovMeshTrans != null) Destroy(_fovMeshTrans.gameObject);
         if (_overlayTrans != null) Destroy(_overlayTrans.gameObject);
-        CleanupWallStencils();
+
+        if (_fogMaskRT  != null) { _fogMaskRT.Release();  Destroy(_fogMaskRT); }
+        if (_blurTempRT != null) { _blurTempRT.Release(); Destroy(_blurTempRT); }
+
+        _cmd?.Release();
     }
 
     private void Update()
     {
-        Vector3 groundPos = new Vector3(transform.position.x, transform.position.y + _groundOffset, transform.position.z);
+        Vector3 groundPos = new Vector3(
+            transform.position.x,
+            transform.position.y + _groundOffset,
+            transform.position.z);
 
         _fovMeshTrans.position = groundPos;
         _fovMeshTrans.rotation = Quaternion.identity;
@@ -42,58 +70,64 @@ public class FogOfWarRenderer : MonoBehaviour
         UpdateFovMesh();
     }
 
-    // 씬의 모든 벽 오브젝트에 WallMask 머티리얼을 두 번째 슬롯으로 추가
-    private void InitWallStencils()
+    // 메인 카메라 렌더 직전에 호출 → 정확한 VP 행렬 사용 가능
+    private void OnBeginCameraRendering(ScriptableRenderContext ctx, Camera cam)
     {
-        _wallMaskMat = new Material(Shader.Find("Custom/WallMask"));
+        if (cam != _mainCam) return;
 
-        foreach (var mr in FindObjectsByType<MeshRenderer>(FindObjectsSortMode.None))
+        // FovMesh → _fogMaskRT
+        _cmd.Clear();
+        _cmd.SetRenderTarget(_fogMaskRT);
+        _cmd.ClearRenderTarget(false, true, Color.black);
+        _cmd.SetViewProjectionMatrices(
+            cam.worldToCameraMatrix,
+            cam.projectionMatrix);
+        _cmd.DrawMesh(_fovMesh, _fovMeshTrans.localToWorldMatrix, _fovMaskMat);
+        Graphics.ExecuteCommandBuffer(_cmd);
+
+        // Gaussian blur
+        _blurMat.SetFloat(BlurSizeProp, _blurSize);
+        for (int i = 0; i < _blurIterations; i++)
         {
-            if (((1 << mr.gameObject.layer) & _wallLayer.value) == 0) continue;
-
-            var origMats = mr.sharedMaterials;
-            _wallRenderers.Add((mr, origMats));
-
-            var newMats = new Material[origMats.Length + 1];
-            origMats.CopyTo(newMats, 0);
-            newMats[origMats.Length] = _wallMaskMat;
-            mr.sharedMaterials = newMats;
+            Graphics.Blit(_fogMaskRT, _blurTempRT, _blurMat, 0); // H
+            Graphics.Blit(_blurTempRT, _fogMaskRT, _blurMat, 1); // V
         }
     }
 
-    // 원래 머티리얼 복원
-    private void CleanupWallStencils()
+    private void CreateRenderTextures()
     {
-        foreach (var (mr, origMats) in _wallRenderers)
-        {
-            if (mr != null)
-                mr.sharedMaterials = origMats;
-        }
-        _wallRenderers.Clear();
+        _fogMaskRT  = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);
+        _blurTempRT = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);
+        _fogMaskRT.Create();
+        _blurTempRT.Create();
+        _blurMat = new Material(Shader.Find("Custom/Blur"));
     }
 
     private void CreateFovMeshObject()
     {
-        GameObject go = new GameObject("FovMask");
+        var go = new GameObject("FovMask");
+        go.layer = LayerMask.NameToLayer("FogMask");
         _fovMeshTrans = go.transform;
 
         _fovMesh = new Mesh { name = "FovConeMesh" };
         go.AddComponent<MeshFilter>().mesh = _fovMesh;
 
-        MeshRenderer mr = go.AddComponent<MeshRenderer>();
-        mr.material = new Material(Shader.Find("Custom/FovMask"));
-        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        mr.receiveShadows = false;
+        _fovMaskMat = new Material(Shader.Find("Custom/FovMask"));
+        var mr = go.AddComponent<MeshRenderer>();
+        mr.material          = _fovMaskMat;
+        mr.shadowCastingMode = ShadowCastingMode.Off;
+        mr.receiveShadows    = false;
     }
 
     private void CreateDarkOverlayObject()
     {
-        GameObject go = new GameObject("DarkOverlay");
+        var go = new GameObject("DarkOverlay");
         _overlayTrans = go.transform;
 
         float s = _overlaySize * 0.5f;
-        Mesh overlayMesh = new Mesh { name = "DarkOverlayMesh" };
-        overlayMesh.vertices = new Vector3[] {
+        var overlayMesh = new Mesh { name = "DarkOverlayMesh" };
+        overlayMesh.vertices = new Vector3[]
+        {
             new(-s, 0, -s), new(-s, 0, s),
             new( s, 0,  s), new( s, 0, -s)
         };
@@ -102,27 +136,28 @@ public class FogOfWarRenderer : MonoBehaviour
 
         go.AddComponent<MeshFilter>().mesh = overlayMesh;
 
-        MeshRenderer mr = go.AddComponent<MeshRenderer>();
-        Material mat = new Material(Shader.Find("Custom/DarkOverlay"));
-        mat.color = _darkColor;
-        mr.material = mat;
-        mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        mr.receiveShadows = false;
+        var mr = go.AddComponent<MeshRenderer>();
+        _darkOverlayMat = new Material(Shader.Find("Custom/DarkOverlay"));
+        _darkOverlayMat.color = _darkColor;
+        _darkOverlayMat.SetTexture(FogMaskProp, _fogMaskRT);
+        mr.material          = _darkOverlayMat;
+        mr.shadowCastingMode = ShadowCastingMode.Off;
+        mr.receiveShadows    = false;
     }
 
     private void UpdateFovMesh()
     {
-        Vector3 origin = _fovMeshTrans.position;
-        float half = _visionConfig.fovAngle * 0.5f;
-        int segments = _visionConfig.arcSegments;
+        Vector3 origin   = _fovMeshTrans.position;
+        float   half     = _visionConfig.fovAngle * 0.5f;
+        int     segments = _visionConfig.arcSegments;
 
         Vector3[] vertices = new Vector3[segments + 2];
         vertices[0] = Vector3.zero;
 
         for (int i = 0; i <= segments; i++)
         {
-            float angle = -half + _visionConfig.fovAngle / segments * i;
-            Vector3 dir = Quaternion.Euler(0, angle, 0) * transform.forward;
+            float   angle = -half + _visionConfig.fovAngle / segments * i;
+            Vector3 dir   = Quaternion.Euler(0, angle, 0) * transform.forward;
 
             float dist = Physics.Raycast(origin, dir, out RaycastHit hit, _visionConfig.detectRange, _wallLayer)
                 ? hit.distance
@@ -140,7 +175,7 @@ public class FogOfWarRenderer : MonoBehaviour
         }
 
         _fovMesh.Clear();
-        _fovMesh.vertices = vertices;
+        _fovMesh.vertices  = vertices;
         _fovMesh.triangles = triangles;
         _fovMesh.RecalculateNormals();
     }

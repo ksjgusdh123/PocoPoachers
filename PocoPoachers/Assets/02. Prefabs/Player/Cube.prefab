@@ -241,9 +241,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d81dd72221d6fc942bc00fcd503d4057, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerVision
-  _detectRange: 30
-  _fovAngle: 90
-  _eyeHeight: 1.5
+  _visionConfig: {fileID: 11400000, guid: 645df1c7444f4a148a6b1bc4721f06a1, type: 2}
+  _eyeHeight: 1
   _detectInterval: 0.2
   _targetLayer:
     serializedVersion: 2
@@ -251,10 +250,9 @@ MonoBehaviour:
   _wallLayer:
     serializedVersion: 2
     m_Bits: 0
-  _showVision: 1
+  _showVision: 0
   _visionColor: {r: 0, g: 1, b: 1, a: 0.8}
   _lineWidth: 0.05
-  _arcSegments: 30
 --- !u!114 &5256287409895780970
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -267,15 +265,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4726609a76b51cc489dd13e6e92f9371, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::FogOfWarRenderer
-  _detectRange: 30
-  _fovAngle: 90
-  _groundOffset: 0.05
-  _arcSegments: 30
+  _visionConfig: {fileID: 11400000, guid: 645df1c7444f4a148a6b1bc4721f06a1, type: 2}
+  _groundOffset: 1
   _overlaySize: 500
   _darkColor: {r: 0, g: 0, b: 0, a: 0.6}
   _wallLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 256
+  _blurSize: 6
+  _blurIterations: 2
 --- !u!1001 &1684158543757471798
 PrefabInstance:
   m_ObjectHideFlags: 0
