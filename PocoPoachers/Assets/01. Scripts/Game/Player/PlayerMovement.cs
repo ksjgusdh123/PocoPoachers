@@ -28,6 +28,11 @@ public class PlayerMovement : MonoBehaviour
     private sbyte _lastMoveType = -1;
     private bool _hasSent;
 
+    public static Transform LocalTransform { get; private set; }
+
+    private void OnEnable() { LocalTransform = transform; }
+    private void OnDisable() { if (LocalTransform == transform) LocalTransform = null; }
+
     private void Awake()
     {
         _characterController = GetComponent<CharacterController>();

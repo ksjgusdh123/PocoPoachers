@@ -16,17 +16,17 @@ public struct S_GuestJoined : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public S_GuestJoined __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public MemberInfo? Info { get { int o = __p.__offset(4); return o != 0 ? (MemberInfo?)(new MemberInfo()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public NetInfo? Info { get { int o = __p.__offset(4); return o != 0 ? (NetInfo?)(new NetInfo()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<S_GuestJoined> CreateS_GuestJoined(FlatBufferBuilder builder,
-      Offset<MemberInfo> infoOffset = default(Offset<MemberInfo>)) {
+      Offset<NetInfo> infoOffset = default(Offset<NetInfo>)) {
     builder.StartTable(1);
     S_GuestJoined.AddInfo(builder, infoOffset);
     return S_GuestJoined.EndS_GuestJoined(builder);
   }
 
   public static void StartS_GuestJoined(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddInfo(FlatBufferBuilder builder, Offset<MemberInfo> infoOffset) { builder.AddOffset(0, infoOffset.Value, 0); }
+  public static void AddInfo(FlatBufferBuilder builder, Offset<NetInfo> infoOffset) { builder.AddOffset(0, infoOffset.Value, 0); }
   public static Offset<S_GuestJoined> EndS_GuestJoined(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<S_GuestJoined>(o);
@@ -41,7 +41,7 @@ public struct S_GuestJoined : IFlatbufferObject
   }
   public static Offset<S_GuestJoined> Pack(FlatBufferBuilder builder, S_GuestJoinedT _o) {
     if (_o == null) return default(Offset<S_GuestJoined>);
-    var _info = _o.Info == null ? default(Offset<MemberInfo>) : MemberInfo.Pack(builder, _o.Info);
+    var _info = _o.Info == null ? default(Offset<NetInfo>) : NetInfo.Pack(builder, _o.Info);
     return CreateS_GuestJoined(
       builder,
       _info);
@@ -50,7 +50,7 @@ public struct S_GuestJoined : IFlatbufferObject
 
 public class S_GuestJoinedT
 {
-  public MemberInfoT Info { get; set; }
+  public NetInfoT Info { get; set; }
 
   public S_GuestJoinedT() {
     this.Info = null;
@@ -63,7 +63,7 @@ static public class S_GuestJoinedVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyTable(tablePos, 4 /*Info*/, MemberInfoVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 4 /*Info*/, NetInfoVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

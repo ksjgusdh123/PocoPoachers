@@ -1,6 +1,7 @@
 ﻿using Google.FlatBuffers;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -71,6 +72,7 @@ public class RoomManager : Singleton<RoomManager>
                 HandleFailure("인터넷 연결 오류");
                 return;
             }
+            _udpSession.StartReceive();
             var myInfo = GetMySessionInfo();
             MainThreadDispatcher.Enqueue(() => {
                 if (_isHost)
@@ -81,24 +83,29 @@ public class RoomManager : Singleton<RoomManager>
         });
     }
 
-    public void ConnectToGuest(MemberInfoT target)
+    public void ConnectToGuest(NetInfoT target)
     {
         int id = target.PlayerId;
         IPEndPoint ep = SelectEndPoint(target);
+        Debug.Log($"[ConnectToGuest] id={id} ep={ep} isHost={_isHost}");
 
         if (!_isHost)
             _hostEp = ep;
 
-        var puncher = new UdpHolePuncher(_udpSession.Socket);
+        var puncher = new UdpHolePuncher(_udpSession);
         _punchers[id] = puncher;
 
         puncher.OnSuccess += _ => {
             _guests[id] = ep;
             _punchers.TryRemove(id, out _);
-            _udpSession.StartReceive();
             MainThreadDispatcher.Enqueue(() => {
-                if (_isHost) OnRoomJoined?.Invoke(id);
-                else         OnGameStarted?.Invoke();
+                if (_isHost)
+                {
+                    OnRoomJoined?.Invoke(id);
+                    SyncToGuest(id);
+                }
+                else
+                    OnGameStarted?.Invoke();
             });
         };
         puncher.OnFailed += (_, reason) => {
@@ -141,15 +148,31 @@ public class RoomManager : Singleton<RoomManager>
             if (kv.Value.Equals(sender)) { senderId = kv.Key; break; }
 
         int captured = senderId;
+        IPEndPoint capturedEp = sender;
         MainThreadDispatcher.Enqueue(() =>
         {
             _lastGuestId = captured;
+            _lastGuestEp = capturedEp;
             PacketManager.HandlePacket(data);
             _lastGuestId = 0;
+            _lastGuestEp = null;
         });
     }
 
-    private IPEndPoint SelectEndPoint(MemberInfoT info)
+    IPEndPoint _lastGuestEp;
+    public static IPEndPoint LastGuestEp => Instance?._lastGuestEp;
+
+    // 펀칭 타이밍 미스로 _guests에 없는 게스트가 게임 패킷을 보낼 때 자동 등록
+    public void TryAutoRegisterGuest(int playerId)
+    {
+        if (!_isHost || _guests.ContainsKey(playerId) || _lastGuestEp == null) return;
+        _guests[playerId] = _lastGuestEp;
+        Debug.Log($"[RoomManager] Auto-registered guest {playerId} at {_lastGuestEp}");
+        OnRoomJoined?.Invoke(playerId);
+        SyncToGuest(playerId);
+    }
+
+    private IPEndPoint SelectEndPoint(NetInfoT info)
     {
         if (!string.IsNullOrEmpty(info.PrivateIp) && info.PrivatePort != 0 && IsOnSameLan(info.PrivateIp))
             return new IPEndPoint(IPAddress.Parse(info.PrivateIp), info.PrivatePort);
@@ -172,7 +195,7 @@ public class RoomManager : Singleton<RoomManager>
         return (s.LocalEndPoint as IPEndPoint).Address.ToString();
     }
 
-    public MemberInfoT GetMySessionInfo() => new MemberInfoT
+    public NetInfoT GetMySessionInfo() => new NetInfoT
     {
         PlayerId   = NetworkManager.Instance.MyPlayerId,
         PublicIp   = _myPublicEp.Address.ToString(),
@@ -180,6 +203,56 @@ public class RoomManager : Singleton<RoomManager>
         PrivateIp  = GetLocalPrivateIp(),
         PrivatePort = (ushort)_udpSession.LocalEndPoint.Port,
     };
+
+    private void SyncToGuest(int newGuestId)
+    {
+        var om = ObjectManager.Instance;
+        if (om == null) return;
+
+        var infos = om?.GetAllPlayerInfos(newGuestId) ?? new List<PlayerInfoT>();
+
+        var localT = PlayerMovement.LocalTransform;
+        if (localT != null)
+        {
+            var pos = localT.position;
+            infos.Add(new PlayerInfoT
+            {
+                PlayerId = NetworkManager.Instance.MyPlayerId,
+                Pos = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+                Rotation = localT.eulerAngles.y,
+            });
+        }
+
+        if (infos.Count > 0)
+            PacketBuilder.SendToGuest(newGuestId, new H_GuestJoinedT { Info = infos }, H_GuestJoined.Pack, PacketType.H_GuestJoined);
+
+        PacketBuilder.BroadcastToGuests(newGuestId, new H_GuestJoinedT
+        {
+            Info = new List<PlayerInfoT> { new PlayerInfoT { PlayerId = newGuestId } }
+        }, H_GuestJoined.Pack, PacketType.H_GuestJoined);
+
+        foreach (var original in om.SpawnedBoxes)
+        {
+            var currentItemIds = new List<int>();
+            if (om.TryGet(ObjectKind.ItemBox, original.Uid, out var boxObj))
+            {
+                var inv = boxObj.GetComponent<Inventory>();
+                if (inv != null)
+                    foreach (var slot in inv.Slots)
+                        if (!slot.IsEmpty)
+                            for (int i = 0; i < slot.Amount; i++)
+                                currentItemIds.Add(slot.ItemData.Id);
+            }
+            PacketBuilder.SendToGuest(newGuestId, new H_ItemSpawnT
+            {
+                Uid      = original.Uid,
+                TypeId   = original.TypeId,
+                Pos      = original.Pos,
+                Rotation = original.Rotation,
+                ItemIds  = currentItemIds,
+            }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
+        }
+    }
 
     public void LeaveRoom()
     {

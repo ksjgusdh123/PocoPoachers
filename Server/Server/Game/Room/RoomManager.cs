@@ -1,4 +1,4 @@
-using System.Linq;
+﻿using System.Linq;
 
 namespace Server;
 
@@ -11,7 +11,7 @@ public class RoomManager
 
     RoomManager() { }
 
-    public Room CreateRoom(ClientSession host, MemberInfoT hostInfo)
+    public Room CreateRoom(ClientSession host, NetInfoT hostInfo)
     {
         lock (_lock)
         {

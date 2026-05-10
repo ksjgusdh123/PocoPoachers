@@ -25,6 +25,10 @@ public class ObjectManager : Singleton<ObjectManager>
 
     readonly Dictionary<(ObjectKind kind, int id), WorldObject> _objects = new Dictionary<(ObjectKind, int), WorldObject>();
     readonly Dictionary<ObjectKind, WorldObject> _prefabs = new Dictionary<ObjectKind, WorldObject>();
+    readonly List<H_ItemSpawnT> _spawnedBoxes = new();
+
+    public IReadOnlyList<H_ItemSpawnT> SpawnedBoxes => _spawnedBoxes;
+    public void RegisterSpawnedBox(H_ItemSpawnT data) => _spawnedBoxes.Add(data);
 
     readonly object _moveLock = new object();
     readonly List<PendingMove> _pending = new List<PendingMove>();
@@ -149,6 +153,24 @@ public class ObjectManager : Singleton<ObjectManager>
         return nm != null && id == nm.MyPlayerId;
     }
 
+    public List<PlayerInfoT> GetAllPlayerInfos(int excludeId = -1)
+    {
+        var list = new List<PlayerInfoT>();
+        foreach (var kv in _objects)
+        {
+            if (kv.Key.kind != ObjectKind.Player) continue;
+            if (kv.Key.id == excludeId) continue;
+            var pos = kv.Value.transform.position;
+            list.Add(new PlayerInfoT
+            {
+                PlayerId = kv.Key.id,
+                Pos = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+                Rotation = kv.Value.transform.eulerAngles.y,
+            });
+        }
+        return list;
+    }
+
     public void Clear()
     {
         lock (_moveLock)
@@ -160,6 +182,7 @@ public class ObjectManager : Singleton<ObjectManager>
                 Destroy(kv.Value.gameObject);
         }
         _objects.Clear();
+        _spawnedBoxes.Clear();
     }
 
     public ItemBox SpawnItemBox(int uid, int typeId, Vector3 pos, float rotation)

@@ -12,6 +12,9 @@ public static partial class PacketHandlers
 
         ObjectManager.Instance?.QueueMove(ObjectKind.Player, pkt.PlayerId, pos, pkt.Rotation, pkt.MoveType);
 
+        if (RoomManager.IsHost && RoomManager.LastGuestId == 0)
+            RoomManager.Instance?.TryAutoRegisterGuest(pkt.PlayerId);
+
         if (RoomManager.IsHost)
         {
             PacketBuilder.BroadcastToGuests(pkt.PlayerId,

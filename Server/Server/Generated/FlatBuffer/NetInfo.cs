@@ -6,15 +6,15 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct MemberInfo : IFlatbufferObject
+public struct NetInfo : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
   public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_24_3_25(); }
-  public static MemberInfo GetRootAsMemberInfo(ByteBuffer _bb) { return GetRootAsMemberInfo(_bb, new MemberInfo()); }
-  public static MemberInfo GetRootAsMemberInfo(ByteBuffer _bb, MemberInfo obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public static NetInfo GetRootAsNetInfo(ByteBuffer _bb) { return GetRootAsNetInfo(_bb, new NetInfo()); }
+  public static NetInfo GetRootAsNetInfo(ByteBuffer _bb, NetInfo obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public MemberInfo __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public NetInfo __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public int PlayerId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public string PublicIp { get { int o = __p.__offset(6); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
@@ -34,48 +34,48 @@ public struct MemberInfo : IFlatbufferObject
   public byte[] GetPrivateIpArray() { return __p.__vector_as_array<byte>(10); }
   public ushort PrivatePort { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetUshort(o + __p.bb_pos) : (ushort)0; } }
 
-  public static Offset<MemberInfo> CreateMemberInfo(FlatBufferBuilder builder,
+  public static Offset<NetInfo> CreateNetInfo(FlatBufferBuilder builder,
       int player_id = 0,
       StringOffset public_ipOffset = default(StringOffset),
       ushort public_port = 0,
       StringOffset private_ipOffset = default(StringOffset),
       ushort private_port = 0) {
     builder.StartTable(5);
-    MemberInfo.AddPrivateIp(builder, private_ipOffset);
-    MemberInfo.AddPublicIp(builder, public_ipOffset);
-    MemberInfo.AddPlayerId(builder, player_id);
-    MemberInfo.AddPrivatePort(builder, private_port);
-    MemberInfo.AddPublicPort(builder, public_port);
-    return MemberInfo.EndMemberInfo(builder);
+    NetInfo.AddPrivateIp(builder, private_ipOffset);
+    NetInfo.AddPublicIp(builder, public_ipOffset);
+    NetInfo.AddPlayerId(builder, player_id);
+    NetInfo.AddPrivatePort(builder, private_port);
+    NetInfo.AddPublicPort(builder, public_port);
+    return NetInfo.EndNetInfo(builder);
   }
 
-  public static void StartMemberInfo(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartNetInfo(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddPublicIp(FlatBufferBuilder builder, StringOffset publicIpOffset) { builder.AddOffset(1, publicIpOffset.Value, 0); }
   public static void AddPublicPort(FlatBufferBuilder builder, ushort publicPort) { builder.AddUshort(2, publicPort, 0); }
   public static void AddPrivateIp(FlatBufferBuilder builder, StringOffset privateIpOffset) { builder.AddOffset(3, privateIpOffset.Value, 0); }
   public static void AddPrivatePort(FlatBufferBuilder builder, ushort privatePort) { builder.AddUshort(4, privatePort, 0); }
-  public static Offset<MemberInfo> EndMemberInfo(FlatBufferBuilder builder) {
+  public static Offset<NetInfo> EndNetInfo(FlatBufferBuilder builder) {
     int o = builder.EndTable();
-    return new Offset<MemberInfo>(o);
+    return new Offset<NetInfo>(o);
   }
-  public MemberInfoT UnPack() {
-    var _o = new MemberInfoT();
+  public NetInfoT UnPack() {
+    var _o = new NetInfoT();
     this.UnPackTo(_o);
     return _o;
   }
-  public void UnPackTo(MemberInfoT _o) {
+  public void UnPackTo(NetInfoT _o) {
     _o.PlayerId = this.PlayerId;
     _o.PublicIp = this.PublicIp;
     _o.PublicPort = this.PublicPort;
     _o.PrivateIp = this.PrivateIp;
     _o.PrivatePort = this.PrivatePort;
   }
-  public static Offset<MemberInfo> Pack(FlatBufferBuilder builder, MemberInfoT _o) {
-    if (_o == null) return default(Offset<MemberInfo>);
+  public static Offset<NetInfo> Pack(FlatBufferBuilder builder, NetInfoT _o) {
+    if (_o == null) return default(Offset<NetInfo>);
     var _public_ip = _o.PublicIp == null ? default(StringOffset) : builder.CreateString(_o.PublicIp);
     var _private_ip = _o.PrivateIp == null ? default(StringOffset) : builder.CreateString(_o.PrivateIp);
-    return CreateMemberInfo(
+    return CreateNetInfo(
       builder,
       _o.PlayerId,
       _public_ip,
@@ -85,7 +85,7 @@ public struct MemberInfo : IFlatbufferObject
   }
 }
 
-public class MemberInfoT
+public class NetInfoT
 {
   public int PlayerId { get; set; }
   public string PublicIp { get; set; }
@@ -93,7 +93,7 @@ public class MemberInfoT
   public string PrivateIp { get; set; }
   public ushort PrivatePort { get; set; }
 
-  public MemberInfoT() {
+  public NetInfoT() {
     this.PlayerId = 0;
     this.PublicIp = null;
     this.PublicPort = 0;
@@ -103,7 +103,7 @@ public class MemberInfoT
 }
 
 
-static public class MemberInfoVerify
+static public class NetInfoVerify
 {
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {

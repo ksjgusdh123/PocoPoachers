@@ -29,6 +29,7 @@ public enum PacketType : byte
   G_ConsumeItem = 22,
   H_ConsumeItemResult = 23,
   S_GuestJoined = 24,
+  H_GuestJoined = 25,
 };
 
 public class PacketTypeUnion {
@@ -89,6 +90,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_ConsumeItemResult(H_ConsumeItemResultT _h_consumeitemresult) { return new PacketTypeUnion{ Type = PacketType.H_ConsumeItemResult, Value = _h_consumeitemresult }; }
   public S_GuestJoinedT AsS_GuestJoined() { return this.As<S_GuestJoinedT>(); }
   public static PacketTypeUnion FromS_GuestJoined(S_GuestJoinedT _s_guestjoined) { return new PacketTypeUnion{ Type = PacketType.S_GuestJoined, Value = _s_guestjoined }; }
+  public H_GuestJoinedT AsH_GuestJoined() { return this.As<H_GuestJoinedT>(); }
+  public static PacketTypeUnion FromH_GuestJoined(H_GuestJoinedT _h_guestjoined) { return new PacketTypeUnion{ Type = PacketType.H_GuestJoined, Value = _h_guestjoined }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -117,6 +120,7 @@ public class PacketTypeUnion {
       case PacketType.G_ConsumeItem: return G_ConsumeItem.Pack(builder, _o.AsG_ConsumeItem()).Value;
       case PacketType.H_ConsumeItemResult: return H_ConsumeItemResult.Pack(builder, _o.AsH_ConsumeItemResult()).Value;
       case PacketType.S_GuestJoined: return S_GuestJoined.Pack(builder, _o.AsS_GuestJoined()).Value;
+      case PacketType.H_GuestJoined: return H_GuestJoined.Pack(builder, _o.AsH_GuestJoined()).Value;
     }
   }
 }
@@ -201,6 +205,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.S_GuestJoined:
         result = S_GuestJoinedVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_GuestJoined:
+        result = H_GuestJoinedVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

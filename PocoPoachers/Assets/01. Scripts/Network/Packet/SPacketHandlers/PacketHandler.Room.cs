@@ -1,4 +1,4 @@
-public static partial class PacketHandlers
+﻿public static partial class PacketHandlers
 {
     public static void OnS_CreateRoom(FlatPacket root)
     {
@@ -17,7 +17,7 @@ public static partial class PacketHandlers
     {
         var pkt = root.TypeAsS_JoinRoom();
         bool success = pkt.Success;
-        MemberInfoT hostInfo = pkt.HostInfo.HasValue ? pkt.HostInfo.Value.UnPack() : null;
+        NetInfoT hostInfo = pkt.HostInfo.HasValue ? pkt.HostInfo.Value.UnPack() : null;
 
         MainThreadDispatcher.Enqueue(() =>
         {
@@ -31,8 +31,10 @@ public static partial class PacketHandlers
 
     public static void OnS_GuestJoined(FlatPacket root)
     {
+        if (!RoomManager.IsHost) return;
+
         var pkt = root.TypeAsS_GuestJoined();
-        MemberInfoT guestInfo = pkt.Info.HasValue ? pkt.Info.Value.UnPack() : null;
+        NetInfoT guestInfo = pkt.Info.HasValue ? pkt.Info.Value.UnPack() : null;
 
         MainThreadDispatcher.Enqueue(() =>
         {

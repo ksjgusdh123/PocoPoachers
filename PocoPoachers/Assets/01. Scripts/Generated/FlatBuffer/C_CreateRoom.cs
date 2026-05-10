@@ -16,17 +16,17 @@ public struct C_CreateRoom : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public C_CreateRoom __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public MemberInfo? MyInfo { get { int o = __p.__offset(4); return o != 0 ? (MemberInfo?)(new MemberInfo()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public NetInfo? MyInfo { get { int o = __p.__offset(4); return o != 0 ? (NetInfo?)(new NetInfo()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<C_CreateRoom> CreateC_CreateRoom(FlatBufferBuilder builder,
-      Offset<MemberInfo> my_infoOffset = default(Offset<MemberInfo>)) {
+      Offset<NetInfo> my_infoOffset = default(Offset<NetInfo>)) {
     builder.StartTable(1);
     C_CreateRoom.AddMyInfo(builder, my_infoOffset);
     return C_CreateRoom.EndC_CreateRoom(builder);
   }
 
   public static void StartC_CreateRoom(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddMyInfo(FlatBufferBuilder builder, Offset<MemberInfo> myInfoOffset) { builder.AddOffset(0, myInfoOffset.Value, 0); }
+  public static void AddMyInfo(FlatBufferBuilder builder, Offset<NetInfo> myInfoOffset) { builder.AddOffset(0, myInfoOffset.Value, 0); }
   public static Offset<C_CreateRoom> EndC_CreateRoom(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<C_CreateRoom>(o);
@@ -41,7 +41,7 @@ public struct C_CreateRoom : IFlatbufferObject
   }
   public static Offset<C_CreateRoom> Pack(FlatBufferBuilder builder, C_CreateRoomT _o) {
     if (_o == null) return default(Offset<C_CreateRoom>);
-    var _my_info = _o.MyInfo == null ? default(Offset<MemberInfo>) : MemberInfo.Pack(builder, _o.MyInfo);
+    var _my_info = _o.MyInfo == null ? default(Offset<NetInfo>) : NetInfo.Pack(builder, _o.MyInfo);
     return CreateC_CreateRoom(
       builder,
       _my_info);
@@ -50,7 +50,7 @@ public struct C_CreateRoom : IFlatbufferObject
 
 public class C_CreateRoomT
 {
-  public MemberInfoT MyInfo { get; set; }
+  public NetInfoT MyInfo { get; set; }
 
   public C_CreateRoomT() {
     this.MyInfo = null;
@@ -63,7 +63,7 @@ static public class C_CreateRoomVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyTable(tablePos, 4 /*MyInfo*/, MemberInfoVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 4 /*MyInfo*/, NetInfoVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

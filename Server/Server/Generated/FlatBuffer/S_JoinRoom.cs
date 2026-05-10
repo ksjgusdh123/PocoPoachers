@@ -17,11 +17,11 @@ public struct S_JoinRoom : IFlatbufferObject
   public S_JoinRoom __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public bool Success { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
-  public MemberInfo? HostInfo { get { int o = __p.__offset(6); return o != 0 ? (MemberInfo?)(new MemberInfo()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
+  public NetInfo? HostInfo { get { int o = __p.__offset(6); return o != 0 ? (NetInfo?)(new NetInfo()).__assign(__p.__indirect(o + __p.bb_pos), __p.bb) : null; } }
 
   public static Offset<S_JoinRoom> CreateS_JoinRoom(FlatBufferBuilder builder,
       bool success = false,
-      Offset<MemberInfo> host_infoOffset = default(Offset<MemberInfo>)) {
+      Offset<NetInfo> host_infoOffset = default(Offset<NetInfo>)) {
     builder.StartTable(2);
     S_JoinRoom.AddHostInfo(builder, host_infoOffset);
     S_JoinRoom.AddSuccess(builder, success);
@@ -30,7 +30,7 @@ public struct S_JoinRoom : IFlatbufferObject
 
   public static void StartS_JoinRoom(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddSuccess(FlatBufferBuilder builder, bool success) { builder.AddBool(0, success, false); }
-  public static void AddHostInfo(FlatBufferBuilder builder, Offset<MemberInfo> hostInfoOffset) { builder.AddOffset(1, hostInfoOffset.Value, 0); }
+  public static void AddHostInfo(FlatBufferBuilder builder, Offset<NetInfo> hostInfoOffset) { builder.AddOffset(1, hostInfoOffset.Value, 0); }
   public static Offset<S_JoinRoom> EndS_JoinRoom(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<S_JoinRoom>(o);
@@ -46,7 +46,7 @@ public struct S_JoinRoom : IFlatbufferObject
   }
   public static Offset<S_JoinRoom> Pack(FlatBufferBuilder builder, S_JoinRoomT _o) {
     if (_o == null) return default(Offset<S_JoinRoom>);
-    var _host_info = _o.HostInfo == null ? default(Offset<MemberInfo>) : MemberInfo.Pack(builder, _o.HostInfo);
+    var _host_info = _o.HostInfo == null ? default(Offset<NetInfo>) : NetInfo.Pack(builder, _o.HostInfo);
     return CreateS_JoinRoom(
       builder,
       _o.Success,
@@ -57,7 +57,7 @@ public struct S_JoinRoom : IFlatbufferObject
 public class S_JoinRoomT
 {
   public bool Success { get; set; }
-  public MemberInfoT HostInfo { get; set; }
+  public NetInfoT HostInfo { get; set; }
 
   public S_JoinRoomT() {
     this.Success = false;
@@ -72,7 +72,7 @@ static public class S_JoinRoomVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Success*/, 1 /*bool*/, 1, false)
-      && verifier.VerifyTable(tablePos, 6 /*HostInfo*/, MemberInfoVerify.Verify, false)
+      && verifier.VerifyTable(tablePos, 6 /*HostInfo*/, NetInfoVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -1,11 +1,11 @@
-namespace Server;
+﻿namespace Server;
 
 public partial class PacketHandler
 {
     public void OnC_CreateRoom(ClientSession session, FlatPacket root)
     {
         var pkt = root.TypeAsC_CreateRoom();
-        var myInfo = pkt.MyInfo.HasValue ? pkt.MyInfo.Value.UnPack() : new MemberInfoT();
+        var myInfo = pkt.MyInfo.HasValue ? pkt.MyInfo.Value.UnPack() : new NetInfoT();
 
         var room = RoomManager.Instance.CreateRoom(session, myInfo);
 
@@ -20,7 +20,7 @@ public partial class PacketHandler
     {
         var pkt = root.TypeAsC_JoinRoom();
         string code = pkt.SessionCode ?? string.Empty;
-        var myInfo = pkt.MyInfo.HasValue ? pkt.MyInfo.Value.UnPack() : new MemberInfoT();
+        var myInfo = pkt.MyInfo.HasValue ? pkt.MyInfo.Value.UnPack() : new NetInfoT();
 
         var room = RoomManager.Instance.FindRoom(code);
         if (room == null || !room.TryJoin(session, myInfo))

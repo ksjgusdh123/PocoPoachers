@@ -1,4 +1,6 @@
-﻿table MemberInfo
+﻿include "Common.fbs";
+
+table NetInfo
 {
     player_id: int;
     public_ip: string;
@@ -9,7 +11,7 @@
 
 table C_CreateRoom
 {
-    my_info: MemberInfo;
+    my_info: NetInfo;
 }
 
 table S_CreateRoom
@@ -21,16 +23,21 @@ table S_CreateRoom
 table C_JoinRoom
 {
     session_code: string;
-    my_info: MemberInfo;
+    my_info: NetInfo;
 }
 
 table S_JoinRoom
 {
     success: bool;
-    host_info: MemberInfo;
+    host_info: NetInfo;
 }
 
 table S_GuestJoined
 {
-    info: MemberInfo;
+    info: NetInfo;
+}
+
+table H_GuestJoined
+{
+    info: [PlayerInfo];
 }

@@ -1,14 +1,13 @@
 ﻿include "Common.fbs";
 include "Master/Auth.fbs";
 include "Master/Heartbeat.fbs";
-include "Master/Room.fbs";
+include "Game/Room.fbs";
 include "Game/Movement.fbs";
 include "Game/Combat.fbs";
 include "Game/Item.fbs";
 
 union PacketType
 {
-    // --- [SECTION 1] 중앙 서버 (Lobby / Auth) ---
     C_Login,
     S_LoginResult,
     C_Logout,
@@ -16,21 +15,18 @@ union PacketType
     C_Heartbeat,
     S_HeartbeatAck,
 
-    // --- [SECTION 2] P2P 시그널링 (Matching) ---
     C_CreateRoom,
     S_CreateRoom,
 
     C_JoinRoom,
     S_JoinRoom,
 
-    // --- [SECTION 3] 인게임 동기화 (P2P - UDP) ---
     G_Move,
     H_Move,
 
     G_Shoot,
     H_Shoot,
 
-    // --- [SECTION 4] 월드 및 아이템 (P2P - Reliable) ---
     H_ItemSpawn,
     H_ItemDespawn,
 
@@ -47,6 +43,7 @@ union PacketType
     H_ConsumeItemResult,
     
     S_GuestJoined,
+    H_GuestJoined,
 }
 
 table FlatPacket
