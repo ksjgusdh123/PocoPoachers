@@ -57,11 +57,36 @@ public class InventoryUI : MonoBehaviour
         ItemData itemData = targetSlot.SlotItemData;
         int amount = targetSlot.SavedAmountItem;
 
-        target.AddItem(itemData, amount);
-        _inventory.RemoveItemAtSlot(targetSlot.SlotIndex, itemData, amount);
-
         GameManager.GetInstance().SaveChangeInventorys(_inventory, target);
-        //TODO: Send Pkt
+
+        Inventory boxInventory = _inventory.TryGetComponent<WorldObject>(out _) ? _inventory : target;
+        bool isNetworked = boxInventory.TryGetComponent<WorldObject>(out var boxWo);
+
+        if (isNetworked && !(P2PManager.Instance?.IsHost ?? false))
+        {
+            // 게스트: 호스트에게 요청 → H_ItemGainResult에서 실제 적용
+            P2PManager.Instance.SendToAll(new G_ItemGainT
+            {
+                IsPlayerGained = boxInventory == _inventory,
+                BoxUid         = boxWo.Id,
+                ItemTypeId     = itemData.id,
+                Amount         = amount,
+                SlotIndex      = targetSlot.SlotIndex
+            }, G_ItemGain.Pack, PacketType.G_ItemGain);
+        }
+        else
+        {
+            // 호스트 또는 싱글플레이: 로컬에서 바로 적용
+            target.AddItem(itemData, amount);
+            _inventory.RemoveItemAtSlot(targetSlot.SlotIndex, itemData, amount);
+            P2PManager.Instance.SendToAll(new H_ItemBoxUpdateT
+            {
+                BoxUid = boxWo.Id,
+                ItemTypeId = itemData.id,
+                Amount = boxInventory != _inventory ? amount : -amount,
+                SlotIndex = boxInventory != _inventory ? -1 : targetSlot.SlotIndex,
+            }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+        }
     }
 
     public void OnDraggedSlot(ItemData data, int amount, int gainedSlotIndex, int removedSlotIndex)

@@ -64,8 +64,7 @@ public class WeaponController : MonoBehaviour
 
     public void EquipWeapon(ItemData weaponData, int index)
     {
-        GunBase equipGun = _gunDic[weaponData.id];
-        if (equipGun == null) return;
+        if (!_gunDic.TryGetValue(weaponData.id, out GunBase equipGun)) return;
 
         _guns[index] = equipGun;
         _currentGun = equipGun;

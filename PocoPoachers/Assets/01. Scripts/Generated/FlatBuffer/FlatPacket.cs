@@ -36,6 +36,7 @@ public struct FlatPacket : IFlatbufferObject
   public H_ItemDespawn TypeAsH_ItemDespawn() { return Type<H_ItemDespawn>().Value; }
   public G_ItemGain TypeAsG_ItemGain() { return Type<G_ItemGain>().Value; }
   public H_ItemGainResult TypeAsH_ItemGainResult() { return Type<H_ItemGainResult>().Value; }
+  public H_ItemBoxUpdate TypeAsH_ItemBoxUpdate() { return Type<H_ItemBoxUpdate>().Value; }
   public H_InventoryUpdate TypeAsH_InventoryUpdate() { return Type<H_InventoryUpdate>().Value; }
   public G_ItemExchange TypeAsG_ItemExchange() { return Type<G_ItemExchange>().Value; }
   public H_ItemExchangeResult TypeAsH_ItemExchangeResult() { return Type<H_ItemExchangeResult>().Value; }
@@ -121,6 +122,9 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_ItemGainResult:
         _o.Type.Value = this.Type<H_ItemGainResult>().HasValue ? this.Type<H_ItemGainResult>().Value.UnPack() : null;
+        break;
+      case PacketType.H_ItemBoxUpdate:
+        _o.Type.Value = this.Type<H_ItemBoxUpdate>().HasValue ? this.Type<H_ItemBoxUpdate>().Value.UnPack() : null;
         break;
       case PacketType.H_InventoryUpdate:
         _o.Type.Value = this.Type<H_InventoryUpdate>().HasValue ? this.Type<H_InventoryUpdate>().Value.UnPack() : null;

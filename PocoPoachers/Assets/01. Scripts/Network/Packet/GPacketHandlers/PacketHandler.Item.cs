@@ -8,46 +8,70 @@ public static partial class PacketHandlers
         var p2p = P2PManager.Instance;
         if (p2p == null || !p2p.IsHost) return;
 
-        int requesterId     = p2p.LastSenderPlayerId;
-        bool success        = false;
-        int removedSlotIdx  = -1;
+        int requesterId  = p2p.LastSenderPlayerId;
+        bool success     = false;
+        int changedSlot  = -1;
 
-        var om = ObjectManager.Instance;
-        if (om != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
+        var om       = ObjectManager.Instance;
+        var itemData = ItemTable.Instance.Get(pkt.ItemTypeId);
+
+        if (om != null && itemData != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
         {
-            var boxInv   = boxObj.GetComponent<Inventory>();
-            var itemData = ItemTable.Instance.Get(pkt.ItemTypeId);
-
-            if (boxInv != null && itemData != null && boxInv.HasItem(itemData, pkt.Amount))
+            var boxInv = boxObj.GetComponent<Inventory>();
+            if (boxInv != null)
             {
-                // 박스에서 해당 아이템이 있는 슬롯 탐색
-                for (int i = 0; i < boxInv.Slots.Count; i++)
+                if (pkt.IsPlayerGained)
                 {
-                    var slot = boxInv.Slots[i];
-                    if (!slot.IsEmpty && slot.ItemData?.Id == pkt.ItemTypeId)
+                    // 플레이어가 박스에서 가져감 → 박스에서 제거
+                    for (int i = 0; i < boxInv.Slots.Count; i++)
                     {
-                        removedSlotIdx = i;
-                        break;
+                        if (!boxInv.Slots[i].IsEmpty && boxInv.Slots[i].ItemData?.Id == pkt.ItemTypeId)
+                        {
+                            changedSlot = i;
+                            break;
+                        }
+                    }
+                    if (changedSlot >= 0)
+                    {
+                        boxInv.RemoveItemAtSlot(changedSlot, itemData, pkt.Amount);
+                        success = true;
                     }
                 }
-
-                if (removedSlotIdx >= 0)
+                else
                 {
-                    boxInv.RemoveItemAtSlot(removedSlotIdx, itemData, pkt.Amount);
-                    success = true;
+                    // 플레이어가 박스에 넣음 → 박스에 추가
+                    changedSlot = pkt.SlotIndex;
+                    success = boxInv.AddItemAtSlot(changedSlot, itemData, pkt.Amount);
                 }
             }
         }
 
+        // 요청자에게 결과 응답
         p2p.SendTo(requesterId, new H_ItemGainResultT
         {
-            Success         = success,
-            BoxUid          = pkt.BoxUid,
-            ItemTypeId      = pkt.ItemTypeId,
-            Amount          = pkt.Amount,
-            SlotIndex       = pkt.SlotIndex,
-            RemovedSlotIndex = removedSlotIdx,
+            Success          = success,
+            BoxUid           = pkt.BoxUid,
+            ItemTypeId       = pkt.ItemTypeId,
+            Amount           = pkt.Amount,
+            SlotIndex        = pkt.SlotIndex,
+            RemovedSlotIndex = changedSlot,
         }, H_ItemGainResult.Pack, PacketType.H_ItemGainResult);
+
+        // 나머지 클라이언트에게 박스 변경 브로드캐스트
+        // IsPlayerGained=true(제거)면 음수, false(추가)면 양수
+        if (success)
+        {
+            int updateAmount = pkt.IsPlayerGained ? -pkt.Amount : pkt.Amount;
+            var segment = PacketBuilder.BuildSegment(new H_ItemBoxUpdateT
+            {
+                BoxUid     = pkt.BoxUid,
+                ItemTypeId = pkt.ItemTypeId,
+                Amount     = updateAmount,
+                SlotIndex  = changedSlot,
+            }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+            int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
+            p2p.RelayExcept(myId, segment);
+        }
     }
 
     public static void OnG_ItemExchange(FlatPacket root)

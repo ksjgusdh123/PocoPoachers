@@ -18,6 +18,7 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.H_ItemDespawn       , PacketHandlers.OnH_ItemDespawn);
         _onRecv.Add(PacketType.G_ItemGain          , PacketHandlers.OnG_ItemGain);
         _onRecv.Add(PacketType.H_ItemGainResult    , PacketHandlers.OnH_ItemGainResult);
+        _onRecv.Add(PacketType.H_ItemBoxUpdate     , PacketHandlers.OnH_ItemBoxUpdate);
         _onRecv.Add(PacketType.H_InventoryUpdate   , PacketHandlers.OnH_InventoryUpdate);
         _onRecv.Add(PacketType.G_ItemExchange      , PacketHandlers.OnG_ItemExchange);
         _onRecv.Add(PacketType.H_ItemExchangeResult, PacketHandlers.OnH_ItemExchangeResult);

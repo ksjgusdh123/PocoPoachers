@@ -16,29 +16,33 @@ public struct G_ItemGain : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public G_ItemGain __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int BoxUid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int ItemTypeId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int Amount { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int SlotIndex { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public bool IsPlayerGained { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public int BoxUid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int ItemTypeId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int Amount { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int SlotIndex { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<G_ItemGain> CreateG_ItemGain(FlatBufferBuilder builder,
+      bool is_player_gained = false,
       int box_uid = 0,
       int item_type_id = 0,
       int amount = 0,
       int slot_index = 0) {
-    builder.StartTable(4);
+    builder.StartTable(5);
     G_ItemGain.AddSlotIndex(builder, slot_index);
     G_ItemGain.AddAmount(builder, amount);
     G_ItemGain.AddItemTypeId(builder, item_type_id);
     G_ItemGain.AddBoxUid(builder, box_uid);
+    G_ItemGain.AddIsPlayerGained(builder, is_player_gained);
     return G_ItemGain.EndG_ItemGain(builder);
   }
 
-  public static void StartG_ItemGain(FlatBufferBuilder builder) { builder.StartTable(4); }
-  public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(0, boxUid, 0); }
-  public static void AddItemTypeId(FlatBufferBuilder builder, int itemTypeId) { builder.AddInt(1, itemTypeId, 0); }
-  public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(2, amount, 0); }
-  public static void AddSlotIndex(FlatBufferBuilder builder, int slotIndex) { builder.AddInt(3, slotIndex, 0); }
+  public static void StartG_ItemGain(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void AddIsPlayerGained(FlatBufferBuilder builder, bool isPlayerGained) { builder.AddBool(0, isPlayerGained, false); }
+  public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(1, boxUid, 0); }
+  public static void AddItemTypeId(FlatBufferBuilder builder, int itemTypeId) { builder.AddInt(2, itemTypeId, 0); }
+  public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(3, amount, 0); }
+  public static void AddSlotIndex(FlatBufferBuilder builder, int slotIndex) { builder.AddInt(4, slotIndex, 0); }
   public static Offset<G_ItemGain> EndG_ItemGain(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<G_ItemGain>(o);
@@ -49,6 +53,7 @@ public struct G_ItemGain : IFlatbufferObject
     return _o;
   }
   public void UnPackTo(G_ItemGainT _o) {
+    _o.IsPlayerGained = this.IsPlayerGained;
     _o.BoxUid = this.BoxUid;
     _o.ItemTypeId = this.ItemTypeId;
     _o.Amount = this.Amount;
@@ -58,6 +63,7 @@ public struct G_ItemGain : IFlatbufferObject
     if (_o == null) return default(Offset<G_ItemGain>);
     return CreateG_ItemGain(
       builder,
+      _o.IsPlayerGained,
       _o.BoxUid,
       _o.ItemTypeId,
       _o.Amount,
@@ -67,12 +73,14 @@ public struct G_ItemGain : IFlatbufferObject
 
 public class G_ItemGainT
 {
+  public bool IsPlayerGained { get; set; }
   public int BoxUid { get; set; }
   public int ItemTypeId { get; set; }
   public int Amount { get; set; }
   public int SlotIndex { get; set; }
 
   public G_ItemGainT() {
+    this.IsPlayerGained = false;
     this.BoxUid = 0;
     this.ItemTypeId = 0;
     this.Amount = 0;
@@ -86,10 +94,11 @@ static public class G_ItemGainVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*BoxUid*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*ItemTypeId*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Amount*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 10 /*SlotIndex*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*IsPlayerGained*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 6 /*BoxUid*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*ItemTypeId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*Amount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*SlotIndex*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

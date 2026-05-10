@@ -38,7 +38,7 @@ public static partial class PacketHandlers
         var pkt = root.TypeAsH_ItemGainResult();
         if (!pkt.Success) return;
 
-        var om       = ObjectManager.Instance;
+        var om = ObjectManager.Instance;
         var itemData = ItemTable.Instance.Get(pkt.ItemTypeId);
         if (itemData == null) return;
 
@@ -47,11 +47,38 @@ public static partial class PacketHandlers
         playerInv?.AddItemAtSlot(pkt.SlotIndex, itemData, pkt.Amount);
 
         // 박스에서 해당 슬롯 아이템 제거
-        if (pkt.RemovedSlotIndex >= 0 && om != null
-            && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
+        //if (pkt.RemovedSlotIndex >= 0 && om != null
+        //    && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
+        //{
+        //    var boxInv = boxObj.GetComponent<Inventory>();
+        //    boxInv?.RemoveItemAtSlot(pkt.RemovedSlotIndex, itemData, pkt.Amount);
+        //}
+    }
+
+    public static void OnH_ItemBoxUpdate(FlatPacket root)
+    {
+        var pkt = root.TypeAsH_ItemBoxUpdate();
+
+        var om = ObjectManager.Instance;
+        if (om == null || !om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj)) return;
+
+        var boxInv = boxObj.GetComponent<Inventory>();
+        var itemData = ItemTable.Instance.Get(pkt.ItemTypeId);
+        if (boxInv == null || itemData == null) return;
+
+        Debug.Log($"{pkt.Amount}");
+
+        if (pkt.Amount > 0)
+            if (pkt.SlotIndex < 0)
+                boxInv.AddItem(itemData, pkt.Amount);
+            else
+                boxInv.AddItemAtSlot(pkt.SlotIndex, itemData, pkt.Amount);
+        else
         {
-            var boxInv = boxObj.GetComponent<Inventory>();
-            boxInv?.RemoveItemAtSlot(pkt.RemovedSlotIndex, itemData, pkt.Amount);
+            if (pkt.SlotIndex < 0)
+                boxInv.RemoveItem(itemData, pkt.Amount);
+            else
+                boxInv.RemoveItemAtSlot(pkt.SlotIndex, itemData, -pkt.Amount);
         }
     }
 
@@ -71,7 +98,7 @@ public static partial class PacketHandlers
         var pkt = root.TypeAsH_ItemExchangeResult();
         if (!pkt.Success) return;
 
-        var om          = ObjectManager.Instance;
+        var om = ObjectManager.Instance;
         var boxItemData = ItemTable.Instance.Get(pkt.BoxItemId);
         var plrItemData = ItemTable.Instance.Get(pkt.PlayerItemId);
 

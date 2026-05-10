@@ -22,12 +22,13 @@ public enum PacketType : byte
   H_ItemDespawn = 15,
   G_ItemGain = 16,
   H_ItemGainResult = 17,
-  H_InventoryUpdate = 18,
-  G_ItemExchange = 19,
-  H_ItemExchangeResult = 20,
-  G_ConsumeItem = 21,
-  H_ConsumeItemResult = 22,
-  S_PeerJoined = 23,
+  H_ItemBoxUpdate = 18,
+  H_InventoryUpdate = 19,
+  G_ItemExchange = 20,
+  H_ItemExchangeResult = 21,
+  G_ConsumeItem = 22,
+  H_ConsumeItemResult = 23,
+  S_PeerJoined = 24,
 };
 
 public class PacketTypeUnion {
@@ -74,6 +75,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_ItemGain(G_ItemGainT _g_itemgain) { return new PacketTypeUnion{ Type = PacketType.G_ItemGain, Value = _g_itemgain }; }
   public H_ItemGainResultT AsH_ItemGainResult() { return this.As<H_ItemGainResultT>(); }
   public static PacketTypeUnion FromH_ItemGainResult(H_ItemGainResultT _h_itemgainresult) { return new PacketTypeUnion{ Type = PacketType.H_ItemGainResult, Value = _h_itemgainresult }; }
+  public H_ItemBoxUpdateT AsH_ItemBoxUpdate() { return this.As<H_ItemBoxUpdateT>(); }
+  public static PacketTypeUnion FromH_ItemBoxUpdate(H_ItemBoxUpdateT _h_itemboxupdate) { return new PacketTypeUnion{ Type = PacketType.H_ItemBoxUpdate, Value = _h_itemboxupdate }; }
   public H_InventoryUpdateT AsH_InventoryUpdate() { return this.As<H_InventoryUpdateT>(); }
   public static PacketTypeUnion FromH_InventoryUpdate(H_InventoryUpdateT _h_inventoryupdate) { return new PacketTypeUnion{ Type = PacketType.H_InventoryUpdate, Value = _h_inventoryupdate }; }
   public G_ItemExchangeT AsG_ItemExchange() { return this.As<G_ItemExchangeT>(); }
@@ -107,6 +110,7 @@ public class PacketTypeUnion {
       case PacketType.H_ItemDespawn: return H_ItemDespawn.Pack(builder, _o.AsH_ItemDespawn()).Value;
       case PacketType.G_ItemGain: return G_ItemGain.Pack(builder, _o.AsG_ItemGain()).Value;
       case PacketType.H_ItemGainResult: return H_ItemGainResult.Pack(builder, _o.AsH_ItemGainResult()).Value;
+      case PacketType.H_ItemBoxUpdate: return H_ItemBoxUpdate.Pack(builder, _o.AsH_ItemBoxUpdate()).Value;
       case PacketType.H_InventoryUpdate: return H_InventoryUpdate.Pack(builder, _o.AsH_InventoryUpdate()).Value;
       case PacketType.G_ItemExchange: return G_ItemExchange.Pack(builder, _o.AsG_ItemExchange()).Value;
       case PacketType.H_ItemExchangeResult: return H_ItemExchangeResult.Pack(builder, _o.AsH_ItemExchangeResult()).Value;
@@ -176,6 +180,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_ItemGainResult:
         result = H_ItemGainResultVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_ItemBoxUpdate:
+        result = H_ItemBoxUpdateVerify.Verify(verifier, tablePos);
         break;
       case PacketType.H_InventoryUpdate:
         result = H_InventoryUpdateVerify.Verify(verifier, tablePos);
