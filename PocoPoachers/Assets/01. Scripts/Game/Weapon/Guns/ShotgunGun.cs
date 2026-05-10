@@ -4,8 +4,6 @@ public class ShotgunGun : GunBase
 {
     protected override void Shoot()
     {
-        var nm = NetworkManager.Instance;
-
         for (int i = 0; i < _gunData.bulletsPerShot; i++)
         {
             Vector3 fireDir = GetFireDirection();
@@ -21,3 +19,4 @@ public class ShotgunGun : GunBase
         }
     }
 }
+

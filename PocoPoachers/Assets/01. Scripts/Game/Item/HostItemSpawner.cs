@@ -64,7 +64,7 @@ public class HostItemSpawner : MonoBehaviour
         else
         {
             foreach (var data in _spawnedBoxes)
-                mgr.SendToAllGuests(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
+                PacketBuilder.BroadcastToGuests(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
     }
 
@@ -91,7 +91,7 @@ public class HostItemSpawner : MonoBehaviour
             omgr?.SpawnItemBox(uid, 301, cfg.Position, cfg.Rotation)
               ?.Initialize(cfg.ItemIds);
 
-            rmgr?.SendToAllGuests(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
+            PacketBuilder.BroadcastToGuests(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
     }
 
@@ -102,3 +102,4 @@ public class HostItemSpawner : MonoBehaviour
         _nextUid  = 1000;
     }
 }
+

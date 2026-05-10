@@ -1620,6 +1620,7 @@ MonoBehaviour:
   _moveSpeed: 5
   _sprintSpeed: 8
   _acceleration: 10
+  _sprintStaminaDrain: 20
   _sendInterval: 0.1
   _minMoveSqrEpsilon: 0.0004
   _minYawDelta: 0.5
@@ -1805,6 +1806,7 @@ MonoBehaviour:
   _dodgeSpeed: 10
   _dodgeDuration: 0.5
   _cooldown: 1
+  _dodgeStaminaCost: 25
   _recoveryDuration: 0.4
 --- !u!1001 &1187880128
 PrefabInstance:
@@ -2886,6 +2888,7 @@ MonoBehaviour:
   _recoverySpeed: 80
   _collapseSpeed: 1000
   _collapseTargetSpread: 20
+  _kickSpeed: 300
   _kickRecovery: 300
 --- !u!222 &2033270950
 CanvasRenderer:
@@ -3031,6 +3034,8 @@ MonoBehaviour:
   _entries:
   - Kind: 0
     Prefab: {fileID: 5533732121404448168, guid: 6c7f06c6a702d4d41bba4b5576adc82c, type: 3}
+  - Kind: 2
+    Prefab: {fileID: -7576339236958506304, guid: fb4181beb02991543825446263432aa6, type: 3}
 --- !u!114 &2117736439
 MonoBehaviour:
   m_ObjectHideFlags: 0
