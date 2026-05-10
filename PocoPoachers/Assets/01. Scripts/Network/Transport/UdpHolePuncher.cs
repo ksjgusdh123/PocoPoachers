@@ -31,9 +31,7 @@ public class UdpHolePuncher
 
     private void HandlePunchReceived(IPEndPoint from)
     {
-        bool match = from.Equals(_remoteEp) || from.Port == _remoteEp.Port;
-        UnityEngine.Debug.Log($"[Puncher] from={from} remote={_remoteEp} match={match}");
-        if (match)
+        if (from.Equals(_remoteEp) || from.Port == _remoteEp.Port)
             TrySuccess();
     }
 

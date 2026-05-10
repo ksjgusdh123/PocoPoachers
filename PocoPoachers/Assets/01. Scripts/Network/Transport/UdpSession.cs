@@ -73,7 +73,6 @@ public class UdpSession
                 var ep = (IPEndPoint)remote;
                 if (len == 1 && buffer[0] == 0x01)
                 {
-                    UnityEngine.Debug.Log($"[UdpSession] punch from {ep}");
                     OnPunchReceived?.Invoke(ep);
                     continue;
                 }

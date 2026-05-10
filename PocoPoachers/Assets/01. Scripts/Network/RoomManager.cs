@@ -87,7 +87,6 @@ public class RoomManager : Singleton<RoomManager>
     {
         int id = target.PlayerId;
         IPEndPoint ep = SelectEndPoint(target);
-        Debug.Log($"[ConnectToGuest] id={id} ep={ep} isHost={_isHost}");
 
         if (!_isHost)
             _hostEp = ep;
@@ -110,7 +109,8 @@ public class RoomManager : Singleton<RoomManager>
         };
         puncher.OnFailed += (_, reason) => {
             _punchers.TryRemove(id, out _);
-            HandleFailure(reason);
+            // 펀칭 타임아웃은 치명적 실패가 아님 — G_Move 수신 시 자동 등록으로 처리됨
+            Debug.LogWarning($"[RoomManager] Punch failed for {id}: {reason}");
         };
         puncher.Start(ep);
     }
@@ -167,7 +167,8 @@ public class RoomManager : Singleton<RoomManager>
     {
         if (!_isHost || _guests.ContainsKey(playerId) || _lastGuestEp == null) return;
         _guests[playerId] = _lastGuestEp;
-        Debug.Log($"[RoomManager] Auto-registered guest {playerId} at {_lastGuestEp}");
+        if (_punchers.TryRemove(playerId, out var puncher))
+            puncher.Stop();
         OnRoomJoined?.Invoke(playerId);
         SyncToGuest(playerId);
     }
