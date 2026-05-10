@@ -45,7 +45,6 @@ public static partial class PacketHandlers
             }
         }
 
-        // 요청자에게 결과 응답
         PacketBuilder.SendToGuest(requesterId, new H_ItemGainResultT
         {
             Success          = success,
@@ -56,12 +55,10 @@ public static partial class PacketHandlers
             RemovedSlotIndex = changedSlot,
         }, H_ItemGainResult.Pack, PacketType.H_ItemGainResult);
 
-        // 나머지 클라이언트에게 박스 변경 브로드캐스트
-        // IsPlayerGained=true(제거)면 음수, false(추가)면 양수
         if (success)
         {
             int updateAmount = pkt.IsPlayerGained ? -pkt.Amount : pkt.Amount;
-            PacketBuilder.BroadcastToGuests(requesterId, new H_ItemBoxUpdateT
+            PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
             {
                 BoxUid     = pkt.BoxUid,
                 ItemTypeId = pkt.ItemTypeId,

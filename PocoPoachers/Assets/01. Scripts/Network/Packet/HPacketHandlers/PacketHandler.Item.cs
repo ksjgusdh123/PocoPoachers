@@ -45,14 +45,6 @@ public static partial class PacketHandlers
         // 내 인벤토리에 아이템 추가
         var playerInv = FindLocalInventory();
         playerInv?.AddItemAtSlot(pkt.SlotIndex, itemData, pkt.Amount);
-
-        // 박스에서 해당 슬롯 아이템 제거
-        //if (pkt.RemovedSlotIndex >= 0 && om != null
-        //    && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
-        //{
-        //    var boxInv = boxObj.GetComponent<Inventory>();
-        //    boxInv?.RemoveItemAtSlot(pkt.RemovedSlotIndex, itemData, pkt.Amount);
-        //}
     }
 
     public static void OnH_ItemBoxUpdate(FlatPacket root)
