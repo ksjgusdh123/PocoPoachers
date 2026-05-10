@@ -3,10 +3,8 @@ using UnityEngine;
 
 public class FogOfWarRenderer : MonoBehaviour
 {
-    [SerializeField] private float _detectRange = 15f;
-    [SerializeField] private float _fovAngle = 90f;
+    [SerializeField] private VisionConfig _visionConfig;
     [SerializeField] private float _groundOffset = 0.05f;
-    [SerializeField] private int _arcSegments = 30;
     [SerializeField] private float _overlaySize = 500f;
     [SerializeField] private Color _darkColor = new Color(0f, 0f, 0f, 0.6f);
     [SerializeField] private LayerMask _wallLayer;
@@ -115,25 +113,26 @@ public class FogOfWarRenderer : MonoBehaviour
     private void UpdateFovMesh()
     {
         Vector3 origin = _fovMeshTrans.position;
-        float half = _fovAngle * 0.5f;
+        float half = _visionConfig.fovAngle * 0.5f;
+        int segments = _visionConfig.arcSegments;
 
-        Vector3[] vertices = new Vector3[_arcSegments + 2];
+        Vector3[] vertices = new Vector3[segments + 2];
         vertices[0] = Vector3.zero;
 
-        for (int i = 0; i <= _arcSegments; i++)
+        for (int i = 0; i <= segments; i++)
         {
-            float angle = -half + _fovAngle / _arcSegments * i;
+            float angle = -half + _visionConfig.fovAngle / segments * i;
             Vector3 dir = Quaternion.Euler(0, angle, 0) * transform.forward;
 
-            float dist = Physics.Raycast(origin, dir, out RaycastHit hit, _detectRange, _wallLayer)
+            float dist = Physics.Raycast(origin, dir, out RaycastHit hit, _visionConfig.detectRange, _wallLayer)
                 ? hit.distance
-                : _detectRange;
+                : _visionConfig.detectRange;
 
             vertices[i + 1] = dir * dist;
         }
 
-        int[] triangles = new int[_arcSegments * 3];
-        for (int i = 0; i < _arcSegments; i++)
+        int[] triangles = new int[segments * 3];
+        for (int i = 0; i < segments; i++)
         {
             triangles[i * 3]     = 0;
             triangles[i * 3 + 1] = i + 1;

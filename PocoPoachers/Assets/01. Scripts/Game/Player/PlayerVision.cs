@@ -5,8 +5,7 @@ using UnityEngine;
 
 public class PlayerVision : MonoBehaviour
 {
-    [SerializeField] private float _detectRange = 15f;
-    [SerializeField] private float _fovAngle = 90f;
+    [SerializeField] private VisionConfig _visionConfig;
     [SerializeField] private float _eyeHeight = 1.5f;
     [SerializeField] private float _detectInterval = 0.2f;
     [SerializeField] private LayerMask _targetLayer;
@@ -16,7 +15,6 @@ public class PlayerVision : MonoBehaviour
     [SerializeField] private bool _showVision = true;
     [SerializeField] private Color _visionColor = new Color(0f, 1f, 1f, 0.8f);
     [SerializeField] private float _lineWidth = 0.05f;
-    [SerializeField] private int _arcSegments = 20;
 
     public IReadOnlyList<GameObject> DetectedTargets => _detectedTargets;
 
@@ -56,33 +54,34 @@ public class PlayerVision : MonoBehaviour
         _lineRenderer.endColor = _visionColor;
 
         // 중앙(1) + 호(arcSegments + 1) + 중앙(1) = arcSegments + 3
-        _lineRenderer.positionCount = _arcSegments + 3;
+        _lineRenderer.positionCount = _visionConfig.arcSegments + 3;
     }
 
     // 매 프레임 오브젝트 회전/이동에 맞춰 선 갱신
     private void UpdateVisionLine()
     {
         Vector3 eyePos = transform.position + Vector3.up * _eyeHeight;
-        float half = _fovAngle * 0.5f;
+        float half = _visionConfig.fovAngle * 0.5f;
+        int segments = _visionConfig.arcSegments;
 
         // 0번: 중앙(시작)
         _lineRenderer.SetPosition(0, eyePos);
 
         // 1 ~ arcSegments+1번: 각 방향마다 Raycast → 벽에 막히면 hit.point에서 끊김
-        for (int i = 0; i <= _arcSegments; i++)
+        for (int i = 0; i <= segments; i++)
         {
-            float angle = -half + _fovAngle / _arcSegments * i;
+            float angle = -half + _visionConfig.fovAngle / segments * i;
             Vector3 dir = Quaternion.Euler(0, angle, 0) * transform.forward;
 
-            Vector3 endpoint = Physics.Raycast(eyePos, dir, out RaycastHit hit, _detectRange, _wallLayer)
+            Vector3 endpoint = Physics.Raycast(eyePos, dir, out RaycastHit hit, _visionConfig.detectRange, _wallLayer)
                 ? hit.point
-                : eyePos + dir * _detectRange;
+                : eyePos + dir * _visionConfig.detectRange;
 
             _lineRenderer.SetPosition(i + 1, endpoint);
         }
 
         // 마지막: 중앙(끝)
-        _lineRenderer.SetPosition(_arcSegments + 2, eyePos);
+        _lineRenderer.SetPosition(segments + 2, eyePos);
     }
 
     private IEnumerator DetectionLoop()
@@ -97,7 +96,7 @@ public class PlayerVision : MonoBehaviour
 
     private void Scan()
     {
-        var colliders = Physics.OverlapSphere(transform.position, _detectRange, _targetLayer);
+        var colliders = Physics.OverlapSphere(transform.position, _visionConfig.detectRange, _targetLayer);
 
         var nextTargets = new List<GameObject>();
         foreach (var col in colliders)
@@ -140,7 +139,7 @@ public class PlayerVision : MonoBehaviour
     private bool IsInFovAngle(Transform target)
     {
         Vector3 dir = (target.position - transform.position).normalized;
-        return Vector3.Angle(transform.forward, dir) <= _fovAngle * 0.5f;
+        return Vector3.Angle(transform.forward, dir) <= _visionConfig.fovAngle * 0.5f;
     }
 
     private bool HasLineOfSight(GameObject target)
@@ -179,24 +178,26 @@ public class PlayerVision : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
+        if (_visionConfig == null) return;
+
         Vector3 eyePos = transform.position + Vector3.up * _eyeHeight;
+        float range = _visionConfig.detectRange;
+        float half = _visionConfig.fovAngle * 0.5f;
 
         Gizmos.color = _detectedTargets.Count > 0 ? Color.red : Color.green;
-        Gizmos.DrawWireSphere(transform.position, _detectRange);
+        Gizmos.DrawWireSphere(transform.position, range);
 
         Gizmos.color = Color.cyan;
-        float half = _fovAngle * 0.5f;
-
         Vector3 leftDir  = Quaternion.Euler(0, -half, 0) * transform.forward;
         Vector3 rightDir = Quaternion.Euler(0,  half, 0) * transform.forward;
-        Gizmos.DrawRay(eyePos, leftDir  * _detectRange);
-        Gizmos.DrawRay(eyePos, rightDir * _detectRange);
+        Gizmos.DrawRay(eyePos, leftDir  * range);
+        Gizmos.DrawRay(eyePos, rightDir * range);
 
-        Vector3 prev = eyePos + leftDir * _detectRange;
+        Vector3 prev = eyePos + leftDir * range;
         for (int i = 1; i <= 20; i++)
         {
-            float angle = -half + _fovAngle / 20 * i;
-            Vector3 next = eyePos + Quaternion.Euler(0, angle, 0) * transform.forward * _detectRange;
+            float angle = -half + _visionConfig.fovAngle / 20 * i;
+            Vector3 next = eyePos + Quaternion.Euler(0, angle, 0) * transform.forward * range;
             Gizmos.DrawLine(prev, next);
             prev = next;
         }
