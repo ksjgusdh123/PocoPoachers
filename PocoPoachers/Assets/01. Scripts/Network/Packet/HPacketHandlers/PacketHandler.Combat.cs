@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public static partial class PacketHandlers
 {
@@ -17,8 +17,6 @@ public static partial class PacketHandlers
         if (prefab == null) return;
 
         var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(direction));
-        bullet.Initialize(pkt.BulletSpeed, pkt.Damage, pkt.MaxRange, direction,
-            () => pool.Release(prefab, bullet),
-            applyDamage: false);
+        bullet.Initialize(pkt.BulletSpeed, pkt.Damage, pkt.MaxRange, direction, () => pool.Release(prefab, bullet), applyDamage: false);
     }
 }

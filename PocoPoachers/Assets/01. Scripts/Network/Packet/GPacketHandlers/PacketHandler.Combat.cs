@@ -12,7 +12,12 @@ public static partial class PacketHandlers
         Vector3 direction = dirRaw.HasValue    ? new Vector3(dirRaw.Value.X,    dirRaw.Value.Y,    dirRaw.Value.Z)    : Vector3.forward;
         if (direction == Vector3.zero) direction = Vector3.forward;
 
-        SpawnNetworkBullet(origin, direction, pkt.BulletSpeed, pkt.Damage, pkt.MaxRange);
+        var pool = BulletPool.Instance;
+        var prefab = pool?.NetworkBulletPrefab;
+        if (prefab == null) return;
+
+        var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(direction));
+        bullet.Initialize(pkt.BulletSpeed, pkt.Damage, pkt.MaxRange, direction, () => pool.Release(prefab, bullet), applyDamage: false);
 
         // 호스트: 나머지 게스트에게 H_Shoot 릴레이
         if (RoomManager.Instance?.IsHost ?? false)
@@ -29,18 +34,5 @@ public static partial class PacketHandlers
                 },
                 H_Shoot.Pack, PacketType.H_Shoot);
         }
-    }
-
-    // 원격 플레이어의 총알 시각화 (데미지 없음)
-    private static void SpawnNetworkBullet(Vector3 origin, Vector3 direction, float speed, float damage, float range)
-    {
-        var pool    = BulletPool.Instance;
-        var prefab  = pool?.NetworkBulletPrefab;
-        if (prefab == null) return;
-
-        var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(direction));
-        bullet.Initialize(speed, damage, range, direction,
-            () => pool.Release(prefab, bullet),
-            applyDamage: false);
     }
 }
