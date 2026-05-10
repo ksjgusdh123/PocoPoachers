@@ -294,9 +294,7 @@ MonoBehaviour:
   _guns: []
   _switchMidTime: 0.15
   _crosshairUI: {fileID: 986249424}
-  _baseGunClass:
-  - {fileID: 525764064}
-  - {fileID: 1902546969}
+  _mountPoint: {fileID: 0}
 --- !u!114 &108665973
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -724,6 +722,54 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &341665469
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 341665471}
+  - component: {fileID: 341665470}
+  m_Layer: 0
+  m_Name: GunDic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &341665470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 341665469}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 02955320417d73f44ae32039d8b817d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GunTable
+  _gunPrefabs:
+  - {fileID: 279068238681501722, guid: 7e0a0efafcdf91c49b0a3ef28a75da7a, type: 3}
+  - {fileID: 6790100276519992138, guid: 1462d7ebb0496594b9326abee54530a5, type: 3}
+  - {fileID: 279068238681501722, guid: 863a6e71592b0be4bbcaf8fc9f79a0df, type: 3}
+--- !u!4 &341665471
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 341665469}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.66148, y: 1.13804, z: 7.44703}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &453845356
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1095,17 +1141,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 444849420836179331, guid: 6c7f06c6a702d4d41bba4b5576adc82c, type: 3}
   m_PrefabInstance: {fileID: 525764061}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &525764064 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6866015966114098606, guid: 6c7f06c6a702d4d41bba4b5576adc82c, type: 3}
-  m_PrefabInstance: {fileID: 525764061}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d3b4e14ab4bd3e4408a2d4b3dbe06260, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SingleGun
 --- !u!1001 &551786560
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2082,6 +2117,11 @@ PrefabInstance:
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3186973320416560869, guid: a6215a84846eb94488f58838d95e7c43, type: 3}
   m_PrefabInstance: {fileID: 722637570}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &815789355 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6112331380076343035, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+  m_PrefabInstance: {fileID: 1720281252915885896}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &820203947
 PrefabInstance:
@@ -3684,6 +3724,11 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1643260043}
   m_CullTransparentMesh: 1
+--- !u!4 &1693585743 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2947247361012928705, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+  m_PrefabInstance: {fileID: 1720281252915885896}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1879054424
 GameObject:
   m_ObjectHideFlags: 0
@@ -3798,17 +3843,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3663055974269070062, guid: 1462d7ebb0496594b9326abee54530a5, type: 3}
   m_PrefabInstance: {fileID: 1902546967}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1902546969 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 6790100276519992138, guid: 1462d7ebb0496594b9326abee54530a5, type: 3}
-  m_PrefabInstance: {fileID: 1902546967}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8d90b844a125e3e4ead81035a844b883, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ShotgunGun
 --- !u!1001 &1933931379
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4133,6 +4167,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 203768848872600859, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1768851268979308149, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.12
@@ -4177,6 +4215,10 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: c7c43aa13cd7b8c448e542969ececf6a, type: 2}
+    - target: {fileID: 5774375866609710048, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6112331380076343035, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: m_Name
       value: TestAI
@@ -4187,20 +4229,37 @@ PrefabInstance:
         UnityEngine.AnimationModule]]'
       objectReference: {fileID: 0}
     - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: 'managedReferences[8932840619981406800]'
+      value: 'Unity.Behavior Unity.Behavior.BlackboardVariable`1[[AIWeaponController,
+        Assembly-CSharp]]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: managedReferences[8932840606647451895].Name
       value: AIAnimator
       objectReference: {fileID: 0}
     - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: managedReferences[8932840619981406800].Name
+      value: AIWeapon
+      objectReference: {fileID: 0}
+    - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: m_BlackboardVariableOverridesList.Array.size
-      value: 4
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: managedReferences[8932840606647451895].m_Value
       value: 
       objectReference: {fileID: 8679757490662831091}
     - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: managedReferences[8932840619981406800].m_Value
+      value: 
+      objectReference: {fileID: 8679757490662831099}
+    - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: 'm_BlackboardVariableOverridesList.Array.data[3]'
       value: 8932840606647451895
+      objectReference: {fileID: 0}
+    - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: 'm_BlackboardVariableOverridesList.Array.data[4]'
+      value: 8932840619981406800
       objectReference: {fileID: 0}
     - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: managedReferences[8932840606647451895].GUID.m_Value0
@@ -4210,16 +4269,43 @@ PrefabInstance:
       propertyPath: managedReferences[8932840606647451895].GUID.m_Value1
       value: 14967194908685463301
       objectReference: {fileID: 0}
+    - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: managedReferences[8932840619981406800].GUID.m_Value0
+      value: 6324819591453066242
+      objectReference: {fileID: 0}
+    - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: managedReferences[8932840619981406800].GUID.m_Value1
+      value: 16024323233596690582
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 203768848872600859, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+    - {fileID: 3793471630690141603, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+    - {fileID: 5774375866609710048, guid: 7eb711371b281a44c82543b723192d54, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 6112331380076343035, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8679757490662831099}
   m_SourcePrefab: {fileID: 100100000, guid: 7eb711371b281a44c82543b723192d54, type: 3}
 --- !u!95 &8679757490662831091 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 3636612311218519202, guid: 7eb711371b281a44c82543b723192d54, type: 3}
   m_PrefabInstance: {fileID: 1720281252915885896}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8679757490662831099
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 815789355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94397baa62c35654184747e5cc9ddc1c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIWeaponController
+  _mountPoint: {fileID: 1693585743}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -4237,3 +4323,4 @@ SceneRoots:
   - {fileID: 1269813146}
   - {fileID: 1720281252915885896}
   - {fileID: 894200880}
+  - {fileID: 341665471}

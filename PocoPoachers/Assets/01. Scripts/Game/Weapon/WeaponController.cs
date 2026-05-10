@@ -7,7 +7,7 @@ public class WeaponController : MonoBehaviour
     [SerializeField] private GunBase[] _guns;
     [SerializeField] private float _switchMidTime = 0.15f;
     [SerializeField] private CrosshairUI _crosshairUI;
-    [SerializeField] private GunBase[] _baseGunClass;
+    [SerializeField] private Transform _mountPoint;
     public float MoveSpeedMultiplier
     {
         get
@@ -21,7 +21,6 @@ public class WeaponController : MonoBehaviour
 
     private static readonly int WeaponSwitchHash = Animator.StringToHash("WeaponSwitch");
 
-    private Dictionary<int, GunBase> _gunDic = new Dictionary<int, GunBase>();
     private GunBase _currentGun;
     private int _currentGunIndex = -1;
     private bool _isSwitching;
@@ -29,19 +28,13 @@ public class WeaponController : MonoBehaviour
     private Animator _animator;
     private bool _wasFirePressed;
     private bool _wasAimPressed;
+    private System.Action<Vector2> _cameraShakeHandler;
 
     private void Awake()
     {
         _guns = new GunBase[2];
         _inputHandler = GetComponent<PlayerInputHandler>();
         _animator = GetComponentInChildren<Animator>();
-        foreach (var gun in _guns)
-            gun?.gameObject.SetActive(false);
-
-        foreach (var gun in _baseGunClass)
-        {
-            _gunDic[gun.GunData.itemId] = gun;
-        }
     }
 
     private void Start()
@@ -62,12 +55,16 @@ public class WeaponController : MonoBehaviour
         HandleAimInput();
     }
 
-    public void EquipWeapon(ItemData weaponData, int index)
+    public void EquipWeapon(int itemId, int index)
     {
-        if (!_gunDic.TryGetValue(weaponData.id, out GunBase equipGun)) return;
+        if (_guns[index] != null)
+            Destroy(_guns[index].gameObject);
 
-        _guns[index] = equipGun;
-        _currentGun = equipGun;
+        GunBase equipped = GunTable.Instance.Equip(itemId, _mountPoint);
+        if (equipped == null) return;
+
+        equipped.gameObject.SetActive(false);
+        _guns[index] = equipped;
     }
 
     private void SwitchWeapon(int index)
@@ -91,8 +88,11 @@ public class WeaponController : MonoBehaviour
 
         yield return new WaitForSeconds(_switchMidTime);
 
-        if (_currentGunIndex >= 0 && _guns[_currentGunIndex] != null && _crosshairUI != null)
-            _guns[_currentGunIndex].OnShoot -= _crosshairUI.OnShoot;
+        if (_currentGunIndex >= 0 && _guns[_currentGunIndex] != null)
+        {
+            if (_crosshairUI != null) _guns[_currentGunIndex].OnShoot -= _crosshairUI.OnShoot;
+            if (_cameraShakeHandler != null) _guns[_currentGunIndex].OnShoot -= _cameraShakeHandler;
+        }
 
         _guns[_currentGunIndex >= 0 ? _currentGunIndex : 0]?.gameObject.SetActive(false);
         _currentGunIndex = index;
@@ -100,11 +100,19 @@ public class WeaponController : MonoBehaviour
         _currentGun?.gameObject.SetActive(true);
         _wasFirePressed = false;
 
-        if (_currentGun != null && _crosshairUI != null)
+        if (_currentGun != null)
         {
-            _currentGun.OnShoot += _crosshairUI.OnShoot;
-            _crosshairUI.UpdateBaseSpread(_currentGun.GunData, false);
-            _crosshairUI.ResetSpread();
+            var gun = _currentGun;
+            _cameraShakeHandler = _ => CameraShake.Instance?.Shake(
+                gun.GunData.shakeIntensity, gun.GunData.shakeDuration, gun.Muzzle.up);
+            _currentGun.OnShoot += _cameraShakeHandler;
+
+            if (_crosshairUI != null)
+            {
+                _currentGun.OnShoot += _crosshairUI.OnShoot;
+                _crosshairUI.UpdateBaseSpread(_currentGun.GunData, false);
+                _crosshairUI.ResetSpread();
+            }
         }
 
         _isSwitching = false;

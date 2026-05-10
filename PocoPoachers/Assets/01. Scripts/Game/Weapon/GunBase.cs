@@ -8,6 +8,7 @@ public abstract class GunBase : MonoBehaviour
     [SerializeField] protected Transform _muzzle;
 
     public GunData GunData => _gunData;
+    public Transform Muzzle => _muzzle;
     public int CurrentAmmo => _currentAmmo;
     public bool IsReloading => _isReloading;
 
@@ -53,7 +54,6 @@ public abstract class GunBase : MonoBehaviour
         Vector2 kickVector = forwardDir * _gunData.crosshairVerticalKick
             + rightDir * UnityEngine.Random.Range(-_gunData.crosshairHorizontalKick, _gunData.crosshairHorizontalKick);
         OnShoot?.Invoke(kickVector);
-        CameraShake.Instance?.Shake(_gunData.shakeIntensity, _gunData.shakeDuration, _muzzle.up);
 
         if (_currentAmmo <= 0) StartReload();
     }
