@@ -11,7 +11,7 @@ public class RoomManager
 
     RoomManager() { }
 
-    public Room CreateRoom(ClientSession host, PeerInfoT hostInfo)
+    public Room CreateRoom(ClientSession host, MemberInfoT hostInfo)
     {
         lock (_lock)
         {

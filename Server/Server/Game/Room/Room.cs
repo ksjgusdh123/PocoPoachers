@@ -6,21 +6,21 @@ public class Room
 
     public string Code { get; }
     public ClientSession Host { get; }
-    public PeerInfoT HostInfo { get; }
+    public MemberInfoT HostInfo { get; }
 
-    readonly List<(ClientSession Session, PeerInfoT Info)> _guests = new();
-    public IReadOnlyList<(ClientSession Session, PeerInfoT Info)> Guests => _guests;
+    readonly List<(ClientSession Session, MemberInfoT Info)> _guests = new();
+    public IReadOnlyList<(ClientSession Session, MemberInfoT Info)> Guests => _guests;
 
     public bool IsFull => _guests.Count >= MaxGuests;
 
-    public Room(string code, ClientSession host, PeerInfoT hostInfo)
+    public Room(string code, ClientSession host, MemberInfoT hostInfo)
     {
         Code = code;
         Host = host;
         HostInfo = hostInfo;
     }
 
-    public bool TryJoin(ClientSession guest, PeerInfoT guestInfo)
+    public bool TryJoin(ClientSession guest, MemberInfoT guestInfo)
     {
         if (IsFull) return false;
         _guests.Add((guest, guestInfo));
