@@ -10,7 +10,7 @@ public class EquipDropHandler : ItemHolderDropHandler
         if (!base.OnItemDropped(data, amount)) return false;
 
         // temp
-        FindAnyObjectByType<WeaponController>().EquipWeapon(data, slotNumber);
+        FindAnyObjectByType<WeaponController>().EquipWeapon(data.id, slotNumber);
 
         if (_itemVisual != null)
             _itemVisual.SetActive(true);

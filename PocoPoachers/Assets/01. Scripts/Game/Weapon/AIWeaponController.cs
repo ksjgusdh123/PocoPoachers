@@ -2,10 +2,17 @@ using UnityEngine;
 
 public class AIWeaponController : MonoBehaviour
 {
-    [SerializeField] private GunBase _gun;
+    [SerializeField] private Transform _mountPoint;
+
+    private GunBase _gun;
 
     public GunBase Gun => _gun;
     public bool HasGun => _gun != null;
+
+    private void Start()
+    {
+        EquipGun(204);
+    }
 
     public void TryShoot()
     {
@@ -17,14 +24,11 @@ public class AIWeaponController : MonoBehaviour
         _gun?.StartReload();
     }
 
-    public void EquipGun(GunBase gun)
+    public void EquipGun(int itemId)
     {
         if (_gun != null)
-            _gun.gameObject.SetActive(false);
+            Destroy(_gun.gameObject);
 
-        _gun = gun;
-
-        if (_gun != null)
-            _gun.gameObject.SetActive(true);
+        _gun = GunTable.Instance.Equip(itemId, _mountPoint);
     }
 }
