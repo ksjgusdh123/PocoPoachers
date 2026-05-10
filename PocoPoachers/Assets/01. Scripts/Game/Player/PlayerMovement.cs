@@ -81,7 +81,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void BroadcastMove()
     {
-        if (RoomManager.HasGuests) return;
+        if (RoomManager.IsHost && !RoomManager.HasGuests) return;
 
         if (Time.unscaledTime < _nextSendTime) return;
         _nextSendTime = Time.unscaledTime + _sendInterval;

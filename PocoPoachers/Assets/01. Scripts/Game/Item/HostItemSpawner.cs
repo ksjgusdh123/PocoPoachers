@@ -27,7 +27,7 @@ public class HostItemSpawner : MonoBehaviour
         if (rmgr != null)
         {
             rmgr.OnGameStarted += HandleGameStarted;
-            rmgr.OnRoomJoined  += HandleRoomJoined;
+            rmgr.OnRoomJoined  += HandleRoomJoined;  // Action<int>
         }
     }
 
@@ -37,7 +37,7 @@ public class HostItemSpawner : MonoBehaviour
         if (rmgr != null)
         {
             rmgr.OnGameStarted -= HandleGameStarted;
-            rmgr.OnRoomJoined  -= HandleRoomJoined;
+            rmgr.OnRoomJoined  -= HandleRoomJoined;  // Action<int>
         }
     }
 
@@ -50,17 +50,32 @@ public class HostItemSpawner : MonoBehaviour
     }
 
     // 새 게스트가 참여할 때마다 현재 박스 상태 동기화
-    void HandleRoomJoined()
+    void HandleRoomJoined(int newGuestId)
     {
         if (!RoomManager.IsHost) return;
 
-        int newGuestId = RoomManager.LastGuestId;
-        foreach (var data in _spawnedBoxes)
+        var om = ObjectManager.Instance;
+        foreach (var original in _spawnedBoxes)
         {
-            if (newGuestId != 0)
-                PacketBuilder.SendToGuest(newGuestId, data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
-            else
-                PacketBuilder.BroadcastToGuests(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
+            var currentItemIds = new List<int>();
+            if (om != null && om.TryGet(ObjectKind.ItemBox, original.Uid, out var boxObj))
+            {
+                var inv = boxObj.GetComponent<Inventory>();
+                if (inv != null)
+                    foreach (var slot in inv.Slots)
+                        if (!slot.IsEmpty)
+                            for (int i = 0; i < slot.Amount; i++)
+                                currentItemIds.Add(slot.ItemData.Id);
+            }
+
+            PacketBuilder.SendToGuest(newGuestId, new H_ItemSpawnT
+            {
+                Uid      = original.Uid,
+                TypeId   = original.TypeId,
+                Pos      = original.Pos,
+                Rotation = original.Rotation,
+                ItemIds  = currentItemIds,
+            }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
     }
     public void SpawnInitBoxes()

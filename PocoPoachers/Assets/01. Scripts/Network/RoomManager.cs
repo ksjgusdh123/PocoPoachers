@@ -21,7 +21,7 @@ public class RoomManager : Singleton<RoomManager>
     public int  _lastGuestId { get; private set; }
 
     public event Action          OnGameStarted;
-    public event Action          OnRoomJoined;
+    public event Action<int>     OnRoomJoined;     // 새로 연결된 게스트의 PlayerId
     public event Action<string>  OnRoomJoinFailed;
 
     public void NotifyGameStarted() => OnGameStarted?.Invoke();
@@ -97,7 +97,7 @@ public class RoomManager : Singleton<RoomManager>
             _punchers.TryRemove(id, out _);
             _udpSession.StartReceive();
             MainThreadDispatcher.Enqueue(() => {
-                if (_isHost) OnRoomJoined?.Invoke();
+                if (_isHost) OnRoomJoined?.Invoke(id);
                 else         OnGameStarted?.Invoke();
             });
         };
