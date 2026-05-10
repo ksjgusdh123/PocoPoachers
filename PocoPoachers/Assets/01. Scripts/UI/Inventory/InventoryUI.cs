@@ -65,7 +65,7 @@ public class InventoryUI : MonoBehaviour
         if (isNetworked && !(RoomManager.Instance?.IsHost ?? false))
         {
             // 게스트: 호스트에게 요청 → H_ItemGainResult에서 실제 적용
-            RoomManager.Instance.SendToAllGuests(new G_ItemGainT
+            PacketBuilder.SendToHost(new G_ItemGainT
             {
                 IsPlayerGained = boxInventory == _inventory,
                 BoxUid         = boxWo.Id,
@@ -79,7 +79,7 @@ public class InventoryUI : MonoBehaviour
             // 호스트 또는 싱글플레이: 로컬에서 바로 적용
             target.AddItem(itemData, amount);
             _inventory.RemoveItemAtSlot(targetSlot.SlotIndex, itemData, amount);
-            RoomManager.Instance.SendToAllGuests(new H_ItemBoxUpdateT
+            PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
             {
                 BoxUid = boxWo.Id,
                 ItemTypeId = itemData.id,

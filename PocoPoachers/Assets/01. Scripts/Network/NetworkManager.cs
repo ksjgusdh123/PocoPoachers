@@ -82,7 +82,7 @@ public class NetworkManager : Singleton<NetworkManager>
         if (!IsLoggedIn) return;
 
         if (!IsSinglePlayer)
-            PacketBuilder.Send(new C_LogoutT(), C_Logout.Pack, PacketType.C_Logout);
+            PacketBuilder.SendToMaster(new C_LogoutT(), C_Logout.Pack, PacketType.C_Logout);
 
         IsSinglePlayer = false;
         IsLoggedIn     = false;
@@ -93,7 +93,7 @@ public class NetworkManager : Singleton<NetworkManager>
     public void OnSessionConnected()
     {
         Debug.Log("[NetworkManager] Connected");
-        PacketBuilder.Send(new C_LoginT { Username = userName ?? string.Empty }, C_Login.Pack, PacketType.C_Login);
+        PacketBuilder.SendToMaster(new C_LoginT { Username = userName ?? string.Empty }, C_Login.Pack, PacketType.C_Login);
         OnConnected?.Invoke();
     }
 
@@ -113,7 +113,7 @@ public class NetworkManager : Singleton<NetworkManager>
         long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         var pkt = new C_HeartbeatT { SendTime = now };
-        PacketBuilder.Send(pkt, C_Heartbeat.Pack, PacketType.C_Heartbeat);
+        PacketBuilder.SendToMaster(pkt, C_Heartbeat.Pack, PacketType.C_Heartbeat);
     }
 
     IEnumerator CoHeartbeatLoop()

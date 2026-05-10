@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
-using static UnityEngine.Rendering.HableCurve;
 
 public class RoomManager : Singleton<RoomManager>
 {
@@ -13,19 +12,19 @@ public class RoomManager : Singleton<RoomManager>
     [SerializeField] string stunHost = "stun.l.google.com";
     [SerializeField] int    stunPort = 19302;
 
-    public bool IsHost             { get; private set; }
-    public bool IsConnected        => _guests.Count > 0;
-    public int  GuestCount          => _guests.Count;
+    public bool IsHost      { get; private set; }
+    public bool IsConnected => _guests.Count > 0;
+    public int  GuestCount  => _guests.Count;
     public int  LastGuestId { get; private set; }
 
     public event Action          OnRoomJoined;
     public event Action<string>  OnRoomJoinFailed;
 
-    Socket     _udpSocket;
+    UdpSession _udpSession;
     IPEndPoint _myPublicEp;
-    Thread     _recvThread;
+    IPEndPoint _hostEp;
 
-    readonly ConcurrentDictionary<int, IPEndPoint>     _guests    = new();
+    readonly ConcurrentDictionary<int, IPEndPoint>     _guests   = new();
     readonly ConcurrentDictionary<int, UdpHolePuncher> _punchers = new();
 
     protected override void Awake()
@@ -44,18 +43,25 @@ public class RoomManager : Singleton<RoomManager>
         _punchers.Clear();
 
         ThreadPool.QueueUserWorkItem(_ => {
-            if (!PrepareSocket()) return;
-            if (!StunClient.TryGetPublicEndPoint(stunHost, stunPort, _udpSocket, out _myPublicEp))
+            _udpSession = new UdpSession();
+            _udpSession.OnReceived += OnUdpReceived;
+
+            if (!_udpSession.Bind())
             {
-                HandleFailure("STUN 실패");
+                HandleFailure("네트워크 초기화 오류");
+                return;
+            }
+            if (!StunClient.TryGetPublicEndPoint(stunHost, stunPort, _udpSession.Socket, out _myPublicEp))
+            {
+                HandleFailure("인터넷 연결 오류");
                 return;
             }
             var myInfo = GetMySessionInfo();
             MainThreadDispatcher.Enqueue(() => {
                 if (IsHost)
-                    PacketBuilder.Send(new C_CreateRoomT { MyInfo = myInfo }, C_CreateRoom.Pack, PacketType.C_CreateRoom);
+                    PacketBuilder.SendToMaster(new C_CreateRoomT { MyInfo = myInfo }, C_CreateRoom.Pack, PacketType.C_CreateRoom);
                 else
-                    PacketBuilder.Send(new C_JoinRoomT { SessionCode = code, MyInfo = myInfo }, C_JoinRoom.Pack, PacketType.C_JoinRoom);
+                    PacketBuilder.SendToMaster(new C_JoinRoomT { SessionCode = code, MyInfo = myInfo }, C_JoinRoom.Pack, PacketType.C_JoinRoom);
             });
         });
     }
@@ -65,18 +71,16 @@ public class RoomManager : Singleton<RoomManager>
         int id = target.PlayerId;
         IPEndPoint ep = SelectEndPoint(target);
 
-        var puncher = new UdpHolePuncher(_udpSocket);
+        if (!IsHost)
+            _hostEp = ep;
+
+        var puncher = new UdpHolePuncher(_udpSession.Socket);
         _punchers[id] = puncher;
 
         puncher.OnSuccess += _ => {
             _guests[id] = ep;
             _punchers.TryRemove(id, out _);
-
-            if (_recvThread == null || !_recvThread.IsAlive)
-            {
-                _recvThread = new Thread(ReceiveLoop) { IsBackground = true, Name = "Room-Recv" };
-                _recvThread.Start();
-            }
+            _udpSession.StartReceive();
             MainThreadDispatcher.Enqueue(() => OnRoomJoined?.Invoke());
         };
         puncher.OnFailed += (_, reason) => {
@@ -86,81 +90,45 @@ public class RoomManager : Singleton<RoomManager>
         puncher.Start(ep);
     }
 
-    public void SendToAllGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public void UdpSendToHost<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
         where TTable : struct where TObj : class
     {
-        if (_guests.IsEmpty || _udpSocket == null) return;
-        try
-        {
-            var segment = PacketBuilder.BuildSegment(data, packFunc, type);
-            foreach (var ep in _guests.Values)
-                _udpSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, ep);
-        }
-        catch (Exception e) { Debug.LogWarning($"[Room] SendToAll failed: {e.Message}"); }
+        if (_udpSession == null || _hostEp == null) return;
+        _udpSession.Send(PacketBuilder.BuildSegment(data, packFunc, type), _hostEp);
     }
 
-    public void SendToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public void UdpBroadcastToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type, int excludeId = -1)
         where TTable : struct where TObj : class
     {
+        if (_guests.IsEmpty || _udpSession == null) return;
         var segment = PacketBuilder.BuildSegment(data, packFunc, type);
-        if (_udpSocket == null || !_guests.TryGetValue(playerId, out var ep)) return;
-        try { _udpSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, ep); }
-        catch (Exception e) { Debug.LogWarning($"[Room] SendTo {playerId} failed: {e.Message}"); }
-    }
-
-    public void RelayToOtherGuests(int excludePlayerId, ArraySegment<byte> segment)
-    {
-        if (_udpSocket == null) return;
         foreach (var kv in _guests)
         {
-            if (kv.Key == excludePlayerId) continue;
-            try { _udpSocket.SendTo(segment.Array, segment.Offset, segment.Count, SocketFlags.None, kv.Value); }
-            catch (Exception e) { Debug.LogWarning($"[Room] Relay to {kv.Key} failed: {e.Message}"); }
+            if (kv.Key == excludeId) continue;
+            _udpSession.Send(segment, kv.Value);
         }
     }
 
-    private void ReceiveLoop()
+    public void UdpSendToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+        where TTable : struct where TObj : class
     {
-        byte[] buffer = new byte[2048];
-        EndPoint remote = new IPEndPoint(IPAddress.Any, 0);
-        while (_guests.Count > 0 || _punchers.Count > 0)
-        {
-            try
-            {
-                if (_udpSocket == null) break;
-                if (!_udpSocket.Poll(100_000, SelectMode.SelectRead)) continue;
-                int len = _udpSocket.ReceiveFrom(buffer, ref remote);
-                if (len <= 1) continue;
-
-                // 발신자 PlayerId 확인
-                int senderId = 0;
-                foreach (var kv in _guests)
-                    if (kv.Value.Equals(remote)) { senderId = kv.Key; break; }
-
-                byte[] copy = new byte[len];
-                Buffer.BlockCopy(buffer, 0, copy, 0, len);
-                int captured = senderId;
-                MainThreadDispatcher.Enqueue(() =>
-                {
-                    LastGuestId = captured;
-                    PacketManager.HandlePacket(new ArraySegment<byte>(copy));
-                    LastGuestId = 0;
-                });
-            }
-            catch { break; }
-        }
+        if (_udpSession == null || !_guests.TryGetValue(playerId, out var ep)) return;
+        _udpSession.Send(PacketBuilder.BuildSegment(data, packFunc, type), ep);
     }
 
-    private bool PrepareSocket()
+    private void OnUdpReceived(ArraySegment<byte> data, IPEndPoint sender)
     {
-        try
+        int senderId = 0;
+        foreach (var kv in _guests)
+            if (kv.Value.Equals(sender)) { senderId = kv.Key; break; }
+
+        int captured = senderId;
+        MainThreadDispatcher.Enqueue(() =>
         {
-            _udpSocket = new Socket(AddressFamily.InterNetwork, SocketType.Dgram, ProtocolType.Udp);
-            _udpSocket.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.ReuseAddress, true);
-            _udpSocket.Bind(new IPEndPoint(IPAddress.Any, 0));
-            return true;
-        }
-        catch (Exception e) { HandleFailure(e.Message); return false; }
+            LastGuestId = captured;
+            PacketManager.HandlePacket(data);
+            LastGuestId = 0;
+        });
     }
 
     private IPEndPoint SelectEndPoint(MemberInfoT info)
@@ -191,8 +159,8 @@ public class RoomManager : Singleton<RoomManager>
         PlayerId   = NetworkManager.Instance.MyPlayerId,
         PublicIp   = _myPublicEp.Address.ToString(),
         PublicPort = (ushort)_myPublicEp.Port,
-        PrivateIp   = GetLocalPrivateIp(),
-        PrivatePort = (ushort)((IPEndPoint)_udpSocket.LocalEndPoint).Port,
+        PrivateIp  = GetLocalPrivateIp(),
+        PrivatePort = (ushort)_udpSession.LocalEndPoint.Port,
     };
 
     public void LeaveRoom()
@@ -200,8 +168,9 @@ public class RoomManager : Singleton<RoomManager>
         foreach (var p in _punchers.Values) p.Stop();
         _punchers.Clear();
         _guests.Clear();
-        _udpSocket?.Close();
-        _udpSocket = null;
+        _udpSession?.Close();
+        _udpSession = null;
+        _hostEp = null;
         IsHost = false;
     }
 
@@ -213,7 +182,8 @@ public class RoomManager : Singleton<RoomManager>
     protected override void OnDestroy()
     {
         foreach (var p in _punchers.Values) p.Stop();
-        _udpSocket?.Close();
+        _udpSession?.Close();
         base.OnDestroy();
     }
 }
+

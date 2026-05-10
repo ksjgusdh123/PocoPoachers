@@ -47,7 +47,7 @@ public static partial class PacketHandlers
         }
 
         // 요청자에게 결과 응답
-        rmgr.SendToGuest(requesterId, new H_ItemGainResultT
+        PacketBuilder.SendToGuest(requesterId, new H_ItemGainResultT
         {
             Success          = success,
             BoxUid           = pkt.BoxUid,
@@ -62,15 +62,14 @@ public static partial class PacketHandlers
         if (success)
         {
             int updateAmount = pkt.IsPlayerGained ? -pkt.Amount : pkt.Amount;
-            var segment = PacketBuilder.BuildSegment(new H_ItemBoxUpdateT
+            int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
+            PacketBuilder.BroadcastToGuests(myId, new H_ItemBoxUpdateT
             {
                 BoxUid     = pkt.BoxUid,
                 ItemTypeId = pkt.ItemTypeId,
                 Amount     = updateAmount,
                 SlotIndex  = changedSlot,
             }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
-            int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
-            rmgr.RelayToOtherGuests(myId, segment);
         }
     }
 
@@ -109,7 +108,7 @@ public static partial class PacketHandlers
             }
         }
 
-        rmgr.SendToGuest(requesterId, new H_ItemExchangeResultT
+        PacketBuilder.SendToGuest(requesterId, new H_ItemExchangeResultT
         {
             Success           = success,
             BoxUid            = pkt.BoxUid,
@@ -146,3 +145,4 @@ public static partial class PacketHandlers
         //}, S_ConsumeItemNtf.Pack, PacketType.S_ConsumeItemNtf);
     }
 }
+

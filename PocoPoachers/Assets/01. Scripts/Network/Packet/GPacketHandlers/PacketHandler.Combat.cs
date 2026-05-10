@@ -15,10 +15,9 @@ public static partial class PacketHandlers
         SpawnNetworkBullet(origin, direction, pkt.BulletSpeed, pkt.Damage, pkt.MaxRange);
 
         // 호스트: 나머지 게스트에게 H_Shoot 릴레이
-        var rmgr = RoomManager.Instance;
-        if (rmgr != null && rmgr.IsHost)
+        if (RoomManager.Instance?.IsHost ?? false)
         {
-            rmgr.RelayToOtherGuests(pkt.PlayerId, PacketBuilder.BuildSegment(
+            PacketBuilder.BroadcastToGuests(pkt.PlayerId,
                 new H_ShootT
                 {
                     PlayerId    = pkt.PlayerId,
@@ -28,7 +27,7 @@ public static partial class PacketHandlers
                     Damage      = pkt.Damage,
                     MaxRange    = pkt.MaxRange,
                 },
-                H_Shoot.Pack, PacketType.H_Shoot));
+                H_Shoot.Pack, PacketType.H_Shoot);
         }
     }
 

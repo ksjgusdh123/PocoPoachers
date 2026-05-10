@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using Google.FlatBuffers;
 
 public static class PacketBuilder
 {
     static readonly FlatBufferBuilder _builder = new FlatBufferBuilder(1024);
 
-    public static void Send<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public static void SendToMaster<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
         where TTable : struct where TObj : class
     {
         var session = NetworkManager.Instance?.Session;
@@ -15,6 +15,22 @@ public static class PacketBuilder
         var innerOffset = packFunc(_builder, data);
         session.Send(Build(_builder, type, innerOffset.Value));
     }
+
+    public static void SendToHost<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+        where TTable : struct where TObj : class
+        => RoomManager.Instance?.UdpSendToHost(data, packFunc, type);
+
+    public static void BroadcastToGuests<TTable, TObj>(int excludeId , TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+        where TTable : struct where TObj : class
+        => RoomManager.Instance?.UdpBroadcastToGuests(data, packFunc, type, excludeId);
+
+    public static void BroadcastToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+        where TTable : struct where TObj : class
+        => RoomManager.Instance?.UdpBroadcastToGuests(data, packFunc, type);
+
+    public static void SendToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+        where TTable : struct where TObj : class
+        => RoomManager.Instance?.UdpSendToGuest(playerId, data, packFunc, type);
 
     public static ArraySegment<byte> BuildSegment<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
         where TTable : struct where TObj : class
@@ -40,3 +56,4 @@ public static class PacketBuilder
         return new ArraySegment<byte>(sendBuffer);
     }
 }
+
