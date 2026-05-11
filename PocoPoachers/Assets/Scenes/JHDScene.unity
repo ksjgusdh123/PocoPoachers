@@ -4277,7 +4277,8 @@ PrefabInstance:
       propertyPath: managedReferences[8932840619981406800].GUID.m_Value1
       value: 16024323233596690582
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 5234448510549825067, guid: 7eb711371b281a44c82543b723192d54, type: 3}
     m_RemovedGameObjects:
     - {fileID: 203768848872600859, guid: 7eb711371b281a44c82543b723192d54, type: 3}
     - {fileID: 3793471630690141603, guid: 7eb711371b281a44c82543b723192d54, type: 3}
@@ -4287,6 +4288,12 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6112331380076343035, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8679757490662831099}
+    - targetCorrespondingSourceObject: {fileID: 6112331380076343035, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8679757490662831107}
+    - targetCorrespondingSourceObject: {fileID: 6112331380076343035, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8679757490662831108}
   m_SourcePrefab: {fileID: 100100000, guid: 7eb711371b281a44c82543b723192d54, type: 3}
 --- !u!95 &8679757490662831091 stripped
 Animator:
@@ -4306,6 +4313,32 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AIWeaponController
   _mountPoint: {fileID: 1693585743}
+--- !u!114 &8679757490662831107
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 815789355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a5561177ad244d4d95d352c343a1364, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIRotator
+  RotationSpeed: 10
+--- !u!114 &8679757490662831108
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 815789355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 89a443f101672eb4e90fd3fa04cc03e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyStat
+  _monsterId: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
