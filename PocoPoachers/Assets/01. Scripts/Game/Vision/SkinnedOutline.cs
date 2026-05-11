@@ -4,16 +4,25 @@ using UnityEngine;
 // 자식의 모든 SkinnedMeshRenderer에 Mask + Outline 머티리얼을 추가
 public class SkinnedOutline : MonoBehaviour
 {
+    [Header("Outline")]
     [SerializeField] Color _color = Color.yellow;
-    [SerializeField, Range(0f, 0.1f)] float _width = 0.02f;
+    [SerializeField, Range(0f, 0.1f)]  float _width     = 0.02f;
+
+    [Header("Wave")]
+    [SerializeField, Range(0f, 10f)]   float _waveSpeed     = 3f;
+    [SerializeField, Range(0f, 20f)]   float _waveFrequency = 5f;
+    [SerializeField, Range(0f, 0.05f)] float _waveAmplitude = 0.05f;
 
     SkinnedMeshRenderer[] _smrs;
     Material _maskMat;
     Material _outlineMat;
     Material[][] _originalMats;
 
-    static readonly int ColorProp = Shader.PropertyToID("_OutlineColor");
-    static readonly int WidthProp  = Shader.PropertyToID("_OutlineWidth");
+    static readonly int ColorProp     = Shader.PropertyToID("_OutlineColor");
+    static readonly int WidthProp     = Shader.PropertyToID("_OutlineWidth");
+    static readonly int SpeedProp     = Shader.PropertyToID("_WaveSpeed");
+    static readonly int FrequencyProp = Shader.PropertyToID("_WaveFrequency");
+    static readonly int AmplitudeProp = Shader.PropertyToID("_WaveAmplitude");
 
     void Awake()
     {
@@ -33,8 +42,8 @@ public class SkinnedOutline : MonoBehaviour
         {
             var mats = new Material[_originalMats[i].Length + 2];
             _originalMats[i].CopyTo(mats, 0);
-            mats[^2] = _maskMat;    // Queue=Transparent    (Mask 먼저)
-            mats[^1] = _outlineMat; // Queue=Transparent+1  (Outline 나중)
+            mats[^2] = _maskMat;
+            mats[^1] = _outlineMat;
             _smrs[i].materials = mats;
         }
     }
@@ -45,6 +54,7 @@ public class SkinnedOutline : MonoBehaviour
             _smrs[i].materials = _originalMats[i];
     }
 
+    // Inspector에서 값 변경 시 Play 모드에서도 즉시 반영
     void OnValidate()
     {
         if (_outlineMat == null) return;
@@ -59,14 +69,25 @@ public class SkinnedOutline : MonoBehaviour
 
     void SyncProperties()
     {
-        _outlineMat.SetColor(ColorProp, _color);
-        _outlineMat.SetFloat(WidthProp,  _width);
+        _outlineMat.SetColor(ColorProp,     _color);
+        _outlineMat.SetFloat(WidthProp,     _width);
+        _outlineMat.SetFloat(SpeedProp,     _waveSpeed);
+        _outlineMat.SetFloat(FrequencyProp, _waveFrequency);
+        _outlineMat.SetFloat(AmplitudeProp, _waveAmplitude);
     }
 
     public void SetOutline(Color color, float width)
     {
         _color = color;
         _width = width;
+        SyncProperties();
+    }
+
+    public void SetWave(float speed, float frequency, float amplitude)
+    {
+        _waveSpeed     = speed;
+        _waveFrequency = frequency;
+        _waveAmplitude = amplitude;
         SyncProperties();
     }
 }
