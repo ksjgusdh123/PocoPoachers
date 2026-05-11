@@ -20,7 +20,7 @@ Shader "Custom/SkinnedOccludedOutlineMask"
 
             ColorMask 0
             ZWrite    Off
-            ZTest     LEqual
+            ZTest     Always
             Cull      Back
 
             HLSLPROGRAM

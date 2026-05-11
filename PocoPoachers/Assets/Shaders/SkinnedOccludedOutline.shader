@@ -23,7 +23,7 @@ Shader "Custom/SkinnedOccludedOutline"
             }
 
             ZWrite Off
-            ZTest  LEqual
+            ZTest  Greater
             Cull   Front
 
             HLSLPROGRAM
