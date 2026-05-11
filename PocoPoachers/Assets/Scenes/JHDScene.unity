@@ -4383,6 +4383,10 @@ PrefabInstance:
         Assembly-CSharp]]'
       objectReference: {fileID: 0}
     - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: 'managedReferences[8932840650133471905]'
+      value: 'Unity.Behavior Unity.Behavior.BlackboardVariable`1[[AISpeech, Assembly-CSharp]]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: managedReferences[8932840606647451895].Name
       value: AIAnimator
       objectReference: {fileID: 0}
@@ -4391,8 +4395,12 @@ PrefabInstance:
       value: AIWeapon
       objectReference: {fileID: 0}
     - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: managedReferences[8932840650133471905].Name
+      value: AISpeech
+      objectReference: {fileID: 0}
+    - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: m_BlackboardVariableOverridesList.Array.size
-      value: 5
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: managedReferences[8932840606647451895].m_Value
@@ -4403,12 +4411,20 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8679757490662831099}
     - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: managedReferences[8932840650133471905].m_Value
+      value: 
+      objectReference: {fileID: 8679757490662831115}
+    - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: 'm_BlackboardVariableOverridesList.Array.data[3]'
       value: 8932840606647451895
       objectReference: {fileID: 0}
     - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: 'm_BlackboardVariableOverridesList.Array.data[4]'
       value: 8932840619981406800
+      objectReference: {fileID: 0}
+    - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: 'm_BlackboardVariableOverridesList.Array.data[5]'
+      value: 8932840650133471905
       objectReference: {fileID: 0}
     - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: managedReferences[8932840606647451895].GUID.m_Value0
@@ -4425,6 +4441,14 @@ PrefabInstance:
     - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       propertyPath: managedReferences[8932840619981406800].GUID.m_Value1
       value: 16024323233596690582
+      objectReference: {fileID: 0}
+    - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: managedReferences[8932840650133471905].GUID.m_Value0
+      value: 13413372951549118892
+      objectReference: {fileID: 0}
+    - target: {fileID: 7464591464131187483, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      propertyPath: managedReferences[8932840650133471905].GUID.m_Value1
+      value: 9947993739951217441
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 5234448510549825067, guid: 7eb711371b281a44c82543b723192d54, type: 3}
@@ -4443,6 +4467,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 6112331380076343035, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8679757490662831108}
+    - targetCorrespondingSourceObject: {fileID: 6112331380076343035, guid: 7eb711371b281a44c82543b723192d54, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8679757490662831115}
   m_SourcePrefab: {fileID: 100100000, guid: 7eb711371b281a44c82543b723192d54, type: 3}
 --- !u!95 &8679757490662831091 stripped
 Animator:
@@ -4488,6 +4515,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyStat
   _monsterId: 0
+--- !u!114 &8679757490662831115
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 815789355}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 980b0592c0881434086814eb2c95e89f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AISpeech
+  _defaultDuration: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
