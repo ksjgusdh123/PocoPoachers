@@ -11,6 +11,11 @@ public class AIRotator : MonoBehaviour
     private void Awake()
     {
         _agent = GetComponent<NavMeshAgent>();
+
+        SpeechBubble bubble = SpeechBubbleManager.Instance.Create(transform);
+
+        // 이벤트 발생 시
+        bubble.Show("발견!", 1000f);
     }
 
     private void Update()
