@@ -152,34 +152,26 @@ public class PlayerVision : MonoBehaviour
     private bool HasLineOfSight(GameObject target)
     {
         Vector3 origin = transform.position + Vector3.up * _eyeHeight;
-        Collider col = target.GetComponent<Collider>();
+        Vector3 point = target.transform.position;
+        point.y = origin.y;
 
-        Vector3 center, top, bottom;
-        if (col != null)
-        {
-            Bounds b = col.bounds;
-            center = b.center;
-            top = new Vector3(target.transform.position.x, b.max.y - 0.1f, target.transform.position.z);
-            bottom = new Vector3(target.transform.position.x, b.min.y + 0.1f, target.transform.position.z);
-        }
-        else
-        {
-            center = target.transform.position + Vector3.up * _eyeHeight;
-            top = center + Vector3.up * 0.5f;
-            bottom = target.transform.position;
-        }
-
-        return IsRayClear(origin, center)
-            || IsRayClear(origin, top)
-            || IsRayClear(origin, bottom);
+        return IsRayClear(origin, point); 
     }
 
     private bool IsRayClear(Vector3 origin, Vector3 point)
     {
+        point.y = origin.y;
+
         Vector3 dir = point - origin;
         bool blocked = Physics.Raycast(origin, dir.normalized, dir.magnitude, _wallLayer);
-        Debug.DrawLine(origin, blocked ? origin + dir.normalized * dir.magnitude : point,
-            blocked ? Color.red : Color.green, _detectInterval);
+
+        Debug.DrawLine(
+            origin,
+            blocked ? origin + dir.normalized * dir.magnitude : point,
+            blocked ? Color.red : Color.green,
+            _detectInterval
+        );
+
         return !blocked;
     }
 
