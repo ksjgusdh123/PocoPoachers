@@ -18,7 +18,9 @@ public class FogOfWarRenderer : MonoBehaviour
     private RenderTexture _blurTempRT;
     private Material _blurMat;
     private Material _fovMaskMat;
+    private Material _depthOnlyMat;
     private Material _darkOverlayMat;
+    private Renderer[] _wallRenderers;
 
     private Transform _fovMeshTrans;
     private Mesh _fovMesh;
@@ -36,6 +38,8 @@ public class FogOfWarRenderer : MonoBehaviour
         _mainCam   = Camera.main;
 
         CreateRenderTextures();
+        CreateDepthOnlyMaterial();
+        RefreshWallRenderers();
         CreateFovMeshObject();
         CreateCircleMeshObject();
         CreateDarkOverlayObject();
@@ -56,6 +60,8 @@ public class FogOfWarRenderer : MonoBehaviour
 
         if (_fogMaskRT  != null) { _fogMaskRT.Release();  Destroy(_fogMaskRT); }
         if (_blurTempRT != null) { _blurTempRT.Release(); Destroy(_blurTempRT); }
+
+        if (_depthOnlyMat != null) Destroy(_depthOnlyMat);
 
         _cmd?.Release();
     }
@@ -82,8 +88,10 @@ public class FogOfWarRenderer : MonoBehaviour
 
         _cmd.Clear();
         _cmd.SetRenderTarget(_fogMaskRT);
-        _cmd.ClearRenderTarget(false, true, Color.black);
+        _cmd.ClearRenderTarget(true, true, Color.black);
         _cmd.SetViewProjectionMatrices(cam.worldToCameraMatrix, cam.projectionMatrix);
+
+        DrawWallDepth();
 
         // 부채꼴 FOV + 주변 원형 시야를 같은 RT에 렌더
         _cmd.DrawMesh(_fovMesh,    _fovMeshTrans.localToWorldMatrix,    _fovMaskMat);
@@ -101,11 +109,46 @@ public class FogOfWarRenderer : MonoBehaviour
 
     private void CreateRenderTextures()
     {
-        _fogMaskRT  = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);
+        _fogMaskRT  = new RenderTexture(Screen.width, Screen.height, 24, RenderTextureFormat.ARGB32);
         _blurTempRT = new RenderTexture(Screen.width, Screen.height, 0, RenderTextureFormat.ARGB32);
         _fogMaskRT.Create();
         _blurTempRT.Create();
         _blurMat = new Material(Shader.Find("Custom/Blur"));
+    }
+
+    private void CreateDepthOnlyMaterial()
+    {
+        _depthOnlyMat = new Material(Shader.Find("Custom/FogMaskDepthOnly"));
+    }
+
+    public void RefreshWallRenderers()
+    {
+        var allRenderers = FindObjectsOfType<Renderer>();
+        var wallRenderers = new System.Collections.Generic.List<Renderer>();
+
+        foreach (var targetRenderer in allRenderers)
+        {
+            if (((1 << targetRenderer.gameObject.layer) & _wallLayer.value) == 0)
+                continue;
+
+            wallRenderers.Add(targetRenderer);
+        }
+
+        _wallRenderers = wallRenderers.ToArray();
+    }
+
+    private void DrawWallDepth()
+    {
+        if (_wallRenderers == null || _depthOnlyMat == null)
+            return;
+
+        foreach (var wallRenderer in _wallRenderers)
+        {
+            if (wallRenderer == null || !wallRenderer.enabled)
+                continue;
+
+            _cmd.DrawRenderer(wallRenderer, _depthOnlyMat);
+        }
     }
 
     private void CreateFovMeshObject()

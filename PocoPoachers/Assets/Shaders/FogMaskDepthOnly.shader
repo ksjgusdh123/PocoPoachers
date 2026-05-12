@@ -1,12 +1,13 @@
-Shader "Custom/FovMask"
+Shader "Custom/FogMaskDepthOnly"
 {
     SubShader
     {
         Tags { "RenderType" = "Opaque" "Queue" = "Geometry" }
 
-        ZWrite Off
+        ColorMask 0
+        ZWrite On
         ZTest LEqual
-        Cull Off
+        Cull Back
 
         Pass
         {
@@ -16,7 +17,7 @@ Shader "Custom/FovMask"
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
 
             struct Attributes { float4 positionOS : POSITION; };
-            struct Varyings   { float4 positionHCS : SV_POSITION; };
+            struct Varyings { float4 positionHCS : SV_POSITION; };
 
             Varyings vert(Attributes IN)
             {
@@ -25,7 +26,10 @@ Shader "Custom/FovMask"
                 return OUT;
             }
 
-            half4 frag(Varyings IN) : SV_Target { return half4(1, 1, 1, 1); }
+            half4 frag(Varyings IN) : SV_Target
+            {
+                return 0;
+            }
             ENDHLSL
         }
     }
