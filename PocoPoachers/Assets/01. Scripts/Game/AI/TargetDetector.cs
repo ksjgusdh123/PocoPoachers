@@ -22,6 +22,8 @@ public class TargetDetector : MonoBehaviour
     {
     }
 
+    public void SetDetectRange(float range) => _detectRange = range;
+
     // 타겟이 없을 때: 탐지 거리 + 시야각 내 탐색
     public bool TryDetect()
     {
