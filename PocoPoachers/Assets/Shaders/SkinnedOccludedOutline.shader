@@ -20,9 +20,9 @@ Shader "Custom/SkinnedOccludedOutline"
 
             Stencil
             {
-                Ref      2
-                ReadMask 2
-                Comp     NotEqual
+                Ref      4
+                ReadMask 6
+                Comp     Equal
             }
 
             ZWrite Off
