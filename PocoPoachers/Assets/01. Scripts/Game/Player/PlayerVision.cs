@@ -132,6 +132,13 @@ public class PlayerVision : MonoBehaviour
 
     private void SetRenderersEnabled(GameObject target, bool enabled)
     {
+        VisionTarget visionTarget = target.GetComponentInParent<VisionTarget>();
+        if (visionTarget != null)
+        {
+            visionTarget.SetVisible(enabled);
+            return;
+        }
+
         foreach (var r in target.GetComponentsInChildren<Renderer>())
             r.enabled = enabled;
     }
