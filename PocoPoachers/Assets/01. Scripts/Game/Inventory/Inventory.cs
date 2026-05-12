@@ -133,6 +133,23 @@ public class Inventory : MonoBehaviour
         return count >= amount;
     }
 
+    public void SwapSlots(int indexA, int indexB)
+    {
+        if (indexA < 0 || indexA >= _currentCapacity) return;
+        if (indexB < 0 || indexB >= _currentCapacity) return;
+
+        ItemData dataA = _slots[indexA].ItemData;
+        int amountA = _slots[indexA].Amount;
+        ItemData dataB = _slots[indexB].ItemData;
+        int amountB = _slots[indexB].Amount;
+
+        _slots[indexA].Clear();
+        _slots[indexB].Clear();
+
+        if (dataB != null) _slots[indexA].Set(dataB, amountB);
+        if (dataA != null) _slots[indexB].Set(dataA, amountA);
+    }
+
     // 아이템 타입 → 이름 순으로 정렬
     public void Sort()
     {

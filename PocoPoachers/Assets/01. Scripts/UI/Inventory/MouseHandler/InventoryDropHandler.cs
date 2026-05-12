@@ -28,10 +28,18 @@ public class InventoryDropHandler : BaseDropHandler
 
         if (prevData != null)
         {
-            // 타겟 슬롯에 아이템 있음 → 전체 수량 교환
+            // 타겟 슬롯에 아이템 있음 → 케이스별 교환
             int fullSourceAmount = dragged.SavedAmountItem;
-            if(draggedSlotIsBox) manager.InvokeSlotExchange(_slotUI, dragged, prevData, draggedData, prevAmount, fullSourceAmount, prevSlotIndex, draggedSlotIndex);
-            else manager.InvokeSlotExchange(dragged, _slotUI, draggedData, prevData, fullSourceAmount, prevAmount, draggedSlotIndex, prevSlotIndex);
+            bool targetIsBox = _slotUI.InventoryUI.IsBox;
+
+            if (!draggedSlotIsBox && !targetIsBox)
+                manager.InvokeLocalSwap(dragged, _slotUI);
+            else if (draggedSlotIsBox && targetIsBox)
+                manager.InvokeBoxSwap(dragged, _slotUI);
+            else if (draggedSlotIsBox)
+                manager.InvokeNetworkExchange(_slotUI, dragged, prevData, draggedData, prevAmount, fullSourceAmount, prevSlotIndex, draggedSlotIndex);
+            else
+                manager.InvokeNetworkExchange(dragged, _slotUI, draggedData, prevData, fullSourceAmount, prevAmount, draggedSlotIndex, prevSlotIndex);
         }
         else
         {

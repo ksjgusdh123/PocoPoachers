@@ -44,7 +44,11 @@ public static partial class PacketHandlers
 
         // 내 인벤토리에 아이템 추가
         var playerInv = FindLocalInventory();
-        playerInv?.AddItemAtSlot(pkt.SlotIndex, itemData, pkt.Amount);
+
+        if (pkt.Amount > 0)
+            playerInv?.AddItem(itemData, pkt.Amount);
+        else
+            playerInv?.RemoveItem(itemData, -pkt.Amount);
     }
 
     public static void OnH_ItemBoxUpdate(FlatPacket root)
@@ -105,19 +109,19 @@ public static partial class PacketHandlers
                 playerInv.AddItemAtSlot(pkt.PlayerSlotIndex, boxItemData, pkt.BoxItemAmount);
         }
 
-        // 박스 시각 동기화
-        if (om != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
-        {
-            var boxInv = boxObj.GetComponent<Inventory>();
-            if (boxInv != null)
-            {
-                if (boxItemData != null)
-                    boxInv.RemoveItemAtSlot(pkt.BoxSlotIndex, boxItemData, pkt.BoxItemAmount);
+        //// 박스 시각 동기화
+        //if (om != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
+        //{
+        //    var boxInv = boxObj.GetComponent<Inventory>();
+        //    if (boxInv != null)
+        //    {
+        //        if (boxItemData != null)
+        //            boxInv.RemoveItemAtSlot(pkt.BoxSlotIndex, boxItemData, pkt.BoxItemAmount);
 
-                if (plrItemData != null && pkt.PlayerItemAmount > 0)
-                    boxInv.AddItemAtSlot(pkt.BoxSlotIndex, plrItemData, pkt.PlayerItemAmount);
-            }
-        }
+        //        if (plrItemData != null && pkt.PlayerItemAmount > 0)
+        //            boxInv.AddItemAtSlot(pkt.BoxSlotIndex, plrItemData, pkt.PlayerItemAmount);
+        //    }
+        //}
     }
 
     public static void OnH_ConsumeItemResult(FlatPacket root)

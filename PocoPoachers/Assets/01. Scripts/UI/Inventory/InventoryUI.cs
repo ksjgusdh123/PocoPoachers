@@ -11,6 +11,7 @@ public class InventoryUI : MonoBehaviour
     private ItemSlotUI[] _slotUIs;
     private DescriptionUI _descriptionUI;
 
+    public Inventory Inventory => _inventory;
     public WorldObject Box => _inventory.GetComponent<WorldObject>();
     public bool IsBox => _inventory.TryGetComponent<WorldObject>(out _);
 
