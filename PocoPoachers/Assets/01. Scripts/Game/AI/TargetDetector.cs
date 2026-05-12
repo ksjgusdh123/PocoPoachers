@@ -22,6 +22,8 @@ public class TargetDetector : MonoBehaviour
     {
     }
 
+    public void SetDetectRange(float range) => _detectRange = range;
+
     // 타겟이 없을 때: 탐지 거리 + 시야각 내 탐색
     public bool TryDetect()
     {
@@ -45,6 +47,13 @@ public class TargetDetector : MonoBehaviour
     {
         Vector3 dir = (target.position - transform.position).normalized;    
         return Vector3.Angle(transform.forward, dir) <= _fovAngle * 0.5f;
+    }
+
+    // 타겟이 인지 범위 안에 있는지 확인
+    public bool IsTargetInDetectRange()
+    {
+        if (_currentTarget == null) return false;
+        return Vector3.Distance(transform.position, _currentTarget.transform.position) <= _detectRange;
     }
 
     // 타겟이 있을 때: 잊는 거리 벗어나면 해제

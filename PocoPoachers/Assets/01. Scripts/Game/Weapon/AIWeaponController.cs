@@ -1,3 +1,4 @@
+using Unity.Behavior;
 using UnityEngine;
 
 public class AIWeaponController : MonoBehaviour
@@ -30,5 +31,23 @@ public class AIWeaponController : MonoBehaviour
             Destroy(_gun.gameObject);
 
         _gun = GunTable.Instance.Equip(itemId, _mountPoint);
+
+        if (_gun != null)
+            UpdateBlackboardGunData(_gun.GunData);
+    }
+
+    private void UpdateBlackboardGunData(GunData gunData)
+    {
+        var agent = GetComponent<BehaviorGraphAgent>();
+        if (agent == null) return;
+
+        if (agent.BlackboardReference.GetVariable("AttackRange", out BlackboardVariable<float> attackRange))
+            attackRange.Value = gunData.range;
+
+        if (agent.BlackboardReference.GetVariable("ReloadingTime", out BlackboardVariable<float> reloadingTime))
+            reloadingTime.Value = gunData.reloadTime;
+
+        var detector = GetComponent<TargetDetector>();
+        detector?.SetDetectRange(gunData.range);
     }
 }

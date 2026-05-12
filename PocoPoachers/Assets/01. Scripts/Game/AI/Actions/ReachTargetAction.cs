@@ -12,7 +12,6 @@ public partial class ReachTargetAction : Action
     [SerializeReference] public BlackboardVariable<GameObject> Self;
     [SerializeReference] public BlackboardVariable<GameObject> Target;
     [SerializeReference] public BlackboardVariable<float> AttackRange;
-    public float RotationSpeed = 10f;
     public float EyeHeight = 1.5f;
     public LayerMask WallLayer;
 
@@ -23,7 +22,6 @@ public partial class ReachTargetAction : Action
         if (_agent == null)
             _agent = Self.Value.GetComponent<NavMeshAgent>();
 
-        _agent.updateRotation = false;
         WallLayer = 1 << LayerMask.NameToLayer("Wall");
         return Status.Running;
     }
@@ -37,8 +35,6 @@ public partial class ReachTargetAction : Action
         }
 
         float dist = Vector3.Distance(Self.Value.transform.position, Target.Value.transform.position);
-
-        RotateToward(Target.Value.transform.position);
 
         if (dist <= AttackRange.Value && !IsWallBlocking())
         {
@@ -56,7 +52,6 @@ public partial class ReachTargetAction : Action
         if (_agent == null) return;
         if (_agent.hasPath)
             _agent.ResetPath();
-        _agent.updateRotation = true;
     }
 
     private bool IsWallBlocking()
@@ -67,16 +62,4 @@ public partial class ReachTargetAction : Action
         Vector3 dir = targetPos - origin;
         return Physics.Raycast(origin, dir.normalized, dir.magnitude, WallLayer);
     }
-
-    private void RotateToward(Vector3 targetPos)
-    {
-        Vector3 dir = targetPos - Self.Value.transform.position;
-        dir.y = 0f;
-        if (dir.sqrMagnitude < 0.001f) return;
-
-        Quaternion target = Quaternion.LookRotation(dir);
-        Self.Value.transform.rotation = Quaternion.Slerp(
-            Self.Value.transform.rotation, target, RotationSpeed * Time.deltaTime);
-    }
 }
-
