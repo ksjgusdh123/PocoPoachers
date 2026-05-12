@@ -7,6 +7,7 @@ public enum AIState
 	Idle,
 	Patrol,
 	Chase,
+	Reload,
 	Attack
 }
 
