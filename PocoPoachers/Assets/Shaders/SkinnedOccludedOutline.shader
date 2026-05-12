@@ -3,7 +3,7 @@ Shader "Custom/SkinnedOccludedOutline"
     // Outline 전용 셰이더 — Mask보다 Queue+1이 보장되므로 반드시 Mask 다음에 실행됨
     Properties
     {
-        _OutlineColor     ("Outline Color",  Color)  = (1, 1, 0, 1)
+        [HDR] _OutlineColor ("Outline Color",  Color)  = (1, 1, 0, 1)
         _OutlineWidth     ("Outline Width",  Float)  = 0.02
         _WaveSpeed        ("Wave Speed",     Float)  = 3.0
         _WaveFrequency    ("Wave Frequency", Float)  = 5.0

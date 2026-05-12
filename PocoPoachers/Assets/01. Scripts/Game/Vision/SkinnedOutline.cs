@@ -5,7 +5,7 @@ using UnityEngine;
 public class SkinnedOutline : MonoBehaviour
 {
     [Header("Outline")]
-    [SerializeField] Color _color = Color.yellow;
+    [SerializeField, ColorUsage(true, true)] Color _color = Color.yellow;
     [SerializeField, Range(0f, 0.1f)]  float _width     = 0.02f;
 
     [Header("Wave")]
