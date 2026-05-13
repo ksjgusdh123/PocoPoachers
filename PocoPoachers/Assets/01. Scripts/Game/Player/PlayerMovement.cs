@@ -71,8 +71,11 @@ public class PlayerMovement : MonoBehaviour
           : (isSprinting ? _sprintSpeed : _moveSpeed) * weaponMultiplier;
       Vector3 targetVelocity = moveDir * targetSpeed;
 
-      // 방향 포함 전체 벡터를 부드럽게 보간 → 반대 방향 전환 시 튀지 않음
-      _currentVelocity = Vector3.MoveTowards(_currentVelocity, targetVelocity, _acceleration *Time.deltaTime);
+      // 입력 없으면 즉시 정지, 입력 있으면 부드럽게 가속
+      if (targetVelocity == Vector3.zero)
+          _currentVelocity = Vector3.zero;
+      else
+          _currentVelocity = Vector3.MoveTowards(_currentVelocity, targetVelocity, _acceleration * Time.deltaTime);
 
       Vector3 localVelocity = transform.InverseTransformDirection(_currentVelocity);
       _animator.SetFloat("VelocityX", localVelocity.x / _moveSpeed, 0.1f, Time.deltaTime);
