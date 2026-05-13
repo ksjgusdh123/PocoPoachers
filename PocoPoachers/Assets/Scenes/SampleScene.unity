@@ -1157,9 +1157,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GunTable
   _gunPrefabs:
-  - {fileID: 279068238681501722, guid: 7e0a0efafcdf91c49b0a3ef28a75da7a, type: 3}
-  - {fileID: 6790100276519992138, guid: 1462d7ebb0496594b9326abee54530a5, type: 3}
-  - {fileID: 279068238681501722, guid: 863a6e71592b0be4bbcaf8fc9f79a0df, type: 3}
+  - {fileID: 8003449810761803908, guid: 5fa34e83b56f7974482b4ddab680cb86, type: 3}
+  - {fileID: 3772627012451223152, guid: 8824830dc4a1c654cb0e40a9c1a60884, type: 3}
+  - {fileID: 6446173936756208914, guid: 0d5317a18927faf42849eac9c45112d2, type: 3}
+  - {fileID: 7934931333656970295, guid: d31055ef8e00f1e469ed7fdf4e8bdf0a, type: 3}
+  - {fileID: 7677743956413664474, guid: d3d059c502f20d941841eade04199043, type: 3}
 --- !u!4 &488529479
 Transform:
   m_ObjectHideFlags: 0
@@ -1574,6 +1576,7 @@ GameObject:
   - component: {fileID: 1170366761}
   - component: {fileID: 1170366766}
   - component: {fileID: 1170366764}
+  - component: {fileID: 1170366767}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -1796,6 +1799,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 233d1bee345449449bc6c575a31776d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArmorController
+--- !u!114 &1170366767
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1170366752}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4eb17c8a37c53fb4692589dae15a165e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerStat
+  _maxHp: 100
+  _maxStamina: 100
+  _staminaRegenRate: 15
+  _staminaRegenDelay: 1
 --- !u!1001 &1187880128
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3344,6 +3363,10 @@ PrefabInstance:
     - target: {fileID: 8783605240148110529, guid: a6215a84846eb94488f58838d95e7c43, type: 3}
       propertyPath: _itemType
       value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8783605240148110529, guid: a6215a84846eb94488f58838d95e7c43, type: 3}
+      propertyPath: _slotIndex
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8783605240148110529, guid: a6215a84846eb94488f58838d95e7c43, type: 3}
       propertyPath: slotNumber

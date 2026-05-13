@@ -72,7 +72,7 @@ public class PlayerInputHandler : MonoBehaviour
     {
         if (value.isPressed)
         {
-            if(_inputType == PlayerInputMapType.Inventory) SwitchInputActionMap(PlayerInputMapType.Game);
+            if (_inputType == PlayerInputMapType.Inventory) SwitchInputActionMap(PlayerInputMapType.Game);
             else SwitchInputActionMap(PlayerInputMapType.Inventory);
             GoInventory?.Invoke();
         }

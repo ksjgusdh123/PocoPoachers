@@ -66,8 +66,9 @@ public class PlayerController : MonoBehaviour
     void ShowInventory()
     {
         PlayerBagUI.SetActive(!PlayerBagUI.activeSelf);
-        LockCamera(PlayerBagUI.activeSelf);
-        UIManager.GetInstance().ChangeMouseCursor(false);
+        bool isOpen = PlayerBagUI.activeSelf;
+        LockCamera(isOpen);
+        UIManager.GetInstance().ChangeMouseCursor(!isOpen); // 인벤토리 열면 숨김, 닫으면 크로스헤어 복원
     }
 
     void RegisterItem(int index)

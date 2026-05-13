@@ -82,6 +82,7 @@ public class WeaponController : EquipableController
     private void SwitchWeapon(int index)
     {
         if (index >= _guns.Length || index == _currentGunIndex || _isSwitching) return;
+        if (_guns[index] == null) return; // 해당 슬롯에 총이 없으면 전환 안 함
         StartCoroutine(SwitchWeaponRoutine(index));
     }
 
@@ -106,7 +107,8 @@ public class WeaponController : EquipableController
             if (_cameraShakeHandler != null) _guns[_currentGunIndex].OnShoot -= _cameraShakeHandler;
         }
 
-        _guns[_currentGunIndex >= 0 ? _currentGunIndex : 0]?.gameObject.SetActive(false);
+        if (_currentGunIndex >= 0)
+            _guns[_currentGunIndex]?.gameObject.SetActive(false);
         _currentGunIndex = index;
         _currentGun = _guns[index];
         _currentGun?.gameObject.SetActive(true);
