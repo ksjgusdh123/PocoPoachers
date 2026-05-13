@@ -42,13 +42,22 @@ public static partial class PacketHandlers
         var itemData = ItemTable.Instance.Get(pkt.ItemTypeId);
         if (itemData == null) return;
 
-        // 내 인벤토리에 아이템 추가
         var playerInv = FindLocalInventory();
+        if (playerInv == null) return;
 
         if (pkt.Amount > 0)
-            playerInv?.AddItem(itemData, pkt.Amount);
+        {
+            // PlayerSlotIndex가 있으면 지정 슬롯에, 없으면 첫 빈 슬롯에 추가 (더블클릭)
+            int slotIndex = pkt.PlayerSlotIndex >= 0
+                ? pkt.PlayerSlotIndex
+                : playerInv.CanAddItem(itemData, pkt.Amount);
+            if (slotIndex >= 0) playerInv.AddItemAtSlot(slotIndex, itemData, pkt.Amount);
+        }
         else
-            playerInv?.RemoveItem(itemData, -pkt.Amount);
+        {
+            int slotIndex = playerInv.FindItemSlotIndex(itemData);
+            if (slotIndex >= 0) playerInv.RemoveItemAtSlot(slotIndex, itemData, -pkt.Amount);
+        }
     }
 
     public static void OnH_ItemBoxUpdate(FlatPacket root)
@@ -65,16 +74,14 @@ public static partial class PacketHandlers
         Debug.Log($"{pkt.Amount}");
 
         if (pkt.Amount > 0)
-            if (pkt.SlotIndex < 0)
-                boxInv.AddItem(itemData, pkt.Amount);
-            else
-                boxInv.AddItemAtSlot(pkt.SlotIndex, itemData, pkt.Amount);
+        {
+            int slotIndex = pkt.SlotIndex >= 0 ? pkt.SlotIndex : boxInv.CanAddItem(itemData, pkt.Amount);
+            if (slotIndex >= 0) boxInv.AddItemAtSlot(slotIndex, itemData, pkt.Amount);
+        }
         else
         {
-            if (pkt.SlotIndex < 0)
-                boxInv.RemoveItem(itemData, pkt.Amount);
-            else
-                boxInv.RemoveItemAtSlot(pkt.SlotIndex, itemData, -pkt.Amount);
+            int slotIndex = pkt.SlotIndex >= 0 ? pkt.SlotIndex : boxInv.FindItemSlotIndex(itemData);
+            if (slotIndex >= 0) boxInv.RemoveItemAtSlot(slotIndex, itemData, -pkt.Amount);
         }
     }
 

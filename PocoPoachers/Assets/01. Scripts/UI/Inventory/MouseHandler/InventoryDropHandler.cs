@@ -43,13 +43,15 @@ public class InventoryDropHandler : BaseDropHandler
         }
         else
         {
-            //// 타겟 슬롯이 비어 있음 → 드래그한 수량만 이동
-            //_slotUI.SetSlotData(draggedData, dragAmount);
-            _slotUI.InventoryUI.OnDraggedSlot(draggedData, dragAmount, prevSlotIndex, draggedSlotIndex);
-            //if (remaining > 0)
-            //    dragged.SetSlotData(draggedData, remaining);
-            //else
-            //    dragged.SetSlotData(null, 0);
+            // 타겟 슬롯이 비어 있음 → 케이스별 이동
+            bool targetIsBox = _slotUI.InventoryUI.IsBox;
+
+            if (!draggedSlotIsBox && !targetIsBox)
+                manager.InvokeLocalMove(dragged, _slotUI, draggedData, dragAmount);
+            else if (draggedSlotIsBox && targetIsBox)
+                manager.InvokeBoxMove(dragged, _slotUI, draggedData, dragAmount);
+            else
+                manager.InvokeNetworkMove(dragged, _slotUI, draggedData, dragAmount);
         }
         return true;
     }

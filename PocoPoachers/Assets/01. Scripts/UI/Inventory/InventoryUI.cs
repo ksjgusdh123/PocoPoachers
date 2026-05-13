@@ -53,10 +53,11 @@ public class InventoryUI : MonoBehaviour
         if (targetSlot == null) return;
 
         var target = _inventory.InteractionInventory;
-        if (target == null || !target.CanAddItem(targetSlot.SlotItemData)) return;
-
         ItemData itemData = targetSlot.SlotItemData;
         int amount = targetSlot.SavedAmountItem;
+
+        int addedSlotIndex = target?.CanAddItem(itemData, amount) ?? -1;
+        if (addedSlotIndex < 0) return;
 
         GameManager.GetInstance().SaveChangeInventorys(_inventory, target);
 
@@ -66,19 +67,22 @@ public class InventoryUI : MonoBehaviour
         if (isNetworked && !(RoomManager.IsHost))
         {
             // 게스트: 호스트에게 요청 → H_ItemGainResult에서 실제 적용
+            bool playerGains = boxInventory == _inventory;
+
             PacketBuilder.SendToHost(new G_ItemGainT
             {
-                IsPlayerGained = boxInventory == _inventory,
-                BoxUid         = boxWo.Id,
-                ItemTypeId     = itemData.id,
-                Amount         = amount,
-                SlotIndex      = targetSlot.SlotIndex
+                IsPlayerGained   = playerGains,
+                BoxUid           = boxWo.Id,
+                ItemTypeId       = itemData.id,
+                Amount           = amount,
+                AddedSlotIndex   = addedSlotIndex,
+                RemovedSlotIndex = targetSlot.SlotIndex,
             }, G_ItemGain.Pack, PacketType.G_ItemGain);
         }
         else
         {
             // 호스트 또는 싱글플레이: 로컬에서 바로 적용
-            target.AddItem(itemData, amount);
+            target.AddItemAtSlot(addedSlotIndex, itemData, amount);
             _inventory.RemoveItemAtSlot(targetSlot.SlotIndex, itemData, amount);
             PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
             {
@@ -88,25 +92,6 @@ public class InventoryUI : MonoBehaviour
                 SlotIndex = boxInventory != _inventory ? -1 : targetSlot.SlotIndex,
             }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
         }
-    }
-
-    public void OnDraggedSlot(ItemData data, int amount, int gainedSlotIndex, int removedSlotIndex)
-    {
-        var target = _inventory.InteractionInventory;
-        if (target == null) return;
-
-        int boxUid;
-        if (_inventory.TryGetComponent<WorldObject>(out var worldObject))
-        {
-            boxUid = worldObject.Id;
-        }
-        else
-        {
-            boxUid = target.GetComponent<WorldObject>().Id;
-        }
-        int itemTypeId = data.Id;
-        GameManager.GetInstance().SaveChangeInventorys(target, _inventory);
-        //TODO: Send Pkt
     }
 
     public void OnSlotDropped()

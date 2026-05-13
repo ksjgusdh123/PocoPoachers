@@ -21,34 +21,40 @@ public static partial class PacketHandlers
             {
                 if (pkt.IsPlayerGained)
                 {
-                    boxInv.RemoveItemAtSlot(pkt.SlotIndex, itemData, pkt.Amount);
+                    // 박스 → 플레이어: 박스에서 제거
+                    boxInv.RemoveItemAtSlot(pkt.RemovedSlotIndex, itemData, pkt.Amount);
                     success = true;
                 }
                 else
                 {
-                    success = boxInv.AddItem(itemData, pkt.Amount);
-                    success = true;
+                    // 플레이어 → 박스: 클라이언트가 미리 확정한 슬롯에 추가
+                    success = boxInv.AddItemAtSlot(pkt.AddedSlotIndex, itemData, pkt.Amount);
                 }
             }
         }
 
+        // 플레이어가 받는 경우 AddedSlotIndex를 그대로 전달, 주는 경우는 -1
+        int playerSlotIndex = pkt.IsPlayerGained ? pkt.AddedSlotIndex : -1;
+
         PacketBuilder.SendToGuest(requesterId, new H_ItemGainResultT
         {
-            Success = success,
-            BoxUid = pkt.BoxUid,
-            ItemTypeId = pkt.ItemTypeId,
-            Amount = pkt.IsPlayerGained ? pkt.Amount : -pkt.Amount,
+            Success         = success,
+            BoxUid          = pkt.BoxUid,
+            ItemTypeId      = pkt.ItemTypeId,
+            Amount          = pkt.IsPlayerGained ? pkt.Amount : -pkt.Amount,
+            PlayerSlotIndex = playerSlotIndex,
         }, H_ItemGainResult.Pack, PacketType.H_ItemGainResult);
 
         if (success)
         {
             int updateAmount = pkt.IsPlayerGained ? -pkt.Amount : pkt.Amount;
+            int boxSlotIndex = pkt.IsPlayerGained ? pkt.RemovedSlotIndex : pkt.AddedSlotIndex;
             PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
             {
-                BoxUid = pkt.BoxUid,
+                BoxUid     = pkt.BoxUid,
                 ItemTypeId = pkt.ItemTypeId,
-                Amount = updateAmount,
-                SlotIndex = pkt.IsPlayerGained ? pkt.SlotIndex : -1,
+                Amount     = updateAmount,
+                SlotIndex  = boxSlotIndex,
             }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
         }
     }

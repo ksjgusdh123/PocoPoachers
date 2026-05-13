@@ -14,8 +14,9 @@ public class ItemBox : MonoBehaviour
         foreach (int id in itemIds)
         {
             ItemData data = ItemTable.Instance.Get(id);
-            if (data != null)
-                inven.AddItem(data, 1);
+            if (data == null) continue;
+            int slotIndex = inven.CanAddItem(data, 1);
+            if (slotIndex >= 0) inven.AddItemAtSlot(slotIndex, data, 1);
         }
     }
 

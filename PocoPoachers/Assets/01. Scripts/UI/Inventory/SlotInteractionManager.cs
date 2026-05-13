@@ -103,6 +103,75 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         }
     }
 
+    // 플레이어 → 플레이어 빈 슬롯: 로컬 이동만
+    public void InvokeLocalMove(ItemSlotUI from, ItemSlotUI to, ItemData data, int amount)
+    {
+        from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
+        to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
+    }
+
+    // 플레이어 ↔ 박스 빈 슬롯: 로컬 + 네트워크 패킷
+    public void InvokeNetworkMove(ItemSlotUI from, ItemSlotUI to, ItemData data, int amount)
+    {
+        bool fromIsBox = from.InventoryUI.IsBox;
+        int boxUid    = fromIsBox ? from.InventoryUI.Box.Id : to.InventoryUI.Box.Id;
+        int boxSlotIndex = fromIsBox ? from.SlotIndex : to.SlotIndex;
+        bool playerGains = fromIsBox;
+
+        int playerSlotIndex = fromIsBox ? to.SlotIndex : from.SlotIndex;
+
+        if (!RoomManager.IsHost)
+        {
+            PacketBuilder.SendToHost(new G_ItemGainT
+            {
+                IsPlayerGained   = playerGains,
+                BoxUid           = boxUid,
+                ItemTypeId       = data.id,
+                Amount           = amount,
+                AddedSlotIndex   = playerGains ? playerSlotIndex : boxSlotIndex,
+                RemovedSlotIndex = playerGains ? boxSlotIndex : playerSlotIndex,
+            }, G_ItemGain.Pack, PacketType.G_ItemGain);
+        }
+        else
+        {
+            from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
+            to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
+
+            PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
+            {
+                BoxUid     = boxUid,
+                ItemTypeId = data.id,
+                Amount     = playerGains ? -amount : amount,
+                SlotIndex  = boxSlotIndex,
+            }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+        }
+    }
+
+    // 박스 → 박스 빈 슬롯: 로컬 이동 + 박스 업데이트 브로드캐스트
+    public void InvokeBoxMove(ItemSlotUI from, ItemSlotUI to, ItemData data, int amount)
+    {
+        int boxUid = from.InventoryUI.Box.Id;
+
+        from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
+        to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
+
+        PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
+        {
+            BoxUid     = boxUid,
+            ItemTypeId = data.id,
+            Amount     = -amount,
+            SlotIndex  = from.SlotIndex,
+        }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+
+        PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
+        {
+            BoxUid     = boxUid,
+            ItemTypeId = data.id,
+            Amount     = amount,
+            SlotIndex  = to.SlotIndex,
+        }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+    }
+
     // 박스 ↔ 박스: 로컬 교환 + 박스 업데이트 브로드캐스트
     public void InvokeBoxSwap(ItemSlotUI slotA, ItemSlotUI slotB)
     {
