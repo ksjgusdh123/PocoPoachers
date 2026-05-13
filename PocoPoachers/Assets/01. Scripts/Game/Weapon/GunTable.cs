@@ -33,7 +33,7 @@ public class GunTable : MonoBehaviour
         }
 
         GunBase instance = Instantiate(prefab, mountPoint);
-        instance.transform.SetLocalPositionAndRotation(Vector3.zero, Quaternion.identity);
+        instance.transform.localPosition = Vector3.zero;
         return instance;
     }
 }
