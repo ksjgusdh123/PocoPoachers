@@ -46,7 +46,7 @@ public class PlayerController : MonoBehaviour
                 inven.InteractionInventory = _inventory;
                 boxUI.GetComponentInChildren<InventoryUI>()?.Bind(inven);
                 boxUI.GetComponent<ItemBoxRevealUI>().Open(inven);
-                _inputHander.SwitchInputActionMap(PlayerInputMapType.Inventory);
+                _inputHander.SwitchInputActionMap(PlayerInputMapType.ItemBox);
             }
             else
             {

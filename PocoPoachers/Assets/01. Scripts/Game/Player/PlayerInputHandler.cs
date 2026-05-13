@@ -5,7 +5,8 @@ using UnityEngine.InputSystem;
 public enum PlayerInputMapType
 {
     Game,
-    Inventory
+    Inventory,
+    ItemBox
 }
 
 [RequireComponent(typeof(PlayerInput))]
@@ -69,7 +70,12 @@ public class PlayerInputHandler : MonoBehaviour
 
     void OnGoInventory(InputValue value)
     {
-        if (value.isPressed) GoInventory?.Invoke();
+        if (value.isPressed)
+        {
+            if(_inputType == PlayerInputMapType.Inventory) SwitchInputActionMap(PlayerInputMapType.Game);
+            else SwitchInputActionMap(PlayerInputMapType.Inventory);
+            GoInventory?.Invoke();
+        }
     }
 
     void OnInteraction(InputValue value)
