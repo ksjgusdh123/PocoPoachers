@@ -12,7 +12,6 @@ public enum PlayerInputMapType
 public class PlayerInputHandler : MonoBehaviour
 {
 
-    public const float DoubleClickThreshold = 0.3f;
     public Vector2 MoveInput { get; private set; }
     public bool IsSprintPressed { get; private set; }
     public bool IsFirePressed { get; private set; }
@@ -24,14 +23,12 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action<int> WeaponSwitch;
     public event Action<int> RegisterItemNumberKey;
     public event Action<int> ConsumeItemNumberKey;
-    public event Action DoubleClick;
     public event Action Dodge;
 
     private PlayerInput _inputMap;
     private readonly Key[] _numberKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5 };
     private readonly Key[] _weaponKeys = { Key.Digit7, Key.Digit8 };
     private PlayerInputMapType _inputType;
-    private float _lastClickTime;
 
     private void Awake()
     {
@@ -78,15 +75,6 @@ public class PlayerInputHandler : MonoBehaviour
     void OnInteraction(InputValue value)
     {
         if (value.isPressed) StartInteraction?.Invoke();
-    }
-
-    void OnClick(InputValue value)
-    {
-        if (!value.isPressed) return;
-
-        if (Time.time - _lastClickTime < DoubleClickThreshold)
-            DoubleClick?.Invoke();
-        _lastClickTime = Time.time;
     }
 
     void OnDodge(InputValue value)

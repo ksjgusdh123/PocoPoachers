@@ -22,7 +22,6 @@ public class PlayerController : MonoBehaviour
         _inputHander.RegisterItemNumberKey += RegisterItem;
         _inputHander.ConsumeItemNumberKey += ConsumeItem;
         _inputHander.StartInteraction += Interaction;
-        _inputHander.DoubleClick += () => SlotInteractionManager.GetInstance().InvokeDoubleClick();
     }
 
     private void OnTriggerEnter(Collider other)

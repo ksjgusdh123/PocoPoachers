@@ -28,6 +28,13 @@ public class SlotClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEnt
 
     public void OnPointerClick(PointerEventData eventData)
     {
+        // 더블클릭: Unity UI clickCount 활용
+        if (eventData.clickCount == 2 && eventData.button == PointerEventData.InputButton.Left)
+        {
+            SlotInteractionManager.GetInstance().InvokeDoubleClick();
+            return;
+        }
+
         if (eventData.button != PointerEventData.InputButton.Right) return;
         if (!_slotUI.IsSettedItem) return;
 
