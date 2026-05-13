@@ -5,14 +5,14 @@ using UnityEngine.InputSystem;
 public enum PlayerInputMapType
 {
     Game,
-    Inventory
+    Inventory,
+    ItemBox
 }
 
 [RequireComponent(typeof(PlayerInput))]
 public class PlayerInputHandler : MonoBehaviour
 {
 
-    public const float DoubleClickThreshold = 0.3f;
     public Vector2 MoveInput { get; private set; }
     public bool IsSprintPressed { get; private set; }
     public bool IsFirePressed { get; private set; }
@@ -24,14 +24,12 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action<int> WeaponSwitch;
     public event Action<int> RegisterItemNumberKey;
     public event Action<int> ConsumeItemNumberKey;
-    public event Action DoubleClick;
     public event Action Dodge;
 
     private PlayerInput _inputMap;
-    private readonly Key[] _numberKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5 };
-    private readonly Key[] _weaponKeys = { Key.Digit7, Key.Digit8 };
+    private readonly Key[] _weaponKeys = { Key.Digit1, Key.Digit2 };
+    private readonly Key[] _numberKeys = { Key.Digit3, Key.Digit4, Key.Digit5, Key.Digit6, Key.Digit7 };
     private PlayerInputMapType _inputType;
-    private float _lastClickTime;
 
     private void Awake()
     {
@@ -72,7 +70,12 @@ public class PlayerInputHandler : MonoBehaviour
 
     void OnGoInventory(InputValue value)
     {
-        if (value.isPressed) GoInventory?.Invoke();
+        if (value.isPressed)
+        {
+            if(_inputType == PlayerInputMapType.Inventory) SwitchInputActionMap(PlayerInputMapType.Game);
+            else SwitchInputActionMap(PlayerInputMapType.Inventory);
+            GoInventory?.Invoke();
+        }
     }
 
     void OnInteraction(InputValue value)
@@ -80,33 +83,9 @@ public class PlayerInputHandler : MonoBehaviour
         if (value.isPressed) StartInteraction?.Invoke();
     }
 
-    void OnClick(InputValue value)
-    {
-        if (!value.isPressed) return;
-
-        if (Time.time - _lastClickTime < DoubleClickThreshold)
-            DoubleClick?.Invoke();
-        _lastClickTime = Time.time;
-    }
-
     void OnDodge(InputValue value)
     {
         if (value.isPressed) Dodge?.Invoke();
-    }
-
-    private void Update()
-    {
-        var keyboard = Keyboard.current;
-        if (keyboard == null) return;
-
-        for (int i = 0; i < _weaponKeys.Length; i++)
-        {
-            if (keyboard[_weaponKeys[i]].wasPressedThisFrame)
-            {
-                WeaponSwitch?.Invoke(i);
-                break;
-            }
-        }
     }
 
     void OnItemNumberKey(InputValue value)
@@ -120,6 +99,21 @@ public class PlayerInputHandler : MonoBehaviour
             {
                 if (_inputType == PlayerInputMapType.Game) ConsumeItemNumberKey?.Invoke(i);
                 else RegisterItemNumberKey?.Invoke(i);
+                break;
+            }
+        }
+    }
+
+    void OnChangeGun()
+    {
+        var keyboard = Keyboard.current;
+        if (keyboard == null) return;
+
+        for (int i = 0; i < _weaponKeys.Length; i++)
+        {
+            if (keyboard[_weaponKeys[i]].wasPressedThisFrame)
+            {
+                WeaponSwitch?.Invoke(i);
                 break;
             }
         }

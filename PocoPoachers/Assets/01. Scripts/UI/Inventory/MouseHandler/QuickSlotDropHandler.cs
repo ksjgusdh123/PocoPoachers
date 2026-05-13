@@ -21,8 +21,8 @@ public class QuickSlotDropHandler : ItemHolderDropHandler
         ItemSlotUI slotUI = manager.HoveredSlot;
         if (slotUI == null || !slotUI.IsSettedItem) return false;
 
-        ItemData prev = _droppedItemData;
-        int prevAmount = _droppedAmount;
+        ItemData prev = DroppedItemData;
+        int prevAmount = DroppedAmount;
         if (!OnItemDropped(slotUI.SlotItemData, slotUI.SavedAmountItem))
             return false;
 
@@ -35,13 +35,13 @@ public class QuickSlotDropHandler : ItemHolderDropHandler
 
     public void ConsumeItem()
     {
-        if (--_droppedAmount <= 0)
+        if (--DroppedAmount <= 0)
         {
             Unequip();
         }
         else
         {
-            _countText.text = _droppedAmount.ToString();
+            _countText.text = DroppedAmount.ToString();
         }
     }
 

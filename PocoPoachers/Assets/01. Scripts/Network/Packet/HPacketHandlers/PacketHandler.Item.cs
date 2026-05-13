@@ -42,9 +42,22 @@ public static partial class PacketHandlers
         var itemData = ItemTable.Instance.Get(pkt.ItemTypeId);
         if (itemData == null) return;
 
-        // 내 인벤토리에 아이템 추가
         var playerInv = FindLocalInventory();
-        playerInv?.AddItemAtSlot(pkt.SlotIndex, itemData, pkt.Amount);
+        if (playerInv == null) return;
+
+        if (pkt.Amount > 0)
+        {
+            // PlayerSlotIndex가 있으면 지정 슬롯에, 없으면 첫 빈 슬롯에 추가 (더블클릭)
+            int slotIndex = pkt.PlayerSlotIndex >= 0
+                ? pkt.PlayerSlotIndex
+                : playerInv.CanAddItem(itemData, pkt.Amount);
+            if (slotIndex >= 0) playerInv.AddItemAtSlot(slotIndex, itemData, pkt.Amount);
+        }
+        else
+        {
+            int slotIndex = playerInv.FindItemSlotIndex(itemData);
+            if (slotIndex >= 0) playerInv.RemoveItemAtSlot(slotIndex, itemData, -pkt.Amount);
+        }
     }
 
     public static void OnH_ItemBoxUpdate(FlatPacket root)
@@ -61,16 +74,14 @@ public static partial class PacketHandlers
         Debug.Log($"{pkt.Amount}");
 
         if (pkt.Amount > 0)
-            if (pkt.SlotIndex < 0)
-                boxInv.AddItem(itemData, pkt.Amount);
-            else
-                boxInv.AddItemAtSlot(pkt.SlotIndex, itemData, pkt.Amount);
+        {
+            int slotIndex = pkt.SlotIndex >= 0 ? pkt.SlotIndex : boxInv.CanAddItem(itemData, pkt.Amount);
+            if (slotIndex >= 0) boxInv.AddItemAtSlot(slotIndex, itemData, pkt.Amount);
+        }
         else
         {
-            if (pkt.SlotIndex < 0)
-                boxInv.RemoveItem(itemData, pkt.Amount);
-            else
-                boxInv.RemoveItemAtSlot(pkt.SlotIndex, itemData, -pkt.Amount);
+            int slotIndex = pkt.SlotIndex >= 0 ? pkt.SlotIndex : boxInv.FindItemSlotIndex(itemData);
+            if (slotIndex >= 0) boxInv.RemoveItemAtSlot(slotIndex, itemData, -pkt.Amount);
         }
     }
 
@@ -105,19 +116,19 @@ public static partial class PacketHandlers
                 playerInv.AddItemAtSlot(pkt.PlayerSlotIndex, boxItemData, pkt.BoxItemAmount);
         }
 
-        // 박스 시각 동기화
-        if (om != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
-        {
-            var boxInv = boxObj.GetComponent<Inventory>();
-            if (boxInv != null)
-            {
-                if (boxItemData != null)
-                    boxInv.RemoveItemAtSlot(pkt.BoxSlotIndex, boxItemData, pkt.BoxItemAmount);
+        //// 박스 시각 동기화
+        //if (om != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
+        //{
+        //    var boxInv = boxObj.GetComponent<Inventory>();
+        //    if (boxInv != null)
+        //    {
+        //        if (boxItemData != null)
+        //            boxInv.RemoveItemAtSlot(pkt.BoxSlotIndex, boxItemData, pkt.BoxItemAmount);
 
-                if (plrItemData != null && pkt.PlayerItemAmount > 0)
-                    boxInv.AddItemAtSlot(pkt.BoxSlotIndex, plrItemData, pkt.PlayerItemAmount);
-            }
-        }
+        //        if (plrItemData != null && pkt.PlayerItemAmount > 0)
+        //            boxInv.AddItemAtSlot(pkt.BoxSlotIndex, plrItemData, pkt.PlayerItemAmount);
+        //    }
+        //}
     }
 
     public static void OnH_ConsumeItemResult(FlatPacket root)

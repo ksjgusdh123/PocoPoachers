@@ -11,14 +11,14 @@ public abstract class ItemHolderDropHandler : BaseDropHandler
     public ItemType ItemType => _itemType;
     public bool IsSetted => _isSetted;
 
-    public ItemData _droppedItemData { get; protected set; }
-    public int _droppedAmount { get; protected set; }
+    public ItemData DroppedItemData { get; protected set; }
+    public int DroppedAmount { get; protected set; }
     protected bool _isSetted;
 
     protected override bool HandleDrop(SlotInteractionManager manager)
     {
-        ItemData prev = _droppedItemData;
-        int prevAmount = _droppedAmount;
+        ItemData prev = DroppedItemData;
+        int prevAmount = DroppedAmount;
         if (!OnItemDropped(manager.DraggedSlot.SlotItemData, manager.DragAmount))
             return false;
         if (prev == null)
@@ -32,8 +32,8 @@ public abstract class ItemHolderDropHandler : BaseDropHandler
     {
         if (data.ItemType != _itemType) return false;
 
-        _droppedItemData = data;
-        _droppedAmount = amount;
+        DroppedItemData = data;
+        DroppedAmount = amount;
         _nameText.text = data.ItemName;
         _icon.sprite = data.Icon;
         _icon.gameObject.SetActive(true);
@@ -43,8 +43,8 @@ public abstract class ItemHolderDropHandler : BaseDropHandler
 
     public virtual void Unequip()
     {
-        _droppedItemData = null;
-        _droppedAmount = 0;
+        DroppedItemData = null;
+        DroppedAmount = 0;
         _nameText.text = "";
         _icon.sprite = null;
         _icon.gameObject.SetActive(false);

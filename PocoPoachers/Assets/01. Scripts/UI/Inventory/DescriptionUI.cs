@@ -16,7 +16,7 @@ public class DescriptionUI : MonoBehaviour
         _description.text = slot.SlotItemData.Description;
     }
 
-    public void HideDescription(ItemSlotUI slot)
+    public void HideDescription()
     {
         _name.text = "";
         _description.text = "";

@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WeaponController : MonoBehaviour
+public class WeaponController : EquipableController
 {
     [SerializeField] private GunBase[] _guns;
     [SerializeField] private float _switchMidTime = 0.15f;
@@ -55,16 +55,28 @@ public class WeaponController : MonoBehaviour
         HandleAimInput();
     }
 
-    public void EquipWeapon(int itemId, int index)
+    public override void Equip(ItemData data, int slotIndex)
     {
-        if (_guns[index] != null)
-            Destroy(_guns[index].gameObject);
+        if (_guns[slotIndex] != null)
+            Destroy(_guns[slotIndex].gameObject);
 
-        GunBase equipped = GunTable.Instance.Equip(itemId, _mountPoint);
+        GunBase equipped = GunTable.Instance.Equip(data.id, _mountPoint);
         if (equipped == null) return;
 
         equipped.gameObject.SetActive(false);
-        _guns[index] = equipped;
+        _guns[slotIndex] = equipped;
+
+        // 같은 슬롯 재장착이면 currentIndex 초기화해서 SwitchWeapon 진입 허용
+        if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
+        SwitchWeapon(slotIndex);
+    }
+
+    public override void Unequip(int slotIndex)
+    {
+        if (_guns[slotIndex] == null) return;
+        Destroy(_guns[slotIndex].gameObject);
+        _guns[slotIndex] = null;
+        if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
     }
 
     private void SwitchWeapon(int index)

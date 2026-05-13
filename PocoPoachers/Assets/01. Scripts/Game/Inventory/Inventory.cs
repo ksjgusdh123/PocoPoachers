@@ -33,49 +33,15 @@ public class Inventory : MonoBehaviour
     }
 
     // 아이템 추가, 성공 여부 반환
-    public bool AddItem(ItemData itemData, int amount = 1)
+    // 해당 아이템이 있는 첫 번째 슬롯 인덱스 반환, 없으면 -1
+    public int FindItemSlotIndex(ItemData itemData)
     {
-        int remaining = amount;
-
-        // 같은 아이템 슬롯에 스택 추가
         for (int i = 0; i < _currentCapacity; i++)
         {
-            if (!_slots[i].IsEmpty && _slots[i].ItemData == itemData)
-            {
-                remaining = _slots[i].AddAmount(remaining);
-                if (remaining <= 0) return true;
-            }
-        }
-
-        // 첫 번째 빈 슬롯에 추가
-        for (int i = 0; i < _currentCapacity && remaining > 0; i++)
-        {
-            if (_slots[i].IsEmpty)
-            {
-                int toAdd = Mathf.Min(remaining, itemData.MaxStack);
-                _slots[i].Set(itemData, toAdd);
-                remaining -= toAdd;
-            }
-        }
-
-        return remaining <= 0;
-    }
-
-    // 아이템 제거, 실제 제거된 수량 반환
-    public int RemoveItem(ItemData itemData, int amount = 1)
-    {
-        int remaining = amount;
-
-        for (int i = _currentCapacity - 1; i >= 0; i--)
-        {
             if (!_slots[i].IsEmpty && _slots[i].ItemData.id == itemData.id)
-            {
-                remaining -= _slots[i].RemoveAmount(remaining);
-                if (remaining <= 0) break;
-            }
+                return i;
         }
-
-        return amount - remaining;
+        return -1;
     }
 
     // 지정 인덱스 슬롯이 비어있으면 추가, 비어있지 않으면 false 반환
@@ -105,21 +71,29 @@ public class Inventory : MonoBehaviour
         ChangeInventory?.Invoke();
     }
 
-    public bool CanAddItem(ItemData itemData, int amount = 1)
+    // 추가 가능한 첫 번째 슬롯 인덱스 반환, 불가능하면 -1
+    public int CanAddItem(ItemData itemData, int amount = 1)
     {
         int remaining = amount;
+        int firstAvailableIndex = -1;
 
         for (int i = 0; i < _currentCapacity; i++)
         {
             if (_slots[i].IsEmpty)
+            {
+                if (firstAvailableIndex < 0) firstAvailableIndex = i;
                 remaining -= itemData.MaxStack;
+            }
             else if (_slots[i].ItemData == itemData)
+            {
+                if (firstAvailableIndex < 0) firstAvailableIndex = i;
                 remaining -= itemData.MaxStack - _slots[i].Amount;
+            }
 
-            if (remaining <= 0) return true;
+            if (remaining <= 0) return firstAvailableIndex;
         }
 
-        return false;
+        return -1;
     }
 
     public bool HasItem(ItemData itemData, int amount = 1)
@@ -131,6 +105,23 @@ public class Inventory : MonoBehaviour
                 count += _slots[i].Amount;
         }
         return count >= amount;
+    }
+
+    public void SwapSlots(int indexA, int indexB)
+    {
+        if (indexA < 0 || indexA >= _currentCapacity) return;
+        if (indexB < 0 || indexB >= _currentCapacity) return;
+
+        ItemData dataA = _slots[indexA].ItemData;
+        int amountA = _slots[indexA].Amount;
+        ItemData dataB = _slots[indexB].ItemData;
+        int amountB = _slots[indexB].Amount;
+
+        _slots[indexA].Clear();
+        _slots[indexB].Clear();
+
+        if (dataB != null) _slots[indexA].Set(dataB, amountB);
+        if (dataA != null) _slots[indexB].Set(dataA, amountA);
     }
 
     // 아이템 타입 → 이름 순으로 정렬

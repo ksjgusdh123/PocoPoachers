@@ -19,29 +19,34 @@ public class InventoryDropHandler : BaseDropHandler
 
         ItemData draggedData = dragged.SlotItemData;
         int dragAmount = manager.DragAmount;
-        int remaining = dragged.SavedAmountItem - dragAmount;
-        int draggedSlotIndex = dragged.SlotIndex;
 
         ItemData prevData = _slotUI.IsSettedItem ? _slotUI.SlotItemData : null;
-        int prevAmount = _slotUI.IsSettedItem ? _slotUI.SavedAmountItem : 0;
-        int prevSlotIndex = _slotUI.SlotIndex;
 
         if (prevData != null)
         {
-            // 타겟 슬롯에 아이템 있음 → 전체 수량 교환
-            int fullSourceAmount = dragged.SavedAmountItem;
-            if(draggedSlotIsBox) manager.InvokeSlotExchange(_slotUI, dragged, prevData, draggedData, prevAmount, fullSourceAmount, prevSlotIndex, draggedSlotIndex);
-            else manager.InvokeSlotExchange(dragged, _slotUI, draggedData, prevData, fullSourceAmount, prevAmount, draggedSlotIndex, prevSlotIndex);
+            // 타겟 슬롯에 아이템 있음 → 케이스별 교환
+            bool targetIsBox = _slotUI.InventoryUI.IsBox;
+
+            if (!draggedSlotIsBox && !targetIsBox)
+                manager.InvokeLocalSwap(dragged, _slotUI);
+            else if (draggedSlotIsBox && targetIsBox)
+                manager.InvokeBoxSwap(dragged, _slotUI);
+            else if (draggedSlotIsBox)
+                manager.InvokeNetworkExchange(_slotUI, dragged);  // box→player: player=_slotUI, box=dragged
+            else
+                manager.InvokeNetworkExchange(dragged, _slotUI);  // player→box: player=dragged, box=_slotUI
         }
         else
         {
-            //// 타겟 슬롯이 비어 있음 → 드래그한 수량만 이동
-            //_slotUI.SetSlotData(draggedData, dragAmount);
-            _slotUI.InventoryUI.OnDraggedSlot(draggedData, dragAmount, prevSlotIndex, draggedSlotIndex);
-            //if (remaining > 0)
-            //    dragged.SetSlotData(draggedData, remaining);
-            //else
-            //    dragged.SetSlotData(null, 0);
+            // 타겟 슬롯이 비어 있음 → 케이스별 이동
+            bool targetIsBox = _slotUI.InventoryUI.IsBox;
+
+            if (!draggedSlotIsBox && !targetIsBox)
+                manager.InvokeLocalMove(dragged, _slotUI, draggedData, dragAmount);
+            else if (draggedSlotIsBox && targetIsBox)
+                manager.InvokeBoxMove(dragged, _slotUI, draggedData, dragAmount);
+            else
+                manager.InvokeNetworkMove(dragged, _slotUI, draggedData, dragAmount);
         }
         return true;
     }

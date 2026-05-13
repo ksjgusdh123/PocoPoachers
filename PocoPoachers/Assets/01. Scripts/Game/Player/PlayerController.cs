@@ -22,7 +22,6 @@ public class PlayerController : MonoBehaviour
         _inputHander.RegisterItemNumberKey += RegisterItem;
         _inputHander.ConsumeItemNumberKey += ConsumeItem;
         _inputHander.StartInteraction += Interaction;
-        _inputHander.DoubleClick += () => SlotInteractionManager.GetInstance().InvokeDoubleClick();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -47,7 +46,7 @@ public class PlayerController : MonoBehaviour
                 inven.InteractionInventory = _inventory;
                 boxUI.GetComponentInChildren<InventoryUI>()?.Bind(inven);
                 boxUI.GetComponent<ItemBoxRevealUI>().Open(inven);
-                _inputHander.SwitchInputActionMap(PlayerInputMapType.Inventory);
+                _inputHander.SwitchInputActionMap(PlayerInputMapType.ItemBox);
             }
             else
             {

@@ -26,7 +26,8 @@ table G_ItemGain
     box_uid:      int;
     item_type_id: int;
     amount:       int;
-    slot_index:   int;
+    added_slot_index: int;
+    removed_slot_index:   int;
 }
 
 table H_ItemGainResult
@@ -35,8 +36,7 @@ table H_ItemGainResult
     box_uid:            int;
     item_type_id:       int;
     amount:             int;
-    slot_index:         int;
-    removed_slot_index: int;
+    player_slot_index:  int = -1;
 }
 
 table H_ItemBoxUpdate
