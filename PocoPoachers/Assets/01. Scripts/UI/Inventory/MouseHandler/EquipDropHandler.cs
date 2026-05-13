@@ -3,21 +3,14 @@ using UnityEngine;
 public class EquipDropHandler : ItemHolderDropHandler
 {
     [SerializeField] private GameObject _itemVisual;
-    [SerializeField] private int slotNumber;
-
-    private WeaponController _weaponController;
-
-    protected override void Awake()
-    {
-        base.Awake();
-        _weaponController = FindAnyObjectByType<WeaponController>();
-    }
+    [SerializeField] private int _slotIndex;
+    [SerializeField] private EquipableController _controller;
 
     protected override bool OnItemDropped(ItemData data, int amount)
     {
         if (!base.OnItemDropped(data, amount)) return false;
 
-        _weaponController.EquipWeapon(data.id, slotNumber);
+        _controller.Equip(data, _slotIndex);
 
         if (_itemVisual != null)
             _itemVisual.SetActive(true);
@@ -27,6 +20,7 @@ public class EquipDropHandler : ItemHolderDropHandler
     public override void Unequip()
     {
         base.Unequip();
+        _controller.Unequip(_slotIndex);
         if (_itemVisual != null)
             _itemVisual.SetActive(false);
     }

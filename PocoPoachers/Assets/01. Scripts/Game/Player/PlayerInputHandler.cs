@@ -26,8 +26,8 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action Dodge;
 
     private PlayerInput _inputMap;
-    private readonly Key[] _numberKeys = { Key.Digit1, Key.Digit2, Key.Digit3, Key.Digit4, Key.Digit5 };
-    private readonly Key[] _weaponKeys = { Key.Digit7, Key.Digit8 };
+    private readonly Key[] _weaponKeys = { Key.Digit1, Key.Digit2 };
+    private readonly Key[] _numberKeys = { Key.Digit3, Key.Digit4, Key.Digit5, Key.Digit6, Key.Digit7 };
     private PlayerInputMapType _inputType;
 
     private void Awake()
@@ -82,21 +82,6 @@ public class PlayerInputHandler : MonoBehaviour
         if (value.isPressed) Dodge?.Invoke();
     }
 
-    private void Update()
-    {
-        var keyboard = Keyboard.current;
-        if (keyboard == null) return;
-
-        for (int i = 0; i < _weaponKeys.Length; i++)
-        {
-            if (keyboard[_weaponKeys[i]].wasPressedThisFrame)
-            {
-                WeaponSwitch?.Invoke(i);
-                break;
-            }
-        }
-    }
-
     void OnItemNumberKey(InputValue value)
     {
         var keyboard = Keyboard.current;
@@ -108,6 +93,21 @@ public class PlayerInputHandler : MonoBehaviour
             {
                 if (_inputType == PlayerInputMapType.Game) ConsumeItemNumberKey?.Invoke(i);
                 else RegisterItemNumberKey?.Invoke(i);
+                break;
+            }
+        }
+    }
+
+    void OnChangeGun()
+    {
+        var keyboard = Keyboard.current;
+        if (keyboard == null) return;
+
+        for (int i = 0; i < _weaponKeys.Length; i++)
+        {
+            if (keyboard[_weaponKeys[i]].wasPressedThisFrame)
+            {
+                WeaponSwitch?.Invoke(i);
                 break;
             }
         }
