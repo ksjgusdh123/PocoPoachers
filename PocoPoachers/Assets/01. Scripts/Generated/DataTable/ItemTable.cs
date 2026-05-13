@@ -11,7 +11,7 @@ public class ItemTable
 
     static ItemTable Load()
     {
-        var asset = Resources.Load<TextAsset>("JsonData/item");
+        var asset = ResourceManager.Instance.Load<TextAsset>("JsonData/item");
         if (asset == null) { Debug.LogError("[ItemTable] not found: Resources/JsonData/item.json"); return new ItemTable(); }
         var table = new ItemTable();
         string wrapped = "{\"items\":" + asset.text + "}";

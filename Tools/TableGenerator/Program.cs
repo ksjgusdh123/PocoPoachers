@@ -457,7 +457,9 @@ void WriteClientCs(string outDir, string fileName, string className, string[] he
         sb.AppendLine("    {");
         sb.AppendLine("        if (string.IsNullOrWhiteSpace(prefab))");
         sb.AppendLine("            return null;");
-        sb.AppendLine("        return Resources.Load<GameObject>(prefab);");
+        // 기존: Resources.Load<GameObject>(prefab);
+        // 수정: ResourceManager를 통한 캐싱 로드 적용
+        sb.AppendLine("        return ResourceManager.Instance.Load<GameObject>(prefab);");
         sb.AppendLine("    }");
         sb.AppendLine();
     }
@@ -480,7 +482,7 @@ void WriteClientCs(string outDir, string fileName, string className, string[] he
     sb.AppendLine();
     sb.AppendLine($"    static {className}Table Load()");
     sb.AppendLine("    {");
-    sb.AppendLine($"        var asset = Resources.Load<TextAsset>(\"{resPath}\");");
+    sb.AppendLine($"        var asset = ResourceManager.Instance.Load<TextAsset>(\"{resPath}\");");
     sb.AppendLine($"        if (asset == null) {{ Debug.LogError(\"[{className}Table] not found: Resources/{resPath}.json\"); return new {className}Table(); }}");
     sb.AppendLine($"        var table = new {className}Table();");
     sb.AppendLine($"        string wrapped = \"{{\\\"items\\\":\" + asset.text + \"}}\";");

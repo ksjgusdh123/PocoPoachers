@@ -100,7 +100,7 @@ public partial class ItemData
     {
         if (string.IsNullOrWhiteSpace(prefab))
             return null;
-        return Resources.Load<GameObject>(prefab);
+        return ResourceManager.Instance.Load<GameObject>(prefab);
     }
 
 }
