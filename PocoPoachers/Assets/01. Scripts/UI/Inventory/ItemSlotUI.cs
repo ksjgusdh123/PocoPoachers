@@ -13,11 +13,11 @@ public class ItemSlotUI : MonoBehaviour
     public int SlotIndex { get; private set; }
     public bool IsSettedItem { get; private set; }
     public ItemData SlotItemData => _settedSlot?.ItemData;
-    public int SavedAmountItem => _settedSlot.Amount;
+    public int SavedAmountItem => _settedSlot?.Amount ?? 0;
 
     private ItemSlot _settedSlot;
 
-    private void Start()
+    private void Awake()
     {
         InventoryUI = GetComponentInParent<InventoryUI>();
     }

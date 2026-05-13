@@ -20,16 +20,9 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     public ItemSlotUI PendingSlot { get; private set; }
     public int PendingAmount { get; private set; }
 
-    public Inventory InteractionInventory { get; private set; }
-
     protected override void Awake()
     {
         //FindAnyObjectByType<>
-    }
-
-    public void SetInteractionInventory(Inventory inventory)
-    {
-        InteractionInventory = inventory;
     }
 
     // 플레이어 ↔ 플레이어: 로컬 교환만
@@ -39,24 +32,29 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     }
 
     // 플레이어 ↔ 박스: 로컬 + 네트워크 패킷
-    public void InvokeNetworkExchange(ItemSlotUI player, ItemSlotUI box, ItemData PtoBItem, ItemData BtoPItem,
-        int PtoBMovedAmount, int BtoPMovedAmount, int PSlotIndex, int BSlotIndex)
+    public void InvokeNetworkExchange(ItemSlotUI player, ItemSlotUI box)
     {
         player.InventoryUI.OnSlotDropped();
 
-        int boxUid = box.InventoryUI.Box.Id;
+        ItemData playerItem = player.SlotItemData;
+        ItemData boxItem    = box.SlotItemData;
+        int playerAmount    = player.SavedAmountItem;
+        int boxAmount       = box.SavedAmountItem;
+        int playerSlot      = player.SlotIndex;
+        int boxSlot         = box.SlotIndex;
+        int boxUid          = box.InventoryUI.Box.Id;
 
         if (!RoomManager.IsHost)
         {
             PacketBuilder.SendToHost(new G_ItemExchangeT
             {
                 BoxUid           = boxUid,
-                PlayerItemId     = PtoBItem?.id ?? 0,
-                PlayerItemAmount = PtoBMovedAmount,
-                PlayerSlotIndex  = PSlotIndex,
-                BoxItemId        = BtoPItem?.id ?? 0,
-                BoxItemAmount    = BtoPMovedAmount,
-                BoxSlotIndex     = BSlotIndex,
+                PlayerItemId     = playerItem?.id ?? 0,
+                PlayerItemAmount = playerAmount,
+                PlayerSlotIndex  = playerSlot,
+                BoxItemId        = boxItem?.id ?? 0,
+                BoxItemAmount    = boxAmount,
+                BoxSlotIndex     = boxSlot,
             }, G_ItemExchange.Pack, PacketType.G_ItemExchange);
         }
         else
@@ -67,38 +65,38 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
                 var boxInv = boxObj.GetComponent<Inventory>();
                 if (boxInv != null)
                 {
-                    if (BtoPItem != null && BtoPMovedAmount > 0)
-                        boxInv.RemoveItemAtSlot(BSlotIndex, BtoPItem, BtoPMovedAmount);
-                    if (PtoBItem != null && PtoBMovedAmount > 0)
-                        boxInv.AddItemAtSlot(BSlotIndex, PtoBItem, PtoBMovedAmount);
+                    if (boxItem != null && boxAmount > 0)
+                        boxInv.RemoveItemAtSlot(boxSlot, boxItem, boxAmount);
+                    if (playerItem != null && playerAmount > 0)
+                        boxInv.AddItemAtSlot(boxSlot, playerItem, playerAmount);
                 }
             }
 
             var playerInv = player.InventoryUI.Inventory;
             if (playerInv != null)
             {
-                if (PtoBItem != null && PtoBMovedAmount > 0)
-                    playerInv.RemoveItemAtSlot(PSlotIndex, PtoBItem, PtoBMovedAmount);
-                if (BtoPItem != null && BtoPMovedAmount > 0)
-                    playerInv.AddItemAtSlot(PSlotIndex, BtoPItem, BtoPMovedAmount);
+                if (playerItem != null && playerAmount > 0)
+                    playerInv.RemoveItemAtSlot(playerSlot, playerItem, playerAmount);
+                if (boxItem != null && boxAmount > 0)
+                    playerInv.AddItemAtSlot(playerSlot, boxItem, boxAmount);
             }
 
-            if (BtoPItem != null)
-                PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
-                {
-                    BoxUid = boxUid,
-                    ItemTypeId = BtoPItem.id,
-                    Amount = -BtoPMovedAmount,
-                    SlotIndex = BSlotIndex,
-                }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
-
-            if (PtoBItem != null)
+            if (boxItem != null)
                 PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
                 {
                     BoxUid     = boxUid,
-                    ItemTypeId = PtoBItem.id,
-                    Amount     = PtoBMovedAmount,
-                    SlotIndex  = BSlotIndex,
+                    ItemTypeId = boxItem.id,
+                    Amount     = -boxAmount,
+                    SlotIndex  = boxSlot,
+                }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+
+            if (playerItem != null)
+                PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
+                {
+                    BoxUid     = boxUid,
+                    ItemTypeId = playerItem.id,
+                    Amount     = playerAmount,
+                    SlotIndex  = boxSlot,
                 }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
         }
     }

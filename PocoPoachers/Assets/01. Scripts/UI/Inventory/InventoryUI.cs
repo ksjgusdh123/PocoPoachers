@@ -39,12 +39,7 @@ public class InventoryUI : MonoBehaviour
 
         var manager = SlotInteractionManager.GetInstance();
         manager.OnHoverEnter += _descriptionUI.ShowDescription;
-        manager.OnHoverExit += _descriptionUI.HideDescription;
-    }
-
-    private void Start()
-    {
-      
+        manager.OnHoverExit += _ => _descriptionUI.HideDescription();
     }
 
     public void OnSlotDoubleClicked()
@@ -128,7 +123,7 @@ public class InventoryUI : MonoBehaviour
             _slotUIs[i].SetIndex(i);
         }
 
-        _descriptionUI.HideDescription(null);
+        _descriptionUI.HideDescription();
     }
 
     // 인벤토리 데이터 기반으로 전체 UI 갱신

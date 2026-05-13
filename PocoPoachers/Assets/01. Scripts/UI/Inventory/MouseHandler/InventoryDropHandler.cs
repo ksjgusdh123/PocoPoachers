@@ -19,17 +19,12 @@ public class InventoryDropHandler : BaseDropHandler
 
         ItemData draggedData = dragged.SlotItemData;
         int dragAmount = manager.DragAmount;
-        int remaining = dragged.SavedAmountItem - dragAmount;
-        int draggedSlotIndex = dragged.SlotIndex;
 
         ItemData prevData = _slotUI.IsSettedItem ? _slotUI.SlotItemData : null;
-        int prevAmount = _slotUI.IsSettedItem ? _slotUI.SavedAmountItem : 0;
-        int prevSlotIndex = _slotUI.SlotIndex;
 
         if (prevData != null)
         {
             // 타겟 슬롯에 아이템 있음 → 케이스별 교환
-            int fullSourceAmount = dragged.SavedAmountItem;
             bool targetIsBox = _slotUI.InventoryUI.IsBox;
 
             if (!draggedSlotIsBox && !targetIsBox)
@@ -37,9 +32,9 @@ public class InventoryDropHandler : BaseDropHandler
             else if (draggedSlotIsBox && targetIsBox)
                 manager.InvokeBoxSwap(dragged, _slotUI);
             else if (draggedSlotIsBox)
-                manager.InvokeNetworkExchange(_slotUI, dragged, prevData, draggedData, prevAmount, fullSourceAmount, prevSlotIndex, draggedSlotIndex);
+                manager.InvokeNetworkExchange(_slotUI, dragged);  // box→player: player=_slotUI, box=dragged
             else
-                manager.InvokeNetworkExchange(dragged, _slotUI, draggedData, prevData, fullSourceAmount, prevAmount, draggedSlotIndex, prevSlotIndex);
+                manager.InvokeNetworkExchange(dragged, _slotUI);  // player→box: player=dragged, box=_slotUI
         }
         else
         {
