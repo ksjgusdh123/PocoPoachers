@@ -393,7 +393,7 @@ GameObject:
   - component: {fileID: 233463963}
   - component: {fileID: 233463962}
   m_Layer: 0
-  m_Name: HostItemSpawner
+  m_Name: ItemSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -411,10 +411,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 01fdac6b58f376040b0fe954ca977397, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HostItemSpawner
-  _boxes:
-  - Position: {x: 0, y: 0, z: 0}
-    Rotation: 0
-    ItemIds: 6500000066000000cb000000cc000000
+  _spawnAreaSize: {x: 10, y: 0, z: 10}
+  _totalBoxCount: 5
+  _groundLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  _weaponChance: 0.7
+  _minItemPerBox: 1
+  _maxItemPerBox: 3
 --- !u!4 &233463963
 Transform:
   m_ObjectHideFlags: 0
@@ -424,7 +428,7 @@ Transform:
   m_GameObject: {fileID: 233463961}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.6454, y: -1.19501, z: -8.35669}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2948,11 +2952,12 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2117736437}
+  - component: {fileID: 2117736440}
   - component: {fileID: 2117736436}
   - component: {fileID: 2117736439}
   - component: {fileID: 2117736438}
   m_Layer: 0
-  m_Name: GameNetwork
+  m_Name: Managers
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -3019,6 +3024,18 @@ MonoBehaviour:
   port: 7000
   remoteConnection: 0
   userName: Player
+--- !u!114 &2117736440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2117736434}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bb1d011393f1f8e4ab03ff73a3dcf23f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Bootstrapper
 --- !u!1001 &1583378957473919322
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3985,6 +4002,7 @@ PrefabInstance:
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 2117736437}
   - {fileID: 330585546}
   - {fileID: 410087041}
   - {fileID: 832575519}
@@ -3992,7 +4010,6 @@ SceneRoots:
   - {fileID: 158327928}
   - {fileID: 1162114147}
   - {fileID: 1343481862}
-  - {fileID: 2117736437}
   - {fileID: 1382421244}
   - {fileID: 233463963}
   - {fileID: 488529479}
