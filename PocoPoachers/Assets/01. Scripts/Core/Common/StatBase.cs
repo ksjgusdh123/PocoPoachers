@@ -10,6 +10,10 @@ public abstract class StatBase : MonoBehaviour, IDamageable
     public event Action<float, Vector3> OnDamaged;
     public event Action OnDie;
 
+    protected virtual void Awake()
+    {
+        OnDamaged += (damage, pos) => DamageTextPool.Show(damage, pos);
+    }
     public void TakeDamage(float damage)
     {
         if (CurrentHp <= 0f) return;
