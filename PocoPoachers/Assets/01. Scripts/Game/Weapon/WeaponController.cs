@@ -63,6 +63,7 @@ public class WeaponController : EquipableController
         GunBase equipped = GunTable.Instance.Equip(data.id, _mountPoint);
         if (equipped == null) return;
 
+        equipped.Owner = gameObject;
         equipped.gameObject.SetActive(false);
         _guns[slotIndex] = equipped;
 
@@ -142,7 +143,11 @@ public class WeaponController : EquipableController
             ? isFirePressed
             : isFirePressed && !_wasFirePressed;
 
-        if (fireInput) _currentGun.TryShoot();
+        if (fireInput)
+        {
+            _currentGun.TryShoot();
+            SoundEvent.Emit(_currentGun.Muzzle.position, _currentGun.GunData.soundRange, gameObject);
+        }
 
         _wasFirePressed = isFirePressed;
     }
