@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,6 +19,8 @@ public class WeaponController : EquipableController
                 : _currentGun.GunData.moveSpeedMultiplier;
         }
     }
+
+    public static event Action<int, ItemData> OnWeaponChanged;
 
     private static readonly int WeaponSwitchHash = Animator.StringToHash("WeaponSwitch");
 
@@ -66,6 +69,7 @@ public class WeaponController : EquipableController
         equipped.Owner = gameObject;
         equipped.gameObject.SetActive(false);
         _guns[slotIndex] = equipped;
+        OnWeaponChanged?.Invoke(slotIndex, data);
 
         // 같은 슬롯 재장착이면 currentIndex 초기화해서 SwitchWeapon 진입 허용
         if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
@@ -78,6 +82,7 @@ public class WeaponController : EquipableController
         Destroy(_guns[slotIndex].gameObject);
         _guns[slotIndex] = null;
         if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
+        OnWeaponChanged?.Invoke(slotIndex, null);
     }
 
     private void SwitchWeapon(int index)
