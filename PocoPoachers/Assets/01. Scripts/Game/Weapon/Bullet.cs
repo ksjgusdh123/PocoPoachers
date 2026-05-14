@@ -46,10 +46,12 @@ public class Bullet : MonoBehaviour
         if (TryGetHit(origin, step, out RaycastHit hit))
         {
             transform.position = hit.point;
+            CrosshairUI.Instance?.ShowHitMarker();
 
             if (_applyDamage && hit.collider.TryGetComponent<IDamageable>(out var damageable))
             {
                 damageable.TakeDamage(_damage);
+                
             }
 
             Release();

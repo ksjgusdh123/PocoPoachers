@@ -33,17 +33,28 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private float _kickSpeed = 300f;
     [SerializeField] private float _kickRecovery = 150f;
 
+    [Header("Hit Marker")]
+    [SerializeField] private CanvasGroup _hitMarkerGroup;
+    [SerializeField] private Color _hitMarkerColor = Color.white;
+    [SerializeField] private float _hitMarkerDuration = 0.12f;
+    [SerializeField] private float _hitMarkerFadeSpeed = 20f;
+    [SerializeField] private float _hitMarkerDistance = 12f;
+    [SerializeField] private Vector2 _hitMarkerLineSize = new Vector2(14f, 2f);
+
     private Vector2 _recoilTarget;
     private Vector2 _recoilOffset;
     private float _shakeIntensity;
     private float _shakeDuration;
     private float _shakeTimer;
     private float _shakeAngle;
+    private float _hitMarkerTimer;
 
     private void Awake()
     {
         Instance = this;
         _rectTransform = GetComponent<RectTransform>();
+        EnsureHitMarker();
+        if (_hitMarkerGroup != null) _hitMarkerGroup.alpha = 0f;
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Confined;
     }
@@ -100,6 +111,7 @@ public class CrosshairUI : MonoBehaviour
 
         ApplySpread();
         UpdateDot();
+        UpdateHitMarker();
     }
 
     private void UpdateDot()
@@ -134,6 +146,75 @@ public class CrosshairUI : MonoBehaviour
         _shakeTimer = _shakeDuration;
     }
 
+    public void ShowHitMarker()
+    {
+        EnsureHitMarker();
+        if (_hitMarkerGroup == null) return;
+
+        _hitMarkerTimer = _hitMarkerDuration;
+        _hitMarkerGroup.alpha = 1f;
+    }
+
+    private void UpdateHitMarker()
+    {
+        if (_hitMarkerGroup == null) return;
+
+        if (_hitMarkerTimer > 0f)
+        {
+            _hitMarkerTimer -= Time.deltaTime;
+            _hitMarkerGroup.alpha = 1f;
+            return;
+        }
+
+        _hitMarkerGroup.alpha = Mathf.MoveTowards(_hitMarkerGroup.alpha, 0f, _hitMarkerFadeSpeed * Time.deltaTime);
+    }
+
+    private void EnsureHitMarker()
+    {
+        if (_hitMarkerGroup != null) return;
+
+        Transform existing = transform.Find("HitMarker");
+        if (existing != null && existing.TryGetComponent(out _hitMarkerGroup))
+        {
+            _hitMarkerGroup.alpha = 0f;
+            return;
+        }
+
+        GameObject groupObject = new GameObject("HitMarker", typeof(RectTransform), typeof(CanvasGroup));
+        RectTransform groupRect = groupObject.GetComponent<RectTransform>();
+        groupRect.SetParent(_rectTransform, false);
+        groupRect.anchorMin = new Vector2(0.5f, 0.5f);
+        groupRect.anchorMax = new Vector2(0.5f, 0.5f);
+        groupRect.anchoredPosition = Vector2.zero;
+        groupRect.sizeDelta = Vector2.zero;
+
+        _hitMarkerGroup = groupObject.GetComponent<CanvasGroup>();
+        _hitMarkerGroup.alpha = 0f;
+        _hitMarkerGroup.blocksRaycasts = false;
+        _hitMarkerGroup.interactable = false;
+
+        CreateHitMarkerLine(groupRect, "TopLeft", new Vector2(-_hitMarkerDistance, _hitMarkerDistance), -45f);
+        CreateHitMarkerLine(groupRect, "TopRight", new Vector2(_hitMarkerDistance, _hitMarkerDistance), 45f);
+        CreateHitMarkerLine(groupRect, "BottomLeft", new Vector2(-_hitMarkerDistance, -_hitMarkerDistance), 45f);
+        CreateHitMarkerLine(groupRect, "BottomRight", new Vector2(_hitMarkerDistance, -_hitMarkerDistance), -45f);
+    }
+
+    private void CreateHitMarkerLine(RectTransform parent, string name, Vector2 anchoredPosition, float rotation)
+    {
+        GameObject lineObject = new GameObject(name, typeof(RectTransform), typeof(Image));
+        RectTransform lineRect = lineObject.GetComponent<RectTransform>();
+        lineRect.SetParent(parent, false);
+        lineRect.anchorMin = new Vector2(0.5f, 0.5f);
+        lineRect.anchorMax = new Vector2(0.5f, 0.5f);
+        lineRect.anchoredPosition = anchoredPosition;
+        lineRect.sizeDelta = _hitMarkerLineSize;
+        lineRect.localEulerAngles = new Vector3(0f, 0f, rotation);
+
+        Image lineImage = lineObject.GetComponent<Image>();
+        lineImage.color = _hitMarkerColor;
+        lineImage.raycastTarget = false;
+    }
+
     private void ApplySpread()
     {
         _top.anchoredPosition    = new Vector2(0,  _currentSpread);
@@ -146,6 +227,7 @@ public class CrosshairUI : MonoBehaviour
     {
         gameObject.SetActive(isGameMode);
         Cursor.visible = !isGameMode;
+        if (!isGameMode && _hitMarkerGroup != null) _hitMarkerGroup.alpha = 0f;
         //Cursor.lockState = isGameMode ? CursorLockMode.Confined : CursorLockMode.None;
     }
 }
