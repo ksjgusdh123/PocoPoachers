@@ -46,12 +46,13 @@ public class Bullet : MonoBehaviour
         if (TryGetHit(origin, step, out RaycastHit hit))
         {
             transform.position = hit.point;
+
+            // 히트마커 (임시로 지금은 모든 총알에 적용 중, 서버 연결할 때 자기 총알에만 적용되도록 수정해야할 듯)
             CrosshairUI.Instance?.ShowHitMarker();
 
             if (_applyDamage && hit.collider.TryGetComponent<IDamageable>(out var damageable))
             {
                 damageable.TakeDamage(_damage);
-                
             }
 
             Release();
