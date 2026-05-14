@@ -19,11 +19,6 @@ public class EquipContextMenuUI : MonoBehaviour
         SlotInteractionManager.GetInstance().OnEquipRightClick += Show;
     }
 
-    private void OnDestroy()
-    {
-        SlotInteractionManager.GetInstance().OnEquipRightClick -= Show;
-    }
-
     private void Update()
     {
         if (Mouse.current.leftButton.wasPressedThisFrame || Mouse.current.rightButton.wasPressedThisFrame)
