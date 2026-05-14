@@ -17,7 +17,7 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     public event Action OnDragEnd;
 
     // 장비 슬롯 우클릭 상태
-    public event Action<EquipDropHandler, Vector2> OnEquipRightClick;
+    public event Action<ItemHolderDropHandler> OnEquipRightClick;
 
     // Ctrl 클릭 누적 상태
     public ItemSlotUI PendingSlot { get; private set; }
@@ -261,8 +261,8 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         PendingAmount = 0;
     }
 
-    public void InvokeEquipRightClick(EquipDropHandler handler, Vector2 screenPos)
+    public void InvokeEquipRightClick(ItemHolderDropHandler handler)
     {
-        OnEquipRightClick?.Invoke(handler, screenPos);
+        OnEquipRightClick?.Invoke(handler);
     }
 }

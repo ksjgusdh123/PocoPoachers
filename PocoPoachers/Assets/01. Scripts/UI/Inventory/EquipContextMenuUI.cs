@@ -5,8 +5,9 @@ using UnityEngine.UI;
 public class EquipContextMenuUI : MonoBehaviour
 {
     [SerializeField] private Button _unequipButton;
+    [SerializeField] private Vector2 _offset = new Vector2(100f, 0f);
 
-    private EquipDropHandler _targetHandler;
+    private ItemHolderDropHandler _targetHandler;
     private RectTransform _rectTransform;
 
     private void Awake()
@@ -33,10 +34,10 @@ public class EquipContextMenuUI : MonoBehaviour
         }
     }
 
-    private void Show(EquipDropHandler handler, Vector2 screenPos)
+    private void Show(ItemHolderDropHandler handler)
     {
         _targetHandler = handler;
-        transform.position = screenPos;
+        transform.position = handler.transform.position + (Vector3)_offset;
         gameObject.SetActive(true);
     }
 
