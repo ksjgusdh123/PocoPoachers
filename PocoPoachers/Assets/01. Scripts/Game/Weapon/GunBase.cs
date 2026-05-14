@@ -11,6 +11,7 @@ public abstract class GunBase : MonoBehaviour
     public Transform Muzzle => _muzzle;
     public int CurrentAmmo => _currentAmmo;
     public bool IsReloading => _isReloading;
+    public ItemData ItemData => ItemTable.Instance.Get(_gunData.itemId);
 
     public event Action<Vector2> OnShoot;
 
