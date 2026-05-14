@@ -38,11 +38,14 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private Color _hitMarkerColor = Color.white;
     [SerializeField] private float _hitMarkerDuration = 0.12f;
     [SerializeField] private float _hitMarkerFadeSpeed = 20f;
-    [SerializeField] private float _hitMarkerDistance = 12f;
-    [SerializeField] private float _hitMarkerStartDistance = 20f;
-    [SerializeField] private float _hitMarkerEndDistance = 28f;
+    [SerializeField] private float _hitMarkerSpreadScale = 0.7f;
+    [SerializeField] private float _hitMarkerDistanceOffset = 8f;
     [SerializeField] private float _hitMarkerConvergeTime = 0.04f;
     [SerializeField] private Vector2 _hitMarkerLineSize = new Vector2(14f, 2f);
+    [SerializeField] private RectTransform _hitMarkerTopLeft;
+    [SerializeField] private RectTransform _hitMarkerTopRight;
+    [SerializeField] private RectTransform _hitMarkerBottomLeft;
+    [SerializeField] private RectTransform _hitMarkerBottomRight;
 
     private Vector2 _recoilTarget;
     private Vector2 _recoilOffset;
@@ -51,6 +54,8 @@ public class CrosshairUI : MonoBehaviour
     private float _shakeTimer;
     private float _shakeAngle;
     private float _hitMarkerTimer;
+    private float _activeHitMarkerDistance;
+    private float _activeHitMarkerOuterDistance;
     private RectTransform[] _hitMarkerLines;
 
     private void Awake()
@@ -157,7 +162,8 @@ public class CrosshairUI : MonoBehaviour
 
         _hitMarkerTimer = _hitMarkerDuration;
         _hitMarkerGroup.alpha = 1f;
-        ApplyHitMarkerDistance(_hitMarkerStartDistance);
+        UpdateActiveHitMarkerDistances();
+        ApplyHitMarkerDistance(_activeHitMarkerOuterDistance);
     }
 
     private void UpdateHitMarker()
@@ -171,15 +177,21 @@ public class CrosshairUI : MonoBehaviour
             return;
         }
 
-        ApplyHitMarkerDistance(_hitMarkerEndDistance);
+        ApplyHitMarkerDistance(_activeHitMarkerOuterDistance);
         _hitMarkerGroup.alpha = Mathf.MoveTowards(_hitMarkerGroup.alpha, 0f, _hitMarkerFadeSpeed * Time.deltaTime);
+    }
+
+    private void UpdateActiveHitMarkerDistances()
+    {
+        _activeHitMarkerDistance = Mathf.Max(_currentSpread, _targetBaseSpread, 0f) * _hitMarkerSpreadScale;
+        _activeHitMarkerOuterDistance = Mathf.Max(_activeHitMarkerDistance + _hitMarkerDistanceOffset, 0f);
     }
 
     private void UpdateHitMarkerDistance()
     {
         if (_hitMarkerDuration <= 0f)
         {
-            ApplyHitMarkerDistance(_hitMarkerDistance);
+            ApplyHitMarkerDistance(_activeHitMarkerDistance);
             return;
         }
 
@@ -189,14 +201,14 @@ public class CrosshairUI : MonoBehaviour
         if (elapsed < _hitMarkerConvergeTime)
         {
             float t = _hitMarkerConvergeTime > 0f ? elapsed / _hitMarkerConvergeTime : 1f;
-            distance = Mathf.Lerp(_hitMarkerStartDistance, _hitMarkerDistance, t);
+            distance = Mathf.Lerp(_activeHitMarkerOuterDistance, _activeHitMarkerDistance, t);
             _hitMarkerGroup.alpha = 1f;
         }
         else
         {
             float expandDuration = Mathf.Max(_hitMarkerDuration - _hitMarkerConvergeTime, 0.001f);
             float t = Mathf.Clamp01((elapsed - _hitMarkerConvergeTime) / expandDuration);
-            distance = Mathf.Lerp(_hitMarkerDistance, _hitMarkerEndDistance, t);
+            distance = Mathf.Lerp(_activeHitMarkerDistance, _activeHitMarkerOuterDistance, t);
             _hitMarkerGroup.alpha = Mathf.Lerp(1f, 0f, t);
         }
 
@@ -217,7 +229,11 @@ public class CrosshairUI : MonoBehaviour
 
     private void EnsureHitMarker()
     {
-        if (_hitMarkerGroup != null) return;
+        if (_hitMarkerGroup != null)
+        {
+            if (!HasHitMarkerLines()) CacheHitMarkerLines(_hitMarkerGroup.transform);
+            return;
+        }
 
         Transform existing = transform.Find("HitMarker");
         if (existing != null && existing.TryGetComponent(out _hitMarkerGroup))
@@ -241,19 +257,53 @@ public class CrosshairUI : MonoBehaviour
         _hitMarkerGroup.interactable = false;
 
         _hitMarkerLines = new RectTransform[4];
-        _hitMarkerLines[0] = CreateHitMarkerLine(groupRect, "TopLeft", new Vector2(-_hitMarkerDistance, _hitMarkerDistance), -45f);
-        _hitMarkerLines[1] = CreateHitMarkerLine(groupRect, "TopRight", new Vector2(_hitMarkerDistance, _hitMarkerDistance), 45f);
-        _hitMarkerLines[2] = CreateHitMarkerLine(groupRect, "BottomLeft", new Vector2(-_hitMarkerDistance, -_hitMarkerDistance), 45f);
-        _hitMarkerLines[3] = CreateHitMarkerLine(groupRect, "BottomRight", new Vector2(_hitMarkerDistance, -_hitMarkerDistance), -45f);
+        _hitMarkerLines[0] = CreateHitMarkerLine(groupRect, "TopLeft", Vector2.zero, -45f);
+        _hitMarkerLines[1] = CreateHitMarkerLine(groupRect, "TopRight", Vector2.zero, 45f);
+        _hitMarkerLines[2] = CreateHitMarkerLine(groupRect, "BottomLeft", Vector2.zero, 45f);
+        _hitMarkerLines[3] = CreateHitMarkerLine(groupRect, "BottomRight", Vector2.zero, -45f);
+        ApplyHitMarkerLineRotations();
     }
 
     private void CacheHitMarkerLines(Transform hitMarker)
     {
         _hitMarkerLines = new RectTransform[4];
-        _hitMarkerLines[0] = hitMarker.Find("TopLeft") as RectTransform;
-        _hitMarkerLines[1] = hitMarker.Find("TopRight") as RectTransform;
-        _hitMarkerLines[2] = hitMarker.Find("BottomLeft") as RectTransform;
-        _hitMarkerLines[3] = hitMarker.Find("BottomRight") as RectTransform;
+        _hitMarkerLines[0] = _hitMarkerTopLeft != null ? _hitMarkerTopLeft : FindHitMarkerLine(hitMarker, "TopLeft");
+        _hitMarkerLines[1] = _hitMarkerTopRight != null ? _hitMarkerTopRight : FindHitMarkerLine(hitMarker, "TopRight");
+        _hitMarkerLines[2] = _hitMarkerBottomLeft != null ? _hitMarkerBottomLeft : FindHitMarkerLine(hitMarker, "BottomLeft");
+        _hitMarkerLines[3] = _hitMarkerBottomRight != null ? _hitMarkerBottomRight : FindHitMarkerLine(hitMarker, "BottomRight");
+        ApplyHitMarkerLineRotations();
+    }
+
+    private void ApplyHitMarkerLineRotations()
+    {
+        if (!HasHitMarkerLines()) return;
+
+        _hitMarkerLines[0].localEulerAngles = new Vector3(0f, 0f, -45f);
+        _hitMarkerLines[1].localEulerAngles = new Vector3(0f, 0f, 45f);
+        _hitMarkerLines[2].localEulerAngles = new Vector3(0f, 0f, 45f);
+        _hitMarkerLines[3].localEulerAngles = new Vector3(0f, 0f, -45f);
+    }
+
+    private RectTransform FindHitMarkerLine(Transform root, string lineName)
+    {
+        if (root == null) return null;
+
+        foreach (RectTransform rectTransform in root.GetComponentsInChildren<RectTransform>(true))
+        {
+            if (rectTransform.name == lineName) return rectTransform;
+        }
+
+        return null;
+    }
+
+    private bool HasHitMarkerLines()
+    {
+        return _hitMarkerLines != null
+            && _hitMarkerLines.Length >= 4
+            && _hitMarkerLines[0] != null
+            && _hitMarkerLines[1] != null
+            && _hitMarkerLines[2] != null
+            && _hitMarkerLines[3] != null;
     }
 
     private RectTransform CreateHitMarkerLine(RectTransform parent, string name, Vector2 anchoredPosition, float rotation)
