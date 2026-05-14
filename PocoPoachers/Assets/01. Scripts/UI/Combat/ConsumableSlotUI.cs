@@ -9,14 +9,9 @@ public class ConsumableSlotUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private TextMeshProUGUI _countText;
 
-    private void OnEnable()
+    private void Awake()
     {
         QuickSlotDropHandler.OnQuickSlotChanged += OnQuickSlotChanged;
-    }
-
-    private void OnDisable()
-    {
-        QuickSlotDropHandler.OnQuickSlotChanged -= OnQuickSlotChanged;
     }
 
     private void OnQuickSlotChanged(int slotIndex, ItemData data, int amount)

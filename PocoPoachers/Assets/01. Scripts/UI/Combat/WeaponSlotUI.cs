@@ -6,14 +6,9 @@ public class WeaponSlotUI : MonoBehaviour
     [SerializeField] private int _slotIndex;
     [SerializeField] private Image _icon;
 
-    private void OnEnable()
+    private void Awake()
     {
         WeaponController.OnWeaponChanged += OnWeaponChanged;
-    }
-
-    private void OnDisable()
-    {
-        WeaponController.OnWeaponChanged -= OnWeaponChanged;
     }
 
     private void OnWeaponChanged(int slotIndex, ItemData data)
