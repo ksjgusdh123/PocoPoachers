@@ -4,6 +4,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [SerializeField] private GameObject PlayerBagUI;
+    [SerializeField] private GameObject PlayerMainGameUI;
     [SerializeField] private GameObject boxUI;
     [SerializeField] private CameraController _cameraController;
     private Inventory _inventory;
@@ -67,6 +68,7 @@ public class PlayerController : MonoBehaviour
     {
         PlayerBagUI.SetActive(!PlayerBagUI.activeSelf);
         bool isOpen = PlayerBagUI.activeSelf;
+        PlayerMainGameUI.SetActive(!isOpen);
         LockCamera(isOpen);
         UIManager.GetInstance().ChangeMouseCursor(!isOpen); // 인벤토리 열면 숨김, 닫으면 크로스헤어 복원
     }
