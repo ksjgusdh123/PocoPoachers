@@ -17,6 +17,7 @@ public abstract class GunBase : MonoBehaviour
     private int _currentAmmo;
     private bool _isReloading;
     private float _nextFireTime;
+    private Coroutine _reloadCoroutine;
 
     private Vector3 _originLocalPos;
     private float _recoilDist;
@@ -25,6 +26,11 @@ public abstract class GunBase : MonoBehaviour
     {
         _currentAmmo = _gunData.magazineSize;
         _originLocalPos = transform.localPosition;
+    }
+
+    protected virtual void OnDisable()
+    {
+        CancelReload();
     }
 
     private void Update()
@@ -41,7 +47,12 @@ public abstract class GunBase : MonoBehaviour
 
     public void TryShoot()
     {
-        if (_isReloading || _currentAmmo <= 0 || Time.time < _nextFireTime) return;
+        if (_isReloading || Time.time < _nextFireTime) return;
+        if (_currentAmmo <= 0)
+        {
+            StartReload();
+            return;
+        }
 
         Shoot();
         _currentAmmo--;
@@ -73,7 +84,18 @@ public abstract class GunBase : MonoBehaviour
     public void StartReload()
     {
         if (_isReloading || _currentAmmo == _gunData.magazineSize) return;
-        StartCoroutine(ReloadRoutine());
+        _reloadCoroutine = StartCoroutine(ReloadRoutine());
+    }
+
+    public void CancelReload()
+    {
+        if (_reloadCoroutine != null)
+        {
+            StopCoroutine(_reloadCoroutine);
+            _reloadCoroutine = null;
+        }
+
+        _isReloading = false;
     }
 
     private IEnumerator ReloadRoutine()
@@ -82,5 +104,6 @@ public abstract class GunBase : MonoBehaviour
         yield return new WaitForSeconds(_gunData.reloadTime);
         _currentAmmo = _gunData.magazineSize;
         _isReloading = false;
+        _reloadCoroutine = null;
     }
 }
