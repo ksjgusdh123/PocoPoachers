@@ -72,7 +72,7 @@ public class PlayerController : MonoBehaviour
     }
 
     void RegisterItem(int index)
-    {   
+    {
         _quickSlots[index].TryRegisterItem();
     }
 
