@@ -41,7 +41,6 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private float _hitMarkerSpreadScale = 0.7f;
     [SerializeField] private float _hitMarkerDistanceOffset = 8f;
     [SerializeField] private float _hitMarkerConvergeTime = 0.04f;
-    [SerializeField] private Vector2 _hitMarkerLineSize = new Vector2(14f, 2f);
     [SerializeField] private RectTransform _hitMarkerTopLeft;
     [SerializeField] private RectTransform _hitMarkerTopRight;
     [SerializeField] private RectTransform _hitMarkerBottomLeft;
@@ -229,39 +228,9 @@ public class CrosshairUI : MonoBehaviour
 
     private void EnsureHitMarker()
     {
-        if (_hitMarkerGroup != null)
-        {
-            if (!HasHitMarkerLines()) CacheHitMarkerLines(_hitMarkerGroup.transform);
-            return;
-        }
+        if (_hitMarkerGroup == null) return;
 
-        Transform existing = transform.Find("HitMarker");
-        if (existing != null && existing.TryGetComponent(out _hitMarkerGroup))
-        {
-            CacheHitMarkerLines(existing);
-            _hitMarkerGroup.alpha = 0f;
-            return;
-        }
-
-        GameObject groupObject = new GameObject("HitMarker", typeof(RectTransform), typeof(CanvasGroup));
-        RectTransform groupRect = groupObject.GetComponent<RectTransform>();
-        groupRect.SetParent(_rectTransform, false);
-        groupRect.anchorMin = new Vector2(0.5f, 0.5f);
-        groupRect.anchorMax = new Vector2(0.5f, 0.5f);
-        groupRect.anchoredPosition = Vector2.zero;
-        groupRect.sizeDelta = Vector2.zero;
-
-        _hitMarkerGroup = groupObject.GetComponent<CanvasGroup>();
-        _hitMarkerGroup.alpha = 0f;
-        _hitMarkerGroup.blocksRaycasts = false;
-        _hitMarkerGroup.interactable = false;
-
-        _hitMarkerLines = new RectTransform[4];
-        _hitMarkerLines[0] = CreateHitMarkerLine(groupRect, "TopLeft", Vector2.zero, -45f);
-        _hitMarkerLines[1] = CreateHitMarkerLine(groupRect, "TopRight", Vector2.zero, 45f);
-        _hitMarkerLines[2] = CreateHitMarkerLine(groupRect, "BottomLeft", Vector2.zero, 45f);
-        _hitMarkerLines[3] = CreateHitMarkerLine(groupRect, "BottomRight", Vector2.zero, -45f);
-        ApplyHitMarkerLineRotations();
+        if (!HasHitMarkerLines()) CacheHitMarkerLines(_hitMarkerGroup.transform);
     }
 
     private void CacheHitMarkerLines(Transform hitMarker)
@@ -272,6 +241,7 @@ public class CrosshairUI : MonoBehaviour
         _hitMarkerLines[2] = _hitMarkerBottomLeft != null ? _hitMarkerBottomLeft : FindHitMarkerLine(hitMarker, "BottomLeft");
         _hitMarkerLines[3] = _hitMarkerBottomRight != null ? _hitMarkerBottomRight : FindHitMarkerLine(hitMarker, "BottomRight");
         ApplyHitMarkerLineRotations();
+        ApplyHitMarkerColor();
     }
 
     private void ApplyHitMarkerLineRotations()
@@ -282,6 +252,20 @@ public class CrosshairUI : MonoBehaviour
         _hitMarkerLines[1].localEulerAngles = new Vector3(0f, 0f, 45f);
         _hitMarkerLines[2].localEulerAngles = new Vector3(0f, 0f, 45f);
         _hitMarkerLines[3].localEulerAngles = new Vector3(0f, 0f, -45f);
+    }
+
+    private void ApplyHitMarkerColor()
+    {
+        if (!HasHitMarkerLines()) return;
+
+        for (int i = 0; i < _hitMarkerLines.Length; i++)
+        {
+            if (_hitMarkerLines[i].TryGetComponent<Image>(out var image))
+            {
+                image.color = _hitMarkerColor;
+                image.raycastTarget = false;
+            }
+        }
     }
 
     private RectTransform FindHitMarkerLine(Transform root, string lineName)
@@ -304,24 +288,6 @@ public class CrosshairUI : MonoBehaviour
             && _hitMarkerLines[1] != null
             && _hitMarkerLines[2] != null
             && _hitMarkerLines[3] != null;
-    }
-
-    private RectTransform CreateHitMarkerLine(RectTransform parent, string name, Vector2 anchoredPosition, float rotation)
-    {
-        GameObject lineObject = new GameObject(name, typeof(RectTransform), typeof(Image));
-        RectTransform lineRect = lineObject.GetComponent<RectTransform>();
-        lineRect.SetParent(parent, false);
-        lineRect.anchorMin = new Vector2(0.5f, 0.5f);
-        lineRect.anchorMax = new Vector2(0.5f, 0.5f);
-        lineRect.anchoredPosition = anchoredPosition;
-        lineRect.sizeDelta = _hitMarkerLineSize;
-        lineRect.localEulerAngles = new Vector3(0f, 0f, rotation);
-
-        Image lineImage = lineObject.GetComponent<Image>();
-        lineImage.color = _hitMarkerColor;
-        lineImage.raycastTarget = false;
-
-        return lineRect;
     }
 
     private void ApplySpread()
