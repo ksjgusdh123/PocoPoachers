@@ -167,7 +167,6 @@ public class CrosshairUI : MonoBehaviour
         if (_hitMarkerTimer > 0f)
         {
             _hitMarkerTimer -= Time.deltaTime;
-            _hitMarkerGroup.alpha = 1f;
             UpdateHitMarkerDistance();
             return;
         }
@@ -191,12 +190,14 @@ public class CrosshairUI : MonoBehaviour
         {
             float t = _hitMarkerConvergeTime > 0f ? elapsed / _hitMarkerConvergeTime : 1f;
             distance = Mathf.Lerp(_hitMarkerStartDistance, _hitMarkerDistance, t);
+            _hitMarkerGroup.alpha = 1f;
         }
         else
         {
             float expandDuration = Mathf.Max(_hitMarkerDuration - _hitMarkerConvergeTime, 0.001f);
-            float t = (elapsed - _hitMarkerConvergeTime) / expandDuration;
+            float t = Mathf.Clamp01((elapsed - _hitMarkerConvergeTime) / expandDuration);
             distance = Mathf.Lerp(_hitMarkerDistance, _hitMarkerEndDistance, t);
+            _hitMarkerGroup.alpha = Mathf.Lerp(1f, 0f, t);
         }
 
         ApplyHitMarkerDistance(distance);
