@@ -28,7 +28,7 @@ public class PlayerInputHandler : MonoBehaviour
 
     private PlayerInput _inputMap;
     private readonly Key[] _weaponKeys = { Key.Digit1, Key.Digit2 };
-    private readonly Key[] _numberKeys = { Key.Digit3, Key.Digit4, Key.Digit5, Key.Digit6, Key.Digit7 };
+    private readonly Key[] _numberKeys = { Key.Digit3, Key.Digit4, Key.Digit5, Key.Digit6, Key.Digit7, Key.Digit8 };
     private PlayerInputMapType _inputType;
 
     private void Awake()

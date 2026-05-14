@@ -15,8 +15,9 @@ public class PlayerStat : StatBase
 
     private float _lastStaminaUseTime = float.NegativeInfinity;
 
-    private void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         MaxHp = _maxHp;
         CurrentHp = _maxHp;
         CurrentStamina = _maxStamina;

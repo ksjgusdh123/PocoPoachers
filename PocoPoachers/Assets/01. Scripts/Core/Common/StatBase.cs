@@ -7,16 +7,21 @@ public abstract class StatBase : MonoBehaviour, IDamageable
     public float CurrentHp { get; protected set; }
 
     public event Action<float, float> OnHpChanged;
-    public event Action<float, Vector3> OnDamaged;
+    public event Action<float, Vector3, GameObject> OnDamaged;
     public event Action OnDie;
 
-    public void TakeDamage(float damage)
+    protected virtual void Awake()
+    {
+        OnDamaged += (damage, pos, _) => DamageTextPool.Show(damage, pos);
+    }
+
+    public void TakeDamage(float damage, GameObject attacker = null)
     {
         if (CurrentHp <= 0f) return;
 
         CurrentHp = Mathf.Max(0f, CurrentHp - damage);
         OnHpChanged?.Invoke(CurrentHp, MaxHp);
-        OnDamaged?.Invoke(damage, transform.position);
+        OnDamaged?.Invoke(damage, transform.position, attacker);
 
         if (CurrentHp <= 0f)
             OnDie?.Invoke();

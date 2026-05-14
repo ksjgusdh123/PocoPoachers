@@ -11,6 +11,8 @@ public abstract class GunBase : MonoBehaviour
     public Transform Muzzle => _muzzle;
     public int CurrentAmmo => _currentAmmo;
     public bool IsReloading => _isReloading;
+    public ItemData ItemData => ItemTable.Instance.Get(_gunData.itemId);
+    public GameObject Owner { get; set; }
 
     public event Action<Vector2> OnShoot;
 
@@ -21,6 +23,10 @@ public abstract class GunBase : MonoBehaviour
 
     private Vector3 _originLocalPos;
     private float _recoilDist;
+
+    private float _soundGizmoTimer;
+    private Vector3 _soundGizmoPosition;
+    private float _soundGizmoRange;
 
     protected virtual void Awake()
     {
@@ -35,6 +41,9 @@ public abstract class GunBase : MonoBehaviour
 
     private void Update()
     {
+        if (_soundGizmoTimer > 0f)
+            _soundGizmoTimer -= Time.deltaTime;
+
         if (_recoilDist <= 0f) return;
 
         _recoilDist = Mathf.MoveTowards(_recoilDist, 0f, _gunData.recoilReturnSpeed * Time.deltaTime);
@@ -55,6 +64,9 @@ public abstract class GunBase : MonoBehaviour
         }
 
         Shoot();
+        _soundGizmoPosition = _muzzle.position;
+        _soundGizmoRange = _gunData.soundRange;
+        _soundGizmoTimer = 1f;
         _currentAmmo--;
         _nextFireTime = Time.time + 1f / _gunData.fireRate;
         _recoilDist = _gunData.recoilDistance;
@@ -105,5 +117,13 @@ public abstract class GunBase : MonoBehaviour
         _currentAmmo = _gunData.magazineSize;
         _isReloading = false;
         _reloadCoroutine = null;
+    }
+
+    private void OnDrawGizmos()
+    {
+        if (_soundGizmoTimer <= 0f) return;
+
+        Gizmos.color = new Color(1f, 0.5f, 0f, _soundGizmoTimer);
+        Gizmos.DrawWireSphere(_soundGizmoPosition, _soundGizmoRange);
     }
 }

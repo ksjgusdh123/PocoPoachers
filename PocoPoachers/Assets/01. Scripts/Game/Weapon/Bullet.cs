@@ -18,19 +18,21 @@ public class Bullet : MonoBehaviour
     private bool _applyDamage = true;
     private bool _isReleased;
     private TrailRenderer _trail;
+    private GameObject _attacker;
 
     private void Awake()
     {
         _trail = GetComponent<TrailRenderer>();
     }
 
-    public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease, bool applyDamage = true)
+    public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease, GameObject attacker = null, bool applyDamage = true)
     {
         _speed = speed;
         _damage = damage;
         _range = range;
         _direction = direction.normalized;
         _onRelease = onRelease;
+        _attacker = attacker;
         _applyDamage = applyDamage;
         _traveledDistance = 0f;
         _isReleased = false;
@@ -52,7 +54,7 @@ public class Bullet : MonoBehaviour
 
             if (_applyDamage && hit.collider.TryGetComponent<IDamageable>(out var damageable))
             {
-                damageable.TakeDamage(_damage);
+                damageable.TakeDamage(_damage, _attacker);
             }
 
             Release();
