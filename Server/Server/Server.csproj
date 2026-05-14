@@ -15,9 +15,5 @@
     <PackageReference Include="Google.FlatBuffers" Version="24.3.25" />
   </ItemGroup>
 
-  <Target Name="PreBuild" BeforeTargets="PreBuildEvent" Condition="'$(OS)' == 'Windows_NT'">
-    <Exec Command="call &quot;$(ProjectDir)..\..\Tools\PacketGenerator\generate.bat&quot;" />
-    <Exec Command="call &quot;$(ProjectDir)..\..\Tools\TableGenerator\generate.bat&quot;" />
-  </Target>
 
 </Project>

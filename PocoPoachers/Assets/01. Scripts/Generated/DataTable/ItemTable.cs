@@ -6,7 +6,6 @@ public class ItemTable
 {
     static ItemTable _instance;
     public static ItemTable Instance => _instance ??= Load();
-
     readonly Dictionary<int, ItemData> _map = new Dictionary<int, ItemData>();
 
     static ItemTable Load()
@@ -16,15 +15,13 @@ public class ItemTable
         var table = new ItemTable();
         string wrapped = "{\"items\":" + asset.text + "}";
         var wrapper = JsonUtility.FromJson<Wrapper>(wrapped);
-        if (wrapper == null || wrapper.items == null) { Debug.LogError("[ItemTable] JSON 파싱 실패"); return table; }
+        if (wrapper == null || wrapper.items == null) return table;
         foreach (var d in wrapper.items) table._map[d.id] = d;
-        Debug.Log($"[ItemTable] {table._map.Count}개 로드 완료");
         return table;
     }
 
     public ItemData Get(int key) => _map.TryGetValue(key, out var v) ? v : null;
     public IReadOnlyCollection<ItemData> All => _map.Values;
 
-    [System.Serializable]
-    class Wrapper { public List<ItemData> items; }
+    [System.Serializable] class Wrapper { public List<ItemData> items = new List<ItemData>(); }
 }

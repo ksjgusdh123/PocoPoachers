@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
@@ -21,7 +21,7 @@ public static class PrefabMakeIcon
         }
     }
 
-    [MenuItem("Tools/PocoPoachers/프리팹 → 아이콘 PNG", false, 41)]
+    [MenuItem("Tools/Generator/Prefab → Icon(PNG)", false, 41)]
     public static void MakeIconFromToolsMenu()
     {
         var prefab = GetPrefabRootFromSelection();
@@ -48,10 +48,10 @@ public static class PrefabMakeIcon
         }
     }
 
-    [MenuItem("Tools/PocoPoachers/프리팹 → 아이콘 PNG", true)]
+    [MenuItem("Tools/Generator/Prefab → Icon(PNG)", true)]
     static bool MakeIconFromToolsMenuValidate() => GetPrefabRootFromSelection() != null;
 
-    [MenuItem("Assets/PocoPoachers/프리팹 → 아이콘 PNG", false, 1210)]
+    [MenuItem("Assets/Generator/Prefab → Icon(PNG)", false, 1210)]
     public static void MakeIconFromAssetsMenu()
     {
         foreach (var obj in Selection.objects)
@@ -74,7 +74,7 @@ public static class PrefabMakeIcon
         EditorUtility.DisplayDialog("Make Icon", "Project 창에서 프리팹 루트를 하나 선택하세요.", "OK");
     }
 
-    [MenuItem("Assets/PocoPoachers/프리팹 → 아이콘 PNG", true)]
+    [MenuItem("Assets/Generator/Prefab → Icon(PNG)", true)]
     static bool MakeIconFromAssetsMenuValidate()
     {
         foreach (var obj in Selection.objects)
