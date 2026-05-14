@@ -48,6 +48,7 @@ public class CrosshairUI : MonoBehaviour
 
     private Vector2 _recoilTarget;
     private Vector2 _recoilOffset;
+    private Vector2 _lastMousePosition;
     private float _shakeIntensity;
     private float _shakeDuration;
     private float _shakeTimer;
@@ -56,6 +57,8 @@ public class CrosshairUI : MonoBehaviour
     private float _activeHitMarkerDistance;
     private float _activeHitMarkerOuterDistance;
     private RectTransform[] _hitMarkerLines;
+    private bool _hasLastMousePosition;
+    private bool _ignoreWarpDelta;
 
     private void Awake()
     {
@@ -73,6 +76,9 @@ public class CrosshairUI : MonoBehaviour
         _recoilOffset = Vector2.MoveTowards(_recoilOffset, _recoilTarget, _kickSpeed * Time.deltaTime);
 
         Vector2 mousePos = Mouse.current.position.ReadValue();
+        Vector2 mouseDelta = _hasLastMousePosition ? mousePos - _lastMousePosition : Vector2.zero;
+        bool movedByPlayer = !_ignoreWarpDelta && mouseDelta.sqrMagnitude > 0.01f;
+        _ignoreWarpDelta = false;
 
         Vector2 targetPos = new Vector2(
             Mathf.Clamp(mousePos.x + _recoilTarget.x, 0f, Screen.width),
@@ -84,12 +90,17 @@ public class CrosshairUI : MonoBehaviour
             Mathf.Clamp(mousePos.y + _recoilOffset.y, 0f, Screen.height));
         _recoilOffset = crosshairPos - mousePos;
 
-        if (_recoilOffset.sqrMagnitude > 0.01f && Mouse.current.delta.ReadValue().sqrMagnitude > 0f)
+        if (movedByPlayer && _recoilOffset.sqrMagnitude > 0.01f)
         {
             Mouse.current.WarpCursorPosition(crosshairPos);
+            mousePos = crosshairPos;
             _recoilOffset = Vector2.zero;
             _recoilTarget = Vector2.zero;
+            _ignoreWarpDelta = true;
         }
+
+        _lastMousePosition = mousePos;
+        _hasLastMousePosition = true;
 
         ScreenPosition = crosshairPos;
         _rectTransform.position = crosshairPos;
