@@ -30,7 +30,13 @@ public class AIWeaponController : MonoBehaviour
         if (_gun != null)
             Destroy(_gun.gameObject);
 
-        _gun = GunTable.Instance.Equip(itemId, _mountPoint);
+        var itemData = ItemTable.Instance.Get(itemId);
+        if (itemData == null) return;
+        var prefab = itemData.LoadPrefab();
+        if (prefab == null) return;
+        var go = Instantiate(prefab, _mountPoint);
+        go.transform.localPosition = Vector3.zero;
+        _gun = go.GetComponent<GunBase>();
 
         if (_gun != null)
             UpdateBlackboardGunData(_gun.GunData);
