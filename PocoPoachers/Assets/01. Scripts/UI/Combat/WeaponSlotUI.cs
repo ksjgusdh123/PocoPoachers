@@ -15,7 +15,7 @@ public class WeaponSlotUI : MonoBehaviour
     {
         if (slotIndex != _slotIndex - 1) return;
 
-        _icon.sprite = data?.Icon;
+        _icon.sprite = data != null ? ResourceManager.Instance.LoadSprite(data.icon) : null;
         _icon.gameObject.SetActive(data != null);
     }
 }

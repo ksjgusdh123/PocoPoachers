@@ -19,7 +19,7 @@ public class ConsumableSlotUI : MonoBehaviour
         if (slotIndex != _slotIndex) return;
 
         bool hasItem = data != null;
-        _icon.sprite = hasItem ? data.Icon : null;
+        _icon.sprite = hasItem ? ResourceManager.Instance.LoadSprite(data.icon) : null;
         _icon.gameObject.SetActive(hasItem);
         _nameText.text = hasItem ? data.ItemName : "";
         _countText.text = hasItem ? amount.ToString() : "";
