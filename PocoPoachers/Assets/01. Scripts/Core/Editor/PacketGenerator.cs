@@ -55,7 +55,8 @@ public class PacketGenerator
             // 2. flatc 실행
             foreach (var fbs in fbsFiles)
             {
-                RunFlatc(flatcExe, schemasDir, fbs, serverOut);
+                if (IsServerRelevantFbs(fbs))
+                    RunFlatc(flatcExe, schemasDir, fbs, serverOut);
                 RunFlatc(flatcExe, schemasDir, fbs, clientOut);
             }
 
@@ -81,6 +82,14 @@ public class PacketGenerator
     }
 
     // --- 기존 로직 이식 (상태 메시지만 Debug.Log로 변경) ---
+
+    // G_/H_ 전용 파일은 서버에 생성하지 않음
+    private static bool IsServerRelevantFbs(string fbsPath)
+    {
+        var tables = ParsePacketsInFbs(fbsPath);
+        var packets = tables.Where(n => n.StartsWith("C_") || n.StartsWith("S_") || n.StartsWith("G_") || n.StartsWith("H_")).ToList();
+        return packets.Count == 0 || packets.Any(n => n.StartsWith("C_") || n.StartsWith("S_"));
+    }
 
     private static void RunFlatc(string flatc, string schemasDir, string fbsPath, string outDir)
     {
@@ -190,7 +199,7 @@ public class PacketGenerator
 
             // 서버 전용 (C_)
             WriteHandler(dirs["C_"], schema, packets.Where(n => n.StartsWith("C_") && !existingServer.Contains($"On{n}")).ToList(), true);
-            // 클라 전용 (S, G, H)
+            // 클라 전용 (S_, G_, H_)
             WriteHandler(dirs["S_"], schema, packets.Where(n => n.StartsWith("S_") && !existingClient.Contains($"On{n}")).ToList(), false);
             WriteHandler(dirs["G_"], schema, packets.Where(n => n.StartsWith("G_") && !existingClient.Contains($"On{n}")).ToList(), false);
             WriteHandler(dirs["H_"], schema, packets.Where(n => n.StartsWith("H_") && !existingClient.Contains($"On{n}")).ToList(), false);
