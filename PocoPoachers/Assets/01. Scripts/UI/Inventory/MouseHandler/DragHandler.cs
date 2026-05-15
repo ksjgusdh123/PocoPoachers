@@ -31,7 +31,7 @@ public class DragHandler : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndD
             amount = _slotUI.SavedAmountItem;
 
         manager.SetDragged(_slotUI, _canvasGroup, amount);
-        DragIcon.Instance.Show(_slotUI.SlotItemData.Icon, eventData.position, amount);
+        DragIcon.Instance.Show(ResourceManager.Instance.LoadSprite(_slotUI.SlotItemData.icon), eventData.position, amount);
 
         if (_canvasGroup != null)
             _canvasGroup.alpha = 0.4f;

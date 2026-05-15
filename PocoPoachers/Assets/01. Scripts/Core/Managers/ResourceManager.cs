@@ -23,12 +23,39 @@ public class ResourceManager : Singleton<ResourceManager>
         return resource;
     }
 
-    // 프리팹 인스턴스화
-    public GameObject Instantiate(string path, Transform parent = null)
+    public Sprite LoadSprite(string path)
     {
-        GameObject prefab = Load<GameObject>(path);
-        if (prefab == null) return null;
+        if (string.IsNullOrWhiteSpace(path)) return null;
+        if (_cache.TryGetValue(path, out Object cached)) return cached as Sprite;
 
+        var sprite = Resources.Load<Sprite>(path);
+        if (sprite != null)
+        {
+            _cache[path] = sprite;
+            return sprite;
+        }
+
+        var tex = Resources.Load<Texture2D>(path);
+        if (tex == null) return null;
+
+        sprite = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f), 100f);
+        _cache[path] = sprite;
+        return sprite;
+    }
+
+    public T Spawn<T>(string path, Transform parent = null) where T : Component
+    {
+        var prefab = Load<GameObject>(path);
+        if (prefab == null) return null;
+        var go = Object.Instantiate(prefab, parent);
+        go.transform.localPosition = Vector3.zero;
+        return go.GetComponent<T>();
+    }
+
+    public GameObject Spawn(string path, Transform parent = null)
+    {
+        var prefab = Load<GameObject>(path);
+        if (prefab == null) return null;
         return Object.Instantiate(prefab, parent);
     }
 

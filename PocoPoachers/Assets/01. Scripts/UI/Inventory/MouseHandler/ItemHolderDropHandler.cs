@@ -35,7 +35,7 @@ public abstract class ItemHolderDropHandler : BaseDropHandler
         DroppedItemData = data;
         DroppedAmount = amount;
         _nameText.text = data.ItemName;
-        _icon.sprite = data.Icon;
+        _icon.sprite = ResourceManager.Instance.LoadSprite(data.icon);
         _icon.gameObject.SetActive(true);
         _isSetted = true;
         return true;

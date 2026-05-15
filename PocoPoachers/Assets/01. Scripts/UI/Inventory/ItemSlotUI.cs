@@ -46,7 +46,7 @@ public class ItemSlotUI : MonoBehaviour
             return;
         }
 
-        _icon.sprite = _settedSlot.ItemData.Icon;
+        _icon.sprite = ResourceManager.Instance.LoadSprite(_settedSlot.ItemData.icon);
         _nameText.text = _settedSlot.ItemData.ItemName;
         _amountText.text = _settedSlot.Amount >= 1 ? _settedSlot.Amount.ToString() : "";
         IsSettedItem = true;

@@ -62,11 +62,8 @@ public class WeaponController : EquipableController
 
         var itemData = ItemTable.Instance.Get(data.id);
         if (itemData == null) return;
-        var prefab = itemData.LoadPrefab();
-        if (prefab == null) return;
-        GunBase equipped = Instantiate(prefab, _mountPoint).GetComponent<GunBase>();
+        GunBase equipped = ResourceManager.Instance.Spawn<GunBase>(itemData.prefab, _mountPoint);
         if (equipped == null) return;
-        equipped.transform.localPosition = Vector3.zero;
 
         equipped.gameObject.SetActive(false);
         _guns[slotIndex] = equipped;

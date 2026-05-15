@@ -44,12 +44,12 @@ public class SlotClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEnt
         if (keyboard.ctrlKey.isPressed)
         {
             manager.IncrementPending(_slotUI);
-            DragIcon.Instance.Show(_slotUI.SlotItemData.Icon, eventData.position, manager.PendingAmount);
+            DragIcon.Instance.Show(ResourceManager.Instance.LoadSprite(_slotUI.SlotItemData.icon), eventData.position, manager.PendingAmount);
         }
         else if (keyboard.shiftKey.isPressed)
         {
             manager.SetPending(_slotUI, _slotUI.SavedAmountItem / 2);
-            DragIcon.Instance.Show(_slotUI.SlotItemData.Icon, eventData.position, manager.PendingAmount);
+            DragIcon.Instance.Show(ResourceManager.Instance.LoadSprite(_slotUI.SlotItemData.icon), eventData.position, manager.PendingAmount);
         }
     }
 }

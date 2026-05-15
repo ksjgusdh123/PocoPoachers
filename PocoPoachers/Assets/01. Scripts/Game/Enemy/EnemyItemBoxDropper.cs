@@ -40,7 +40,7 @@ public class EnemyItemBoxDropper : MonoBehaviour
 
         // 아이템 목록 생성
         int itemCount = Random.Range(_minItemCount, _maxItemCount + 1);
-        var itemIds = DropItemSpawnManager.Instance.Roll(itemCount);
+        var itemIds = ItemSpawner.Roll(itemCount);
 
         // 호스트: 박스 스폰
         omgr.SpawnItemBox(uid, BOX_TYPE_ID, spawnPos, spawnRot)

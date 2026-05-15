@@ -103,6 +103,23 @@ public class ItemSpawner : MonoBehaviour
 
     public void ResetSpawnState() => _nextUid = 1000;
 
+    static List<int> _dropIds;
+
+    public static List<int> Roll(int count)
+    {
+        if (_dropIds == null)
+        {
+            _dropIds = new List<int>();
+            foreach (var item in ItemTable.Instance.All)
+                if (item.id < 300) _dropIds.Add(item.id);
+        }
+        count = Mathf.Clamp(count, 1, 8);
+        var result = new List<int>(count);
+        for (int i = 0; i < count && _dropIds.Count > 0; i++)
+            result.Add(_dropIds[Random.Range(0, _dropIds.Count)]);
+        return result;
+    }
+
     public static Vector3 GetGroundPosition(Vector3 origin, LayerMask layerMask, float maxDistance = 100f, float offsetY = 50f)
     {
         Vector3 rayStart = new Vector3(origin.x, origin.y + offsetY, origin.z);

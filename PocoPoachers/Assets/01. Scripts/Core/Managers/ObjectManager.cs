@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -200,43 +200,42 @@ public class ObjectManager : Singleton<ObjectManager>
 
     WorldObject Spawn(ObjectKind kind, int id, int typeId = 0)
     {
-        GameObject go;
-        WorldObject obj;
-
-        if (kind == ObjectKind.ItemBox && typeId > 0)
+        if (typeId > 0 && (kind == ObjectKind.ItemBox || kind == ObjectKind.WorldItem))
         {
-            ItemData data = ItemTable.Instance.Get(typeId);
-            GameObject prefabGo = data != null ? data.LoadPrefab() : null;
-            if (prefabGo != null)
-            {
-                go = Instantiate(prefabGo);
-                obj = go.GetComponent<WorldObject>();
-                if (obj == null)
-                    obj = go.AddComponent<WorldObject>();
-                go.name = $"WorldItem_{id}_{typeId}";
-                obj.Initialize(kind, id, typeId);
-                return obj;
-            }
-        } 
+            var data = ItemTable.Instance.Get(typeId);
+            var prefabGo = data != null ? ResourceManager.Instance.Load<GameObject>(data.prefab) : null;
+            return CreateWorldObject<WorldObject>(kind, id, typeId, prefabGo);
+        }
 
-        if (_prefabs.TryGetValue(kind, out WorldObject prefab) && prefab != null)
+        return CreateWorldObject<WorldObject>(kind, id, typeId);
+    }
+
+    private T CreateWorldObject<T>(ObjectKind kind, int id, int typeId, GameObject prefab = null) where T : WorldObject
+    {
+        GameObject go = null;
+
+        if (prefab == null)
         {
-            go = Instantiate(prefab.gameObject);
-            obj = go.GetComponent<WorldObject>();
-            if (obj == null)
-                obj = go.AddComponent<WorldObject>();
+            if (_prefabs.TryGetValue(kind, out WorldObject cachedPrefab))
+                prefab = cachedPrefab.gameObject;
+        }
+
+        if (prefab != null)
+        {
+            go = Instantiate(prefab);
         }
         else
         {
             go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            var col = go.GetComponent<Collider>();
-            if (col != null)
-                Destroy(col);
-            obj = go.AddComponent<WorldObject>();
+            Destroy(go.GetComponent<Collider>());
         }
 
         go.name = $"{kind}_{id}";
-        obj.Initialize(kind, id, typeId);
-        return obj;
+
+        if (!go.TryGetComponent<T>(out var component))
+            component = go.AddComponent<T>();
+
+        component.Initialize(kind, id, typeId);
+        return component;
     }
 }
