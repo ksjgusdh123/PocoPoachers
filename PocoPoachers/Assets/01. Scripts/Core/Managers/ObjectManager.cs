@@ -2,16 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-struct PendingMove
-{
-    public ObjectKind Kind;
-    public int Id;
-    public Vector3 Pos;
-    public float Rotation;
-    public sbyte MoveType;
-    public int TypeId;
-}
-
 public class ObjectManager : Singleton<ObjectManager>
 {
     [Serializable]
@@ -21,18 +11,28 @@ public class ObjectManager : Singleton<ObjectManager>
         public WorldObject Prefab;
     }
 
+    struct PendingMove
+    {
+        public ObjectKind Kind;
+        public int Id;
+        public Vector3 Pos;
+        public float Rotation;
+        public sbyte MoveType;
+        public int TypeId;
+    }
+
     [SerializeField] Entry[] _entries;
 
-    readonly Dictionary<(ObjectKind kind, int id), WorldObject> _objects = new Dictionary<(ObjectKind, int), WorldObject>();
-    readonly Dictionary<ObjectKind, WorldObject> _prefabs = new Dictionary<ObjectKind, WorldObject>();
+    readonly Dictionary<(ObjectKind kind, int id), WorldObject> _objects = new();
+    readonly Dictionary<ObjectKind, WorldObject> _prefabs = new();
     readonly List<H_ItemSpawnT> _spawnedBoxes = new();
 
     public IReadOnlyList<H_ItemSpawnT> SpawnedBoxes => _spawnedBoxes;
     public void RegisterSpawnedBox(H_ItemSpawnT data) => _spawnedBoxes.Add(data);
 
     readonly object _moveLock = new object();
-    readonly List<PendingMove> _pending = new List<PendingMove>();
-    readonly List<PendingMove> _drain = new List<PendingMove>();
+    readonly List<PendingMove> _pending = new();
+    readonly List<PendingMove> _drain = new();
 
     protected override void Awake()
     {
@@ -41,37 +41,27 @@ public class ObjectManager : Singleton<ObjectManager>
     }
 
 #if UNITY_EDITOR
-    void OnValidate()
-    {
-        CachePrefabs();
-    }
+    void OnValidate() => CachePrefabs();
 #endif
 
     void CachePrefabs()
     {
         _prefabs.Clear();
-        if (_entries == null)
-            return;
-
-        for (int i = 0; i < _entries.Length; i++)
+        if (_entries == null) return;
+        foreach (var e in _entries)
         {
-            Entry e = _entries[i];
-            if (e == null || e.Prefab == null)
-                continue;
-            _prefabs[e.Kind] = e.Prefab;
+            if (e?.Prefab != null)
+                _prefabs[e.Kind] = e.Prefab;
         }
     }
 
-    public bool TryGet(ObjectKind kind, int id, out WorldObject obj)
-    {
-        return _objects.TryGetValue((kind, id), out obj);
-    }
+    public bool TryGet(ObjectKind kind, int id, out WorldObject obj) =>
+        _objects.TryGetValue((kind, id), out obj);
 
     public void Despawn(ObjectKind kind, int id)
     {
         var key = (kind, id);
-        if (!_objects.TryGetValue(key, out var obj) || obj == null)
-            return;
+        if (!_objects.TryGetValue(key, out var obj) || obj == null) return;
         Destroy(obj.gameObject);
         _objects.Remove(key);
     }
@@ -81,74 +71,42 @@ public class ObjectManager : Singleton<ObjectManager>
         _drain.Clear();
         lock (_moveLock)
         {
-            if (_pending.Count == 0)
-                return;
+            if (_pending.Count == 0) return;
             _drain.AddRange(_pending);
             _pending.Clear();
         }
-
-        for (int i = 0; i < _drain.Count; i++)
-            ApplyMove(_drain[i]);
+        foreach (var m in _drain)
+            ApplyMove(m);
     }
 
-    public void QueueMove(ObjectKind kind, int id, Vector3 pos, float rotation, sbyte moveType)
+    void Enqueue(PendingMove move)
     {
         lock (_moveLock)
-        {
-            _pending.Add(new PendingMove
-            {
-                Kind = kind,
-                Id = id,
-                Pos = pos,
-                Rotation = rotation,
-                MoveType = moveType,
-                TypeId = 0,
-            });
-        }
+            _pending.Add(move);
     }
 
-    public void QueueWorldItemSpawn(int uid, int typeId, Vector3 pos, float rotation)
-    {
-        lock (_moveLock)
-        {
-            _pending.Add(new PendingMove
-            {
-                Kind = ObjectKind.WorldItem,
-                Id = uid,
-                Pos = pos,
-                Rotation = rotation,
-                MoveType = 0,
-                TypeId = typeId,
-            });
-        }
-    }
+    public void QueueMove(ObjectKind kind, int id, Vector3 pos, float rotation, sbyte moveType) =>
+        Enqueue(new PendingMove { Kind = kind, Id = id, Pos = pos, Rotation = rotation, MoveType = moveType });
+
 
     void ApplyMove(in PendingMove m)
     {
-        ObjectKind kind = m.Kind;
-        int id = m.Id;
-        Vector3 pos = m.Pos;
-        float rotation = m.Rotation;
+        if (IsLocalPlayer(m.Kind, m.Id)) return;
 
-        if (IsLocalPlayer(kind, id))
-            return;
-
-        var key = (kind, id);
+        var key = (m.Kind, m.Id);
         if (!_objects.TryGetValue(key, out var obj))
         {
-            obj = Spawn(kind, id, m.TypeId);
-            obj.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, rotation, 0f));
+            obj = CreateWorldObject(m.Kind, m.Id, m.TypeId);
+            obj.transform.SetPositionAndRotation(m.Pos, Quaternion.Euler(0f, m.Rotation, 0f));
             _objects.Add(key, obj);
         }
 
-        obj.SetMoveTarget(pos, rotation);
+        obj.SetMoveTarget(m.Pos, m.Rotation);
     }
 
     static bool IsLocalPlayer(ObjectKind kind, int id)
     {
-        if (kind != ObjectKind.Player)
-            return false;
-
+        if (kind != ObjectKind.Player) return false;
         var nm = NetworkManager.Instance;
         return nm != null && id == nm.MyPlayerId;
     }
@@ -158,8 +116,7 @@ public class ObjectManager : Singleton<ObjectManager>
         var list = new List<PlayerInfoT>();
         foreach (var kv in _objects)
         {
-            if (kv.Key.kind != ObjectKind.Player) continue;
-            if (kv.Key.id == excludeId) continue;
+            if (kv.Key.kind != ObjectKind.Player || kv.Key.id == excludeId) continue;
             var pos = kv.Value.transform.position;
             list.Add(new PlayerInfoT
             {
@@ -187,55 +144,40 @@ public class ObjectManager : Singleton<ObjectManager>
 
     public ItemBox SpawnItemBox(int uid, int typeId, Vector3 pos, float rotation)
     {
-        var obj = Spawn(ObjectKind.ItemBox, uid, typeId);
+        var obj = CreateWorldObject(ObjectKind.ItemBox, uid, typeId);
         obj.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, rotation, 0f));
         _objects[(ObjectKind.ItemBox, uid)] = obj;
-        var box = obj.GetComponent<ItemBox>();
-        if (box == null)
-        {
-            box = obj.gameObject.AddComponent<ItemBox>();
-        }
-        return box;
+        return obj.GetComponent<ItemBox>() ?? obj.gameObject.AddComponent<ItemBox>();
     }
 
-    WorldObject Spawn(ObjectKind kind, int id, int typeId = 0)
+    WorldObject CreateWorldObject(ObjectKind kind, int id, int typeId = 0)
     {
+        GameObject prefab = null;
+
         if (typeId > 0 && (kind == ObjectKind.ItemBox || kind == ObjectKind.WorldItem))
         {
             var data = ItemTable.Instance.Get(typeId);
-            var prefabGo = data != null ? ResourceManager.Instance.Load<GameObject>(data.prefab) : null;
-            return CreateWorldObject<WorldObject>(kind, id, typeId, prefabGo);
+            if (data != null)
+                prefab = ResourceManager.Instance.Load<GameObject>(data.prefab);
         }
 
-        return CreateWorldObject<WorldObject>(kind, id, typeId);
-    }
+        if (prefab == null && _prefabs.TryGetValue(kind, out var fallbackPrefab))
+            prefab = fallbackPrefab.gameObject;
 
-    private T CreateWorldObject<T>(ObjectKind kind, int id, int typeId, GameObject prefab = null) where T : WorldObject
-    {
-        GameObject go = null;
-
-        if (prefab == null)
-        {
-            if (_prefabs.TryGetValue(kind, out WorldObject cachedPrefab))
-                prefab = cachedPrefab.gameObject;
-        }
-
-        if (prefab != null)
-        {
-            go = Instantiate(prefab);
-        }
-        else
-        {
-            go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            Destroy(go.GetComponent<Collider>());
-        }
-
+        GameObject go = prefab != null ? Instantiate(prefab) : CreateFallback();
         go.name = $"{kind}_{id}";
 
-        if (!go.TryGetComponent<T>(out var component))
-            component = go.AddComponent<T>();
+        if (!go.TryGetComponent<WorldObject>(out var component))
+            component = go.AddComponent<WorldObject>();
 
         component.Initialize(kind, id, typeId);
         return component;
+    }
+
+    static GameObject CreateFallback()
+    {
+        var go = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+        Destroy(go.GetComponent<Collider>());
+        return go;
     }
 }

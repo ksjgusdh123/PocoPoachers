@@ -52,13 +52,6 @@ public class ResourceManager : Singleton<ResourceManager>
         return go.GetComponent<T>();
     }
 
-    public GameObject Spawn(string path, Transform parent = null)
-    {
-        var prefab = Load<GameObject>(path);
-        if (prefab == null) return null;
-        return Object.Instantiate(prefab, parent);
-    }
-
     // 씬 전환 시 캐시 비우기
     public void Clear()
     {
