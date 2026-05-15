@@ -1,12 +1,14 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public abstract class ItemHolderDropHandler : BaseDropHandler
+public abstract class ItemHolderDropHandler : BaseDropHandler, IPointerClickHandler
 {
     [SerializeField] protected ItemType _itemType;
     [SerializeField] protected Image _icon;
     [SerializeField] protected TextMeshProUGUI _nameText;
+    [SerializeField] protected InventoryUI _inventoryUI;
 
     public ItemType ItemType => _itemType;
     public bool IsSetted => _isSetted;
@@ -41,8 +43,23 @@ public abstract class ItemHolderDropHandler : BaseDropHandler
         return true;
     }
 
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (eventData.button != PointerEventData.InputButton.Right) return;
+        if (!_isSetted) return;
+
+        SlotInteractionManager.GetInstance().InvokeEquipRightClick(this);
+    }
+
     public virtual void Unequip()
     {
+        if (DroppedItemData != null && _inventoryUI != null)
+        {
+            int slot = _inventoryUI.Inventory.CanAddItem(DroppedItemData, DroppedAmount);
+            if (slot < 0) return;
+            _inventoryUI.Inventory.AddItemAtSlot(slot, DroppedItemData, DroppedAmount);
+        }
+
         DroppedItemData = null;
         DroppedAmount = 0;
         _nameText.text = "";

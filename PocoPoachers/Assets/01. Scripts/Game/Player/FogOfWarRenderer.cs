@@ -123,7 +123,7 @@ public class FogOfWarRenderer : MonoBehaviour
 
     public void RefreshWallRenderers()
     {
-        var allRenderers = FindObjectsOfType<Renderer>();
+        var allRenderers = FindObjectsByType<Renderer>();
         var wallRenderers = new System.Collections.Generic.List<Renderer>();
 
         foreach (var targetRenderer in allRenderers)

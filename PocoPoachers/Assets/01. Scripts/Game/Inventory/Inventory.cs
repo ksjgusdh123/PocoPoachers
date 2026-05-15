@@ -44,14 +44,23 @@ public class Inventory : MonoBehaviour
         return -1;
     }
 
-    // 지정 인덱스 슬롯이 비어있으면 추가, 비어있지 않으면 false 반환
+    // 지정 인덱스 슬롯에 추가, 빈 슬롯이거나 같은 아이템이면 스택 추가
     public bool AddItemAtSlot(int slotIndex, ItemData itemData, int amount = 1)
     {
         if (slotIndex < 0 || slotIndex >= _currentCapacity) return false;
-        if (!_slots[slotIndex].IsEmpty) return false;
 
-        int toAdd = Mathf.Min(amount, itemData.MaxStack);
-        _slots[slotIndex].Set(itemData, toAdd);
+        var slot = _slots[slotIndex];
+
+        if (slot.IsEmpty)
+        {
+            slot.Set(itemData, Mathf.Min(amount, itemData.MaxStack));
+            return true;
+        }
+
+        if (slot.ItemData.id != itemData.id) return false;
+        if (slot.Amount >= itemData.MaxStack) return false;
+
+        slot.AddAmount(amount);
         return true;
     }
 

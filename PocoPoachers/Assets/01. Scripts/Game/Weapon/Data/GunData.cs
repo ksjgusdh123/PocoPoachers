@@ -13,6 +13,9 @@ public class GunData : ScriptableObject
     public int magazineSize = 30;
     public float reloadTime = 2f;
 
+    [Header("소리")]
+    public float soundRange = 30f;
+
     [Header("탄환")]
     public float bulletSpeed = 20f;
     public float range = 50f;

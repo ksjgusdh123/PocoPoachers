@@ -14,7 +14,8 @@ public class ShotgunGun : GunBase
                 _gunData.damage,
                 _gunData.range,
                 fireDir,
-                () => BulletPool.GetInstance().Release(_gunData.bulletPrefab, bullet)
+                () => BulletPool.GetInstance().Release(_gunData.bulletPrefab, bullet),
+                Owner
             );
         }
     }
