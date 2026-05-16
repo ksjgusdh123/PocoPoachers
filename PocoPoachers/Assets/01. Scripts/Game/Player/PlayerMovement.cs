@@ -51,7 +51,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void LateUpdate()
     {
-        BroadcastMove();
+        SyncMove();
     }
 
     private void Move()
@@ -87,10 +87,8 @@ public class PlayerMovement : MonoBehaviour
 
     private bool CanSprint() => _playerStat == null || _playerStat.CurrentStamina > 0f;
 
-    private void BroadcastMove()
+    private void SyncMove()
     {
-        if (RoomManager.IsHost && !RoomManager.HasGuests) return;
-
         if (Time.unscaledTime < _nextSendTime) return;
         _nextSendTime = Time.unscaledTime + _sendInterval;
 
@@ -104,15 +102,7 @@ public class PlayerMovement : MonoBehaviour
             moveType == _lastMoveType)
             return;
 
-        int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
-        var vec = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z };
-
-        if (RoomManager.IsHost)
-            PacketBuilder.BroadcastToGuests(new H_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
-                                            H_Move.Pack, PacketType.H_Move);
-        else
-            PacketBuilder.SendToHost(new G_MoveT { PlayerId = myId, Pos = vec, Rotation = yaw, MoveType = moveType },
-                                     G_Move.Pack, PacketType.G_Move);
+        RoomSync.Move(pos, yaw, moveType);
 
         _lastSentPos  = pos;
         _lastSentYaw  = yaw;

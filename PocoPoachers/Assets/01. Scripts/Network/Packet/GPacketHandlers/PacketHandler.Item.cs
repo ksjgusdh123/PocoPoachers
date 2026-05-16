@@ -33,8 +33,8 @@ public static partial class PacketHandlers
             }
         }
 
-        // 플레이어가 받는 경우 AddedSlotIndex를 그대로 전달, 주는 경우는 -1
-        int playerSlotIndex = pkt.IsPlayerGained ? pkt.AddedSlotIndex : -1;
+        int playerSlotIndex = pkt.IsPlayerGained ? pkt.AddedSlotIndex : pkt.RemovedSlotIndex;
+        int boxSlotIndex    = pkt.IsPlayerGained ? pkt.RemovedSlotIndex : pkt.AddedSlotIndex;
 
         PacketBuilder.SendToGuest(requesterId, new H_ItemGainResultT
         {
@@ -43,12 +43,12 @@ public static partial class PacketHandlers
             ItemTypeId      = pkt.ItemTypeId,
             Amount          = pkt.IsPlayerGained ? pkt.Amount : -pkt.Amount,
             PlayerSlotIndex = playerSlotIndex,
+            BoxSlotIndex    = boxSlotIndex,
         }, H_ItemGainResult.Pack, PacketType.H_ItemGainResult);
 
         if (success)
         {
             int updateAmount = pkt.IsPlayerGained ? -pkt.Amount : pkt.Amount;
-            int boxSlotIndex = pkt.IsPlayerGained ? pkt.RemovedSlotIndex : pkt.AddedSlotIndex;
             PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
             {
                 BoxUid     = pkt.BoxUid,
@@ -95,32 +95,21 @@ public static partial class PacketHandlers
 
         PacketBuilder.SendToGuest(requesterId, new H_ItemExchangeResultT
         {
-            Success = success,
-            BoxUid = pkt.BoxUid,
-            PlayerItemId = pkt.PlayerItemId,
+            Success          = success,
+            BoxUid           = pkt.BoxUid,
+            PlayerItemId     = pkt.PlayerItemId,
             PlayerItemAmount = pkt.PlayerItemAmount,
-            PlayerSlotIndex = pkt.PlayerSlotIndex,
-            BoxItemId = pkt.BoxItemId,
-            BoxItemAmount = pkt.BoxItemAmount,
-            BoxSlotIndex = pkt.BoxSlotIndex,
+            PlayerSlotIndex  = pkt.PlayerSlotIndex,
+            BoxItemId        = pkt.BoxItemId,
+            BoxItemAmount    = pkt.BoxItemAmount,
+            BoxSlotIndex     = pkt.BoxSlotIndex,
         }, H_ItemExchangeResult.Pack, PacketType.H_ItemExchangeResult);
 
-        // except
-        PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
+        if (success)
         {
-            BoxUid = pkt.BoxUid,
-            ItemTypeId = pkt.BoxItemId,
-            Amount = -pkt.BoxItemAmount,
-            SlotIndex = pkt.BoxSlotIndex,
-        }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
-
-        PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
-        {
-            BoxUid = pkt.BoxUid,
-            ItemTypeId = pkt.PlayerItemId,
-            Amount = pkt.PlayerItemAmount,
-            SlotIndex = pkt.BoxSlotIndex,
-        }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+            RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = pkt.BoxUid, ItemTypeId = pkt.BoxItemId,    Amount = -pkt.BoxItemAmount, SlotIndex = pkt.BoxSlotIndex });
+            RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = pkt.BoxUid, ItemTypeId = pkt.PlayerItemId, Amount =  pkt.PlayerItemAmount, SlotIndex = pkt.BoxSlotIndex });
+        }
     }
 
     public static void OnG_ConsumeItem(FlatPacket root)

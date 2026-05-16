@@ -61,10 +61,11 @@ public class InventoryUI : MonoBehaviour
 
         if (isNetworked && !(RoomManager.IsHost))
         {
-            // 게스트: 호스트에게 요청 → H_ItemGainResult에서 실제 적용
+            // 낙관적 업데이트: 즉시 로컬 적용 후 호스트에 요청
             bool playerGains = boxInventory == _inventory;
-
-            PacketBuilder.SendToHost(new G_ItemGainT
+            target.AddItemAtSlot(addedSlotIndex, itemData, amount);
+            _inventory.RemoveItemAtSlot(targetSlot.SlotIndex, itemData, amount);
+            RoomSync.ItemGain(new G_ItemGainT
             {
                 IsPlayerGained   = playerGains,
                 BoxUid           = boxWo.Id,
@@ -72,20 +73,20 @@ public class InventoryUI : MonoBehaviour
                 Amount           = amount,
                 AddedSlotIndex   = addedSlotIndex,
                 RemovedSlotIndex = targetSlot.SlotIndex,
-            }, G_ItemGain.Pack, PacketType.G_ItemGain);
+            });
         }
         else
         {
             // 호스트 또는 싱글플레이: 로컬에서 바로 적용
             target.AddItemAtSlot(addedSlotIndex, itemData, amount);
             _inventory.RemoveItemAtSlot(targetSlot.SlotIndex, itemData, amount);
-            PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
+            RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT
             {
-                BoxUid = boxWo.Id,
+                BoxUid     = boxWo.Id,
                 ItemTypeId = itemData.id,
-                Amount = boxInventory != _inventory ? amount : -amount,
-                SlotIndex = boxInventory != _inventory ? -1 : targetSlot.SlotIndex,
-            }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+                Amount     = boxInventory != _inventory ? amount : -amount,
+                SlotIndex  = boxInventory != _inventory ? -1 : targetSlot.SlotIndex,
+            });
         }
     }
 

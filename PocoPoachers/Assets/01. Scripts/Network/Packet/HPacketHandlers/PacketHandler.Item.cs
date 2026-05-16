@@ -32,31 +32,32 @@ public static partial class PacketHandlers
         });
     }
 
-    // 호스트가 요청자에게만 전송 — 내 인벤토리 업데이트 및 박스 시각 갱신
+    // 낙관적 업데이트 적용 후 결과 수신 — 실패 시만 롤백
     public static void OnH_ItemGainResult(FlatPacket root)
     {
         var pkt = root.TypeAsH_ItemGainResult();
-        if (!pkt.Success) return;
+        if (pkt.Success) return; // 이미 로컬에 적용됨
 
-        var om = ObjectManager.Instance;
         var itemData = ItemTable.Instance.Get(pkt.ItemTypeId);
         if (itemData == null) return;
 
         var playerInv = FindLocalInventory();
-        if (playerInv == null) return;
+        var om = ObjectManager.Instance;
+        Inventory boxInv = null;
+        if (om != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
+            boxInv = boxObj.GetComponent<Inventory>();
 
         if (pkt.Amount > 0)
         {
-            // PlayerSlotIndex가 있으면 지정 슬롯에, 없으면 첫 빈 슬롯에 추가 (더블클릭)
-            int slotIndex = pkt.PlayerSlotIndex >= 0
-                ? pkt.PlayerSlotIndex
-                : playerInv.CanAddItem(itemData, pkt.Amount);
-            if (slotIndex >= 0) playerInv.AddItemAtSlot(slotIndex, itemData, pkt.Amount);
+            // 플레이어가 가져간 것 롤백: 플레이어에서 제거, 박스로 반환
+            playerInv?.RemoveItemAtSlot(pkt.PlayerSlotIndex, itemData, pkt.Amount);
+            boxInv?.AddItemAtSlot(pkt.BoxSlotIndex, itemData, pkt.Amount);
         }
         else
         {
-            int slotIndex = playerInv.FindItemSlotIndex(itemData);
-            if (slotIndex >= 0) playerInv.RemoveItemAtSlot(slotIndex, itemData, -pkt.Amount);
+            // 플레이어가 넣은 것 롤백: 박스에서 제거, 플레이어로 반환
+            boxInv?.RemoveItemAtSlot(pkt.BoxSlotIndex, itemData, -pkt.Amount);
+            playerInv?.AddItemAtSlot(pkt.PlayerSlotIndex, itemData, -pkt.Amount);
         }
     }
 
@@ -70,8 +71,6 @@ public static partial class PacketHandlers
         var boxInv = boxObj.GetComponent<Inventory>();
         var itemData = ItemTable.Instance.Get(pkt.ItemTypeId);
         if (boxInv == null || itemData == null) return;
-
-        Debug.Log($"{pkt.Amount}");
 
         if (pkt.Amount > 0)
         {
@@ -95,40 +94,31 @@ public static partial class PacketHandlers
         // 향후 서버 권위 인벤토리 동기화 시 확장
     }
 
-    // 호스트가 요청자에게만 전송 — 교환 결과 적용
+    // 낙관적 업데이트 적용 후 결과 수신 — 실패 시만 롤백
     public static void OnH_ItemExchangeResult(FlatPacket root)
     {
         var pkt = root.TypeAsH_ItemExchangeResult();
-        if (!pkt.Success) return;
+        if (pkt.Success) return; // 이미 로컬에 적용됨
 
-        var om = ObjectManager.Instance;
         var boxItemData = ItemTable.Instance.Get(pkt.BoxItemId);
         var plrItemData = ItemTable.Instance.Get(pkt.PlayerItemId);
+        var playerInv   = FindLocalInventory();
+        var om          = ObjectManager.Instance;
+        Inventory boxInv = null;
+        if (om != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
+            boxInv = boxObj.GetComponent<Inventory>();
 
-        // 내 인벤토리 업데이트
-        var playerInv = FindLocalInventory();
-        if (playerInv != null)
+        // 교환 롤백: 플레이어 아이템 반환, 박스 아이템 반환
+        if (plrItemData != null && pkt.PlayerItemAmount > 0)
         {
-            if (plrItemData != null && pkt.PlayerItemAmount > 0)
-                playerInv.RemoveItemAtSlot(pkt.PlayerSlotIndex, plrItemData, pkt.PlayerItemAmount);
-
-            if (boxItemData != null)
-                playerInv.AddItemAtSlot(pkt.PlayerSlotIndex, boxItemData, pkt.BoxItemAmount);
+            boxInv?.RemoveItemAtSlot(pkt.BoxSlotIndex, plrItemData, pkt.PlayerItemAmount);
+            playerInv?.AddItemAtSlot(pkt.PlayerSlotIndex, plrItemData, pkt.PlayerItemAmount);
         }
-
-        //// 박스 시각 동기화
-        //if (om != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
-        //{
-        //    var boxInv = boxObj.GetComponent<Inventory>();
-        //    if (boxInv != null)
-        //    {
-        //        if (boxItemData != null)
-        //            boxInv.RemoveItemAtSlot(pkt.BoxSlotIndex, boxItemData, pkt.BoxItemAmount);
-
-        //        if (plrItemData != null && pkt.PlayerItemAmount > 0)
-        //            boxInv.AddItemAtSlot(pkt.BoxSlotIndex, plrItemData, pkt.PlayerItemAmount);
-        //    }
-        //}
+        if (boxItemData != null && pkt.BoxItemAmount > 0)
+        {
+            playerInv?.RemoveItemAtSlot(pkt.PlayerSlotIndex, boxItemData, pkt.BoxItemAmount);
+            boxInv?.AddItemAtSlot(pkt.BoxSlotIndex, boxItemData, pkt.BoxItemAmount);
+        }
     }
 
     public static void OnH_ConsumeItemResult(FlatPacket root)

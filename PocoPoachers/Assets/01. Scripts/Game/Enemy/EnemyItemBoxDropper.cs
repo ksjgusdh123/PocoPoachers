@@ -57,9 +57,7 @@ public class EnemyItemBoxDropper : MonoBehaviour
         };
         omgr.RegisterSpawnedBox(spawnData);
 
-        // 현재 접속 중인 게스트에게 브로드캐스트
-        if (RoomManager.HasGuests)
-            PacketBuilder.BroadcastToGuests(spawnData, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
+        RoomSync.ItemSpawn(spawnData);
     }
 
 }

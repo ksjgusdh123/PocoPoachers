@@ -85,39 +85,6 @@ public abstract class GunBase : MonoBehaviour
 
     public bool IsAiming { get; set; }
 
-    protected void BroadcastShoot(Vector3 origin, Vector3 direction)
-    {
-        if (RoomManager.IsHost && !RoomManager.HasGuests) return;
-
-        int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
-        var originT = new Vec3T { X = origin.x, Y = origin.y, Z = origin.z };
-        var dirT = new Vec3T { X = direction.x, Y = direction.y, Z = direction.z };
-
-        if (RoomManager.IsHost)
-        {
-            PacketBuilder.BroadcastToGuests(new H_ShootT
-            {
-                PlayerId    = myId,
-                Origin      = originT,
-                Direction   = dirT,
-                BulletSpeed = _gunData.bulletSpeed,
-                Damage      = _gunData.damage,
-                MaxRange    = _gunData.range,
-            }, H_Shoot.Pack, PacketType.H_Shoot);
-        }
-        else
-        {
-            PacketBuilder.SendToHost(new G_ShootT
-            {
-                PlayerId    = myId,
-                Origin      = originT,
-                Direction   = dirT,
-                BulletSpeed = _gunData.bulletSpeed,
-                Damage      = _gunData.damage,
-                MaxRange    = _gunData.range,
-            }, G_Shoot.Pack, PacketType.G_Shoot);
-        }
-    }
 
     protected Vector3 GetFireDirection()
     {

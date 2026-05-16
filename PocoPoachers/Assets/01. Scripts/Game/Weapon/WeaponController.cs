@@ -67,7 +67,7 @@ public class WeaponController : EquipableController
         gun.Owner = gameObject;
         gun.gameObject.SetActive(false);
         OnWeaponChanged?.Invoke(slotIndex, data);
-        Send(data.id, slotIndex);
+        RoomSync.Equip(data.id, slotIndex);
 
         if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
         SwitchWeapon(slotIndex);
@@ -79,26 +79,11 @@ public class WeaponController : EquipableController
         _mount.ApplyUnequip(slotIndex);
         if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
         OnWeaponChanged?.Invoke(slotIndex, null);
-        Send(0, slotIndex);
+        RoomSync.Equip(0, slotIndex);
     }
 
     public int GetEquippedItemId(int slotIndex) => _mount.GetEquippedItemId(slotIndex);
 
-    private void Send(int itemId, int slotIndex)
-    {
-        if (RoomManager.IsHost && !RoomManager.HasGuests) return;
-
-        int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
-
-        if (RoomManager.IsHost)
-            PacketBuilder.BroadcastToGuests(
-                new H_EquipT { PlayerId = myId, ItemId = itemId, SlotIndex = slotIndex },
-                H_Equip.Pack, PacketType.H_Equip);
-        else
-            PacketBuilder.SendToHost(
-                new G_EquipT { PlayerId = myId, ItemId = itemId, SlotIndex = slotIndex },
-                G_Equip.Pack, PacketType.G_Equip);
-    }
 
     private void SwitchWeapon(int index)
     {

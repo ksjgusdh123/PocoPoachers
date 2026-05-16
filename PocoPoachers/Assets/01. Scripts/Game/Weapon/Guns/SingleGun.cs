@@ -16,6 +16,6 @@ public class SingleGun : GunBase
             Owner
         );
 
-        BroadcastShoot(_muzzle.position, fireDir);
+        RoomSync.Shoot(_muzzle.position, fireDir, _gunData);
     }
 }

@@ -49,7 +49,24 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
 
         if (!RoomManager.IsHost)
         {
-            PacketBuilder.SendToHost(new G_ItemExchangeT
+            // 낙관적 업데이트: 즉시 로컬 적용 후 호스트에 요청
+            var om = ObjectManager.Instance;
+            if (om != null && om.TryGet(ObjectKind.ItemBox, boxUid, out var boxObj))
+            {
+                var boxInv = boxObj.GetComponent<Inventory>();
+                if (boxInv != null)
+                {
+                    if (boxItem != null && boxAmount > 0) boxInv.RemoveItemAtSlot(boxSlot, boxItem, boxAmount);
+                    if (playerItem != null && playerAmount > 0) boxInv.AddItemAtSlot(boxSlot, playerItem, playerAmount);
+                }
+            }
+            var playerInv = player.InventoryUI.Inventory;
+            if (playerInv != null)
+            {
+                if (playerItem != null && playerAmount > 0) playerInv.RemoveItemAtSlot(playerSlot, playerItem, playerAmount);
+                if (boxItem != null && boxAmount > 0) playerInv.AddItemAtSlot(playerSlot, boxItem, boxAmount);
+            }
+            RoomSync.ItemExchange(new G_ItemExchangeT
             {
                 BoxUid           = boxUid,
                 PlayerItemId     = playerItem?.id ?? 0,
@@ -58,7 +75,7 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
                 BoxItemId        = boxItem?.id ?? 0,
                 BoxItemAmount    = boxAmount,
                 BoxSlotIndex     = boxSlot,
-            }, G_ItemExchange.Pack, PacketType.G_ItemExchange);
+            });
         }
         else
         {
@@ -85,22 +102,10 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
             }
 
             if (boxItem != null)
-                PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
-                {
-                    BoxUid     = boxUid,
-                    ItemTypeId = boxItem.id,
-                    Amount     = -boxAmount,
-                    SlotIndex  = boxSlot,
-                }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+                RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = boxItem.id, Amount = -boxAmount, SlotIndex = boxSlot });
 
             if (playerItem != null)
-                PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
-                {
-                    BoxUid     = boxUid,
-                    ItemTypeId = playerItem.id,
-                    Amount     = playerAmount,
-                    SlotIndex  = boxSlot,
-                }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+                RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = playerItem.id, Amount = playerAmount, SlotIndex = boxSlot });
         }
     }
 
@@ -123,7 +128,10 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
 
         if (!RoomManager.IsHost)
         {
-            PacketBuilder.SendToHost(new G_ItemGainT
+            // 낙관적 업데이트: 즉시 로컬 적용 후 호스트에 요청
+            from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
+            to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
+            RoomSync.ItemGain(new G_ItemGainT
             {
                 IsPlayerGained   = playerGains,
                 BoxUid           = boxUid,
@@ -131,20 +139,13 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
                 Amount           = amount,
                 AddedSlotIndex   = playerGains ? playerSlotIndex : boxSlotIndex,
                 RemovedSlotIndex = playerGains ? boxSlotIndex : playerSlotIndex,
-            }, G_ItemGain.Pack, PacketType.G_ItemGain);
+            });
         }
         else
         {
             from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
             to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
-
-            PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
-            {
-                BoxUid     = boxUid,
-                ItemTypeId = data.id,
-                Amount     = playerGains ? -amount : amount,
-                SlotIndex  = boxSlotIndex,
-            }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+            RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = data.id, Amount = playerGains ? -amount : amount, SlotIndex = boxSlotIndex });
         }
     }
 
@@ -156,21 +157,8 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
         to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
 
-        PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
-        {
-            BoxUid     = boxUid,
-            ItemTypeId = data.id,
-            Amount     = -amount,
-            SlotIndex  = from.SlotIndex,
-        }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
-
-        PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
-        {
-            BoxUid     = boxUid,
-            ItemTypeId = data.id,
-            Amount     = amount,
-            SlotIndex  = to.SlotIndex,
-        }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+        RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = data.id, Amount = -amount, SlotIndex = from.SlotIndex });
+        RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = data.id, Amount = amount,  SlotIndex = to.SlotIndex });
     }
 
     // 박스 ↔ 박스: 로컬 교환 + 박스 업데이트 브로드캐스트
@@ -185,22 +173,10 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         slotA.InventoryUI.Inventory.SwapSlots(slotA.SlotIndex, slotB.SlotIndex);
 
         if (dataA != null)
-            PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
-            {
-                BoxUid     = boxUid,
-                ItemTypeId = dataA.id,
-                Amount     = amountA,
-                SlotIndex  = slotB.SlotIndex,
-            }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+            RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = dataA.id, Amount = amountA,  SlotIndex = slotB.SlotIndex });
 
         if (dataB != null)
-            PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
-            {
-                BoxUid     = boxUid,
-                ItemTypeId = dataB.id,
-                Amount     = amountB,
-                SlotIndex  = slotA.SlotIndex,
-            }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+            RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = dataB.id, Amount = amountB, SlotIndex = slotA.SlotIndex });
     }
 
     public void InvokeDoubleClick()
