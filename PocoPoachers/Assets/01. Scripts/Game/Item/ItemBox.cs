@@ -2,11 +2,17 @@ using UnityEngine;
 
 public class ItemBox : MonoBehaviour
 {
+    [SerializeField] private ProximityDetector _proximityDetector;
+
     public int[] ItemIds { get; private set; }
 
-    [SerializeField] private LayerMask _playerLayer;
-
     private UIScalePulse _pulseUI;
+
+    private void Awake()
+    {
+        _proximityDetector.OnEnter += ShowPulse;
+        _proximityDetector.OnExit += HidePulse;
+    }
 
     public void Initialize(int[] itemIds)
     {
@@ -24,15 +30,13 @@ public class ItemBox : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void ShowPulse()
     {
-        if ((_playerLayer & (1 << other.gameObject.layer)) == 0) return;
         _pulseUI = WorldUIManager.Instance.Create<UIScalePulse>(WorldUIType.ScalePulse, transform);
     }
 
-    private void OnTriggerExit(Collider other)
+    private void HidePulse()
     {
-        if ((_playerLayer & (1 << other.gameObject.layer)) == 0) return;
         _pulseUI?.Release();
         _pulseUI = null;
     }
