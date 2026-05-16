@@ -5,6 +5,7 @@ public class ItemBox : MonoBehaviour
     [SerializeField] private ProximityDetector _proximityDetector;
 
     public int[] ItemIds { get; private set; }
+    public bool HasBeenOpened { get; private set; }
 
     private UIScalePulse _pulseUI;
 
@@ -30,9 +31,16 @@ public class ItemBox : MonoBehaviour
         }
     }
 
+    public void MarkOpened()
+    {
+        HasBeenOpened = true;
+        HidePulse();
+    }
+
     private void ShowPulse()
     {
         _pulseUI = WorldUIManager.Instance.Create<UIScalePulse>(WorldUIType.ScalePulse, transform);
+        _pulseUI.SetVisited(HasBeenOpened);
     }
 
     private void HidePulse()

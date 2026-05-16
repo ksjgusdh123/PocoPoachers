@@ -1,8 +1,12 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 public class UIScalePulse : WorldUIElement
 {
     [SerializeField] private RectTransform _targetTransform;
+    [SerializeField] private Image _icon;
+    [SerializeField] private Sprite _defaultSprite;
+    [SerializeField] private Sprite _visitedSprite;
 
     [Header("스케일 설정")]
     [SerializeField] private float _minScale = 0.9f;
@@ -35,6 +39,12 @@ public class UIScalePulse : WorldUIElement
         _time += Time.deltaTime * _speed;
         float scale = Mathf.Lerp(_minScale, _maxScale, (Mathf.Sin(_time) + 1f) * 0.5f);
         _targetTransform.localScale = _originalScale * scale;
+    }
+
+    public void SetVisited(bool visited)
+    {
+        if (_icon == null) return;
+        _icon.sprite = visited ? _visitedSprite : _defaultSprite;
     }
 
     public void Play()
