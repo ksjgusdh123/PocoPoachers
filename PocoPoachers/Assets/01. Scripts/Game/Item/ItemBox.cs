@@ -4,6 +4,10 @@ public class ItemBox : MonoBehaviour
 {
     public int[] ItemIds { get; private set; }
 
+    [SerializeField] private LayerMask _playerLayer;
+
+    private UIScalePulse _pulseUI;
+
     public void Initialize(int[] itemIds)
     {
         ItemIds = itemIds;
@@ -20,4 +24,16 @@ public class ItemBox : MonoBehaviour
         }
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if ((_playerLayer & (1 << other.gameObject.layer)) == 0) return;
+        _pulseUI = WorldUIManager.Instance.Create<UIScalePulse>(WorldUIType.ScalePulse, transform);
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if ((_playerLayer & (1 << other.gameObject.layer)) == 0) return;
+        _pulseUI?.Release();
+        _pulseUI = null;
+    }
 }

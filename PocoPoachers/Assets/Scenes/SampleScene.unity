@@ -1267,7 +1267,7 @@ Transform:
   m_GameObject: {fileID: 330585543}
   serializedVersion: 2
   m_LocalRotation: {x: 0.42261827, y: 0, z: 0, w: 0.9063079}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0.59, y: 4.4, z: 0.97}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3208,69 +3208,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1268764973}
   m_CullTransparentMesh: 1
---- !u!1 &1298823259
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1298823261}
-  - component: {fileID: 1298823260}
-  - component: {fileID: 1298823262}
-  m_Layer: 0
-  m_Name: SpeechBubbleManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1298823260
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1298823259}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00e93e05ac33e4f428fad96bb07e1ade, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SpeechBubbleManager
-  _worldCanvas: {fileID: 2126526981}
-  _bubblePrefab: {fileID: 1900244043984237922, guid: e59c3130098c9ce4fa39745e2ba074c3, type: 3}
-  _defaultOffset: {x: 0.76, y: 1.8, z: -0.21}
---- !u!4 &1298823261
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1298823259}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 4.66148, y: 1.13804, z: 7.44703}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1298823262
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1298823259}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0afcd346f4ceaf43a3a4bc2858cdab7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DamageTextPool
-  _prefab: {fileID: 6379167493828725985, guid: e8209547b4ae0344c9c8b253342aa496, type: 3}
-  _initialSize: 10
-  _spawnOffset: {x: 0, y: 1.5, z: 0}
 --- !u!224 &1303903600 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5716066768571258880, guid: a1278209dca3c164eb662f12316d496f, type: 3}
@@ -5171,7 +5108,7 @@ GameObject:
   - component: {fileID: 2126526981}
   - component: {fileID: 2126526984}
   - component: {fileID: 2126526983}
-  - component: {fileID: 2126526982}
+  - component: {fileID: 2126526986}
   m_Layer: 0
   m_Name: WorldCanvas
   m_TagString: Untagged
@@ -5203,21 +5140,6 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
---- !u!114 &2126526982
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2126526980}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0afcd346f4ceaf43a3a4bc2858cdab7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DamageTextPool
-  _prefab: {fileID: 6379167493828725985, guid: e8209547b4ae0344c9c8b253342aa496, type: 3}
-  _initialSize: 10
-  _spawnOffset: {x: 0, y: 1.5, z: 0}
 --- !u!114 &2126526983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5277,6 +5199,32 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 1920, y: 1080}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2126526986
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2126526980}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81f49dce93051354cacd78bd5e455f14, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WorldUIManager
+  _worldCanvas: {fileID: 2126526981}
+  _entries:
+  - type: 0
+    prefab: {fileID: 1900244043984237922, guid: e59c3130098c9ce4fa39745e2ba074c3, type: 3}
+    offset: {x: 1, y: 2.5, z: 0}
+    initialPoolSize: 10
+  - type: 1
+    prefab: {fileID: 668298869412507543, guid: ef241eb0aed2c5a4ba2e02ec71e28b4e, type: 3}
+    offset: {x: 0, y: 0.8, z: 0}
+    initialPoolSize: 10
+  - type: 2
+    prefab: {fileID: 6379167493828725985, guid: e8209547b4ae0344c9c8b253342aa496, type: 3}
+    offset: {x: 0, y: 2.5, z: 0}
+    initialPoolSize: 10
 --- !u!1001 &1583378957473919322
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6581,7 +6529,6 @@ SceneRoots:
   - {fileID: 1170366760}
   - {fileID: 158327928}
   - {fileID: 2126526985}
-  - {fileID: 1298823261}
   - {fileID: 1162114147}
   - {fileID: 1343481862}
   - {fileID: 1382421244}

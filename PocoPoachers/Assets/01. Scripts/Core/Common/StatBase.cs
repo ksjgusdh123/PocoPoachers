@@ -12,7 +12,7 @@ public abstract class StatBase : MonoBehaviour, IDamageable
 
     protected virtual void Awake()
     {
-        OnDamaged += (damage, pos, _) => DamageTextPool.Show(damage, pos);
+        OnDamaged += (damage, pos, _) => DamageTextUI.Show(damage, pos);
     }
 
     public void TakeDamage(float damage, GameObject attacker = null)
