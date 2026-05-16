@@ -84,48 +84,6 @@ public static partial class PacketHandlers
         }
     }
 
-    // 플레이어 인벤토리 전체 동기화 (PlayerId가 나와 일치할 때만 적용)
-    public static void OnH_InventoryUpdate(FlatPacket root)
-    {
-        var pkt = root.TypeAsH_InventoryUpdate();
-        if (pkt.PlayerId != NetworkManager.Instance?.MyPlayerId) return;
-
-        // 전체 인벤토리 스냅샷 적용 — 개별 결과 패킷이 이미 처리하므로 UI 갱신만
-        // 향후 서버 권위 인벤토리 동기화 시 확장
-    }
-
-    // 낙관적 업데이트 적용 후 결과 수신 — 실패 시만 롤백
-    public static void OnH_ItemExchangeResult(FlatPacket root)
-    {
-        var pkt = root.TypeAsH_ItemExchangeResult();
-        if (pkt.Success) return; // 이미 로컬에 적용됨
-
-        var boxItemData = ItemTable.Instance.Get(pkt.BoxItemId);
-        var plrItemData = ItemTable.Instance.Get(pkt.PlayerItemId);
-        var playerInv   = FindLocalInventory();
-        var om          = ObjectManager.Instance;
-        Inventory boxInv = null;
-        if (om != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
-            boxInv = boxObj.GetComponent<Inventory>();
-
-        // 교환 롤백: 플레이어 아이템 반환, 박스 아이템 반환
-        if (plrItemData != null && pkt.PlayerItemAmount > 0)
-        {
-            boxInv?.RemoveItemAtSlot(pkt.BoxSlotIndex, plrItemData, pkt.PlayerItemAmount);
-            playerInv?.AddItemAtSlot(pkt.PlayerSlotIndex, plrItemData, pkt.PlayerItemAmount);
-        }
-        if (boxItemData != null && pkt.BoxItemAmount > 0)
-        {
-            playerInv?.RemoveItemAtSlot(pkt.PlayerSlotIndex, boxItemData, pkt.BoxItemAmount);
-            boxInv?.AddItemAtSlot(pkt.BoxSlotIndex, boxItemData, pkt.BoxItemAmount);
-        }
-    }
-
-    public static void OnH_ConsumeItemResult(FlatPacket root)
-    {
-        // TODO
-    }
-
     private static Inventory FindLocalInventory()
     {
         return Object.FindAnyObjectByType<PlayerController>()?.GetComponent<Inventory>();

@@ -1,11 +1,5 @@
 ﻿include "Common.fbs";
 
-table InventoryItem
-{
-    item_id: int;
-    amount:  int;
-}
-
 table H_ItemSpawn
 {
     uid:      int;
@@ -48,12 +42,6 @@ table H_ItemBoxUpdate
     slot_index: int;
 }
 
-table H_InventoryUpdate
-{
-    player_id: int;
-    items:     [InventoryItem];
-}
-
 table G_ItemExchange
 {
     box_uid:            int;
@@ -63,33 +51,6 @@ table G_ItemExchange
     box_item_id:        int;
     box_item_amount:    int;
     box_slot_index:     int;
-}
-
-table H_ItemExchangeResult
-{
-    success:            bool;
-    box_uid:            int;
-    player_item_id:     int;
-    player_item_amount: int;
-    player_slot_index:  int;
-    box_item_id:        int;
-    box_item_amount:    int;
-    box_slot_index:     int;
-}
-
-table G_ConsumeItem
-{
-    item_id: int;
-    amount: int;
-    inventory_index: int;
-}
-
-table H_ConsumeItemResult
-{
-    is_success: bool;
-    item_id: int;
-    amount: int;
-    inventory_index: int;
 }
 
 // item_id = 0 이면 해제
