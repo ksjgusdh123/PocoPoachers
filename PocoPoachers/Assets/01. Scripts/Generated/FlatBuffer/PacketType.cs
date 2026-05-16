@@ -30,6 +30,8 @@ public enum PacketType : byte
   H_ConsumeItemResult = 23,
   S_GuestJoined = 24,
   H_GuestJoined = 25,
+  G_Equip = 26,
+  H_Equip = 27,
 };
 
 public class PacketTypeUnion {
@@ -92,6 +94,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromS_GuestJoined(S_GuestJoinedT _s_guestjoined) { return new PacketTypeUnion{ Type = PacketType.S_GuestJoined, Value = _s_guestjoined }; }
   public H_GuestJoinedT AsH_GuestJoined() { return this.As<H_GuestJoinedT>(); }
   public static PacketTypeUnion FromH_GuestJoined(H_GuestJoinedT _h_guestjoined) { return new PacketTypeUnion{ Type = PacketType.H_GuestJoined, Value = _h_guestjoined }; }
+  public G_EquipT AsG_Equip() { return this.As<G_EquipT>(); }
+  public static PacketTypeUnion FromG_Equip(G_EquipT _g_equip) { return new PacketTypeUnion{ Type = PacketType.G_Equip, Value = _g_equip }; }
+  public H_EquipT AsH_Equip() { return this.As<H_EquipT>(); }
+  public static PacketTypeUnion FromH_Equip(H_EquipT _h_equip) { return new PacketTypeUnion{ Type = PacketType.H_Equip, Value = _h_equip }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -121,6 +127,8 @@ public class PacketTypeUnion {
       case PacketType.H_ConsumeItemResult: return H_ConsumeItemResult.Pack(builder, _o.AsH_ConsumeItemResult()).Value;
       case PacketType.S_GuestJoined: return S_GuestJoined.Pack(builder, _o.AsS_GuestJoined()).Value;
       case PacketType.H_GuestJoined: return H_GuestJoined.Pack(builder, _o.AsH_GuestJoined()).Value;
+      case PacketType.G_Equip: return G_Equip.Pack(builder, _o.AsG_Equip()).Value;
+      case PacketType.H_Equip: return H_Equip.Pack(builder, _o.AsH_Equip()).Value;
     }
   }
 }
@@ -208,6 +216,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_GuestJoined:
         result = H_GuestJoinedVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_Equip:
+        result = G_EquipVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_Equip:
+        result = H_EquipVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

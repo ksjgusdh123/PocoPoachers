@@ -232,6 +232,8 @@ public class RoomManager : Singleton<RoomManager>
             Info = new List<PlayerInfoT> { new PlayerInfoT { PlayerId = newGuestId } }
         }, H_GuestJoined.Pack, PacketType.H_GuestJoined);
 
+        SyncLocalEquipToGuest(newGuestId);
+
         foreach (var original in om.SpawnedBoxes)
         {
             var currentItemIds = new List<int>();
@@ -252,6 +254,23 @@ public class RoomManager : Singleton<RoomManager>
                 Rotation = original.Rotation,
                 ItemIds  = currentItemIds,
             }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
+        }
+    }
+
+    private void SyncLocalEquipToGuest(int guestId)
+    {
+        var mount = FindFirstObjectByType<WeaponMount>();
+        if (mount == null) return;
+
+        int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
+        for (int slot = 0; slot < 2; slot++)
+        {
+            int itemId = mount.GetEquippedItemId(slot);
+            if (itemId == 0) continue;
+
+            PacketBuilder.SendToGuest(guestId,
+                new H_EquipT { PlayerId = myId, ItemId = itemId, SlotIndex = slot },
+                H_Equip.Pack, PacketType.H_Equip);
         }
     }
 

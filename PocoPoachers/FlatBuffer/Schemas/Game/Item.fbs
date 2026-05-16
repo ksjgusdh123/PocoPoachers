@@ -90,3 +90,18 @@ table H_ConsumeItemResult
     amount: int;
     inventory_index: int;
 }
+
+// item_id = 0 이면 해제
+table G_Equip
+{
+    player_id:  int;
+    item_id:    int;
+    slot_index: int;
+}
+
+table H_Equip
+{
+    player_id:  int;
+    item_id:    int;
+    slot_index: int;
+}

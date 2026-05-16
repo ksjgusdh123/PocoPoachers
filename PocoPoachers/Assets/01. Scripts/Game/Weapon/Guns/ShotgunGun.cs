@@ -17,6 +17,8 @@ public class ShotgunGun : GunBase
                 () => BulletPool.GetInstance().Release(_gunData.bulletPrefab, bullet),
                 Owner
             );
+
+            BroadcastShoot(_muzzle.position, fireDir);
         }
     }
 }

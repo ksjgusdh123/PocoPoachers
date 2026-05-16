@@ -1,14 +1,12 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class WeaponController : EquipableController
 {
-    [SerializeField] private GunBase[] _guns;
     [SerializeField] private float _switchMidTime = 0.15f;
     [SerializeField] private CrosshairUI _crosshairUI;
-    [SerializeField] private Transform _mountPoint;
+
     public float MoveSpeedMultiplier
     {
         get
@@ -24,35 +22,38 @@ public class WeaponController : EquipableController
 
     private static readonly int WeaponSwitchHash = Animator.StringToHash("WeaponSwitch");
 
+    private WeaponMount _mount;
+    private PlayerInputHandler _inputHandler;
+    private Animator _animator;
     private GunBase _currentGun;
     private int _currentGunIndex = -1;
     private bool _isSwitching;
-    private PlayerInputHandler _inputHandler;
-    private Animator _animator;
     private bool _wasFirePressed;
     private bool _wasAimPressed;
-    private System.Action<Vector2> _cameraShakeHandler;
+    private Action<Vector2> _cameraShakeHandler;
 
     private void Awake()
     {
-        _guns = new GunBase[2];
+        _mount = GetComponent<WeaponMount>();
         _inputHandler = GetComponent<PlayerInputHandler>();
         _animator = GetComponentInChildren<Animator>();
     }
 
     private void Start()
     {
-        _inputHandler.WeaponSwitch += SwitchWeapon;
-        //if (_guns.Length > 0) SwitchWeapon(0);
+        if (_inputHandler != null)
+            _inputHandler.WeaponSwitch += SwitchWeapon;
     }
 
     private void OnDestroy()
     {
-        _inputHandler.WeaponSwitch -= SwitchWeapon;
+        if (_inputHandler != null)
+            _inputHandler.WeaponSwitch -= SwitchWeapon;
     }
 
     private void Update()
     {
+        if (_inputHandler == null) return;
         HandleFireInput();
         HandleReloadInput();
         HandleAimInput();
@@ -60,37 +61,49 @@ public class WeaponController : EquipableController
 
     public override void Equip(ItemData data, int slotIndex)
     {
-        if (_guns[slotIndex] != null)
-            Destroy(_guns[slotIndex].gameObject);
+        GunBase gun = _mount.ApplyEquip(data.id, slotIndex);
+        if (gun == null) return;
 
-        var itemData = ItemTable.Instance.Get(data.id);
-        if (itemData == null) return;
-        GunBase equipped = ResourceManager.Instance.Spawn<GunBase>(itemData.prefab, _mountPoint);
-        if (equipped == null) return;
-
-        equipped.Owner = gameObject;
-        equipped.gameObject.SetActive(false);
-        _guns[slotIndex] = equipped;
+        gun.Owner = gameObject;
+        gun.gameObject.SetActive(false);
         OnWeaponChanged?.Invoke(slotIndex, data);
+        Send(data.id, slotIndex);
 
-        // 같은 슬롯 재장착이면 currentIndex 초기화해서 SwitchWeapon 진입 허용
         if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
         SwitchWeapon(slotIndex);
     }
 
     public override void Unequip(int slotIndex)
     {
-        if (_guns[slotIndex] == null) return;
-        Destroy(_guns[slotIndex].gameObject);
-        _guns[slotIndex] = null;
+        if (_mount.GetGun(slotIndex) == null) return;
+        _mount.ApplyUnequip(slotIndex);
         if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
         OnWeaponChanged?.Invoke(slotIndex, null);
+        Send(0, slotIndex);
+    }
+
+    public int GetEquippedItemId(int slotIndex) => _mount.GetEquippedItemId(slotIndex);
+
+    private void Send(int itemId, int slotIndex)
+    {
+        if (RoomManager.IsHost && !RoomManager.HasGuests) return;
+
+        int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
+
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastToGuests(
+                new H_EquipT { PlayerId = myId, ItemId = itemId, SlotIndex = slotIndex },
+                H_Equip.Pack, PacketType.H_Equip);
+        else
+            PacketBuilder.SendToHost(
+                new G_EquipT { PlayerId = myId, ItemId = itemId, SlotIndex = slotIndex },
+                G_Equip.Pack, PacketType.G_Equip);
     }
 
     private void SwitchWeapon(int index)
     {
-        if (index >= _guns.Length || index == _currentGunIndex || _isSwitching) return;
-        if (_guns[index] == null) return; // 해당 슬롯에 총이 없으면 전환 안 함
+        if (index >= 2 || index == _currentGunIndex || _isSwitching) return;
+        if (_mount.GetGun(index) == null) return;
         StartCoroutine(SwitchWeaponRoutine(index));
     }
 
@@ -105,20 +118,20 @@ public class WeaponController : EquipableController
             CameraZoom.Instance?.SetAiming(false, 45f, 0.2f);
         }
 
-        _animator.SetTrigger(WeaponSwitchHash);
+        _animator?.SetTrigger(WeaponSwitchHash);
 
         yield return new WaitForSeconds(_switchMidTime);
 
-        if (_currentGunIndex >= 0 && _guns[_currentGunIndex] != null)
+        GunBase prev = _currentGunIndex >= 0 ? _mount.GetGun(_currentGunIndex) : null;
+        if (prev != null)
         {
-            if (_crosshairUI != null) _guns[_currentGunIndex].OnShoot -= _crosshairUI.OnShoot;
-            if (_cameraShakeHandler != null) _guns[_currentGunIndex].OnShoot -= _cameraShakeHandler;
+            if (_crosshairUI != null) prev.OnShoot -= _crosshairUI.OnShoot;
+            if (_cameraShakeHandler != null) prev.OnShoot -= _cameraShakeHandler;
+            prev.gameObject.SetActive(false);
         }
 
-        if (_currentGunIndex >= 0)
-            _guns[_currentGunIndex]?.gameObject.SetActive(false);
         _currentGunIndex = index;
-        _currentGun = _guns[index];
+        _currentGun = _mount.GetGun(index);
         _currentGun?.gameObject.SetActive(true);
         _wasFirePressed = false;
 
@@ -145,7 +158,6 @@ public class WeaponController : EquipableController
         if (_currentGun == null || _isSwitching) return;
 
         bool isFirePressed = _inputHandler.IsFirePressed;
-
         bool fireInput = _currentGun.GunData.fireMode == FireMode.Auto
             ? isFirePressed
             : isFirePressed && !_wasFirePressed;
