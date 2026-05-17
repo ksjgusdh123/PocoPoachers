@@ -28,6 +28,10 @@ public class PlayerMovement : MonoBehaviour
     private sbyte _lastMoveType = -1;
     private bool _hasSent;
 
+    private float _localVelX;
+    private float _localVelZ;
+    private bool _isSprinting;
+
     public static Transform LocalTransform { get; private set; }
 
     private void OnEnable() { LocalTransform = transform; }
@@ -78,9 +82,12 @@ public class PlayerMovement : MonoBehaviour
           _currentVelocity = Vector3.MoveTowards(_currentVelocity, targetVelocity, _acceleration * Time.deltaTime);
 
       Vector3 localVelocity = transform.InverseTransformDirection(_currentVelocity);
-      _animator.SetFloat("VelocityX", localVelocity.x / _moveSpeed, 0.1f, Time.deltaTime);
-      _animator.SetFloat("VelocityZ", localVelocity.z / _moveSpeed, 0.1f, Time.deltaTime);
-      _animator.SetBool("IsSprinting", isSprinting);
+      _localVelX = localVelocity.x / _moveSpeed;
+      _localVelZ = localVelocity.z / _moveSpeed;
+      _isSprinting = isSprinting;
+      _animator.SetFloat("VelocityX", _localVelX, 0.1f, Time.deltaTime);
+      _animator.SetFloat("VelocityZ", _localVelZ, 0.1f, Time.deltaTime);
+      _animator.SetBool("IsSprinting", _isSprinting);
 
       _characterController.Move(_currentVelocity * Time.deltaTime);
     }
@@ -102,7 +109,7 @@ public class PlayerMovement : MonoBehaviour
             moveType == _lastMoveType)
             return;
 
-        RoomSync.Move(pos, yaw, moveType);
+        RoomSync.Move(pos, yaw, moveType, _localVelX, _localVelZ, _isSprinting);
 
         _lastSentPos  = pos;
         _lastSentYaw  = yaw;

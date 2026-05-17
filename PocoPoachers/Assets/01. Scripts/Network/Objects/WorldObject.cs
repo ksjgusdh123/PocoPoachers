@@ -10,7 +10,12 @@ public enum ObjectKind
 
 public class WorldObject : MonoBehaviour
 {
+    static readonly int HashVelX      = Animator.StringToHash("VelocityX");
+    static readonly int HashVelZ      = Animator.StringToHash("VelocityZ");
+    static readonly int HashSprinting = Animator.StringToHash("IsSprinting");
+
     [SerializeField] float _smooth = 14f;
+    [SerializeField] float _animSmooth = 0.1f;
 
     public int Id { get; private set; }
     public ObjectKind Kind { get; private set; }
@@ -20,18 +25,28 @@ public class WorldObject : MonoBehaviour
     float _targetYaw;
     bool _hasTarget;
 
+    float _targetVelX;
+    float _targetVelZ;
+    bool _targetSprinting;
+
+    Animator _animator;
+
     public void Initialize(ObjectKind kind, int id, int typeId = 0)
     {
         Kind = kind;
         Id = id;
         TypeId = typeId;
+        _animator = GetComponentInChildren<Animator>();
     }
 
-    public void SetMoveTarget(Vector3 worldPos, float yawDegrees)
+    public void SetMoveTarget(Vector3 worldPos, float yawDegrees, float velX = 0f, float velZ = 0f, bool isSprinting = false)
     {
-        _targetPos = worldPos;
-        _targetYaw = yawDegrees;
-        _hasTarget = true;
+        _targetPos      = worldPos;
+        _targetYaw      = yawDegrees;
+        _targetVelX     = velX;
+        _targetVelZ     = velZ;
+        _targetSprinting = isSprinting;
+        _hasTarget      = true;
     }
 
     void Update()
@@ -42,5 +57,10 @@ public class WorldObject : MonoBehaviour
         transform.position = Vector3.Lerp(transform.position, _targetPos, t);
         float y = Mathf.LerpAngle(transform.eulerAngles.y, _targetYaw, t);
         transform.rotation = Quaternion.Euler(0f, y, 0f);
+
+        if (_animator == null) return;
+        _animator.SetFloat(HashVelX, _targetVelX, _animSmooth, Time.deltaTime);
+        _animator.SetFloat(HashVelZ, _targetVelZ, _animSmooth, Time.deltaTime);
+        _animator.SetBool(HashSprinting, _targetSprinting);
     }
 }

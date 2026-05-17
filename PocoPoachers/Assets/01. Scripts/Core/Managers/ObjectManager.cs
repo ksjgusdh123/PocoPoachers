@@ -19,6 +19,9 @@ public class ObjectManager : Singleton<ObjectManager>
         public float Rotation;
         public sbyte MoveType;
         public int TypeId;
+        public float VelocityX;
+        public float VelocityZ;
+        public bool IsSprinting;
     }
 
     [SerializeField] Entry[] _entries;
@@ -85,8 +88,8 @@ public class ObjectManager : Singleton<ObjectManager>
             _pending.Add(move);
     }
 
-    public void QueueMove(ObjectKind kind, int id, Vector3 pos, float rotation, sbyte moveType) =>
-        Enqueue(new PendingMove { Kind = kind, Id = id, Pos = pos, Rotation = rotation, MoveType = moveType });
+    public void QueueMove(ObjectKind kind, int id, Vector3 pos, float rotation, sbyte moveType, float velX = 0f, float velZ = 0f, bool isSprinting = false) =>
+        Enqueue(new PendingMove { Kind = kind, Id = id, Pos = pos, Rotation = rotation, MoveType = moveType, VelocityX = velX, VelocityZ = velZ, IsSprinting = isSprinting });
 
 
     void ApplyMove(in PendingMove m)
@@ -101,7 +104,7 @@ public class ObjectManager : Singleton<ObjectManager>
             _objects.Add(key, obj);
         }
 
-        obj.SetMoveTarget(m.Pos, m.Rotation);
+        obj.SetMoveTarget(m.Pos, m.Rotation, m.VelocityX, m.VelocityZ, m.IsSprinting);
     }
 
     static bool IsLocalPlayer(ObjectKind kind, int id)
