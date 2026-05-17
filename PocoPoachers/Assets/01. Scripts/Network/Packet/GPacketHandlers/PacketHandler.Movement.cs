@@ -10,7 +10,7 @@ public static partial class PacketHandlers
             ? new Vector3(pos3.Value.X, pos3.Value.Y, pos3.Value.Z)
             : Vector3.zero;
 
-        ObjectManager.Instance?.QueueMove(ObjectKind.Player, pkt.PlayerId, pos, pkt.Rotation, pkt.MoveType, pkt.VelocityX, pkt.VelocityZ, pkt.IsSprinting);
+        ObjectManager.Instance?.QueueMove(ObjectKind.Player, pkt.PlayerId, pos, pkt.Rotation, pkt.MoveType, pkt.VelocityX, pkt.VelocityZ, pkt.IsSprinting, pkt.IsRolling);
 
         if (RoomManager.IsHost && RoomManager.LastGuestId == 0)
             RoomManager.Instance?.TryAutoRegisterGuest(pkt.PlayerId);
@@ -27,6 +27,7 @@ public static partial class PacketHandlers
                     VelocityX   = pkt.VelocityX,
                     VelocityZ   = pkt.VelocityZ,
                     IsSprinting = pkt.IsSprinting,
+                    IsRolling   = pkt.IsRolling,
                 },
                 H_Move.Pack, PacketType.H_Move);
         }

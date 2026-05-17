@@ -13,6 +13,7 @@ public class WorldObject : MonoBehaviour
     static readonly int HashVelX      = Animator.StringToHash("VelocityX");
     static readonly int HashVelZ      = Animator.StringToHash("VelocityZ");
     static readonly int HashSprinting = Animator.StringToHash("IsSprinting");
+    static readonly int HashRoll      = Animator.StringToHash("Roll");
 
     [SerializeField] float _smooth = 14f;
     [SerializeField] float _animSmooth = 0.1f;
@@ -28,6 +29,7 @@ public class WorldObject : MonoBehaviour
     float _targetVelX;
     float _targetVelZ;
     bool _targetSprinting;
+    bool _wasRolling;
 
     Animator _animator;
 
@@ -39,14 +41,28 @@ public class WorldObject : MonoBehaviour
         _animator = GetComponentInChildren<Animator>();
     }
 
-    public void SetMoveTarget(Vector3 worldPos, float yawDegrees, float velX = 0f, float velZ = 0f, bool isSprinting = false)
+    public void SetMoveTarget(Vector3 worldPos, float yawDegrees, float velX = 0f, float velZ = 0f, bool isSprinting = false, bool isRolling = false)
     {
-        _targetPos      = worldPos;
-        _targetYaw      = yawDegrees;
-        _targetVelX     = velX;
-        _targetVelZ     = velZ;
+        _targetPos       = worldPos;
+        _targetYaw       = yawDegrees;
+        _targetVelX      = velX;
+        _targetVelZ      = velZ;
         _targetSprinting = isSprinting;
-        _hasTarget      = true;
+        _hasTarget       = true;
+
+        if (_animator != null)
+        {
+            if (isRolling && !_wasRolling)
+            {
+                _animator.SetTrigger(HashRoll);
+                _animator.SetLayerWeight(1, 0f);
+            }
+            else if (!isRolling && _wasRolling)
+            {
+                _animator.SetLayerWeight(1, 1f);
+            }
+        }
+        _wasRolling = isRolling;
     }
 
     void Update()

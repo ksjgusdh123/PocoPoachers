@@ -5,7 +5,7 @@ public static class RoomSync
     private static int MyId => NetworkManager.Instance?.MyPlayerId ?? 0;
     private static bool IsSolo => RoomManager.IsHost && !RoomManager.HasGuests;
 
-    public static void Move(Vector3 pos, float yaw, sbyte moveType, float velX, float velZ, bool isSprinting)
+    public static void Move(Vector3 pos, float yaw, sbyte moveType, float velX, float velZ, bool isSprinting, bool isRolling)
     {
         if (IsSolo) return;
 
@@ -14,11 +14,11 @@ public static class RoomSync
 
         if (RoomManager.IsHost)
             PacketBuilder.BroadcastToGuests(
-                new H_MoveT { PlayerId = id, Pos = vec, Rotation = yaw, MoveType = moveType, VelocityX = velX, VelocityZ = velZ, IsSprinting = isSprinting },
+                new H_MoveT { PlayerId = id, Pos = vec, Rotation = yaw, MoveType = moveType, VelocityX = velX, VelocityZ = velZ, IsSprinting = isSprinting, IsRolling = isRolling },
                 H_Move.Pack, PacketType.H_Move);
         else
             PacketBuilder.SendToHost(
-                new G_MoveT { PlayerId = id, Pos = vec, Rotation = yaw, MoveType = moveType, VelocityX = velX, VelocityZ = velZ, IsSprinting = isSprinting },
+                new G_MoveT { PlayerId = id, Pos = vec, Rotation = yaw, MoveType = moveType, VelocityX = velX, VelocityZ = velZ, IsSprinting = isSprinting, IsRolling = isRolling },
                 G_Move.Pack, PacketType.G_Move);
     }
 

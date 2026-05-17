@@ -23,6 +23,7 @@ public struct G_Move : IFlatbufferObject
   public float VelocityX { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float VelocityZ { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public bool IsSprinting { get { int o = __p.__offset(16); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public bool IsRolling { get { int o = __p.__offset(18); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<G_Move> CreateG_Move(FlatBufferBuilder builder,
       int player_id = 0,
@@ -31,19 +32,21 @@ public struct G_Move : IFlatbufferObject
       sbyte move_type = 0,
       float velocity_x = 0.0f,
       float velocity_z = 0.0f,
-      bool is_sprinting = false) {
-    builder.StartTable(7);
+      bool is_sprinting = false,
+      bool is_rolling = false) {
+    builder.StartTable(8);
     G_Move.AddVelocityZ(builder, velocity_z);
     G_Move.AddVelocityX(builder, velocity_x);
     G_Move.AddRotation(builder, rotation);
     G_Move.AddPos(builder, Vec3.Pack(builder, pos));
     G_Move.AddPlayerId(builder, player_id);
+    G_Move.AddIsRolling(builder, is_rolling);
     G_Move.AddIsSprinting(builder, is_sprinting);
     G_Move.AddMoveType(builder, move_type);
     return G_Move.EndG_Move(builder);
   }
 
-  public static void StartG_Move(FlatBufferBuilder builder) { builder.StartTable(7); }
+  public static void StartG_Move(FlatBufferBuilder builder) { builder.StartTable(8); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddPos(FlatBufferBuilder builder, Offset<Vec3> posOffset) { builder.AddStruct(1, posOffset.Value, 0); }
   public static void AddRotation(FlatBufferBuilder builder, float rotation) { builder.AddFloat(2, rotation, 0.0f); }
@@ -51,6 +54,7 @@ public struct G_Move : IFlatbufferObject
   public static void AddVelocityX(FlatBufferBuilder builder, float velocityX) { builder.AddFloat(4, velocityX, 0.0f); }
   public static void AddVelocityZ(FlatBufferBuilder builder, float velocityZ) { builder.AddFloat(5, velocityZ, 0.0f); }
   public static void AddIsSprinting(FlatBufferBuilder builder, bool isSprinting) { builder.AddBool(6, isSprinting, false); }
+  public static void AddIsRolling(FlatBufferBuilder builder, bool isRolling) { builder.AddBool(7, isRolling, false); }
   public static Offset<G_Move> EndG_Move(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<G_Move>(o);
@@ -68,6 +72,7 @@ public struct G_Move : IFlatbufferObject
     _o.VelocityX = this.VelocityX;
     _o.VelocityZ = this.VelocityZ;
     _o.IsSprinting = this.IsSprinting;
+    _o.IsRolling = this.IsRolling;
   }
   public static Offset<G_Move> Pack(FlatBufferBuilder builder, G_MoveT _o) {
     if (_o == null) return default(Offset<G_Move>);
@@ -79,7 +84,8 @@ public struct G_Move : IFlatbufferObject
       _o.MoveType,
       _o.VelocityX,
       _o.VelocityZ,
-      _o.IsSprinting);
+      _o.IsSprinting,
+      _o.IsRolling);
   }
 }
 
@@ -92,6 +98,7 @@ public class G_MoveT
   public float VelocityX { get; set; }
   public float VelocityZ { get; set; }
   public bool IsSprinting { get; set; }
+  public bool IsRolling { get; set; }
 
   public G_MoveT() {
     this.PlayerId = 0;
@@ -101,6 +108,7 @@ public class G_MoveT
     this.VelocityX = 0.0f;
     this.VelocityZ = 0.0f;
     this.IsSprinting = false;
+    this.IsRolling = false;
   }
 }
 
@@ -117,6 +125,7 @@ static public class G_MoveVerify
       && verifier.VerifyField(tablePos, 12 /*VelocityX*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 14 /*VelocityZ*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 16 /*IsSprinting*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 18 /*IsRolling*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

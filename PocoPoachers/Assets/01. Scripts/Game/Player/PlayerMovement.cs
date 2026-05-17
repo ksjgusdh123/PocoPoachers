@@ -109,7 +109,7 @@ public class PlayerMovement : MonoBehaviour
             moveType == _lastMoveType)
             return;
 
-        RoomSync.Move(pos, yaw, moveType, _localVelX, _localVelZ, _isSprinting);
+        RoomSync.Move(pos, yaw, moveType, _localVelX, _localVelZ, _isSprinting, _playerDodge.IsRolling);
 
         _lastSentPos  = pos;
         _lastSentYaw  = yaw;
