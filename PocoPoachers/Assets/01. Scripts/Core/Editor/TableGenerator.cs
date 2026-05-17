@@ -20,7 +20,7 @@ public class TableGeneratorTool
         if (!Directory.Exists(dataDir)) dataDir = Path.Combine(projectRoot, "Data");
 
         string clientCsOut = Path.Combine(Application.dataPath, "01. Scripts", "Generated", "DataTable");
-        string clientJsonOut = Path.Combine(Application.dataPath, "Resources", "JsonData");
+        string clientJsonOut = Path.Combine(Application.dataPath, "_Data", "Resources", "JsonData");
 
         if (!Directory.Exists(dataDir))
         {
@@ -140,13 +140,15 @@ public class TableGeneratorTool
 
             string enumName = header.Equals("type", StringComparison.OrdinalIgnoreCase) ? $"{className}Type" : ToPascalCase(header);
             var members = new List<EnumMember> { new EnumMember("None", 0) };
-            var rawToValue = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            var rawToValue = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase) { ["None"] = 0 };
 
-            for (int i = 0; i < rawValues.Count; i++)
+            int nextValue = 1;
+            foreach (string raw in rawValues)
             {
-                string member = ToPascalIdentifier(rawValues[i]);
-                members.Add(new EnumMember(member, i + 1));
-                rawToValue[rawValues[i]] = i + 1;
+                if (raw.Equals("None", StringComparison.OrdinalIgnoreCase)) continue;
+                string member = ToPascalIdentifier(raw);
+                members.Add(new EnumMember(member, nextValue));
+                rawToValue[raw] = nextValue++;
             }
             result[col] = new EnumInfo(enumName, members, rawToValue);
         }

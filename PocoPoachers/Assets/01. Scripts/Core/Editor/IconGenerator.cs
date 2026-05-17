@@ -6,7 +6,7 @@ using UnityEngine.Rendering.Universal;
 public static class IconGenerator
 {
     const int IconSize = 256;
-    static string DefaultDir => Path.Combine(Application.dataPath, "Resources/Icons");
+    static string DefaultDir => Path.Combine(Application.dataPath, "_Art", "Resources", "Icons");
 
     [MenuItem("Tools/Generator/Prefab → Icon(PNG)", false, 41)]
     public static void CreateIconFromMenu()
