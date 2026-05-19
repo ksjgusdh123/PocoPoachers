@@ -12,6 +12,9 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
     [SerializeField] private float _minSize = 0.12f;
     [SerializeField] private float _maxSize = 0.18f;
     [SerializeField] private float _lifetime = 20f;
+    [SerializeField] private float _popDuration = 0.08f;
+    [SerializeField] private float _popScale = 1.35f;
+    [SerializeField] private float _fadeDuration = 0.6f;
 
     private readonly Queue<BulletDecal> _activeDecals = new();
     private ObjectPool<BulletDecal> _pool;
@@ -29,7 +32,16 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
         Quaternion rotation = Quaternion.LookRotation(hit.normal) * Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
         float size = Random.Range(_minSize, _maxSize);
 
-        decal.Place(position, rotation, hit.collider.transform, size, _lifetime, () => _pool.Release(decal));
+        decal.Place(
+            position,
+            rotation,
+            hit.collider.transform,
+            size,
+            _lifetime,
+            _popDuration,
+            _popScale,
+            _fadeDuration,
+            () => _pool.Release(decal));
         _activeDecals.Enqueue(decal);
     }
 
@@ -54,10 +66,27 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
         GameObject decalObject = Instantiate(_decalPrefab);
         decalObject.name = _decalPrefab.name;
 
+        ConfigureRenderer(decalObject);
+
         if (!decalObject.TryGetComponent(out BulletDecal decal))
             decal = decalObject.AddComponent<BulletDecal>();
 
         return decal;
+    }
+
+    private static void ConfigureRenderer(GameObject decalObject)
+    {
+        Renderer renderer = decalObject.GetComponentInChildren<Renderer>();
+        if (renderer == null) return;
+
+        renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        renderer.receiveShadows = false;
+
+        foreach (Material material in renderer.sharedMaterials)
+        {
+            if (material == null) continue;
+            ConfigureMaterial(material);
+        }
     }
 
     private void ReleaseOldestIfNeeded()
@@ -142,6 +171,21 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
         if (material.HasProperty("_Color"))
             material.SetColor("_Color", new Color(0.03f, 0.025f, 0.02f, 1f));
 
+        ConfigureMaterial(material);
+
         return material;
+    }
+
+    private static void ConfigureMaterial(Material material)
+    {
+        if (material.HasProperty("_Cull"))
+            material.SetFloat("_Cull", (float)UnityEngine.Rendering.CullMode.Off);
+        material.SetFloat("_Surface", 1f);
+        material.SetFloat("_Blend", 0f);
+        material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        material.SetFloat("_ZWrite", 0f);
+        material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
     }
 }
