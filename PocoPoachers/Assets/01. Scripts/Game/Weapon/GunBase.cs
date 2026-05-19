@@ -1,13 +1,11 @@
 using System;
 using System.Collections;
 using UnityEngine;
-using UnityEngine.VFX;
 
 public abstract class GunBase : MonoBehaviour
 {
     [SerializeField] protected GunData _gunData;
     [SerializeField] protected Transform _muzzle;
-    [SerializeField] private VisualEffectAsset _muzzleFlashAsset;
     [SerializeField] private MuzzleFlash _muzzleFlash;
 
     public GunData GunData => _gunData;
@@ -35,9 +33,6 @@ public abstract class GunBase : MonoBehaviour
     {
         _currentAmmo = _gunData.magazineSize;
         _originLocalPos = transform.localPosition;
-
-        if (_muzzleFlash == null && _muzzleFlashAsset != null && _muzzle != null)
-            _muzzleFlash = MuzzleFlash.Create(_muzzle, _muzzleFlashAsset);
     }
 
     protected virtual void OnDisable()
