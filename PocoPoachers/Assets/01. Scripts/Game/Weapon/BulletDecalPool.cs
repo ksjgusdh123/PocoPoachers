@@ -9,12 +9,11 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
     [SerializeField] private GameObject _decalPrefab;
     [SerializeField] private int _defaultCapacity = 32;
     [SerializeField] private int _maxDecals = 80;
-    [SerializeField] private float _minSize = 0.12f;
-    [SerializeField] private float _maxSize = 0.18f;
-    [SerializeField] private float _lifetime = 20f;
-    [SerializeField] private float _popDuration = 0.08f;
-    [SerializeField] private float _popScale = 1.35f;
-    [SerializeField] private float _fadeDuration = 0.6f;
+    [SerializeField] private float _size = 0.12f;
+    [SerializeField] private float _lifetime = 0.2f;
+    [SerializeField] private float _popDuration = 0.07f;
+    [SerializeField] private float _popScale = 2.5f;
+    [SerializeField] private float _fadeDuration = 0.1f;
 
     private readonly Queue<BulletDecal> _activeDecals = new();
     private ObjectPool<BulletDecal> _pool;
@@ -30,13 +29,12 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
         BulletDecal decal = _pool.Get();
         Vector3 position = hit.point + hit.normal * SurfaceOffset;
         Quaternion rotation = Quaternion.LookRotation(hit.normal) * Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
-        float size = Random.Range(_minSize, _maxSize);
 
         decal.Place(
             position,
             rotation,
             hit.collider.transform,
-            size,
+            _size,
             _lifetime,
             _popDuration,
             _popScale,
