@@ -1,12 +1,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.VFX;
 
 public class BulletDecalPool : Singleton<BulletDecalPool>
 {
     private const float SurfaceOffset = 0.01f;
 
     [SerializeField] private GameObject _decalPrefab;
+    [SerializeField] private VisualEffectAsset _decalVfxAsset;
     [SerializeField] private int _defaultCapacity = 32;
     [SerializeField] private int _maxDecals = 80;
     [SerializeField] private float _size = 0.12f;
@@ -14,9 +16,11 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
     [SerializeField] private float _popDuration = 0.07f;
     [SerializeField] private float _popScale = 2.5f;
     [SerializeField] private float _fadeDuration = 0.1f;
+    [SerializeField] private float _vfxLifetime = 1f;
 
     private readonly Queue<BulletDecal> _activeDecals = new();
     private ObjectPool<BulletDecal> _pool;
+    private ObjectPool<VisualEffect> _vfxPool;
     private GameObject _runtimeDefaultPrefab;
 
     public void Spawn(RaycastHit hit)
@@ -28,11 +32,14 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
 
         BulletDecal decal = _pool.Get();
         Vector3 position = hit.point + hit.normal * SurfaceOffset;
-        Quaternion rotation = Quaternion.LookRotation(hit.normal) * Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
+        Quaternion decalRotation = Quaternion.LookRotation(hit.normal) * Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
+        Quaternion vfxRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+
+        PlayVfx(position, vfxRotation, hit.collider.transform);
 
         decal.Place(
             position,
-            rotation,
+            decalRotation,
             hit.collider.transform,
             _size,
             _lifetime,
@@ -70,6 +77,60 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
             decal = decalObject.AddComponent<BulletDecal>();
 
         return decal;
+    }
+
+    private void PlayVfx(Vector3 position, Quaternion rotation, Transform parent)
+    {
+        if (_decalVfxAsset == null) return;
+
+        EnsureVfxPool();
+
+        VisualEffect visualEffect = _vfxPool.Get();
+        Transform visualEffectTransform = visualEffect.transform;
+        visualEffectTransform.SetParent(parent, true);
+        visualEffectTransform.SetPositionAndRotation(position, rotation);
+        visualEffectTransform.localScale = Vector3.one;
+
+        visualEffect.Reinit();
+        visualEffect.SendEvent("OnPlay");
+        StartCoroutine(ReleaseVfxAfterDelay(visualEffect));
+    }
+
+    private void EnsureVfxPool()
+    {
+        if (_vfxPool != null) return;
+
+        _vfxPool = new ObjectPool<VisualEffect>(
+            createFunc: CreateVfx,
+            actionOnGet: visualEffect => visualEffect.gameObject.SetActive(true),
+            actionOnRelease: visualEffect =>
+            {
+                visualEffect.Stop();
+                visualEffect.transform.SetParent(transform, true);
+                visualEffect.gameObject.SetActive(false);
+            },
+            actionOnDestroy: visualEffect => Destroy(visualEffect.gameObject),
+            defaultCapacity: _defaultCapacity,
+            maxSize: _maxDecals
+        );
+    }
+
+    private VisualEffect CreateVfx()
+    {
+        GameObject visualEffectObject = new GameObject("BulletDecalVFX");
+        visualEffectObject.transform.SetParent(transform, false);
+
+        VisualEffect visualEffect = visualEffectObject.AddComponent<VisualEffect>();
+        visualEffect.visualEffectAsset = _decalVfxAsset;
+        return visualEffect;
+    }
+
+    private System.Collections.IEnumerator ReleaseVfxAfterDelay(VisualEffect visualEffect)
+    {
+        yield return new WaitForSeconds(_vfxLifetime);
+
+        if (visualEffect != null)
+            _vfxPool.Release(visualEffect);
     }
 
     private static void ConfigureRenderer(GameObject decalObject)
