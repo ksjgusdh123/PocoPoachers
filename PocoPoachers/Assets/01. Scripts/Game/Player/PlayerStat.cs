@@ -39,6 +39,11 @@ public class PlayerStat : StatBase
         CurrentThirst = _maxThirst;
     }
 
+    private void Start()
+    {
+        FindAnyObjectByType<HpUI>(FindObjectsInactive.Include)?.Setup(this);
+    }
+
     private void Update()
     {
         RegenerateStamina();
