@@ -42,6 +42,9 @@ public class PlayerStat : StatBase
     private void Start()
     {
         FindAnyObjectByType<HpUI>(FindObjectsInactive.Include)?.Setup(this);
+
+        foreach (var ui in FindObjectsByType<VitalUI>(FindObjectsInactive.Include))
+            ui.Setup(this);
     }
 
     private void Update()
