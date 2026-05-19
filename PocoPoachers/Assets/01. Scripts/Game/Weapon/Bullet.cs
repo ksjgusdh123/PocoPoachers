@@ -3,11 +3,13 @@ using UnityEngine;
 
 public class Bullet : MonoBehaviour
 {
+    private const string WallLayerName = "Wall";
     private const int MaxHitCount = 8;
     private static readonly RaycastHit[] HitBuffer = new RaycastHit[MaxHitCount];
 
     [SerializeField] private float _collisionRadius = 0.08f;
     [SerializeField] private LayerMask _hitMask = ~0;
+    [SerializeField] private LayerMask _wallMask;
 
     private float _speed;
     private float _damage;
@@ -23,6 +25,7 @@ public class Bullet : MonoBehaviour
     private void Awake()
     {
         _trail = GetComponent<TrailRenderer>();
+        EnsureWallMask();
     }
 
     public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease, GameObject attacker = null, bool applyDamage = true)
@@ -56,6 +59,9 @@ public class Bullet : MonoBehaviour
             {
                 damageable.TakeDamage(_damage, _attacker);
             }
+
+            if (IsWallHit(hit.collider))
+                BulletDecalPool.Instance?.Spawn(hit);
 
             Release();
             return;
@@ -93,6 +99,25 @@ public class Bullet : MonoBehaviour
         }
 
         return closestDistance < float.MaxValue;
+    }
+
+    private bool IsWallHit(Collider hitCollider)
+    {
+        return hitCollider != null && ((_wallMask.value & (1 << hitCollider.gameObject.layer)) != 0);
+    }
+
+    private void EnsureWallMask()
+    {
+        if (_wallMask.value != 0) return;
+
+        int wallLayer = LayerMask.NameToLayer(WallLayerName);
+        if (wallLayer >= 0)
+            _wallMask = 1 << wallLayer;
+    }
+
+    private void OnValidate()
+    {
+        EnsureWallMask();
     }
 
     private void Release()
