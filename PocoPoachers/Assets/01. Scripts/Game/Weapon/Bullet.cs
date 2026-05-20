@@ -58,6 +58,7 @@ public class Bullet : MonoBehaviour
             if (_applyDamage && hit.collider.TryGetComponent<IDamageable>(out var damageable))
             {
                 damageable.TakeDamage(_damage, _attacker);
+                BloodVFXPool.Instance?.Spawn(hit);
             }
 
             if (IsWallHit(hit.collider))
