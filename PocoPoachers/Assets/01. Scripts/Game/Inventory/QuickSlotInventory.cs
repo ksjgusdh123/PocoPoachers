@@ -64,10 +64,27 @@ public class QuickSlotInventory : MonoBehaviour
 
         var slot = _slots[ToLocal(quickSlotIndex)];
         if (slot.IsEmpty) return false;
-        if (!ItemUseSystem.CanUse(slot.ItemData)) return false;
+        ItemData usedItemData = slot.ItemData;
+        if (!ItemUseSystem.CanUse(usedItemData)) return false;
 
-        ItemUseSystem.ApplyEffect(slot.ItemData);
+        ItemUseSystem.ApplyEffect(usedItemData);
         slot.RemoveAmount(1);
+
+        if (!RoomManager.IsHost)
+        {
+            PacketBuilder.SendToHost(new G_ConsumeItemT
+            {
+                ItemId = usedItemData.id,
+                Amount = 1
+            }, G_ConsumeItem.Pack, PacketType.G_ConsumeItem);
+        }
+        else
+        {
+            PacketBuilder.BroadcastToGuests(new H_ConsumeItemResultT
+            {
+                ItemId = usedItemData.id,
+            }, H_ConsumeItemResult.Pack, PacketType.H_ConsumeItemResult);
+        }
         return true;
     }
 

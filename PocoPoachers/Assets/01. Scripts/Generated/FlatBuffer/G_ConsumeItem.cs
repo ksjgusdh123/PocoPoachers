@@ -18,23 +18,19 @@ public struct G_ConsumeItem : IFlatbufferObject
 
   public int ItemId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int Amount { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int InventoryIndex { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<G_ConsumeItem> CreateG_ConsumeItem(FlatBufferBuilder builder,
       int item_id = 0,
-      int amount = 0,
-      int inventory_index = 0) {
-    builder.StartTable(3);
-    G_ConsumeItem.AddInventoryIndex(builder, inventory_index);
+      int amount = 0) {
+    builder.StartTable(2);
     G_ConsumeItem.AddAmount(builder, amount);
     G_ConsumeItem.AddItemId(builder, item_id);
     return G_ConsumeItem.EndG_ConsumeItem(builder);
   }
 
-  public static void StartG_ConsumeItem(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartG_ConsumeItem(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddItemId(FlatBufferBuilder builder, int itemId) { builder.AddInt(0, itemId, 0); }
   public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(1, amount, 0); }
-  public static void AddInventoryIndex(FlatBufferBuilder builder, int inventoryIndex) { builder.AddInt(2, inventoryIndex, 0); }
   public static Offset<G_ConsumeItem> EndG_ConsumeItem(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<G_ConsumeItem>(o);
@@ -47,15 +43,13 @@ public struct G_ConsumeItem : IFlatbufferObject
   public void UnPackTo(G_ConsumeItemT _o) {
     _o.ItemId = this.ItemId;
     _o.Amount = this.Amount;
-    _o.InventoryIndex = this.InventoryIndex;
   }
   public static Offset<G_ConsumeItem> Pack(FlatBufferBuilder builder, G_ConsumeItemT _o) {
     if (_o == null) return default(Offset<G_ConsumeItem>);
     return CreateG_ConsumeItem(
       builder,
       _o.ItemId,
-      _o.Amount,
-      _o.InventoryIndex);
+      _o.Amount);
   }
 }
 
@@ -63,12 +57,10 @@ public class G_ConsumeItemT
 {
   public int ItemId { get; set; }
   public int Amount { get; set; }
-  public int InventoryIndex { get; set; }
 
   public G_ConsumeItemT() {
     this.ItemId = 0;
     this.Amount = 0;
-    this.InventoryIndex = 0;
   }
 }
 
@@ -80,7 +72,6 @@ static public class G_ConsumeItemVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*ItemId*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Amount*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*InventoryIndex*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
