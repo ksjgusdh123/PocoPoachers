@@ -84,6 +84,11 @@ public static partial class PacketHandlers
         }
     }
 
+    public static void OnH_ConsumeItemResult(FlatPacket root)
+    {
+        // TODO: 게스트 측에서 아이템 소모 결과 처리
+    }
+
     private static Inventory FindLocalInventory()
     {
         return Object.FindAnyObjectByType<PlayerController>()?.GetComponent<Inventory>();

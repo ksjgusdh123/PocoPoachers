@@ -28,6 +28,8 @@ public enum PacketType : byte
   H_GuestJoined = 21,
   G_Equip = 22,
   H_Equip = 23,
+  G_ConsumeItem = 24,
+  H_ConsumeItemResult = 25,
 };
 
 public class PacketTypeUnion {
@@ -86,6 +88,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_Equip(G_EquipT _g_equip) { return new PacketTypeUnion{ Type = PacketType.G_Equip, Value = _g_equip }; }
   public H_EquipT AsH_Equip() { return this.As<H_EquipT>(); }
   public static PacketTypeUnion FromH_Equip(H_EquipT _h_equip) { return new PacketTypeUnion{ Type = PacketType.H_Equip, Value = _h_equip }; }
+  public G_ConsumeItemT AsG_ConsumeItem() { return this.As<G_ConsumeItemT>(); }
+  public static PacketTypeUnion FromG_ConsumeItem(G_ConsumeItemT _o) { return new PacketTypeUnion{ Type = PacketType.G_ConsumeItem, Value = _o }; }
+  public H_ConsumeItemResultT AsH_ConsumeItemResult() { return this.As<H_ConsumeItemResultT>(); }
+  public static PacketTypeUnion FromH_ConsumeItemResult(H_ConsumeItemResultT _o) { return new PacketTypeUnion{ Type = PacketType.H_ConsumeItemResult, Value = _o }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -113,6 +119,8 @@ public class PacketTypeUnion {
       case PacketType.H_GuestJoined: return H_GuestJoined.Pack(builder, _o.AsH_GuestJoined()).Value;
       case PacketType.G_Equip: return G_Equip.Pack(builder, _o.AsG_Equip()).Value;
       case PacketType.H_Equip: return H_Equip.Pack(builder, _o.AsH_Equip()).Value;
+      case PacketType.G_ConsumeItem: return G_ConsumeItem.Pack(builder, _o.AsG_ConsumeItem()).Value;
+      case PacketType.H_ConsumeItemResult: return H_ConsumeItemResult.Pack(builder, _o.AsH_ConsumeItemResult()).Value;
     }
   }
 }
@@ -194,6 +202,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_Equip:
         result = H_EquipVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_ConsumeItem:
+        result = G_ConsumeItemVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_ConsumeItemResult:
+        result = H_ConsumeItemResultVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

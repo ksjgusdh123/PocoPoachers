@@ -2732,7 +2732,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6044460246266960544, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
   m_PrefabInstance: {fileID: 297130195943209335}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1297600762}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e22b6b1a64f5784488972505e1d8c762, type: 3}
@@ -2743,7 +2743,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5386810495183219512, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
   m_PrefabInstance: {fileID: 297130195943209335}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1297600762}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 40fd5f2137c486143ae64c45c1b59d82, type: 3}
@@ -2754,7 +2754,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8079698097342867631, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
   m_PrefabInstance: {fileID: 297130195943209335}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1297600762}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 233d1bee345449449bc6c575a31776d9, type: 3}
@@ -3058,6 +3058,25 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1268764973}
   m_CullTransparentMesh: 1
+--- !u!1 &1297600762 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8183887473744995871, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
+  m_PrefabInstance: {fileID: 297130195943209335}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1297600773
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1297600762}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 647f3a89122f7ab43b4fb7384bc0ee7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::QuickSlotInventory
+  _slotCount: 6
+  _startIndex: 3
 --- !u!1 &1298823259
 GameObject:
   m_ObjectHideFlags: 0
@@ -3067,8 +3086,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1298823261}
-  - component: {fileID: 1298823260}
-  - component: {fileID: 1298823262}
   m_Layer: 0
   m_Name: SpeechBubbleManager
   m_TagString: Untagged
@@ -3076,21 +3093,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1298823260
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1298823259}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 00e93e05ac33e4f428fad96bb07e1ade, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SpeechBubbleManager
-  _worldCanvas: {fileID: 2126526981}
-  _bubblePrefab: {fileID: 1900244043984237922, guid: e59c3130098c9ce4fa39745e2ba074c3, type: 3}
-  _defaultOffset: {x: 0.76, y: 1.8, z: -0.21}
 --- !u!4 &1298823261
 Transform:
   m_ObjectHideFlags: 0
@@ -3106,21 +3108,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1298823262
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1298823259}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d0afcd346f4ceaf43a3a4bc2858cdab7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DamageTextPool
-  _prefab: {fileID: 6379167493828725985, guid: e8209547b4ae0344c9c8b253342aa496, type: 3}
-  _initialSize: 10
-  _spawnOffset: {x: 0, y: 1.5, z: 0}
 --- !u!224 &1303903600 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5716066768571258880, guid: a1278209dca3c164eb662f12316d496f, type: 3}
@@ -5051,9 +5038,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0afcd346f4ceaf43a3a4bc2858cdab7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DamageTextPool
-  _prefab: {fileID: 6379167493828725985, guid: e8209547b4ae0344c9c8b253342aa496, type: 3}
-  _initialSize: 10
-  _spawnOffset: {x: 0, y: 1.5, z: 0}
 --- !u!114 &2126526983
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5236,7 +5220,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8183887473744995871, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1297600773}
   m_SourcePrefab: {fileID: 100100000, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
 --- !u!1001 &1583378957473919322
 PrefabInstance:
