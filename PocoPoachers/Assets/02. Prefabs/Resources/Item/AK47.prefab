@@ -216,6 +216,7 @@ Transform:
   - {fileID: 4977263084664720}
   - {fileID: 4628190596468080}
   - {fileID: 2434046590702876081}
+  - {fileID: 1428805110128178196}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 90, y: -90, z: 0}
 --- !u!33 &33705837635148522
@@ -290,6 +291,7 @@ MonoBehaviour:
   _gunData: {fileID: 11400000, guid: bd091b6a28c680b4ba034807acc9f2a0, type: 2}
   _muzzle: {fileID: 2434046590702876081}
   _muzzleFlash: {fileID: 2354607764028513807}
+  _shellEjectPort: {fileID: 1428805110128178196}
 --- !u!1 &1927369336514790
 GameObject:
   m_ObjectHideFlags: 0
@@ -380,6 +382,37 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!1 &3335936967386131603
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1428805110128178196}
+  m_Layer: 0
+  m_Name: ShellEjectPort
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1428805110128178196
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3335936967386131603}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0.000000029802322, y: 1, z: -0.000000029802322, w: -0.0000005066395}
+  m_LocalPosition: {x: 0, y: 0, z: -0.0621}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4519716788627816}
+  m_LocalEulerAnglesHint: {x: 0, y: 180, z: 0}
 --- !u!1 &6017787950527516386
 GameObject:
   m_ObjectHideFlags: 0

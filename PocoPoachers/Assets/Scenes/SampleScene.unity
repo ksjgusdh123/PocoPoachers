@@ -4632,6 +4632,58 @@ MonoBehaviour:
   m_MinRegionArea: 2
   m_NavMeshData: {fileID: 23800000, guid: 8fef1165382ad5249b1a1f3b57187fef, type: 2}
   m_BuildHeightMesh: 0
+--- !u!1 &1851722884
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1851722886}
+  - component: {fileID: 1851722885}
+  m_Layer: 0
+  m_Name: ShellCasingPool
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1851722885
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1851722884}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bcd0bc05f61e5404a8745c9c9d4a4de8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ShellCasingPool
+  _shellPrefab: {fileID: 6241060569393846184, guid: dfce304382972714ab4145a587e356fb, type: 3}
+  _ejectSideForce: 3
+  _ejectUpForce: 2
+  _ejectRandomness: 0.3
+  _ejectTorque: 15
+  _lifetime: 3
+  _defaultCapacity: 20
+  _maxSize: 50
+--- !u!4 &1851722886
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1851722884}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.52857, y: 0.45109, z: 0.11403}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!224 &1856686541 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 5716066768571258880, guid: a1278209dca3c164eb662f12316d496f, type: 3}
@@ -4751,6 +4803,7 @@ MonoBehaviour:
   _dotThreshold: 0.75
   _dotFadeSpeed: 10
   _pixelsPerDegree: 2
+  _minSpread: 10
   _spreadIncrement: 20
   _recoverySpeed: 80
   _collapseSpeed: 1000
@@ -6495,6 +6548,7 @@ SceneRoots:
   - {fileID: 1382421244}
   - {fileID: 833412704}
   - {fileID: 2140861179}
+  - {fileID: 1851722886}
   - {fileID: 233463963}
   - {fileID: 1126650554}
   - {fileID: 1571111625}

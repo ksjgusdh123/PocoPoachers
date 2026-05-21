@@ -7,6 +7,7 @@ public abstract class GunBase : MonoBehaviour
     [SerializeField] protected GunData _gunData;
     [SerializeField] protected Transform _muzzle;
     [SerializeField] private MuzzleFlash _muzzleFlash;
+    [SerializeField] private Transform _shellEjectPort;
 
     public GunData GunData => _gunData;
     public Transform Muzzle => _muzzle;
@@ -66,6 +67,7 @@ public abstract class GunBase : MonoBehaviour
 
         Shoot();
         _muzzleFlash?.Play();
+        ShellCasingPool.Instance?.Eject(_shellEjectPort);
         _soundGizmoPosition = _muzzle.position;
         _soundGizmoRange = _gunData.soundRange;
         _soundGizmoTimer = 1f;
