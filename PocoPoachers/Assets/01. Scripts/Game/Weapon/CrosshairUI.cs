@@ -16,6 +16,7 @@ public class CrosshairUI : MonoBehaviour
 
     [Header("스프레드 설정")]
     [SerializeField] private float _pixelsPerDegree = 5f;
+    [SerializeField] private float _minSpread = 10f;
     [SerializeField] private float _spreadIncrement = 20f;
     [SerializeField] private float _recoverySpeed = 80f;
     [SerializeField] private float _collapseSpeed = 200f;
@@ -146,8 +147,8 @@ public class CrosshairUI : MonoBehaviour
     public void UpdateBaseSpread(GunData gunData, bool isAiming)
     {
         if (gunData == null) return;
-        _targetBaseSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree;
-        _maxSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree + _spreadIncrement * 3f;
+        _targetBaseSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree + _minSpread;
+        _maxSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree + _minSpread + _spreadIncrement * 3f;
         _shakeIntensity = gunData.crosshairShakeIntensity;
         _shakeDuration = gunData.crosshairShakeDuration;
     }
