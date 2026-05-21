@@ -2,11 +2,22 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
-public class DamageTextUI : MonoBehaviour
+public class DamageTextUI : WorldUIElement
 {
     [SerializeField] private TextMeshProUGUI _text;
 
     private Sequence _sequence;
+
+    public static void Show(float damage, Vector3 worldPosition)
+    {
+        var dt = WorldUIManager.Instance.Create<DamageTextUI>(WorldUIType.DamageText, null, Vector3.zero);
+        if (dt == null)
+        {
+            Debug.LogWarning("[DamageTextUI] WorldUIManager에 DamageText 프리팹이 등록되지 않았습니다.");
+            return;
+        }
+        dt.Play(damage, worldPosition);
+    }
 
     public void Play(float damage, Vector3 worldPosition)
     {
@@ -34,6 +45,6 @@ public class DamageTextUI : MonoBehaviour
             .Append(transform.DOScale(0.3f, 0.4f).SetEase(Ease.InCubic))
             .Join(transform.DOMove(fallTarget, 0.4f).SetEase(Ease.InCubic))
             .Join(_text.DOFade(0f, 0.4f))
-            .OnComplete(() => DamageTextPool.Instance.Return(this));
+            .OnComplete(() => Release());
     }
 }

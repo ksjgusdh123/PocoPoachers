@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using static UnityEngine.Rendering.DebugUI;
 
 public enum PlayerInputMapType
 {
@@ -25,6 +26,7 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action<int> RegisterItemNumberKey;
     public event Action<int> ConsumeItemNumberKey;
     public event Action Dodge;
+    public event Action CancelItemUse;
 
     private PlayerInput _inputMap;
     private readonly Key[] _weaponKeys = { Key.Digit1, Key.Digit2 };
@@ -104,6 +106,11 @@ public class PlayerInputHandler : MonoBehaviour
         }
     }
 
+    void OnCancelItemUse(InputValue value)
+    {
+        if (value.isPressed) CancelItemUse?.Invoke();
+    }
+
     void OnChangeGun()
     {
         var keyboard = Keyboard.current;
@@ -118,4 +125,5 @@ public class PlayerInputHandler : MonoBehaviour
             }
         }
     }
+
 }

@@ -90,5 +90,15 @@ public static partial class PacketHandlers
         }
     }
 
+    public static void OnG_ConsumeItem(FlatPacket root)
+    {
+        var pkt = root.TypeAsG_ConsumeItem();
+        if (!RoomManager.IsHost) return;
+
+        PacketBuilder.BroadcastToGuests(new H_ConsumeItemResultT
+        {
+            ItemId = pkt.ItemId
+        }, H_ConsumeItemResult.Pack, PacketType.H_ConsumeItemResult);
+    }
 }
 
