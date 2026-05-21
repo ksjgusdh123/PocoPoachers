@@ -32,6 +32,7 @@ public class PlayerController : MonoBehaviour
         _inputHander.RegisterItemNumberKey += RegisterItem;
         _inputHander.ConsumeItemNumberKey += StartConsuming;
         _inputHander.StartInteraction += Interaction;
+        _inputHander.CancelItemUse += CancelConsuming;
     }
 
     private void OnTriggerEnter(Collider other)
