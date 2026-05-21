@@ -8,6 +8,7 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _sprintSpeed = 8f;
     [SerializeField] private float _acceleration = 10f;
     [SerializeField] private float _sprintStaminaDrain = 20f;
+    [SerializeField] private float _itemUseSpeedMultiplier = 0.4f; // 아이템 사용 중 이동속도 배율
 
     [SerializeField] private float _sendInterval = 0.1f;
     [SerializeField] private float _minMoveSqrEpsilon = 0.0004f;
@@ -21,6 +22,7 @@ public class PlayerMovement : MonoBehaviour
     private PlayerStat _playerStat;
 
     private Vector3 _currentVelocity; // _currentSpeed 대신 벡터로 교체
+    private float _currentItemUseMultiplier = 1f;
 
     private float _nextSendTime;
     private Vector3 _lastSentPos;
@@ -41,7 +43,22 @@ public class PlayerMovement : MonoBehaviour
         _animator = GetComponentInChildren<Animator>();
         _weaponController = GetComponent<WeaponController>();
         _playerStat = GetComponent<PlayerStat>();
+
+        PlayerController.OnUseStarted  += OnItemUseStarted;
+        PlayerController.OnUseCancelled += ResetItemUseMultiplier;
+        ItemUseSystem.OnItemUsed        += OnItemUsed;
     }
+
+    private void OnDestroy()
+    {
+        PlayerController.OnUseStarted  -= OnItemUseStarted;
+        PlayerController.OnUseCancelled -= ResetItemUseMultiplier;
+        ItemUseSystem.OnItemUsed        -= OnItemUsed;
+    }
+
+    private void OnItemUseStarted(float _) => _currentItemUseMultiplier = _itemUseSpeedMultiplier;
+    private void OnItemUsed(ItemData _)    => ResetItemUseMultiplier();
+    private void ResetItemUseMultiplier()  => _currentItemUseMultiplier = 1f;
 
     private void Update()
     {
@@ -68,7 +85,7 @@ public class PlayerMovement : MonoBehaviour
 
       float weaponMultiplier = _weaponController != null ? _weaponController.MoveSpeedMultiplier : 1f;
       float targetSpeed = moveDir == Vector3.zero ? 0f
-          : (isSprinting ? _sprintSpeed : _moveSpeed) * weaponMultiplier;
+          : (isSprinting ? _sprintSpeed : _moveSpeed) * weaponMultiplier * _currentItemUseMultiplier;
       Vector3 targetVelocity = moveDir * targetSpeed;
 
       // 입력 없으면 즉시 정지, 입력 있으면 부드럽게 가속
