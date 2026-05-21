@@ -48,7 +48,7 @@ public class QuickSlotDropHandler : ItemHolderDropHandler
         // OnSlotChanged가 slot.OnChanged 이벤트로 자동 호출
     }
 
-    // 퀵슬롯 해제: 남은 아이템을 인벤토리로 반납
+    // 퀵슬롯 해제: 남은 아이템을 인벤토리로 반납     
     public override void Unequip()
     {
         if (_inventoryUI == null) return;
