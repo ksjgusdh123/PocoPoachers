@@ -82,6 +82,6 @@ public class PlayerController : MonoBehaviour
     void ConsumeItem(int index)
     {
         if (!_quickSlots[index].IsSetted) return;
-        _quickSlots[index].GetComponent<ItemConsume>().ConsumeItem();
+        _quickSlots[index].ConsumeItem();
     }
 }
