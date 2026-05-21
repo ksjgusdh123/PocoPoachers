@@ -1777,6 +1777,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   _smooth: 14
+  _animSmooth: 0.1
 --- !u!114 &9106002716598269107
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2126,6 +2127,7 @@ GameObject:
   - component: {fileID: 5386810495183219512}
   - component: {fileID: 2539818160192551921}
   - component: {fileID: 6791762616065091423}
+  - component: {fileID: 4316088541578925105}
   m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
@@ -2253,6 +2255,7 @@ MonoBehaviour:
   PlayerMainGameUI: {fileID: 0}
   boxUI: {fileID: 0}
   _cameraController: {fileID: 0}
+  _useItemDuration: 1.5
 --- !u!114 &7471307466492674918
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2269,6 +2272,7 @@ MonoBehaviour:
   _sprintSpeed: 8
   _acceleration: 10
   _sprintStaminaDrain: 20
+  _itemUseSpeedMultiplier: 0.4
   _sendInterval: 0.1
   _minMoveSqrEpsilon: 0.0004
   _minYawDelta: 0.5
@@ -2361,6 +2365,10 @@ MonoBehaviour:
   _maxStamina: 100
   _staminaRegenRate: 15
   _staminaRegenDelay: 1
+  _maxHunger: 100
+  _maxThirst: 100
+  _hungerDrainRate: 1
+  _thirstDrainRate: 2
 --- !u!114 &6791762616065091423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2374,6 +2382,20 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponMount
   _mountPoint: {fileID: 2753220245869995748}
+--- !u!114 &4316088541578925105
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8183887473744995871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 647f3a89122f7ab43b4fb7384bc0ee7d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::QuickSlotInventory
+  _slotCount: 6
+  _startIndex: 3
 --- !u!1 &8529033822759830549
 GameObject:
   m_ObjectHideFlags: 0
