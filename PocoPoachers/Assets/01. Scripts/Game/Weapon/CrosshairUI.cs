@@ -44,14 +44,20 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private float _reloadCrosshairRotationAngle = 45f;
     [SerializeField] private float _reloadCrosshairRotationDuration = 0.2f;
     [SerializeField] private float _reloadCrosshairReturnDuration = 0.15f;
+    [SerializeField] private bool _matchCrosshairLineSizeOnReload = true;
 
     private Coroutine _reloadGaugeCoroutine;
     private Coroutine _reloadCrosshairRotationCoroutine;
     private float _reloadCrosshairCurrentAngle;
+    private float _reloadCrosshairSizeProgress;
     private float _topBaseAngle;
     private float _bottomBaseAngle;
     private float _leftBaseAngle;
     private float _rightBaseAngle;
+    private Vector2 _topBaseSize;
+    private Vector2 _bottomBaseSize;
+    private Vector2 _leftBaseSize;
+    private Vector2 _rightBaseSize;
 
     [Header("Hit Marker")]
     [SerializeField] private CanvasGroup _hitMarkerGroup;
@@ -85,6 +91,7 @@ public class CrosshairUI : MonoBehaviour
         Instance = this;
         _rectTransform = GetComponent<RectTransform>();
         CacheCrosshairLineRotations();
+        CacheCrosshairLineSizes();
         EnsureHitMarker();
         EnsureReloadGaugeGroup();
         if (_hitMarkerGroup != null) _hitMarkerGroup.alpha = 0f;
@@ -344,6 +351,11 @@ public class CrosshairUI : MonoBehaviour
         ApplyReloadCrosshairLineRotation(_bottom, _bottomBaseAngle);
         ApplyReloadCrosshairLineRotation(_left, _leftBaseAngle);
         ApplyReloadCrosshairLineRotation(_right, _rightBaseAngle);
+
+        ApplyReloadCrosshairLineSize(_top, _topBaseSize);
+        ApplyReloadCrosshairLineSize(_bottom, _bottomBaseSize);
+        ApplyReloadCrosshairLineSize(_left, _leftBaseSize);
+        ApplyReloadCrosshairLineSize(_right, _rightBaseSize);
     }
 
     public void StartReloadGauge(float duration)
@@ -425,9 +437,22 @@ public class CrosshairUI : MonoBehaviour
         _rightBaseAngle = GetLocalZAngle(_right);
     }
 
+    private void CacheCrosshairLineSizes()
+    {
+        _topBaseSize = GetRectSize(_top);
+        _bottomBaseSize = GetRectSize(_bottom);
+        _leftBaseSize = GetRectSize(_left);
+        _rightBaseSize = GetRectSize(_right);
+    }
+
     private float GetLocalZAngle(RectTransform line)
     {
         return line != null ? line.localEulerAngles.z : 0f;
+    }
+
+    private Vector2 GetRectSize(RectTransform line)
+    {
+        return line != null ? line.rect.size : Vector2.zero;
     }
 
     private void ApplyReloadCrosshairLineRotation(RectTransform line, float baseAngle)
@@ -437,6 +462,17 @@ public class CrosshairUI : MonoBehaviour
         Vector3 eulerAngles = line.localEulerAngles;
         eulerAngles.z = baseAngle + _reloadCrosshairCurrentAngle;
         line.localEulerAngles = eulerAngles;
+    }
+
+    private void ApplyReloadCrosshairLineSize(RectTransform line, Vector2 baseSize)
+    {
+        if (!_matchCrosshairLineSizeOnReload || line == null) return;
+
+        float squareSize = Mathf.Min(baseSize.x, baseSize.y);
+        Vector2 targetSize = new Vector2(squareSize, squareSize);
+        Vector2 size = Vector2.Lerp(baseSize, targetSize, _reloadCrosshairSizeProgress);
+        line.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
+        line.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y);
     }
 
     private void StartReloadCrosshairRotation(float targetAngle, float duration)
@@ -450,6 +486,7 @@ public class CrosshairUI : MonoBehaviour
         if (!isActiveAndEnabled)
         {
             _reloadCrosshairCurrentAngle = targetAngle;
+            _reloadCrosshairSizeProgress = Mathf.Approximately(targetAngle, 0f) ? 0f : 1f;
             ApplySpread();
             return;
         }
@@ -460,10 +497,13 @@ public class CrosshairUI : MonoBehaviour
     private IEnumerator ReloadCrosshairRotationRoutine(float targetAngle, float duration)
     {
         float startAngle = _reloadCrosshairCurrentAngle;
+        float startSizeProgress = _reloadCrosshairSizeProgress;
+        float targetSizeProgress = Mathf.Approximately(targetAngle, 0f) ? 0f : 1f;
 
         if (duration <= 0f)
         {
             _reloadCrosshairCurrentAngle = targetAngle;
+            _reloadCrosshairSizeProgress = targetSizeProgress;
             _reloadCrosshairRotationCoroutine = null;
             yield break;
         }
@@ -472,11 +512,14 @@ public class CrosshairUI : MonoBehaviour
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
-            _reloadCrosshairCurrentAngle = Mathf.Lerp(startAngle, targetAngle, Mathf.Clamp01(elapsed / duration));
+            float t = Mathf.Clamp01(elapsed / duration);
+            _reloadCrosshairCurrentAngle = Mathf.Lerp(startAngle, targetAngle, t);
+            _reloadCrosshairSizeProgress = Mathf.Lerp(startSizeProgress, targetSizeProgress, t);
             yield return null;
         }
 
         _reloadCrosshairCurrentAngle = targetAngle;
+        _reloadCrosshairSizeProgress = targetSizeProgress;
         _reloadCrosshairRotationCoroutine = null;
     }
 
