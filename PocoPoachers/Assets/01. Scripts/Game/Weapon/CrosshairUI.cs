@@ -46,6 +46,7 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private Color _reloadCrosshairBaseColor = new Color(0.55f, 0.55f, 0.55f, 1f);
     [SerializeField] private Color _reloadCrosshairPulseColor = Color.white;
     [SerializeField] private float _reloadCrosshairPulseInterval = 0.18f;
+    [SerializeField] private float _reloadCrosshairPulseScale = 1.25f;
 
     private Coroutine _reloadGaugeCoroutine;
     private Coroutine _reloadCrosshairRotationCoroutine;
@@ -67,6 +68,10 @@ public class CrosshairUI : MonoBehaviour
     private Color _bottomBaseColor;
     private Color _leftBaseColor;
     private Color _rightBaseColor;
+    private float _topPulseProgress;
+    private float _bottomPulseProgress;
+    private float _leftPulseProgress;
+    private float _rightPulseProgress;
 
     [Header("Hit Marker")]
     [SerializeField] private CanvasGroup _hitMarkerGroup;
@@ -362,10 +367,10 @@ public class CrosshairUI : MonoBehaviour
         ApplyReloadCrosshairLineRotation(_left, _leftBaseAngle);
         ApplyReloadCrosshairLineRotation(_right, _rightBaseAngle);
 
-        ApplyReloadCrosshairLineSize(_top, _topBaseSize);
-        ApplyReloadCrosshairLineSize(_bottom, _bottomBaseSize);
-        ApplyReloadCrosshairLineSize(_left, _leftBaseSize);
-        ApplyReloadCrosshairLineSize(_right, _rightBaseSize);
+        ApplyReloadCrosshairLineSize(_top, _topBaseSize, _topPulseProgress);
+        ApplyReloadCrosshairLineSize(_bottom, _bottomBaseSize, _bottomPulseProgress);
+        ApplyReloadCrosshairLineSize(_left, _leftBaseSize, _leftPulseProgress);
+        ApplyReloadCrosshairLineSize(_right, _rightBaseSize, _rightPulseProgress);
     }
 
     public void StartReloadGauge(float duration)
@@ -389,6 +394,7 @@ public class CrosshairUI : MonoBehaviour
         if (_reloadGaugeGroup != null) _reloadGaugeGroup.alpha = 0f;
         _reloadGaugeRoot.SetActive(false);
         RestoreCrosshairLineColors();
+        ResetReloadCrosshairPulse();
         StartReloadCrosshairRotation(0f, _reloadCrosshairRotationDuration);
     }
 
@@ -410,12 +416,14 @@ public class CrosshairUI : MonoBehaviour
                     : 1f;
             }
             _reloadGauge.fillAmount = Mathf.Clamp01(elapsed / duration);
-            UpdateReloadCrosshairLineColors(elapsed);
+            UpdateReloadCrosshairPulse(elapsed);
+            ApplySpread();
             yield return null;
         }
 
         _reloadGauge.fillAmount = 1f;
         ApplyReloadCrosshairBaseColor();
+        ResetReloadCrosshairPulse();
         if (_reloadGaugeGroup != null)
         {
             float fadeElapsed = 0f;
@@ -434,6 +442,7 @@ public class CrosshairUI : MonoBehaviour
         _reloadGaugeRoot.SetActive(false);
         _reloadGaugeCoroutine = null;
         RestoreCrosshairLineColors();
+        ResetReloadCrosshairPulse();
         StartReloadCrosshairRotation(0f, _reloadCrosshairRotationDuration);
     }
 
@@ -493,17 +502,22 @@ public class CrosshairUI : MonoBehaviour
         return image != null ? image.color : Color.white;
     }
 
-    private void UpdateReloadCrosshairLineColors(float elapsed)
+    private void UpdateReloadCrosshairPulse(float elapsed)
     {
         float interval = Mathf.Max(_reloadCrosshairPulseInterval, 0.001f);
         float cyclePosition = Mathf.Repeat(elapsed / interval, 4f);
         int activeIndex = Mathf.FloorToInt(cyclePosition);
         float pulse = Mathf.Sin((cyclePosition - activeIndex) * Mathf.PI);
 
-        ApplyReloadCrosshairLineColor(_topImage, activeIndex == 0 ? pulse : 0f);
-        ApplyReloadCrosshairLineColor(_rightImage, activeIndex == 1 ? pulse : 0f);
-        ApplyReloadCrosshairLineColor(_bottomImage, activeIndex == 2 ? pulse : 0f);
-        ApplyReloadCrosshairLineColor(_leftImage, activeIndex == 3 ? pulse : 0f);
+        _topPulseProgress = activeIndex == 0 ? pulse : 0f;
+        _rightPulseProgress = activeIndex == 1 ? pulse : 0f;
+        _bottomPulseProgress = activeIndex == 2 ? pulse : 0f;
+        _leftPulseProgress = activeIndex == 3 ? pulse : 0f;
+
+        ApplyReloadCrosshairLineColor(_topImage, _topPulseProgress);
+        ApplyReloadCrosshairLineColor(_rightImage, _rightPulseProgress);
+        ApplyReloadCrosshairLineColor(_bottomImage, _bottomPulseProgress);
+        ApplyReloadCrosshairLineColor(_leftImage, _leftPulseProgress);
     }
 
     private void ApplyReloadCrosshairBaseColor()
@@ -533,6 +547,15 @@ public class CrosshairUI : MonoBehaviour
         SetImageColor(_rightImage, _rightBaseColor);
     }
 
+    private void ResetReloadCrosshairPulse()
+    {
+        _topPulseProgress = 0f;
+        _rightPulseProgress = 0f;
+        _bottomPulseProgress = 0f;
+        _leftPulseProgress = 0f;
+        ApplySpread();
+    }
+
     private void SetImageColor(Image image, Color color)
     {
         if (image != null) image.color = color;
@@ -547,13 +570,16 @@ public class CrosshairUI : MonoBehaviour
         line.localEulerAngles = eulerAngles;
     }
 
-    private void ApplyReloadCrosshairLineSize(RectTransform line, Vector2 baseSize)
+    private void ApplyReloadCrosshairLineSize(RectTransform line, Vector2 baseSize, float pulse)
     {
-        if (!_matchCrosshairLineSizeOnReload || line == null) return;
+        if (line == null) return;
 
         float squareSize = Mathf.Min(baseSize.x, baseSize.y);
         Vector2 targetSize = new Vector2(squareSize, squareSize);
-        Vector2 size = Vector2.Lerp(baseSize, targetSize, _reloadCrosshairSizeProgress);
+        Vector2 size = _matchCrosshairLineSizeOnReload
+            ? Vector2.Lerp(baseSize, targetSize, _reloadCrosshairSizeProgress)
+            : baseSize;
+        size *= Mathf.Lerp(1f, _reloadCrosshairPulseScale, Mathf.Clamp01(pulse));
         line.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, size.x);
         line.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, size.y);
     }
