@@ -36,6 +36,7 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private float _kickRecovery = 150f;
 
     [Header("재장전 게이지")]
+    [SerializeField] private GameObject _reloadGaugeRoot;
     [SerializeField] private Image _reloadGauge;
 
     private Coroutine _reloadGaugeCoroutine;
@@ -318,27 +319,27 @@ public class CrosshairUI : MonoBehaviour
 
     public void StartReloadGauge(float duration)
     {
-        if (_reloadGauge == null) return;
+        if (_reloadGauge == null || _reloadGaugeRoot == null) return;
         if (_reloadGaugeCoroutine != null) StopCoroutine(_reloadGaugeCoroutine);
         _reloadGaugeCoroutine = StartCoroutine(ReloadGaugeRoutine(duration));
     }
 
     public void StopReloadGauge()
     {
-        if (_reloadGauge == null) return;
+        if (_reloadGaugeRoot == null) return;
         if (_reloadGaugeCoroutine != null)
         {
             StopCoroutine(_reloadGaugeCoroutine);
             _reloadGaugeCoroutine = null;
         }
-        _reloadGauge.fillAmount = 0f;
-        _reloadGauge.gameObject.SetActive(false);
+        if (_reloadGauge != null) _reloadGauge.fillAmount = 0f;
+        _reloadGaugeRoot.SetActive(false);
     }
 
     private IEnumerator ReloadGaugeRoutine(float duration)
     {
         _reloadGauge.fillAmount = 0f;
-        _reloadGauge.gameObject.SetActive(true);
+        _reloadGaugeRoot.SetActive(true);
 
         float elapsed = 0f;
         while (elapsed < duration)
@@ -349,7 +350,7 @@ public class CrosshairUI : MonoBehaviour
         }
 
         _reloadGauge.fillAmount = 1f;
-        _reloadGauge.gameObject.SetActive(false);
+        _reloadGaugeRoot.SetActive(false);
         _reloadGaugeCoroutine = null;
     }
 
