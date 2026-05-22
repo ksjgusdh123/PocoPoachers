@@ -89,9 +89,9 @@ public class PacketTypeUnion {
   public H_EquipT AsH_Equip() { return this.As<H_EquipT>(); }
   public static PacketTypeUnion FromH_Equip(H_EquipT _h_equip) { return new PacketTypeUnion{ Type = PacketType.H_Equip, Value = _h_equip }; }
   public G_ConsumeItemT AsG_ConsumeItem() { return this.As<G_ConsumeItemT>(); }
-  public static PacketTypeUnion FromG_ConsumeItem(G_ConsumeItemT _o) { return new PacketTypeUnion{ Type = PacketType.G_ConsumeItem, Value = _o }; }
+  public static PacketTypeUnion FromG_ConsumeItem(G_ConsumeItemT _g_consumeitem) { return new PacketTypeUnion{ Type = PacketType.G_ConsumeItem, Value = _g_consumeitem }; }
   public H_ConsumeItemResultT AsH_ConsumeItemResult() { return this.As<H_ConsumeItemResultT>(); }
-  public static PacketTypeUnion FromH_ConsumeItemResult(H_ConsumeItemResultT _o) { return new PacketTypeUnion{ Type = PacketType.H_ConsumeItemResult, Value = _o }; }
+  public static PacketTypeUnion FromH_ConsumeItemResult(H_ConsumeItemResultT _h_consumeitemresult) { return new PacketTypeUnion{ Type = PacketType.H_ConsumeItemResult, Value = _h_consumeitemresult }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {

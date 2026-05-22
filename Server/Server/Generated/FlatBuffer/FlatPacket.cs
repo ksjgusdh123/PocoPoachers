@@ -42,6 +42,8 @@ public struct FlatPacket : IFlatbufferObject
   public H_GuestJoined TypeAsH_GuestJoined() { return Type<H_GuestJoined>().Value; }
   public G_Equip TypeAsG_Equip() { return Type<G_Equip>().Value; }
   public H_Equip TypeAsH_Equip() { return Type<H_Equip>().Value; }
+  public G_ConsumeItem TypeAsG_ConsumeItem() { return Type<G_ConsumeItem>().Value; }
+  public H_ConsumeItemResult TypeAsH_ConsumeItemResult() { return Type<H_ConsumeItemResult>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -139,6 +141,12 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_Equip:
         _o.Type.Value = this.Type<H_Equip>().HasValue ? this.Type<H_Equip>().Value.UnPack() : null;
+        break;
+      case PacketType.G_ConsumeItem:
+        _o.Type.Value = this.Type<G_ConsumeItem>().HasValue ? this.Type<G_ConsumeItem>().Value.UnPack() : null;
+        break;
+      case PacketType.H_ConsumeItemResult:
+        _o.Type.Value = this.Type<H_ConsumeItemResult>().HasValue ? this.Type<H_ConsumeItemResult>().Value.UnPack() : null;
         break;
     }
   }
