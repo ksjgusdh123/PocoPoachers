@@ -38,6 +38,9 @@ public class CrosshairUI : MonoBehaviour
     [Header("재장전 게이지")]
     [SerializeField] private GameObject _reloadGaugeRoot;
     [SerializeField] private Image _reloadGauge;
+    [SerializeField] private CanvasGroup _reloadGaugeGroup;
+    [SerializeField] private float _reloadGaugeFadeInDuration = 0.15f;
+    [SerializeField] private float _reloadGaugeFadeOutDuration = 0.15f;
 
     private Coroutine _reloadGaugeCoroutine;
 
@@ -73,7 +76,9 @@ public class CrosshairUI : MonoBehaviour
         Instance = this;
         _rectTransform = GetComponent<RectTransform>();
         EnsureHitMarker();
+        EnsureReloadGaugeGroup();
         if (_hitMarkerGroup != null) _hitMarkerGroup.alpha = 0f;
+        if (_reloadGaugeGroup != null) _reloadGaugeGroup.alpha = 0f;
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Confined;
     }
@@ -321,6 +326,7 @@ public class CrosshairUI : MonoBehaviour
     {
         if (_reloadGauge == null || _reloadGaugeRoot == null) return;
         if (_reloadGaugeCoroutine != null) StopCoroutine(_reloadGaugeCoroutine);
+        EnsureReloadGaugeGroup();
         _reloadGaugeCoroutine = StartCoroutine(ReloadGaugeRoutine(duration));
     }
 
@@ -333,25 +339,56 @@ public class CrosshairUI : MonoBehaviour
             _reloadGaugeCoroutine = null;
         }
         if (_reloadGauge != null) _reloadGauge.fillAmount = 0f;
+        if (_reloadGaugeGroup != null) _reloadGaugeGroup.alpha = 0f;
         _reloadGaugeRoot.SetActive(false);
     }
 
     private IEnumerator ReloadGaugeRoutine(float duration)
     {
         _reloadGauge.fillAmount = 0f;
+        if (_reloadGaugeGroup != null) _reloadGaugeGroup.alpha = 0f;
         _reloadGaugeRoot.SetActive(true);
 
         float elapsed = 0f;
         while (elapsed < duration)
         {
             elapsed += Time.deltaTime;
+            if (_reloadGaugeGroup != null)
+            {
+                _reloadGaugeGroup.alpha = _reloadGaugeFadeInDuration > 0f
+                    ? Mathf.Clamp01(elapsed / _reloadGaugeFadeInDuration)
+                    : 1f;
+            }
             _reloadGauge.fillAmount = Mathf.Clamp01(elapsed / duration);
             yield return null;
         }
 
         _reloadGauge.fillAmount = 1f;
+        if (_reloadGaugeGroup != null)
+        {
+            float fadeElapsed = 0f;
+            float startAlpha = _reloadGaugeGroup.alpha;
+            while (fadeElapsed < _reloadGaugeFadeOutDuration)
+            {
+                fadeElapsed += Time.deltaTime;
+                _reloadGaugeGroup.alpha = _reloadGaugeFadeOutDuration > 0f
+                    ? Mathf.Lerp(startAlpha, 0f, Mathf.Clamp01(fadeElapsed / _reloadGaugeFadeOutDuration))
+                    : 0f;
+                yield return null;
+            }
+
+            _reloadGaugeGroup.alpha = 0f;
+        }
         _reloadGaugeRoot.SetActive(false);
         _reloadGaugeCoroutine = null;
+    }
+
+    private void EnsureReloadGaugeGroup()
+    {
+        if (_reloadGaugeGroup != null || _reloadGaugeRoot == null) return;
+
+        if (!_reloadGaugeRoot.TryGetComponent(out _reloadGaugeGroup))
+            _reloadGaugeGroup = _reloadGaugeRoot.AddComponent<CanvasGroup>();
     }
 
     public void SetGameMode(bool isGameMode)

@@ -4409,6 +4409,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1536144894}
+  - component: {fileID: 1536144895}
   m_Layer: 5
   m_Name: ReloadGauge
   m_TagString: Untagged
@@ -4437,6 +4438,18 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!225 &1536144895
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1536144893}
+  m_Enabled: 1
+  m_Alpha: 0
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!224 &1566550244 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 3977223105297985260, guid: 3eda557494b42f64397bd9765ce41a08, type: 3}
@@ -5453,6 +5466,8 @@ MonoBehaviour:
   _kickRecovery: 300
   _reloadGaugeRoot: {fileID: 1536144893}
   _reloadGauge: {fileID: 1577453824}
+  _reloadGaugeGroup: {fileID: 1536144895}
+  _reloadGaugeFadeInDuration: 0.15
   _hitMarkerGroup: {fileID: 217990082}
   _hitMarkerColor: {r: 1, g: 1, b: 1, a: 1}
   _hitMarkerDuration: 0.33
