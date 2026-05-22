@@ -167,6 +167,18 @@ public class WeaponController : EquipableController
     {
         if (_isSwitching) return;
 
+        if (_currentGun != null && _currentGun.IsReloading)
+        {
+            if (_wasAimPressed)
+            {
+                _wasAimPressed = false;
+                _currentGun.IsAiming = false;
+                _crosshairUI?.UpdateBaseSpread(_currentGun.GunData, false);
+                CameraZoom.Instance?.SetAiming(false, _currentGun.GunData.aimFOV, _currentGun.GunData.aimTime);
+            }
+            return;
+        }
+
         bool isAimPressed = _inputHandler.IsAimPressed;
         if (isAimPressed == _wasAimPressed) return;
 
