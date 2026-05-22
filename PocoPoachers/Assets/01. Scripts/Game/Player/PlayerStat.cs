@@ -45,6 +45,8 @@ public class PlayerStat : StatBase
 
         foreach (var ui in FindObjectsByType<VitalUI>(FindObjectsInactive.Include))
             ui.Setup(this);
+
+        FindAnyObjectByType<StaminaWorldUI>(FindObjectsInactive.Include)?.Setup(this, transform);
     }
 
     private void Update()
