@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
@@ -33,6 +34,11 @@ public class CrosshairUI : MonoBehaviour
     [Header("크로스헤어 반동")]
     [SerializeField] private float _kickSpeed = 300f;
     [SerializeField] private float _kickRecovery = 150f;
+
+    [Header("재장전 게이지")]
+    [SerializeField] private Image _reloadGauge;
+
+    private Coroutine _reloadGaugeCoroutine;
 
     [Header("Hit Marker")]
     [SerializeField] private CanvasGroup _hitMarkerGroup;
@@ -308,6 +314,43 @@ public class CrosshairUI : MonoBehaviour
         _bottom.anchoredPosition = new Vector2(0, -_currentSpread);
         _left.anchoredPosition   = new Vector2(-_currentSpread, 0);
         _right.anchoredPosition  = new Vector2( _currentSpread, 0);
+    }
+
+    public void StartReloadGauge(float duration)
+    {
+        if (_reloadGauge == null) return;
+        if (_reloadGaugeCoroutine != null) StopCoroutine(_reloadGaugeCoroutine);
+        _reloadGaugeCoroutine = StartCoroutine(ReloadGaugeRoutine(duration));
+    }
+
+    public void StopReloadGauge()
+    {
+        if (_reloadGauge == null) return;
+        if (_reloadGaugeCoroutine != null)
+        {
+            StopCoroutine(_reloadGaugeCoroutine);
+            _reloadGaugeCoroutine = null;
+        }
+        _reloadGauge.fillAmount = 0f;
+        _reloadGauge.gameObject.SetActive(false);
+    }
+
+    private IEnumerator ReloadGaugeRoutine(float duration)
+    {
+        _reloadGauge.fillAmount = 0f;
+        _reloadGauge.gameObject.SetActive(true);
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            _reloadGauge.fillAmount = Mathf.Clamp01(elapsed / duration);
+            yield return null;
+        }
+
+        _reloadGauge.fillAmount = 1f;
+        _reloadGauge.gameObject.SetActive(false);
+        _reloadGaugeCoroutine = null;
     }
 
     public void SetGameMode(bool isGameMode)

@@ -113,11 +113,13 @@ public abstract class GunBase : MonoBehaviour
         }
 
         _isReloading = false;
+        CrosshairUI.Instance?.StopReloadGauge();
     }
 
     private IEnumerator ReloadRoutine()
     {
         _isReloading = true;
+        CrosshairUI.Instance?.StartReloadGauge(_gunData.reloadTime);
         yield return new WaitForSeconds(_gunData.reloadTime);
         _currentAmmo = _gunData.magazineSize;
         _isReloading = false;
