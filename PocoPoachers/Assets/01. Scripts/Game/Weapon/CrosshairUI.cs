@@ -42,6 +42,7 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private float _reloadGaugeFadeDuration = 0.15f;
     [SerializeField] private float _reloadCrosshairRotationAngle = 45f;
     [SerializeField] private float _reloadCrosshairRotationDuration = 0.2f;
+    [SerializeField] private float _reloadCrosshairMinSpread = 35f;
     [SerializeField] private bool _matchCrosshairLineSizeOnReload = true;
     [SerializeField] private Color _reloadCrosshairBaseColor = new Color(0.55f, 0.55f, 0.55f, 1f);
     [SerializeField] private Color _reloadCrosshairPulseColor = Color.white;
@@ -348,14 +349,18 @@ public class CrosshairUI : MonoBehaviour
 
     private void ApplySpread()
     {
+        float spread = Mathf.Lerp(
+            _currentSpread,
+            Mathf.Max(_currentSpread, _reloadCrosshairMinSpread),
+            _reloadCrosshairSizeProgress);
         float radians = _reloadCrosshairCurrentAngle * Mathf.Deg2Rad;
         float sin = Mathf.Sin(radians);
         float cos = Mathf.Cos(radians);
 
-        Vector2 top = RotateVector(new Vector2(0f, _currentSpread), sin, cos);
-        Vector2 bottom = RotateVector(new Vector2(0f, -_currentSpread), sin, cos);
-        Vector2 left = RotateVector(new Vector2(-_currentSpread, 0f), sin, cos);
-        Vector2 right = RotateVector(new Vector2(_currentSpread, 0f), sin, cos);
+        Vector2 top = RotateVector(new Vector2(0f, spread), sin, cos);
+        Vector2 bottom = RotateVector(new Vector2(0f, -spread), sin, cos);
+        Vector2 left = RotateVector(new Vector2(-spread, 0f), sin, cos);
+        Vector2 right = RotateVector(new Vector2(spread, 0f), sin, cos);
 
         _top.anchoredPosition = top;
         _bottom.anchoredPosition = bottom;
