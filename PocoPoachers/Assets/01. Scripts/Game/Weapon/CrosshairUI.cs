@@ -41,8 +41,17 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private CanvasGroup _reloadGaugeGroup;
     [SerializeField] private float _reloadGaugeFadeInDuration = 0.15f;
     [SerializeField] private float _reloadGaugeFadeOutDuration = 0.15f;
+    [SerializeField] private float _reloadCrosshairRotationAngle = 45f;
+    [SerializeField] private float _reloadCrosshairRotationDuration = 0.2f;
+    [SerializeField] private float _reloadCrosshairReturnDuration = 0.15f;
 
     private Coroutine _reloadGaugeCoroutine;
+    private Coroutine _reloadCrosshairRotationCoroutine;
+    private float _reloadCrosshairCurrentAngle;
+    private float _topBaseAngle;
+    private float _bottomBaseAngle;
+    private float _leftBaseAngle;
+    private float _rightBaseAngle;
 
     [Header("Hit Marker")]
     [SerializeField] private CanvasGroup _hitMarkerGroup;
@@ -75,6 +84,7 @@ public class CrosshairUI : MonoBehaviour
     {
         Instance = this;
         _rectTransform = GetComponent<RectTransform>();
+        CacheCrosshairLineRotations();
         EnsureHitMarker();
         EnsureReloadGaugeGroup();
         if (_hitMarkerGroup != null) _hitMarkerGroup.alpha = 0f;
@@ -316,10 +326,24 @@ public class CrosshairUI : MonoBehaviour
 
     private void ApplySpread()
     {
-        _top.anchoredPosition    = new Vector2(0,  _currentSpread);
-        _bottom.anchoredPosition = new Vector2(0, -_currentSpread);
-        _left.anchoredPosition   = new Vector2(-_currentSpread, 0);
-        _right.anchoredPosition  = new Vector2( _currentSpread, 0);
+        float radians = _reloadCrosshairCurrentAngle * Mathf.Deg2Rad;
+        float sin = Mathf.Sin(radians);
+        float cos = Mathf.Cos(radians);
+
+        Vector2 top = RotateVector(new Vector2(0f, _currentSpread), sin, cos);
+        Vector2 bottom = RotateVector(new Vector2(0f, -_currentSpread), sin, cos);
+        Vector2 left = RotateVector(new Vector2(-_currentSpread, 0f), sin, cos);
+        Vector2 right = RotateVector(new Vector2(_currentSpread, 0f), sin, cos);
+
+        _top.anchoredPosition = top;
+        _bottom.anchoredPosition = bottom;
+        _left.anchoredPosition = left;
+        _right.anchoredPosition = right;
+
+        ApplyReloadCrosshairLineRotation(_top, _topBaseAngle);
+        ApplyReloadCrosshairLineRotation(_bottom, _bottomBaseAngle);
+        ApplyReloadCrosshairLineRotation(_left, _leftBaseAngle);
+        ApplyReloadCrosshairLineRotation(_right, _rightBaseAngle);
     }
 
     public void StartReloadGauge(float duration)
@@ -327,6 +351,7 @@ public class CrosshairUI : MonoBehaviour
         if (_reloadGauge == null || _reloadGaugeRoot == null) return;
         if (_reloadGaugeCoroutine != null) StopCoroutine(_reloadGaugeCoroutine);
         EnsureReloadGaugeGroup();
+        StartReloadCrosshairRotation(_reloadCrosshairRotationAngle, _reloadCrosshairRotationDuration);
         _reloadGaugeCoroutine = StartCoroutine(ReloadGaugeRoutine(duration));
     }
 
@@ -341,6 +366,7 @@ public class CrosshairUI : MonoBehaviour
         if (_reloadGauge != null) _reloadGauge.fillAmount = 0f;
         if (_reloadGaugeGroup != null) _reloadGaugeGroup.alpha = 0f;
         _reloadGaugeRoot.SetActive(false);
+        StartReloadCrosshairRotation(0f, _reloadCrosshairReturnDuration);
     }
 
     private IEnumerator ReloadGaugeRoutine(float duration)
@@ -381,6 +407,77 @@ public class CrosshairUI : MonoBehaviour
         }
         _reloadGaugeRoot.SetActive(false);
         _reloadGaugeCoroutine = null;
+        StartReloadCrosshairRotation(0f, _reloadCrosshairReturnDuration);
+    }
+
+    private Vector2 RotateVector(Vector2 vector, float sin, float cos)
+    {
+        return new Vector2(
+            vector.x * cos - vector.y * sin,
+            vector.x * sin + vector.y * cos);
+    }
+
+    private void CacheCrosshairLineRotations()
+    {
+        _topBaseAngle = GetLocalZAngle(_top);
+        _bottomBaseAngle = GetLocalZAngle(_bottom);
+        _leftBaseAngle = GetLocalZAngle(_left);
+        _rightBaseAngle = GetLocalZAngle(_right);
+    }
+
+    private float GetLocalZAngle(RectTransform line)
+    {
+        return line != null ? line.localEulerAngles.z : 0f;
+    }
+
+    private void ApplyReloadCrosshairLineRotation(RectTransform line, float baseAngle)
+    {
+        if (line == null) return;
+
+        Vector3 eulerAngles = line.localEulerAngles;
+        eulerAngles.z = baseAngle + _reloadCrosshairCurrentAngle;
+        line.localEulerAngles = eulerAngles;
+    }
+
+    private void StartReloadCrosshairRotation(float targetAngle, float duration)
+    {
+        if (_reloadCrosshairRotationCoroutine != null)
+        {
+            StopCoroutine(_reloadCrosshairRotationCoroutine);
+            _reloadCrosshairRotationCoroutine = null;
+        }
+
+        if (!isActiveAndEnabled)
+        {
+            _reloadCrosshairCurrentAngle = targetAngle;
+            ApplySpread();
+            return;
+        }
+
+        _reloadCrosshairRotationCoroutine = StartCoroutine(ReloadCrosshairRotationRoutine(targetAngle, duration));
+    }
+
+    private IEnumerator ReloadCrosshairRotationRoutine(float targetAngle, float duration)
+    {
+        float startAngle = _reloadCrosshairCurrentAngle;
+
+        if (duration <= 0f)
+        {
+            _reloadCrosshairCurrentAngle = targetAngle;
+            _reloadCrosshairRotationCoroutine = null;
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            _reloadCrosshairCurrentAngle = Mathf.Lerp(startAngle, targetAngle, Mathf.Clamp01(elapsed / duration));
+            yield return null;
+        }
+
+        _reloadCrosshairCurrentAngle = targetAngle;
+        _reloadCrosshairRotationCoroutine = null;
     }
 
     private void EnsureReloadGaugeGroup()
