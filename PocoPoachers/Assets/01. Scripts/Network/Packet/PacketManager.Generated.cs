@@ -26,5 +26,7 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.H_Equip            , PacketHandlers.OnH_Equip);
         _onRecv.Add(PacketType.G_ConsumeItem      , PacketHandlers.OnG_ConsumeItem);
         _onRecv.Add(PacketType.H_ConsumeItemResult, PacketHandlers.OnH_ConsumeItemResult);
+        _onRecv.Add(PacketType.G_StatSync         , PacketHandlers.OnG_StatSync);
+        _onRecv.Add(PacketType.H_StatSync         , PacketHandlers.OnH_StatSync);
     }
 }

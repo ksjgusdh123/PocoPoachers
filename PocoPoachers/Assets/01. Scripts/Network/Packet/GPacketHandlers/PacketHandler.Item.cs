@@ -83,8 +83,8 @@ public static partial class PacketHandlers
                     if (playerItemData != null && pkt.PlayerItemAmount > 0)
                         boxInv.AddItemAtSlot(pkt.BoxSlotIndex, playerItemData, pkt.PlayerItemAmount);
 
-                    RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = pkt.BoxUid, ItemTypeId = pkt.BoxItemId,    Amount = -pkt.BoxItemAmount,    SlotIndex = pkt.BoxSlotIndex });
-                    RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = pkt.BoxUid, ItemTypeId = pkt.PlayerItemId, Amount =  pkt.PlayerItemAmount, SlotIndex = pkt.BoxSlotIndex });
+                    RoomSync.ItemBoxUpdate(pkt.BoxUid, pkt.BoxItemId,    -pkt.BoxItemAmount,    pkt.BoxSlotIndex);
+                    RoomSync.ItemBoxUpdate(pkt.BoxUid, pkt.PlayerItemId,  pkt.PlayerItemAmount,  pkt.BoxSlotIndex);
                 }
             }
         }

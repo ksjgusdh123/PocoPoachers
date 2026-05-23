@@ -39,6 +39,11 @@ public class PlayerStat : StatBase
         CurrentThirst = _maxThirst;
     }
 
+    protected override void OnLocalHpChanged(float hp, float maxHp)
+    {
+        RoomSync.StatSync(hp, maxHp);
+    }
+
     private void Start()
     {
         FindAnyObjectByType<HpUI>(FindObjectsInactive.Include)?.Setup(this);
@@ -85,6 +90,7 @@ public class PlayerStat : StatBase
 
         CurrentHp = Mathf.Min(MaxHp, CurrentHp + amount);
         RaiseHpChanged();
+        OnLocalHpChanged(CurrentHp, MaxHp);
     }
 
     public void EatFood(float amount)
