@@ -37,6 +37,7 @@ public class PlayerStat : StatBase
         CurrentStamina = _maxStamina;
         CurrentHunger = _maxHunger;
         CurrentThirst = _maxThirst;
+        ItemUseSystem.Register(this);
     }
 
     private void Start()
@@ -97,6 +98,12 @@ public class PlayerStat : StatBase
     {
         CurrentThirst = Mathf.Min(_maxThirst, CurrentThirst + amount);
         OnThirstChanged?.Invoke(CurrentThirst, _maxThirst);
+    }
+
+    public void RestoreStamina(float amount)
+    {
+        CurrentStamina = Mathf.Min(_maxStamina, CurrentStamina + amount);
+        OnStaminaChanged?.Invoke(CurrentStamina, _maxStamina);
     }
 
     // 소모 성공 여부를 반환 (부족하면 false)
