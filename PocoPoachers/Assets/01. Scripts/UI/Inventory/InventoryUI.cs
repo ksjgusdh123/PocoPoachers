@@ -103,6 +103,7 @@ public class InventoryUI : MonoBehaviour
         _inventory.ChangeInventory += Refresh;
         if (_slotUIs == null)
         {
+            GenerateSlots();
             _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
         }
         Refresh();

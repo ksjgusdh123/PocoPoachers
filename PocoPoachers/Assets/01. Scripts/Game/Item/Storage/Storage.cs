@@ -5,6 +5,13 @@ using UnityEngine;
 /// </summary>
 public class Storage : MonoBehaviour, IInteractable
 {
+    private void Awake()
+    {
+        var storageUI = GameObject.Find("StorageUI");
+        storageUI?.GetComponent<InventoryUI>()?.Bind(GetComponent<Inventory>());
+        storageUI.SetActive(false);
+    }
+
     public void OnInteract(PlayerController player)
     {
         var inven = GetComponent<Inventory>();
@@ -13,7 +20,6 @@ public class Storage : MonoBehaviour, IInteractable
 
         var storageUI = player.GetStorageUI;
         storageUI.SetActive(true);
-        storageUI.GetComponentInChildren<InventoryUI>()?.Bind(inven);
 
         player.PlayerInventory.InteractionInventory = inven;
         inven.InteractionInventory = player.PlayerInventory;
