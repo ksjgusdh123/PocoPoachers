@@ -151,7 +151,7 @@ public class ObjectManager : Singleton<ObjectManager>
         var obj = CreateWorldObject(ObjectKind.ItemBox, uid, typeId);
         obj.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, rotation, 0f));
         _objects[(ObjectKind.ItemBox, uid)] = obj;
-        return obj.GetComponent<ItemBox>() ?? obj.gameObject.AddComponent<ItemBox>();
+        return obj.GetComponent<ItemBox>() ?? null;
     }
 
     WorldObject CreateWorldObject(ObjectKind kind, int id, int typeId = 0)

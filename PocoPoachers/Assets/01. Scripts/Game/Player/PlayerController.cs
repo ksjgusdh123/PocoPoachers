@@ -12,13 +12,20 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject PlayerBagUI;
     [SerializeField] private GameObject PlayerMainGameUI;
     [SerializeField] private GameObject boxUI;
+    [SerializeField] private GameObject StorageUI;
     [SerializeField] private CameraController _cameraController;
     [SerializeField] private float _useItemDuration = 1.5f;
+
+    // IInteractable이 접근하는 멤버
+    public Inventory PlayerInventory => _inventory;
+    public GameObject BoxUI => boxUI;
+    public GameObject GetStorageUI => StorageUI;
 
     private Inventory _inventory;
     private PlayerInputHandler _inputHander;
     private QuickSlotDropHandler[] _quickSlots;
     private GameObject _interactObject;
+    private IInteractable _currentInteractable;
     private Coroutine _useCoroutine;
 
     private void Start()
@@ -47,29 +54,38 @@ public class PlayerController : MonoBehaviour
 
     void Interaction()
     {
-        if (_interactObject != null && _interactObject.TryGetComponent<Inventory>(out var inven))
+        // 현재 열린 인터랙션이 있으면 닫기
+        if (_currentInteractable != null)
         {
-            ShowInventory();
-            boxUI.SetActive(!boxUI.activeSelf);
-            if (boxUI.activeSelf)
-            {
-                _inventory.InteractionInventory = inven;
-                inven.InteractionInventory = _inventory;
-                boxUI.GetComponentInChildren<InventoryUI>()?.Bind(inven);
-                boxUI.GetComponent<ItemBoxRevealUI>().Open(inven);
-                _interactObject.GetComponent<ItemBox>()?.MarkOpened();
-                _interactObject.GetComponent<ItemBoxAnimation>()?.SetOpen(true);
-                _inputHander.SwitchInputActionMap(PlayerInputMapType.ItemBox);
-            }
-            else
-            {
-                _inventory.InteractionInventory = null;
-                inven.InteractionInventory = null;
-                _interactObject.GetComponent<ItemBoxAnimation>()?.SetOpen(false);
-                _inputHander.SwitchInputActionMap(PlayerInputMapType.Game);
-                UIManager.GetInstance().ChangeMouseCursor(true);
-            }
+            _currentInteractable.OnInteractExit(this);
+            _currentInteractable = null;
+            return;
         }
+
+        if (_interactObject == null) return;
+        if (!_interactObject.TryGetComponent<IInteractable>(out var interactable)) return;
+
+        interactable.OnInteract(this);
+        _currentInteractable = interactable;
+    }
+
+    /// <summary>
+    /// 플레이어 가방 UI 열기/닫기 (IInteractable에서 직접 상태 지정 시 사용)
+    /// </summary>
+    public void SetInventoryOpen(bool open)
+    {
+        PlayerBagUI.SetActive(open);
+        PlayerMainGameUI.SetActive(!open);
+        LockCamera(open);
+        UIManager.GetInstance().ChangeMouseCursor(!open);
+    }
+
+    /// <summary>
+    /// 입력 맵 전환 (IInteractable에서 호출)
+    /// </summary>
+    public void SwitchInputMap(PlayerInputMapType type)
+    {
+        _inputHander.SwitchInputActionMap(type);
     }
 
     public void LockCamera(bool locked)

@@ -92,6 +92,9 @@ public class ItemSpawner : MonoBehaviour
             omgr?.SpawnItemBox(uid, BOX_TYPE_ID, randomPos, randomRot)
                 ?.Initialize(randomItems.ToArray());
         }
+
+        // temp
+        omgr.SpawnItemBox(_nextUid++, 302, new Vector3(4.5f, 0f, 2f), 0);
     }
 
     int GetRandomItemId()

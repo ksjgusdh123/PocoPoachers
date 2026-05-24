@@ -5,4 +5,5 @@ public enum ItemType : int
     Consumable = 1,
     Weapon = 2,
     ItemBox = 3,
+    Storage = 4,
 }
