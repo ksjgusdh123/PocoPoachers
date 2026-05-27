@@ -2,5 +2,6 @@ public enum WorldUIType
 {
     SpeechBubble,
     ScalePulse,
-    DamageText
+    DamageText,
+    HpBar
 }
