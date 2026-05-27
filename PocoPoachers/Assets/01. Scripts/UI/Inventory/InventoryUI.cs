@@ -8,14 +8,14 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Transform _slotParent;
     [SerializeField] private Button _sortButton;
 
-    private ItemSlotUI[] _slotUIs;
+    protected ItemSlotUI[] _slotUIs;
     private DescriptionUI _descriptionUI;
 
     public Inventory Inventory => _inventory;
     public WorldObject Box => _inventory.GetComponent<WorldObject>();
     public bool IsBox => _inventory.TryGetComponent<WorldObject>(out _);
 
-    private void Awake()
+    protected virtual void Awake()
     {
         ItemSlotUI[] slots = GetComponentsInChildren<ItemSlotUI>();
         if (slots.Length > 0)
@@ -115,7 +115,7 @@ public class InventoryUI : MonoBehaviour
     }
 
     // 최대 용량만큼 슬롯 UI 생성
-    private void GenerateSlots()
+    protected virtual void GenerateSlots()
     {
         _slotUIs = new ItemSlotUI[_inventory.MaxCapacity];
 
@@ -129,7 +129,7 @@ public class InventoryUI : MonoBehaviour
     }
 
     // 인벤토리 데이터 기반으로 전체 UI 갱신
-    public void Refresh()
+    public virtual void Refresh()
     {
         int current = _inventory.CurrentCapacity;
 
