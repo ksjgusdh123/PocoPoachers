@@ -10,8 +10,18 @@ public class StorageUI : InventoryUI
     [SerializeField] private TextMeshProUGUI _pageText;
 
     private int _currentPage = 0;
+    private ItemType _filterType = ItemType.None;
 
     public int PageCount => Mathf.CeilToInt((float)Inventory.CurrentCapacity / _pageSize);
+
+    // 필터 설정 (인스펙터 버튼 OnClick에서 직접 호출, 같은 타입 재클릭 시 None으로 토글)
+    public void SetFilter(int typeIndex)
+    {
+        ItemType type = (ItemType)typeIndex;
+        _filterType = _filterType == type ? ItemType.None : type;
+        _currentPage = 0;
+        Refresh();
+    }
 
     protected override void Awake()
     {
@@ -21,7 +31,7 @@ public class StorageUI : InventoryUI
         _nextButton?.onClick.AddListener(NextPage);
     }
 
-    public void NextPage()
+public void NextPage()
     {
         _currentPage = Mathf.Min(_currentPage + 1, PageCount - 1);
         Refresh();
@@ -43,20 +53,45 @@ public class StorageUI : InventoryUI
     {
         if (_slotUIs == null) return;
 
-        int current = Inventory.CurrentCapacity;
+        // 필터 적용 시 조건에 맞는 슬롯 인덱스만 추출
+        var visibleIndices = GetVisibleIndices();
+
         int start = _currentPage * _pageSize;
-        int end = Mathf.Min(start + _pageSize, current);
+        int end = Mathf.Min(start + _pageSize, visibleIndices.Count);
 
         for (int i = 0; i < _slotUIs.Length; i++)
         {
-            bool isActive = i >= start && i < end;
+            int visibleIndex = start + i;
+            bool isActive = visibleIndex < end;
             _slotUIs[i].gameObject.SetActive(isActive);
 
             if (isActive)
-                _slotUIs[i].SetSlot(Inventory.Slots[i]);
+                _slotUIs[i].SetSlot(Inventory.Slots[visibleIndices[visibleIndex]]);
         }
 
         RefreshCountText();
+    }
+
+    // 필터 조건에 맞는 슬롯 인덱스 목록 반환
+    private System.Collections.Generic.List<int> GetVisibleIndices()
+    {
+        var result = new System.Collections.Generic.List<int>();
+        for (int i = 0; i < Inventory.CurrentCapacity; i++)
+        {
+            var slot = Inventory.Slots[i];
+
+            // 필터 없음: 빈 슬롯 포함 전체 표시
+            if (_filterType == ItemType.None)
+            {
+                result.Add(i);
+                continue;
+            }
+
+            // 필터 있음: 해당 타입 아이템만 표시
+            if (!slot.IsEmpty && slot.ItemData.ItemType == _filterType)
+                result.Add(i);
+        }
+        return result;
     }
 
     protected override void RefreshCountText()
