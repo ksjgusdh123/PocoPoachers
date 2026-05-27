@@ -94,7 +94,16 @@ public class ItemSpawner : MonoBehaviour
         }
 
         // temp
-        omgr.SpawnItemBox(_nextUid++, 302, new Vector3(4.5f, 0f, 2f), 0);
+        int iuid = _nextUid++;
+        var idata = new H_ItemSpawnT
+        {
+            Uid = iuid,
+            TypeId = 302,
+            Pos = new Vec3T { X = 4.5f, Y = 0f, Z = 2f },
+            Rotation = 0,
+        };
+        omgr.RegisterSpawnedBox(idata);
+        omgr.SpawnItemBox(iuid, 302, new Vector3(4.5f, 0f, 2f), 0);
     }
 
     int GetRandomItemId()

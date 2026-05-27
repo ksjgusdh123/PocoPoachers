@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
 
 public class InventoryUI : MonoBehaviour
@@ -7,6 +8,8 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private ItemSlotUI _slotPrefab;
     [SerializeField] private Transform _slotParent;
     [SerializeField] private Button _sortButton;
+    [SerializeField] private TextMeshProUGUI _countText;
+    [SerializeField] private TextMeshProUGUI _miniCountText;
 
     protected ItemSlotUI[] _slotUIs;
     private DescriptionUI _descriptionUI;
@@ -30,6 +33,8 @@ public class InventoryUI : MonoBehaviour
         if (_inventory != null)
         {
             _inventory.ChangeInventory += Refresh;
+            foreach (var slot in _inventory.Slots)
+                slot.OnChanged += RefreshCountText;
             if (_slotUIs == null)
                 GenerateSlots();
             Refresh();
@@ -98,15 +103,29 @@ public class InventoryUI : MonoBehaviour
     public void Bind(Inventory inventory)
     {
         if (_inventory != null)
+        {
             _inventory.ChangeInventory -= Refresh;
+            foreach (var slot in _inventory.Slots)
+                slot.OnChanged -= RefreshCountText;
+        }
         _inventory = inventory;
         _inventory.ChangeInventory += Refresh;
+        foreach (var slot in _inventory.Slots)
+            slot.OnChanged += RefreshCountText;
         if (_slotUIs == null)
         {
             GenerateSlots();
             _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
         }
         Refresh();
+    }
+
+    private void OnDestroy()
+    {
+        if (_inventory == null) return;
+        _inventory.ChangeInventory -= Refresh;
+        foreach (var slot in _inventory.Slots)
+            slot.OnChanged -= RefreshCountText;
     }
 
     private void OnClickSort()
@@ -140,6 +159,18 @@ public class InventoryUI : MonoBehaviour
 
             if (isActive)
                 _slotUIs[i].SetSlot(_inventory.Slots[i]);
+        }
+
+        RefreshCountText();
+    }
+
+    // 아이템 수 / 용량 텍스트 갱신
+    protected virtual void RefreshCountText()
+    {
+        if (_countText != null)
+        {
+            _countText.text = $"({_inventory.ItemCount} / {_inventory.CurrentCapacity})";
+            _miniCountText.text = _countText.text;
         }
     }
 }

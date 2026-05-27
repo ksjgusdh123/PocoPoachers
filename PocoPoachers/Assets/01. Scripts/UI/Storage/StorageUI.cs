@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -6,6 +7,7 @@ public class StorageUI : InventoryUI
     [SerializeField] private int _pageSize = 5;
     [SerializeField] private Button _prevButton;
     [SerializeField] private Button _nextButton;
+    [SerializeField] private TextMeshProUGUI _pageText;
 
     private int _currentPage = 0;
 
@@ -53,5 +55,17 @@ public class StorageUI : InventoryUI
             if (isActive)
                 _slotUIs[i].SetSlot(Inventory.Slots[i]);
         }
+
+        RefreshCountText();
+    }
+
+    protected override void RefreshCountText()
+    {
+        // 아이템 수 / 용량 텍스트는 부모에서 처리
+        base.RefreshCountText();
+
+        // 페이지 텍스트 갱신
+        if (_pageText != null)
+            _pageText.text = $"{_currentPage + 1} / {PageCount}";
     }
 }
