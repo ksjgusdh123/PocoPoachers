@@ -166,7 +166,7 @@ namespace ServerCore
                 catch (Exception e)
                 {
                     LOG_E($"Recv Failed: {e}");
-                    RegisterRecv();
+                    Disconnect();
                 }
             }
             else

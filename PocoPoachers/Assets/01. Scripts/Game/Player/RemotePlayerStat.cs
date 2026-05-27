@@ -4,6 +4,5 @@ public class RemotePlayerStat : StatBase
     protected override void Awake()
     {
         base.Awake();
-        IsLocalOwner = false;
     }
 }
