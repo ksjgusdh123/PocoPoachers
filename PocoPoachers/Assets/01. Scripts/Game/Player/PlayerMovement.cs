@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(PlayerInputHandler))]
@@ -88,8 +88,9 @@ public class PlayerMovement : MonoBehaviour
           _playerStat.DrainStamina(_sprintStaminaDrain * Time.deltaTime);
 
       float weaponMultiplier = _weaponController != null ? _weaponController.MoveSpeedMultiplier : 1f;
+      float armorMultiplier = _playerStat != null ? _playerStat.ArmorMoveSpeedMultiplier : 1f;
       float targetSpeed = moveDir == Vector3.zero ? 0f
-          : (isSprinting ? _sprintSpeed : _moveSpeed) * weaponMultiplier * _currentItemUseMultiplier;
+          : (isSprinting ? _sprintSpeed : _moveSpeed) * weaponMultiplier * _currentItemUseMultiplier * armorMultiplier;
       Vector3 targetVelocity = moveDir * targetSpeed;
 
       // 입력 없으면 즉시 정지, 입력 있으면 부드럽게 가속

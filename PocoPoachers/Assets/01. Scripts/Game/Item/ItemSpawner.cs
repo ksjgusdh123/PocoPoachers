@@ -14,10 +14,12 @@ public class ItemSpawner : MonoBehaviour
 
     [Header("Random Settings")]
     [SerializeField, Range(0f, 1f)] private float _weaponChance = 0.7f;
+    [SerializeField, Range(0f, 1f)] private float _armorChance = 0.3f;
     [SerializeField] private int _minItemPerBox = 1;
     [SerializeField] private int _maxItemPerBox = 3;
 
     private List<int> _cachedWeaponIds = new List<int>();
+    private List<int> _cachedArmorIds = new List<int>();
     private List<int> _cachedConsumableIds = new List<int>();
 
     int _nextUid = 1000;
@@ -47,6 +49,7 @@ public class ItemSpawner : MonoBehaviour
         {
             if (item.Type == ItemType.Weapon) _cachedWeaponIds.Add(item.Id);
             else if (item.Type == ItemType.Consumable) _cachedConsumableIds.Add(item.Id);
+            else if (item.Type == ItemType.Armor) _cachedArmorIds.Add(item.Id);
         }
     }
 
@@ -108,8 +111,12 @@ public class ItemSpawner : MonoBehaviour
 
     int GetRandomItemId()
     {
-        if (Random.value < _weaponChance && _cachedWeaponIds.Count > 0)
+        float value = Random.value;
+        if (value < _armorChance && _cachedArmorIds.Count > 0)
+            return _cachedArmorIds[Random.Range(0, _cachedArmorIds.Count)];
+        else if (value < _weaponChance && _cachedWeaponIds.Count > 0)
             return _cachedWeaponIds[Random.Range(0, _cachedWeaponIds.Count)];
+
         return _cachedConsumableIds.Count > 0 ? _cachedConsumableIds[Random.Range(0, _cachedConsumableIds.Count)] : -1;
     }
 
