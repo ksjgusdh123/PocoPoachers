@@ -32,7 +32,10 @@
             if (!success || hostInfo == null)
                 RoomManager.Instance?.HandleFailure("입장 실패");
             else
+            {
                 RoomManager.Instance?.ConnectToGuest(hostInfo);
+                RoomManager.Instance?.NotifyGameStarted();
+            }
         });
     }
 

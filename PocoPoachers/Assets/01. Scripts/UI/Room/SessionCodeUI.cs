@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -55,11 +56,50 @@ public class SessionCodeUI : MonoBehaviour
     void OnClickJoin()
     {
         var nm = NetworkManager.Instance;
-        if (nm == null || !nm.IsLoggedIn)
+        if (nm == null) { ShowStatus("서버에 연결되어 있지 않습니다.", true); return; }
+
+        _btnJoin.interactable = false;
+
+        if (nm.IsLoggedIn)
         {
-            ShowStatus("서버에 연결되어 있지 않습니다.", true);
-            return;
+            ShowStatus("연결 중...", false);
+            RoomManager.Instance.StartAsGuest(_inputCode.text.ToUpper());
         }
+        else if (nm.Session != null && nm.Session.IsConnected)
+        {
+            ShowStatus("로그인 중...", false);
+            StartCoroutine(CoWaitLoginThenJoin());
+        }
+        else
+        {
+            ShowStatus("서버에 연결 중...", false);
+            nm.OnConnected += OnServerConnected;
+            nm.Reconnect();
+        }
+    }
+
+    void OnServerConnected()
+    {
+        NetworkManager.Instance.OnConnected -= OnServerConnected;
+        StartCoroutine(CoWaitLoginThenJoin());
+    }
+
+    IEnumerator CoWaitLoginThenJoin()
+    {
+        float elapsed = 0f;
+        while (!NetworkManager.Instance.IsLoggedIn && elapsed < 5f)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (!NetworkManager.Instance.IsLoggedIn)
+        {
+            ShowStatus("서버에 연결할 수 없습니다.", true);
+            _btnJoin.interactable = _inputCode.text.Length == 6;
+            yield break;
+        }
+
         ShowStatus("연결 중...", false);
         RoomManager.Instance.StartAsGuest(_inputCode.text.ToUpper());
     }

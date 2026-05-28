@@ -28,6 +28,7 @@ public class NetworkManager : Singleton<NetworkManager>
     protected override void Awake()
     {
         base.Awake();
+        if (_instance != this) return;
         DontDestroyOnLoad(gameObject);
         if (GetComponent<ObjectManager>() == null)
             gameObject.AddComponent<ObjectManager>();
