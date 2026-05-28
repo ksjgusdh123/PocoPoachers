@@ -31,7 +31,10 @@ public class NetworkManager : Singleton<NetworkManager>
         DontDestroyOnLoad(gameObject);
         if (GetComponent<ObjectManager>() == null)
             gameObject.AddComponent<ObjectManager>();
+        Connect(TargetHost, port);
+        StartCoroutine(CoHeartbeatLoop());
     }
+
     protected override void OnDestroy()
     {
         if (Session != null)
@@ -40,11 +43,7 @@ public class NetworkManager : Singleton<NetworkManager>
         }
     }
 
-    void Start()
-    {
-        Connect(TargetHost, port);
-        StartCoroutine(CoHeartbeatLoop());
-    }
+    public void Reconnect() => Connect(TargetHost, port);
 
     public void Connect(string ip, int p)
     {

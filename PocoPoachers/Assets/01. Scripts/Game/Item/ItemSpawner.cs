@@ -27,16 +27,8 @@ public class ItemSpawner : MonoBehaviour
     {
         CacheItemIds();
 
-        var rmgr = RoomManager.Instance;
-        if (rmgr != null)
-            rmgr.OnGameStarted += SpawnInitBoxes;
-    }
-
-    void OnDestroy()
-    {
-        var rmgr = RoomManager.Instance;
-        if (rmgr != null)
-            rmgr.OnGameStarted -= SpawnInitBoxes;
+        if (RoomManager.IsHost)
+            SpawnInitBoxes();
     }
 
     void CacheItemIds()

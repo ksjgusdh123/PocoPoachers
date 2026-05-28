@@ -20,20 +20,27 @@ public class LobbyUI : MonoBehaviour
 
     void Awake()
     {
+        RoomManager.Instance.OnGameStarted   += OnGameStarted;
+        RoomManager.Instance.OnRoomJoinFailed += OnRoomJoinFailed;
+
         _btnNewGame.onClick.AddListener(OnClickNewGame);
         _btnLoad   .onClick.AddListener(OnClickLoad);
         _btnCoOp   .onClick.AddListener(OnClickCoOp);
         _btnQuit   .onClick.AddListener(OnClickQuit);
 
-        RoomManager.Instance.OnRoomJoinFailed += OnRoomJoinFailed;
         _coOpUI.gameObject.SetActive(false);
     }
 
     void OnDestroy()
     {
         if (RoomManager.Instance != null)
+        {
+            RoomManager.Instance.OnGameStarted   -= OnGameStarted;
             RoomManager.Instance.OnRoomJoinFailed -= OnRoomJoinFailed;
+        }
     }
+
+    void OnGameStarted() => SceneLoader.Instance.LoadGameScene();
 
     void OnClickNewGame()
     {

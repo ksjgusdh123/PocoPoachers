@@ -10,6 +10,7 @@
             if (success)
             {
                 RoomManager.Instance.SessionCode = code;
+                RoomManager.Instance?.NotifySessionCodeReceived(code);
                 RoomManager.Instance?.NotifyGameStarted();
             }
             else

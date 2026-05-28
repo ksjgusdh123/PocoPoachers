@@ -54,6 +54,12 @@ public class SessionCodeUI : MonoBehaviour
 
     void OnClickJoin()
     {
+        var nm = NetworkManager.Instance;
+        if (nm == null || !nm.IsLoggedIn)
+        {
+            ShowStatus("서버에 연결되어 있지 않습니다.", true);
+            return;
+        }
         ShowStatus("연결 중...", false);
         RoomManager.Instance.StartAsGuest(_inputCode.text.ToUpper());
     }
