@@ -1,19 +1,14 @@
 using UnityEngine;
 
-public class Sandbag : StatBase
+public class Sandbag : MonoBehaviour, IDamageable
 {
-    [SerializeField] private float _maxHp = 200f;
+    [SerializeField] private int _maxHits = 10;
+    private int _hitCount;
 
-    protected override void Awake()
+    public void TakeDamage(float damage, GameObject attacker = null)
     {
-        base.Awake();
-        MaxHp = _maxHp;
-        CurrentHp = _maxHp;
-        OnDie += HandleDie;
-    }
-
-    private void HandleDie()
-    {
-        gameObject.SetActive(false);
+        _hitCount++;
+        if (_hitCount >= _maxHits)
+            gameObject.SetActive(false);
     }
 }
