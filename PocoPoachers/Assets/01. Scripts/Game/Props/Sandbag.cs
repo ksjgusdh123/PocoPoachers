@@ -1,10 +1,15 @@
+using System.Collections;
 using UnityEngine;
+using UnityEngine.VFX;
 
 public class Sandbag : MonoBehaviour, IDamageable
 {
     [SerializeField] private int _maxHits = 10;
-    [SerializeField] private GameObject _destroyVfxPrefab;
     [SerializeField] private GameObject _rubblePrefab;
+    [SerializeField] private float _destroyDelay = 2f;
+
+    [SerializeField] private VisualEffect _vfx;
+
     private int _hitCount;
 
     public void TakeDamage(float damage, GameObject attacker = null)
@@ -16,13 +21,30 @@ public class Sandbag : MonoBehaviour, IDamageable
 
     private void HandleDie()
     {
-        if (_destroyVfxPrefab != null)
-            Instantiate(_destroyVfxPrefab, transform.position, Quaternion.identity);
+        foreach (var r in GetComponentsInChildren<Renderer>())
+            r.enabled = false;
+
+        if (TryGetComponent<Collider>(out var col))
+            col.enabled = false;
+
         if (_rubblePrefab != null)
         {
             Vector3 spawnPos = transform.position + Vector3.up * 0.01f;
             Instantiate(_rubblePrefab, spawnPos, _rubblePrefab.transform.rotation);
         }
-        gameObject.SetActive(false);
+
+        if (_vfx != null)
+        {
+            _vfx.gameObject.SetActive(true);
+            _vfx.SendEvent("OnPlay");
+        }
+
+        StartCoroutine(DestroyAfterDelay());
+    }
+
+    private IEnumerator DestroyAfterDelay()
+    {
+        yield return new WaitForSeconds(_destroyDelay);
+        Destroy(gameObject);
     }
 }
