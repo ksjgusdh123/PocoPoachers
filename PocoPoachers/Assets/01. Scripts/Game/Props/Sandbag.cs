@@ -30,7 +30,9 @@ public class Sandbag : MonoBehaviour, IDamageable
         if (_rubblePrefab != null)
         {
             Vector3 spawnPos = transform.position + Vector3.up * 0.01f;
-            Instantiate(_rubblePrefab, spawnPos, _rubblePrefab.transform.rotation);
+            Vector3 prefabEuler = _rubblePrefab.transform.rotation.eulerAngles;
+            Quaternion rotation = Quaternion.Euler(prefabEuler.x, transform.eulerAngles.y, prefabEuler.z);
+            Instantiate(_rubblePrefab, spawnPos, rotation);
         }
 
         if (_vfx != null)
