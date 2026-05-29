@@ -32,7 +32,6 @@ public class NetworkManager : Singleton<NetworkManager>
         DontDestroyOnLoad(gameObject);
         if (GetComponent<ObjectManager>() == null)
             gameObject.AddComponent<ObjectManager>();
-        Connect(TargetHost, port);
         StartCoroutine(CoHeartbeatLoop());
     }
 

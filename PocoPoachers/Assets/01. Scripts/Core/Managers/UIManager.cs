@@ -10,6 +10,8 @@ public enum UIType
     EquipContextMenu,
     IngameMenu,
     WarningPopup,
+    NoticePopup,
+    JoinCode,
 }
 
 public class UIManager : Singleton<UIManager>

@@ -27,6 +27,7 @@ public class TeamPanelUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _txtStatus;
     [SerializeField] private TextMeshProUGUI _txtCode;
     [SerializeField] private Button          _btnCopy;
+    [SerializeField] private NoticePopupUI   _noticePopup;
 
     private void Awake()
     {
@@ -96,7 +97,8 @@ public class TeamPanelUI : MonoBehaviour
 
         if (!NetworkManager.Instance.IsLoggedIn)
         {
-            SetStatus("서버에 연결할 수 없습니다.");
+            SetStatus("");
+            _noticePopup?.Show("연결 실패", "서버에 연결할 수 없습니다.");
             _btnInvite.interactable = true;
             yield break;
         }
@@ -114,7 +116,8 @@ public class TeamPanelUI : MonoBehaviour
     private void OnRoomJoinFailed(string _)
     {
         _btnInvite.interactable = true;
-        SetStatus("방 생성에 실패했습니다.");
+        SetStatus("");
+        _noticePopup?.Show("초대 실패", "방 생성에 실패했습니다.");
     }
 
     private void ShowCode(string code)

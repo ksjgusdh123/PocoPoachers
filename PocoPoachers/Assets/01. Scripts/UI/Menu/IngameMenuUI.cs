@@ -89,6 +89,7 @@ public class IngameMenuUI : MonoBehaviour
     {
         _pendingConfirmAction = () =>
         {
+            NetworkManager.Instance?.LeaveGame();
 #if UNITY_EDITOR
             UnityEditor.EditorApplication.isPlaying = false;
 #else
