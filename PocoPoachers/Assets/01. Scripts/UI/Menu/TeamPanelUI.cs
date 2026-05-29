@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,7 +10,6 @@ using UnityEngine.UI;
 //  ├── PlayerEntry_2          [GameObject]
 //  ├── PlayerEntry_3          [GameObject]
 //  ├── Btn_Invite             [Button]           — 호스트만 표시
-//  ├── Txt_Status             [TextMeshProUGUI]  (선택)
 //  ├── Txt_Code               [TextMeshProUGUI]  — 코드 생성 후 표시
 //  └── Btn_Copy               [Button]           — 코드 생성 후 표시
 // ────────────────────────────────────────────────────────────────────────
@@ -24,10 +23,8 @@ public class TeamPanelUI : MonoBehaviour
 
     [Header("Invite")]
     [SerializeField] private Button          _btnInvite;
-    [SerializeField] private TextMeshProUGUI _txtStatus;
     [SerializeField] private TextMeshProUGUI _txtCode;
     [SerializeField] private Button          _btnCopy;
-    [SerializeField] private NoticePopupUI   _noticePopup;
 
     private void Awake()
     {
@@ -35,7 +32,6 @@ public class TeamPanelUI : MonoBehaviour
         _btnCopy  .onClick.AddListener(OnClickCopy);
 
         _btnInvite.gameObject.SetActive(RoomManager.IsHost);
-        if (_txtStatus != null) _txtStatus.gameObject.SetActive(false);
         _txtCode.gameObject.SetActive(false);
         _btnCopy.gameObject.SetActive(false);
 
@@ -62,48 +58,42 @@ public class TeamPanelUI : MonoBehaviour
 
     private void OnClickInvite()
     {
-        SetStatus("");
         string code = RoomManager.Instance.SessionCode;
         if (!string.IsNullOrEmpty(code)) { ShowCode(code); return; }
 
         _btnInvite.interactable = false;
+        StartCoroutine(CoConnectAndCreateRoom());
+    }
+
+    private IEnumerator CoConnectAndCreateRoom()
+    {
         var nm = NetworkManager.Instance;
-        if (nm != null && nm.Session != null && nm.Session.IsConnected)
+        if (nm == null)
         {
-            RoomManager.Instance.StartAsHost();
-        }
-        else
-        {
-            SetStatus("서버에 연결 중...");
-            NetworkManager.Instance.OnConnected += OnServerConnected;
-            NetworkManager.Instance.Reconnect();
-        }
-    }
-
-    private void OnServerConnected()
-    {
-        NetworkManager.Instance.OnConnected -= OnServerConnected;
-        StartCoroutine(CoWaitLoginThenHost());
-    }
-
-    private IEnumerator CoWaitLoginThenHost()
-    {
-        float elapsed = 0f;
-        while (!NetworkManager.Instance.IsLoggedIn && elapsed < LOGIN_TIMEOUT)
-        {
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        if (!NetworkManager.Instance.IsLoggedIn)
-        {
-            SetStatus("");
-            _noticePopup?.Show("연결 실패", "서버에 연결할 수 없습니다.");
             _btnInvite.interactable = true;
             yield break;
         }
 
-        SetStatus("");
+        if (!nm.IsLoggedIn)
+        {
+            if (nm.Session == null || !nm.Session.IsConnected)
+                nm.Reconnect();
+
+            float elapsed = 0f;
+            while (!nm.IsLoggedIn && elapsed < LOGIN_TIMEOUT)
+            {
+                elapsed += Time.deltaTime;
+                yield return null;
+            }
+
+            if (!nm.IsLoggedIn)
+            {
+                _btnInvite.interactable = true;
+                UIManager.GetInstance().ShowNotice("연결 실패", "서버에 연결할 수 없습니다.");
+                yield break;
+            }
+        }
+
         RoomManager.Instance.StartAsHost();
     }
 
@@ -116,8 +106,7 @@ public class TeamPanelUI : MonoBehaviour
     private void OnRoomJoinFailed(string _)
     {
         _btnInvite.interactable = true;
-        SetStatus("");
-        _noticePopup?.Show("초대 실패", "방 생성에 실패했습니다.");
+        UIManager.GetInstance().ShowNotice("초대 실패", "방 생성에 실패했습니다.");
     }
 
     private void ShowCode(string code)
@@ -128,12 +117,4 @@ public class TeamPanelUI : MonoBehaviour
     }
 
     private void OnClickCopy() => GUIUtility.systemCopyBuffer = RoomManager.Instance.SessionCode;
-
-    private void SetStatus(string msg)
-    {
-        if (_txtStatus == null) return;
-        bool hasMsg = !string.IsNullOrEmpty(msg);
-        _txtStatus.gameObject.SetActive(hasMsg);
-        if (hasMsg) _txtStatus.text = msg;
-    }
 }

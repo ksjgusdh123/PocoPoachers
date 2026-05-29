@@ -532,6 +532,84 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 50813c6e7bd20714c918a02b8cd1fe0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NoticePopupUI
+--- !u!1 &637986058
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 637986063}
+  - component: {fileID: 637986062}
+  - component: {fileID: 637986061}
+  - component: {fileID: 637986060}
+  m_Layer: 0
+  m_Name: Managers
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &637986060
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 637986058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28af9870be170c447b90d491ec6379ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ObjectManager
+  _entries:
+  - Kind: 0
+    Prefab: {fileID: 5533732121404448168, guid: 6c7f06c6a702d4d41bba4b5576adc82c, type: 3}
+--- !u!114 &637986061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 637986058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8e8d37ca2013f4744a423d8d770c34b2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkManager
+  localHost: 127.0.0.1
+  remoteHost: 34.50.21.90
+  port: 7000
+  remoteConnection: 0
+  userName: Player
+--- !u!114 &637986062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 637986058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eafb5341e229350428722ee2c4d2ead7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::NetworkManager
+--- !u!4 &637986063
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 637986058}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &895960987
 GameObject:
   m_ObjectHideFlags: 0
@@ -1388,3 +1466,4 @@ SceneRoots:
   - {fileID: 1683121489}
   - {fileID: 488477699}
   - {fileID: 1257902516}
+  - {fileID: 637986063}

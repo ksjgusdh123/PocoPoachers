@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
-//  WarningPopup [WarningPopupUI] — 기본 비활성화
+//  WarningPopup [WarningPopupUI]
 //  ├── Popup_Dimmer    [Image]
 //  └── Popup_Panel
 //      ├── Txt_Title   [TextMeshProUGUI]
@@ -25,37 +25,21 @@ public class WarningPopupUI : MonoBehaviour
 
     private void Awake()
     {
-        UIManager.GetInstance().Register(UIType.WarningPopup, gameObject);
+        _btnConfirm.onClick.AddListener(() => OnConfirmed?.Invoke());
+        _btnCancel .onClick.AddListener(() => OnCancelled?.Invoke());
 
-        _btnConfirm.onClick.AddListener(OnClickConfirm);
-        _btnCancel .onClick.AddListener(OnClickCancel);
-
+        UIManager.GetInstance().RegisterWarningPopup(this);
         gameObject.SetActive(false);
     }
 
     private void OnDestroy()
     {
-        var ui = UIManager.GetInstance();
-        if (ui == null) return;
-        ui.Unregister(UIType.WarningPopup);
+        UIManager.GetInstance()?.UnregisterWarningPopup();
     }
 
-    public void Show(string title, string message)
+    public void SetContent(string title, string message)
     {
-        if (_txtTitle != null)   _txtTitle.text   = title;
+        if (_txtTitle   != null) _txtTitle.text   = title;
         if (_txtMessage != null) _txtMessage.text = message;
-        UIManager.GetInstance().Show(UIType.WarningPopup);
-    }
-
-    private void OnClickConfirm()
-    {
-        UIManager.GetInstance().Hide(UIType.WarningPopup);
-        OnConfirmed?.Invoke();
-    }
-
-    private void OnClickCancel()
-    {
-        UIManager.GetInstance().Hide(UIType.WarningPopup);
-        OnCancelled?.Invoke();
     }
 }

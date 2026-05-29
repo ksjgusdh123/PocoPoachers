@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+
 public enum UIType
 {
     Inventory,
@@ -24,6 +25,12 @@ public class UIManager : Singleton<UIManager>
 
     public bool IsAnyPanelOpen => _stack.Count > 0;
 
+    private WarningPopupUI _warningPopup;
+    private NoticePopupUI  _noticePopup;
+
+    private Action _warningConfirmAction;
+    private Action _warningCancelAction;
+
     private void Update()
     {
         if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
@@ -33,6 +40,87 @@ public class UIManager : Singleton<UIManager>
         else
             Show(UIType.IngameMenu);
     }
+
+    // ── Popup Registration ─────────────────────────────────────────────
+
+    public void RegisterWarningPopup(WarningPopupUI popup)
+    {
+        if (_warningPopup != null)
+        {
+            _warningPopup.OnConfirmed -= OnWarningConfirmed;
+            _warningPopup.OnCancelled -= OnWarningCancelled;
+        }
+        _warningPopup = popup;
+        _warningPopup.OnConfirmed += OnWarningConfirmed;
+        _warningPopup.OnCancelled += OnWarningCancelled;
+        Register(UIType.WarningPopup, popup.gameObject);
+    }
+
+    public void UnregisterWarningPopup()
+    {
+        if (_warningPopup != null)
+        {
+            _warningPopup.OnConfirmed -= OnWarningConfirmed;
+            _warningPopup.OnCancelled -= OnWarningCancelled;
+            _warningPopup = null;
+        }
+        Unregister(UIType.WarningPopup);
+    }
+
+    public void RegisterNoticePopup(NoticePopupUI popup)
+    {
+        if (_noticePopup != null)
+            _noticePopup.OnOk -= OnNoticeOk;
+        _noticePopup = popup;
+        _noticePopup.OnOk += OnNoticeOk;
+        Register(UIType.NoticePopup, popup.gameObject);
+    }
+
+    public void UnregisterNoticePopup()
+    {
+        if (_noticePopup != null)
+        {
+            _noticePopup.OnOk -= OnNoticeOk;
+            _noticePopup = null;
+        }
+        Unregister(UIType.NoticePopup);
+    }
+
+    // ── Popup API ──────────────────────────────────────────────────────
+
+    public void ShowWarning(string title, string message, Action onConfirm, Action onCancel = null)
+    {
+        _warningConfirmAction = onConfirm;
+        _warningCancelAction  = onCancel;
+        _warningPopup?.SetContent(title, message);
+        Show(UIType.WarningPopup);
+    }
+
+    public void ShowNotice(string title, string message)
+    {
+        _noticePopup?.SetContent(title, message);
+        Show(UIType.NoticePopup);
+    }
+
+    private void OnWarningConfirmed()
+    {
+        Hide(UIType.WarningPopup);
+        _warningConfirmAction?.Invoke();
+        _warningConfirmAction = null;
+        _warningCancelAction  = null;
+    }
+
+    private void OnWarningCancelled()
+    {
+        Hide(UIType.WarningPopup);
+        _warningCancelAction?.Invoke();
+        _warningConfirmAction = null;
+        _warningCancelAction  = null;
+    }
+
+    private void OnNoticeOk() => Hide(UIType.NoticePopup);
+
+    // ── Panel Management ───────────────────────────────────────────────
 
     public void Register(UIType type, GameObject panel)
     {
@@ -94,7 +182,6 @@ public class UIManager : Singleton<UIManager>
     public bool IsOpen(UIType type)
         => _panels.TryGetValue(type, out var panel) && panel != null && panel.activeSelf;
 
-    // 커서 모드를 직접 강제 지정할 때 사용 (씬 전환 등)
     public void ChangeMouseCursor(bool isCrosshair)
     {
         CrosshairUI.Instance?.SetGameMode(isCrosshair);

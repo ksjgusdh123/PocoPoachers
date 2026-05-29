@@ -5,26 +5,22 @@ using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
 //  LobbyMenuUI
-//  ├─ BtnNewGame  (Button)         — 새 게임
-//  ├─ BtnLoad     (Button)         — 불러오기
-//  ├─ BtnCoOp     (Button)         — 협동플레이
-//  ├─ BtnQuit     (Button)         — 나가기
-//  ├─ CoOpUI      (JoinCodeUI)     — 협동플레이 패널 오브젝트
-//  ├─ NoticePopup (NoticePopupUI)  — 단순 알림
-//  └─ WarningPopup (WarningPopupUI) — 로컬 플레이 확인
+//  ├─ BtnNewGame  (Button)
+//  ├─ BtnLoad     (Button)
+//  ├─ BtnCoOp     (Button)
+//  ├─ BtnQuit     (Button)
+//  └─ CoOpUI      (JoinCodeUI)
 // ────────────────────────────────────────────────────────────────────────
 
 public class LobbyMenuUI : MonoBehaviour
 {
     private const float CONNECT_TIMEOUT = 5f;
 
-    [SerializeField] Button          _btnNewGame;
-    [SerializeField] Button          _btnLoad;
-    [SerializeField] Button          _btnCoOp;
-    [SerializeField] Button          _btnQuit;
-    [SerializeField] JoinCodeUI      _coOpUI;
-    [SerializeField] NoticePopupUI   _noticePopup;
-    [SerializeField] WarningPopupUI  _warningPopup;
+    [SerializeField] Button     _btnNewGame;
+    [SerializeField] Button     _btnLoad;
+    [SerializeField] Button     _btnCoOp;
+    [SerializeField] Button     _btnQuit;
+    [SerializeField] JoinCodeUI _coOpUI;
 
     void Awake()
     {
@@ -36,12 +32,6 @@ public class LobbyMenuUI : MonoBehaviour
         _btnCoOp   .onClick.AddListener(OnClickCoOp);
         _btnQuit   .onClick.AddListener(OnClickQuit);
 
-        if (_warningPopup != null)
-        {
-            _warningPopup.OnConfirmed += OnLocalPlayConfirmed;
-            _warningPopup.OnCancelled += OnLocalPlayCancelled;
-        }
-
         _coOpUI.gameObject.SetActive(false);
     }
 
@@ -52,12 +42,6 @@ public class LobbyMenuUI : MonoBehaviour
             RoomManager.Instance.OnGameStarted    -= OnGameStarted;
             RoomManager.Instance.OnRoomJoinFailed -= OnRoomJoinFailed;
         }
-
-        if (_warningPopup != null)
-        {
-            _warningPopup.OnConfirmed -= OnLocalPlayConfirmed;
-            _warningPopup.OnCancelled -= OnLocalPlayCancelled;
-        }
     }
 
     void OnGameStarted() => SceneLoader.Instance.LoadGameScene();
@@ -67,13 +51,12 @@ public class LobbyMenuUI : MonoBehaviour
         SetButtonsInteractable(false);
         StartCoroutine(CoConnectThen(
             onSuccess: () => RoomManager.Instance.StartAsHost(),
-            onFail:    () =>
-            {
-                if (_warningPopup != null)
-                    _warningPopup.Show("연결 실패", "서버에 연결할 수 없습니다.\n로컬 플레이로 진행하시겠습니까?");
-                else
-                    RoomManager.Instance.StartLocalHost();
-            }
+            onFail:    () => UIManager.GetInstance().ShowWarning(
+                "연결 실패",
+                "서버에 연결할 수 없습니다.\n로컬 플레이로 진행하시겠습니까?",
+                onConfirm: () => RoomManager.Instance.StartLocalHost(),
+                onCancel:  () => SetButtonsInteractable(true)
+            )
         ));
     }
 
@@ -87,7 +70,11 @@ public class LobbyMenuUI : MonoBehaviour
         SetButtonsInteractable(false);
         StartCoroutine(CoConnectThen(
             onSuccess: () => { SetButtonsInteractable(true); _coOpUI.Show(); },
-            onFail:    () => { SetButtonsInteractable(true); _noticePopup.Show("연결 실패", "서버에 연결할 수 없습니다.\n협동 플레이는 서버 연결이 필요합니다."); }
+            onFail:    () =>
+            {
+                SetButtonsInteractable(true);
+                UIManager.GetInstance().ShowNotice("연결 실패", "서버에 연결할 수 없습니다.\n협동 플레이는 서버 연결이 필요합니다.");
+            }
         ));
     }
 
@@ -102,10 +89,6 @@ public class LobbyMenuUI : MonoBehaviour
     }
 
     void OnRoomJoinFailed(string _) => SetButtonsInteractable(true);
-
-    void OnLocalPlayConfirmed() => RoomManager.Instance.StartLocalHost();
-
-    void OnLocalPlayCancelled() => SetButtonsInteractable(true);
 
     IEnumerator CoConnectThen(Action onSuccess, Action onFail)
     {

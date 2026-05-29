@@ -17,7 +17,6 @@ public class JoinCodeUI : MonoBehaviour
     [SerializeField] TMP_InputField _inputCode;
     [SerializeField] Button         _btnJoin;
     [SerializeField] Button         _btnBack;
-    [SerializeField] NoticePopupUI  _noticePopup;
 
     public static JoinCodeUI Instance { get; private set; }
 
@@ -61,7 +60,7 @@ public class JoinCodeUI : MonoBehaviour
     void OnClickJoin()
     {
         var nm = NetworkManager.Instance;
-        if (nm == null) { _noticePopup?.Show("연결 오류", "서버에 연결되어 있지 않습니다."); return; }
+        if (nm == null) { UIManager.GetInstance().ShowNotice("연결 오류", "서버에 연결되어 있지 않습니다."); return; }
 
         _btnJoin.interactable = false;
 
@@ -88,7 +87,7 @@ public class JoinCodeUI : MonoBehaviour
 
         if (!NetworkManager.Instance.IsLoggedIn)
         {
-            _noticePopup?.Show("연결 실패", "서버에 연결할 수 없습니다.");
+            UIManager.GetInstance().ShowNotice("연결 실패", "서버에 연결할 수 없습니다.");
             _btnJoin.interactable = _inputCode.text.Length == 6;
             yield break;
         }
@@ -99,8 +98,8 @@ public class JoinCodeUI : MonoBehaviour
     public void HandleJoinRoom(bool success)
     {
         if (!success)
-            _noticePopup?.Show("참가 실패", "방이 존재하지 않거나 입장이 불가능합니다.");
+            UIManager.GetInstance().ShowNotice("참가 실패", "방이 존재하지 않거나 입장이 불가능합니다.");
     }
 
-    void HandleFailed(string reason) => _noticePopup?.Show("연결 실패", reason);
+    void HandleFailed(string reason) => UIManager.GetInstance().ShowNotice("연결 실패", reason);
 }

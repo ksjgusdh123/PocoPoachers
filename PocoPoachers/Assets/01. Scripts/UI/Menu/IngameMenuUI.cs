@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,22 +8,11 @@ using UnityEngine.UI;
 //  │   ├── LeftPanel           [VerticalLayoutGroup]
 //  │   │   ├── Header_Team     [TextMeshProUGUI]
 //  │   │   └── TeamPanel       [TeamPanelUI]
-//  │   │       ├── PlayerEntry_0~3  [GameObject]
-//  │   │       ├── Btn_Invite       [Button]
-//  │   │       ├── Txt_Status       [TextMeshProUGUI] (선택)
-//  │   │       ├── Txt_Code         [TextMeshProUGUI]
-//  │   │       └── Btn_Copy         [Button]
 //  │   └── RightPanel          [VerticalLayoutGroup]
 //  │       ├── Btn_Resume
 //  │       ├── Btn_Options
 //  │       ├── Btn_ReturnToLobby
 //  │       └── Btn_Quit
-//  └── WarningPopup            [GameObject] — 기본 비활성화
-//      ├── Popup_Dimmer        [Image]
-//      └── Popup_Panel
-//          ├── Txt_Message     [TextMeshProUGUI]
-//          ├── Btn_Confirm
-//          └── Btn_Cancel
 // ────────────────────────────────────────────────────────────────────────
 
 public class IngameMenuUI : MonoBehaviour
@@ -38,11 +26,6 @@ public class IngameMenuUI : MonoBehaviour
     [SerializeField] private Button _btnReturnToLobby;
     [SerializeField] private Button _btnQuit;
 
-    [Header("Warning Popup")]
-    [SerializeField] private WarningPopupUI _warningPopup;
-
-    private Action _pendingConfirmAction;
-
     private void Awake()
     {
         UIManager.GetInstance().Register(UIType.IngameMenu, gameObject);
@@ -52,8 +35,8 @@ public class IngameMenuUI : MonoBehaviour
         _btnReturnToLobby .onClick.AddListener(OnClickReturnToLobby);
         _btnQuit          .onClick.AddListener(OnClickQuit);
 
-        _warningPopup.OnConfirmed += OnPopupConfirm;
-        _warningPopup.OnCancelled += OnPopupCancel;
+        if (NetworkManager.Instance != null)
+            NetworkManager.Instance.OnDisconnected += OnDisconnected;
 
         gameObject.SetActive(false);
     }
@@ -64,8 +47,8 @@ public class IngameMenuUI : MonoBehaviour
         if (ui == null) return;
         ui.Unregister(UIType.IngameMenu);
 
-        _warningPopup.OnConfirmed -= OnPopupConfirm;
-        _warningPopup.OnCancelled -= OnPopupCancel;
+        if (NetworkManager.Instance != null)
+            NetworkManager.Instance.OnDisconnected -= OnDisconnected;
     }
 
     private void OnClickResume() => UIManager.GetInstance().Hide(UIType.IngameMenu);
@@ -77,33 +60,41 @@ public class IngameMenuUI : MonoBehaviour
 
     private void OnClickReturnToLobby()
     {
-        _pendingConfirmAction = () =>
-        {
-            UIManager.GetInstance().Hide(UIType.IngameMenu);
-            SceneLoader.Instance.LoadLobbyScene();
-        };
-        _warningPopup.Show("로비로 돌아가기", "아이템이 소실됩니다.\n계속하시겠습니까?");
+        UIManager.GetInstance().ShowWarning(
+            "로비로 돌아가기",
+            "아이템이 소실됩니다.\n계속하시겠습니까?",
+            onConfirm: () =>
+            {
+                UIManager.GetInstance().Hide(UIType.IngameMenu);
+                SceneLoader.Instance.LoadLobbyScene();
+            }
+        );
     }
 
     private void OnClickQuit()
     {
-        _pendingConfirmAction = () =>
-        {
-            NetworkManager.Instance?.LeaveGame();
+        UIManager.GetInstance().ShowWarning(
+            "게임 종료",
+            "게임을 종료하시겠습니까?",
+            onConfirm: () =>
+            {
+                NetworkManager.Instance?.LeaveGame();
 #if UNITY_EDITOR
-            UnityEditor.EditorApplication.isPlaying = false;
+                UnityEditor.EditorApplication.isPlaying = false;
 #else
-            Application.Quit();
+                Application.Quit();
 #endif
-        };
-        _warningPopup.Show("게임 종료", "게임을 종료하시겠습니까?");
+            }
+        );
     }
 
-    private void OnPopupConfirm()
+    private void OnDisconnected()
     {
-        _pendingConfirmAction?.Invoke();
-        _pendingConfirmAction = null;
+        UIManager.GetInstance().HideAll();
+        UIManager.GetInstance().ShowWarning(
+            "연결 끊김",
+            "서버와의 연결이 끊겼습니다.\n로비로 돌아가시겠습니까?",
+            onConfirm: () => SceneLoader.Instance.LoadLobbyScene()
+        );
     }
-
-    private void OnPopupCancel() => _pendingConfirmAction = null;
 }
