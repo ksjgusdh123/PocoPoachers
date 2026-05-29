@@ -16,6 +16,9 @@ public class PlayerStat : StatBase
 
     public float MaxStamina => _maxStamina;
     public float CurrentStamina { get; private set; }
+    public float ArmorMoveSpeedMultiplier { get; private set; } = 1f;
+
+    protected override float Defense => _totalDefense;
 
     public float MaxHunger => _maxHunger;
     public float CurrentHunger { get; private set; }
@@ -28,6 +31,8 @@ public class PlayerStat : StatBase
     public event Action<float, float> OnThirstChanged;
 
     private float _lastStaminaUseTime = float.NegativeInfinity;
+    private float _totalDefense;
+    private float _totalMaxHpBonus;
 
     protected override void Awake()
     {
@@ -129,5 +134,29 @@ public class PlayerStat : StatBase
         CurrentStamina = Mathf.Max(0f, CurrentStamina - amount);
         _lastStaminaUseTime = Time.time;
         OnStaminaChanged?.Invoke(CurrentStamina, _maxStamina);
+    }
+
+    public void ApplyArmorStat(ArmorData data)
+    {
+        _totalDefense += data.defense;
+        _totalMaxHpBonus += data.maxHpBonus;
+        ArmorMoveSpeedMultiplier *= data.moveSpeedMultiplier;
+
+        MaxHp = _maxHp + _totalMaxHpBonus;
+        CurrentHp = Mathf.Min(CurrentHp + data.maxHpBonus, MaxHp);
+        RaiseHpChanged();
+    }
+
+    public void RemoveArmorStat(ArmorData data)
+    {
+        _totalDefense = Mathf.Max(0f, _totalDefense - data.defense);
+        _totalMaxHpBonus = Mathf.Max(0f, _totalMaxHpBonus - data.maxHpBonus);
+        ArmorMoveSpeedMultiplier = data.moveSpeedMultiplier > 0f
+            ? ArmorMoveSpeedMultiplier / data.moveSpeedMultiplier
+            : 1f;
+
+        MaxHp = _maxHp + _totalMaxHpBonus;
+        CurrentHp = Mathf.Min(CurrentHp, MaxHp);
+        RaiseHpChanged();
     }
 }

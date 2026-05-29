@@ -7,9 +7,9 @@ public class Storage : MonoBehaviour, IInteractable
 {
     private void Awake()
     {
-        var storageUI = GameObject.Find("StorageUI");
+        var storageUI = FindAnyObjectByType<StorageUI>(FindObjectsInactive.Include);
         storageUI?.GetComponent<InventoryUI>()?.Bind(GetComponent<Inventory>());
-        storageUI.SetActive(false);
+        storageUI.gameObject.SetActive(false);
     }
 
     public void OnInteract(PlayerController player)

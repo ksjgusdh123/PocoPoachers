@@ -35,6 +35,12 @@ public class HpUI : MonoBehaviour
         _targetValue = max > 0f ? current / max : 0f;
         UpdateText(current, max);
 
+        if (!gameObject.activeInHierarchy)
+        {
+            _slider.value = _targetValue;
+            return;
+        }
+
         if (_animCoroutine != null)
             StopCoroutine(_animCoroutine);
         _animCoroutine = StartCoroutine(AnimateSlider());

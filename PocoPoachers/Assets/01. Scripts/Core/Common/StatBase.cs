@@ -16,13 +16,16 @@ public abstract class StatBase : MonoBehaviour, IDamageable
         OnDamaged += (_, __, ___) => HpWorldUI.Show(this);
     }
 
+    protected virtual float Defense => 0f;
+
     public void TakeDamage(float damage, GameObject attacker = null)
     {
         if (CurrentHp <= 0f) return;
 
-        CurrentHp = Mathf.Max(0f, CurrentHp - damage);
+        float actualDamage = Mathf.Max(0f, damage - Defense);
+        CurrentHp = Mathf.Max(0f, CurrentHp - actualDamage);
         OnHpChanged?.Invoke(CurrentHp, MaxHp);
-        OnDamaged?.Invoke(damage, transform.position, attacker);
+        OnDamaged?.Invoke(actualDamage, transform.position, attacker);
         OnLocalHpChanged(CurrentHp, MaxHp);
 
         if (CurrentHp <= 0f)
