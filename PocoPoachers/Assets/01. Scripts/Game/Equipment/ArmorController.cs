@@ -5,38 +5,35 @@ public class ArmorController : EquipableController
 {
     public static event Action<int, ItemData> OnArmorChanged;
 
-    private ArmorBase[] _armors;
+    private ArmorMount _mount;
     private PlayerStat _playerStat;
 
     private void Awake()
     {
-        _armors = new ArmorBase[4];
+        _mount = GetComponent<ArmorMount>();
         _playerStat = GetComponent<PlayerStat>();
     }
 
     public override void Equip(ItemData data, int slotIndex)
     {
-        if (_armors[slotIndex] != null)
-        {
-            _playerStat.RemoveArmorStat(_armors[slotIndex].ArmorData);
-            Destroy(_armors[slotIndex].gameObject);
-        }
+        ArmorBase current = _mount.GetArmor();
+        if (current != null)
+            _playerStat.RemoveArmorStat(current.ArmorData);
 
-        ArmorBase armor = ResourceManager.Instance.Spawn<ArmorBase>(data.prefab, transform);
+        ArmorBase armor = _mount.ApplyEquip(data.id);
         if (armor == null) return;
 
         _playerStat.ApplyArmorStat(armor.ArmorData);
-        _armors[slotIndex] = armor;
         OnArmorChanged?.Invoke(slotIndex, data);
     }
 
     public override void Unequip(int slotIndex)
     {
-        if (_armors[slotIndex] == null) return;
+        ArmorBase current = _mount.GetArmor();
+        if (current == null) return;
 
-        _playerStat.RemoveArmorStat(_armors[slotIndex].ArmorData);
-        Destroy(_armors[slotIndex].gameObject);
-        _armors[slotIndex] = null;
+        _playerStat.RemoveArmorStat(current.ArmorData);
+        _mount.ApplyUnequip();
         OnArmorChanged?.Invoke(slotIndex, null);
     }
 }
