@@ -114,8 +114,8 @@ public class InventoryUI : MonoBehaviour
             slot.OnChanged += RefreshCountText;
         if (_slotUIs == null)
         {
-            GenerateSlots();
             _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
+            GenerateSlots();
         }
         Refresh();
     }
