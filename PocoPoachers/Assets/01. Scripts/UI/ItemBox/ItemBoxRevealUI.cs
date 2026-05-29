@@ -11,7 +11,6 @@ public class ItemBoxRevealUI : MonoBehaviour
 
     public void Open(Inventory inven)
     {
-        //StartCoroutine(StartOpen());
         _cards = GetComponentsInChildren<ItemRevealCard>(true).ToList();
 
         BoxItemSlot[] slots = inven.Slots.Cast<BoxItemSlot>().ToArray();
@@ -20,6 +19,8 @@ public class ItemBoxRevealUI : MonoBehaviour
         {
             _cards[i].CheckSlotState(slots[i]);
         }
+
+        UIManager.GetInstance().Show(UIType.ItemBoxReveal);
         StartCoroutine(RevealSequence());
     }
 

@@ -13,10 +13,22 @@ public class EquipContextMenuUI : MonoBehaviour
     private void Awake()
     {
         _rectTransform = GetComponent<RectTransform>();
-        gameObject.SetActive(false);
         _unequipButton.onClick.AddListener(OnClickUnequip);
 
+        UIManager.GetInstance().Register(UIType.EquipContextMenu, gameObject);
+        gameObject.SetActive(false);
         SlotInteractionManager.GetInstance().OnEquipRightClick += Show;
+    }
+
+    private void OnDisable()
+    {
+        _targetHandler = null;
+    }
+
+    private void OnDestroy()
+    {
+        var ui = UIManager.GetInstance();
+        if (ui != null) ui.Unregister(UIType.EquipContextMenu);
     }
 
     private void Update()
@@ -33,13 +45,12 @@ public class EquipContextMenuUI : MonoBehaviour
     {
         _targetHandler = handler;
         transform.position = handler.transform.position + (Vector3)_offset;
-        gameObject.SetActive(true);
+        UIManager.GetInstance().Show(UIType.EquipContextMenu);
     }
 
     private void Hide()
     {
-        _targetHandler = null;
-        gameObject.SetActive(false);
+        UIManager.GetInstance().Hide(UIType.EquipContextMenu);
     }
 
     private void OnClickUnequip()

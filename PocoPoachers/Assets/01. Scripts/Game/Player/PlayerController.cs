@@ -40,6 +40,41 @@ public class PlayerController : MonoBehaviour
         _inputHander.ConsumeItemNumberKey += StartConsuming;
         _inputHander.StartInteraction += Interaction;
         _inputHander.CancelItemUse += CancelConsuming;
+
+        var ui = UIManager.GetInstance();
+        ui.Register(UIType.Inventory, PlayerBagUI);
+        ui.Register(UIType.Storage, StorageUI);
+        ui.Register(UIType.ItemBoxReveal, boxUI);
+        ui.OnPanelOpened += OnPanelOpened;
+        ui.OnPanelClosed += OnPanelClosed;
+    }
+
+    private void OnDestroy()
+    {
+        var ui = UIManager.GetInstance();
+        if (ui == null) return;
+        ui.Unregister(UIType.Inventory);
+        ui.Unregister(UIType.Storage);
+        ui.Unregister(UIType.ItemBoxReveal);
+        ui.OnPanelOpened -= OnPanelOpened;
+        ui.OnPanelClosed -= OnPanelClosed;
+    }
+
+    private void OnPanelOpened(UIType type)
+    {
+        if (type != UIType.Inventory && type != UIType.IngameMenu) return;
+        PlayerMainGameUI.SetActive(false);
+        LockCamera(true);
+        _inputHander.SwitchInputActionMap(PlayerInputMapType.Inventory);
+    }
+
+    private void OnPanelClosed(UIType type)
+    {
+        if (type != UIType.Inventory && type != UIType.IngameMenu) return;
+        if (UIManager.GetInstance().IsAnyPanelOpen) return;
+        PlayerMainGameUI.SetActive(true);
+        LockCamera(false);
+        _inputHander.SwitchInputActionMap(PlayerInputMapType.Game);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -74,10 +109,8 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void SetInventoryOpen(bool open)
     {
-        PlayerBagUI.SetActive(open);
-        PlayerMainGameUI.SetActive(!open);
-        LockCamera(open);
-        UIManager.GetInstance().ChangeMouseCursor(!open);
+        if (open) UIManager.GetInstance().Show(UIType.Inventory);
+        else UIManager.GetInstance().Hide(UIType.Inventory);
     }
 
     /// <summary>
@@ -95,11 +128,7 @@ public class PlayerController : MonoBehaviour
 
     void ShowInventory()
     {
-        PlayerBagUI.SetActive(!PlayerBagUI.activeSelf);
-        bool isOpen = PlayerBagUI.activeSelf;
-        PlayerMainGameUI.SetActive(!isOpen);
-        LockCamera(isOpen);
-        UIManager.GetInstance().ChangeMouseCursor(!isOpen);
+        UIManager.GetInstance().Toggle(UIType.Inventory);
     }
 
     void RegisterItem(int index)
