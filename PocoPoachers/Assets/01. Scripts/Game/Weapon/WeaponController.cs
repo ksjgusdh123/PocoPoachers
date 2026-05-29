@@ -42,13 +42,19 @@ public class WeaponController : EquipableController
     private void Start()
     {
         if (_inputHandler != null)
+        {
             _inputHandler.WeaponSwitch += SwitchWeapon;
+            _inputHandler.CancelReload += HandleCancelReloadInput;
+        }
     }
 
     private void OnDestroy()
     {
         if (_inputHandler != null)
+        {
             _inputHandler.WeaponSwitch -= SwitchWeapon;
+            _inputHandler.CancelReload -= HandleCancelReloadInput;
+        }
     }
 
     private void Update()
@@ -161,6 +167,12 @@ public class WeaponController : EquipableController
         if (_isSwitching) return;
         if (_inputHandler.IsReloadPressed)
             _currentGun?.StartReload();
+    }
+
+    private void HandleCancelReloadInput()
+    {
+        if (_currentGun != null && _currentGun.IsReloading)
+            _currentGun.CancelReload();
     }
 
     private void HandleAimInput()
