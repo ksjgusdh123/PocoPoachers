@@ -80,7 +80,7 @@ public class IngameMenuUI : MonoBehaviour
         _pendingConfirmAction = () =>
         {
             UIManager.GetInstance().Hide(UIType.IngameMenu);
-            // TODO: SceneLoader.Instance.LoadLobbyScene();
+            SceneLoader.Instance.LoadLobbyScene();
         };
         _warningPopup.Show("로비로 돌아가기", "아이템이 소실됩니다.\n계속하시겠습니까?");
     }

@@ -41,7 +41,6 @@ public class UIManager : Singleton<UIManager>
     {
         if (!_panels.Remove(type)) return;
         _stack.Remove(type);
-        RefreshCursor();
     }
 
     public void Show(UIType type)
@@ -101,6 +100,7 @@ public class UIManager : Singleton<UIManager>
 
     private void RefreshCursor()
     {
-        CrosshairUI.Instance?.SetGameMode(!IsAnyPanelOpen);
+        if (CrosshairUI.Instance == null) return;
+        CrosshairUI.Instance.SetGameMode(!IsAnyPanelOpen);
     }
 }
