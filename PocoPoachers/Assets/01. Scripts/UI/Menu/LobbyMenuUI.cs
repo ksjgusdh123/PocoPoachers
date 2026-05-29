@@ -1,8 +1,8 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
-//  LobbyUI
+//  LobbyMenuUI
 //  ├─ BtnNewGame  (Button)         — 새 게임
 //  ├─ BtnLoad     (Button)         — 불러오기
 //  ├─ BtnCoOp     (Button)         — 협동플레이
@@ -10,13 +10,13 @@ using UnityEngine.UI;
 //  └─ CoOpUI      (SessionCodeUI)  — 협동플레이 패널 오브젝트
 // ────────────────────────────────────────────────────────────────────────
 
-public class LobbyUI : MonoBehaviour
+public class LobbyMenuUI : MonoBehaviour
 {
     [SerializeField] Button         _btnNewGame;
     [SerializeField] Button         _btnLoad;
     [SerializeField] Button         _btnCoOp;
     [SerializeField] Button         _btnQuit;
-    [SerializeField] SessionCodeUI  _coOpUI;
+    [SerializeField] JoinCodeUI  _coOpUI;
 
     void Awake()
     {

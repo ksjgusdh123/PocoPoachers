@@ -1,10 +1,10 @@
-using System.Collections;
+﻿using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
-//  SessionCodeUI (Panel — 협동플레이 패널)
+//  JoinCodeUI (Panel — 협동플레이 패널)
 //  ├─ InputCode   (TMP_InputField)     — 6자리 코드
 //  ├─ BtnJoin     (Button)             — 참가하기
 //  ├─ BtnBack     (Button)             — 뒤로
@@ -13,7 +13,7 @@ using UnityEngine.UI;
 //      └─ BtnClose    (Button)
 // ────────────────────────────────────────────────────────────────────────
 
-public class SessionCodeUI : MonoBehaviour
+public class JoinCodeUI : MonoBehaviour
 {
     [SerializeField] TMP_InputField  _inputCode;
     [SerializeField] Button          _btnJoin;
@@ -22,7 +22,7 @@ public class SessionCodeUI : MonoBehaviour
     [SerializeField] TextMeshProUGUI _txtStatus;
     [SerializeField] Button          _btnClose;
 
-    public static SessionCodeUI Instance { get; private set; }
+    public static JoinCodeUI Instance { get; private set; }
 
     void Awake()
     {

@@ -28,7 +28,7 @@
 
         MainThreadDispatcher.Enqueue(() =>
         {
-            SessionCodeUI.Instance?.HandleJoinRoom(success);
+            JoinCodeUI.Instance?.HandleJoinRoom(success);
             if (!success || hostInfo == null)
                 RoomManager.Instance?.HandleFailure("입장 실패");
             else

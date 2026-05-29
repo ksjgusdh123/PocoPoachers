@@ -62,8 +62,11 @@ public class PlayerController : MonoBehaviour
 
     private void OnPanelOpened(UIType type)
     {
-        if (type != UIType.Inventory && type != UIType.IngameMenu) return;
-        PlayerMainGameUI.SetActive(false);
+        if (type == UIType.Inventory)
+            PlayerMainGameUI.SetActive(false);
+        else if (type != UIType.IngameMenu)
+            return;
+
         LockCamera(true);
         _inputHander.SwitchInputActionMap(PlayerInputMapType.Inventory);
     }
@@ -72,7 +75,10 @@ public class PlayerController : MonoBehaviour
     {
         if (type != UIType.Inventory && type != UIType.IngameMenu) return;
         if (UIManager.GetInstance().IsAnyPanelOpen) return;
-        PlayerMainGameUI.SetActive(true);
+
+        if (type == UIType.Inventory)
+            PlayerMainGameUI.SetActive(true);
+
         LockCamera(false);
         _inputHander.SwitchInputActionMap(PlayerInputMapType.Game);
     }

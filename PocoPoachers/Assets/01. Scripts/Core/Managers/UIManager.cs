@@ -9,6 +9,7 @@ public enum UIType
     ItemBoxReveal,
     EquipContextMenu,
     IngameMenu,
+    WarningPopup,
 }
 
 public class UIManager : Singleton<UIManager>

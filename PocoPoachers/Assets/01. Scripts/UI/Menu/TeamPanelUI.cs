@@ -1,67 +1,71 @@
-using System.Collections;
+﻿using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
-//  InviteCodeUI
-//  ├─ BtnInvite       (Button)             — 초대 버튼 (호스트만 표시)
-//  ├─ TxtStatus       (TextMeshProUGUI)    — 상태 안내 텍스트 (선택)
-//  └─ Popup           (GameObject)         — 코드 팝업
-//      ├─ TxtCode     (TextMeshProUGUI)    — 초대 코드
-//      ├─ BtnCopy     (Button)             — 클립보드 복사
-//      └─ BtnClose    (Button)             — 닫기
+//  TeamPanel [TeamPanelUI]
+//  ├── PlayerEntry_0          [GameObject]
+//  ├── PlayerEntry_1          [GameObject]
+//  ├── PlayerEntry_2          [GameObject]
+//  ├── PlayerEntry_3          [GameObject]
+//  ├── Btn_Invite             [Button]           — 호스트만 표시
+//  ├── Txt_Status             [TextMeshProUGUI]  (선택)
+//  ├── Txt_Code               [TextMeshProUGUI]  — 코드 생성 후 표시
+//  └── Btn_Copy               [Button]           — 코드 생성 후 표시
 // ────────────────────────────────────────────────────────────────────────
 
-public class InviteCodeUI : MonoBehaviour
+public class TeamPanelUI : MonoBehaviour
 {
-    [SerializeField] Button          _btnInvite;
-    [SerializeField] TextMeshProUGUI _txtStatus;
-    [SerializeField] GameObject      _popup;
-    [SerializeField] TextMeshProUGUI _txtCode;
-    [SerializeField] Button          _btnCopy;
-    [SerializeField] Button          _btnClose;
+    private const float LOGIN_TIMEOUT = 5f;
 
-    const float LOGIN_TIMEOUT = 5f;
+    [Header("Team Slots")]
+    [SerializeField] private GameObject[] _playerSlots = new GameObject[4];
 
-    void Awake()
+    [Header("Invite")]
+    [SerializeField] private Button          _btnInvite;
+    [SerializeField] private TextMeshProUGUI _txtStatus;
+    [SerializeField] private TextMeshProUGUI _txtCode;
+    [SerializeField] private Button          _btnCopy;
+
+    private void Awake()
     {
         _btnInvite.onClick.AddListener(OnClickInvite);
-        _btnCopy.onClick.AddListener(OnClickCopy);
-        _btnClose.onClick.AddListener(() =>
-        {
-            _popup.SetActive(false);
-            _btnInvite.gameObject.SetActive(true);
-        });
-        _popup.SetActive(false);
+        _btnCopy  .onClick.AddListener(OnClickCopy);
 
         _btnInvite.gameObject.SetActive(RoomManager.IsHost);
         if (_txtStatus != null) _txtStatus.gameObject.SetActive(false);
+        _txtCode.gameObject.SetActive(false);
+        _btnCopy.gameObject.SetActive(false);
 
         RoomManager.Instance.OnSessionCodeReceived += OnCodeReceived;
         RoomManager.Instance.OnRoomJoinFailed      += OnRoomJoinFailed;
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
         if (RoomManager.Instance == null) return;
         RoomManager.Instance.OnSessionCodeReceived -= OnCodeReceived;
         RoomManager.Instance.OnRoomJoinFailed      -= OnRoomJoinFailed;
     }
 
-    void OnClickInvite()
+    // ── Team List ──────────────────────────────────────────────────────
+
+    public void RefreshTeamList(int activeMemberCount)
+    {
+        for (int i = 0; i < _playerSlots.Length; i++)
+            _playerSlots[i].SetActive(i < activeMemberCount);
+    }
+
+    // ── Invite ─────────────────────────────────────────────────────────
+
+    private void OnClickInvite()
     {
         SetStatus("");
-
         string code = RoomManager.Instance.SessionCode;
-        if (!string.IsNullOrEmpty(code))
-        {
-            ShowPopup(code);
-            return;
-        }
+        if (!string.IsNullOrEmpty(code)) { ShowCode(code); return; }
 
         _btnInvite.interactable = false;
-
         var nm = NetworkManager.Instance;
         if (nm != null && nm.Session != null && nm.Session.IsConnected)
         {
@@ -75,13 +79,13 @@ public class InviteCodeUI : MonoBehaviour
         }
     }
 
-    void OnServerConnected()
+    private void OnServerConnected()
     {
         NetworkManager.Instance.OnConnected -= OnServerConnected;
         StartCoroutine(CoWaitLoginThenHost());
     }
 
-    IEnumerator CoWaitLoginThenHost()
+    private IEnumerator CoWaitLoginThenHost()
     {
         float elapsed = 0f;
         while (!NetworkManager.Instance.IsLoggedIn && elapsed < LOGIN_TIMEOUT)
@@ -101,31 +105,28 @@ public class InviteCodeUI : MonoBehaviour
         RoomManager.Instance.StartAsHost();
     }
 
-    void OnCodeReceived(string code)
+    private void OnCodeReceived(string code)
     {
         _btnInvite.interactable = true;
-        ShowPopup(code);
+        ShowCode(code);
     }
 
-    void OnRoomJoinFailed(string _)
+    private void OnRoomJoinFailed(string _)
     {
         _btnInvite.interactable = true;
         SetStatus("방 생성에 실패했습니다.");
     }
 
-    void ShowPopup(string code)
+    private void ShowCode(string code)
     {
         _txtCode.text = code;
-        _popup.SetActive(true);
-        _btnInvite.gameObject.SetActive(false);
+        _txtCode.gameObject.SetActive(true);
+        _btnCopy.gameObject.SetActive(true);
     }
 
-    void OnClickCopy()
-    {
-        GUIUtility.systemCopyBuffer = RoomManager.Instance.SessionCode;
-    }
+    private void OnClickCopy() => GUIUtility.systemCopyBuffer = RoomManager.Instance.SessionCode;
 
-    void SetStatus(string msg)
+    private void SetStatus(string msg)
     {
         if (_txtStatus == null) return;
         bool hasMsg = !string.IsNullOrEmpty(msg);
