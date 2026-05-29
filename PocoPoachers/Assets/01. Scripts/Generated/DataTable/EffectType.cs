@@ -7,4 +7,5 @@ public enum EffectType : int
     Stamina = 3,
     Hunger = 4,
     Damage = 5,
+    Guard = 6,
 }

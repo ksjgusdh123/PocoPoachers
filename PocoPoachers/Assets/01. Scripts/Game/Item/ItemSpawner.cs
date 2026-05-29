@@ -20,6 +20,7 @@ public class ItemSpawner : MonoBehaviour
 
     private List<int> _cachedWeaponIds = new List<int>();
     private List<int> _cachedArmorIds = new List<int>();
+    private List<int> _cachedHelmetIds = new List<int>();
     private List<int> _cachedConsumableIds = new List<int>();
 
     int _nextUid = 1000;
@@ -50,6 +51,7 @@ public class ItemSpawner : MonoBehaviour
             if (item.Type == ItemType.Weapon) _cachedWeaponIds.Add(item.Id);
             else if (item.Type == ItemType.Consumable) _cachedConsumableIds.Add(item.Id);
             else if (item.Type == ItemType.Armor) _cachedArmorIds.Add(item.Id);
+            else if (item.Type == ItemType.Helmet) _cachedHelmetIds.Add(item.Id);
         }
     }
 
@@ -113,7 +115,7 @@ public class ItemSpawner : MonoBehaviour
     {
         float value = Random.value;
         if (value < _armorChance && _cachedArmorIds.Count > 0)
-            return _cachedArmorIds[Random.Range(0, _cachedArmorIds.Count)];
+            return _cachedHelmetIds[Random.Range(0, _cachedHelmetIds.Count)];
         else if (value < _weaponChance && _cachedWeaponIds.Count > 0)
             return _cachedWeaponIds[Random.Range(0, _cachedWeaponIds.Count)];
 
