@@ -27,6 +27,7 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action<int> ConsumeItemNumberKey;
     public event Action Dodge;
     public event Action CancelItemUse;
+    public event Action CancelReload;
 
     private PlayerInput _inputMap;
     private readonly Key[] _weaponKeys = { Key.Digit1, Key.Digit2 };
@@ -109,6 +110,12 @@ public class PlayerInputHandler : MonoBehaviour
     void OnCancelItemUse(InputValue value)
     {
         if (value.isPressed) CancelItemUse?.Invoke();
+    }
+
+    private void Update()
+    {
+        if (Keyboard.current[Key.X].wasPressedThisFrame)
+            CancelReload?.Invoke();
     }
 
     void OnChangeGun()
