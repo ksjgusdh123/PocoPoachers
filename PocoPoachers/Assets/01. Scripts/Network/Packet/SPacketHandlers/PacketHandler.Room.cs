@@ -7,9 +7,16 @@
         bool success = pkt.Success;
 
         MainThreadDispatcher.Enqueue(() => {
-            SessionCodeUI.Instance?.HandleCreateRoom(code, success);
             if (success)
+            {
+                RoomManager.Instance.SessionCode = code;
+                RoomManager.Instance?.NotifySessionCodeReceived(code);
                 RoomManager.Instance?.NotifyGameStarted();
+            }
+            else
+            {
+                RoomManager.Instance?.HandleFailure("방 생성에 실패했습니다.");
+            }
         });
     }
 
@@ -25,7 +32,10 @@
             if (!success || hostInfo == null)
                 RoomManager.Instance?.HandleFailure("입장 실패");
             else
+            {
                 RoomManager.Instance?.ConnectToGuest(hostInfo);
+                RoomManager.Instance?.NotifyGameStarted();
+            }
         });
     }
 

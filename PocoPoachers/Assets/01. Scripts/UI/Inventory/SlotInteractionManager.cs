@@ -66,16 +66,7 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
                 if (playerItem != null && playerAmount > 0) playerInv.RemoveItemAtSlot(playerSlot, playerItem, playerAmount);
                 if (boxItem != null && boxAmount > 0) playerInv.AddItemAtSlot(playerSlot, boxItem, boxAmount);
             }
-            RoomSync.ItemExchange(new G_ItemExchangeT
-            {
-                BoxUid           = boxUid,
-                PlayerItemId     = playerItem?.id ?? 0,
-                PlayerItemAmount = playerAmount,
-                PlayerSlotIndex  = playerSlot,
-                BoxItemId        = boxItem?.id ?? 0,
-                BoxItemAmount    = boxAmount,
-                BoxSlotIndex     = boxSlot,
-            });
+            RoomSync.ItemExchange(boxUid, playerItem?.id ?? 0, playerAmount, playerSlot, boxItem?.id ?? 0, boxAmount, boxSlot);
         }
         else
         {
@@ -102,10 +93,10 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
             }
 
             if (boxItem != null)
-                RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = boxItem.id, Amount = -boxAmount, SlotIndex = boxSlot });
+                RoomSync.ItemBoxUpdate(boxUid, boxItem.id, -boxAmount, boxSlot);
 
             if (playerItem != null)
-                RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = playerItem.id, Amount = playerAmount, SlotIndex = boxSlot });
+                RoomSync.ItemBoxUpdate(boxUid, playerItem.id, playerAmount, boxSlot);
         }
     }
 
@@ -131,21 +122,13 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
             // 낙관적 업데이트: 즉시 로컬 적용 후 호스트에 요청
             from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
             to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
-            RoomSync.ItemGain(new G_ItemGainT
-            {
-                IsPlayerGained   = playerGains,
-                BoxUid           = boxUid,
-                ItemTypeId       = data.id,
-                Amount           = amount,
-                AddedSlotIndex   = playerGains ? playerSlotIndex : boxSlotIndex,
-                RemovedSlotIndex = playerGains ? boxSlotIndex : playerSlotIndex,
-            });
+            RoomSync.ItemGain(playerGains, boxUid, data.id, amount, playerGains ? playerSlotIndex : boxSlotIndex, playerGains ? boxSlotIndex : playerSlotIndex);
         }
         else
         {
             from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
             to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
-            RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = data.id, Amount = playerGains ? -amount : amount, SlotIndex = boxSlotIndex });
+            RoomSync.ItemBoxUpdate(boxUid, data.id, playerGains ? -amount : amount, boxSlotIndex);
         }
     }
 
@@ -157,8 +140,8 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
         to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
 
-        RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = data.id, Amount = -amount, SlotIndex = from.SlotIndex });
-        RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = data.id, Amount = amount,  SlotIndex = to.SlotIndex });
+        RoomSync.ItemBoxUpdate(boxUid, data.id, -amount, from.SlotIndex);
+        RoomSync.ItemBoxUpdate(boxUid, data.id, amount,  to.SlotIndex);
     }
 
     // 박스 ↔ 박스: 로컬 교환 + 박스 업데이트 브로드캐스트
@@ -173,10 +156,10 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         slotA.InventoryUI.Inventory.SwapSlots(slotA.SlotIndex, slotB.SlotIndex);
 
         if (dataA != null)
-            RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = dataA.id, Amount = amountA,  SlotIndex = slotB.SlotIndex });
+            RoomSync.ItemBoxUpdate(boxUid, dataA.id, amountA, slotB.SlotIndex);
 
         if (dataB != null)
-            RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT { BoxUid = boxUid, ItemTypeId = dataB.id, Amount = amountB, SlotIndex = slotA.SlotIndex });
+            RoomSync.ItemBoxUpdate(boxUid, dataB.id, amountB, slotA.SlotIndex);
     }
 
     public void InvokeDoubleClick()

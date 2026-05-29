@@ -57,7 +57,7 @@ public class EnemyItemBoxDropper : MonoBehaviour
         };
         omgr.RegisterSpawnedBox(spawnData);
 
-        RoomSync.ItemSpawn(spawnData);
+        RoomSync.ItemSpawn(spawnData.Uid, spawnData.TypeId, spawnPos, spawnRot, itemIds);
     }
 
 }

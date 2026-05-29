@@ -19,3 +19,18 @@ table H_Shoot
     damage:       float;
     max_range:    float;
 }
+
+// 게스트 → 호스트: 자신의 HP 변화 보고
+table G_StatSync
+{
+    hp:     float;
+    max_hp: float;
+}
+
+// 호스트 → 게스트: 특정 플레이어의 HP 브로드캐스트
+table H_StatSync
+{
+    player_id: int;
+    hp:        float;
+    max_hp:    float;
+}

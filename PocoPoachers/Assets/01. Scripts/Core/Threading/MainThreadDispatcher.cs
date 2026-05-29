@@ -9,7 +9,6 @@ public class MainThreadDispatcher : Singleton<MainThreadDispatcher>
     public static void Enqueue(Action action)
     {
         if (action == null) return;
-        _ = Instance;
         lock (_queue) _queue.Enqueue(action);
     }
 

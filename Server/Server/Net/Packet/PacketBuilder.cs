@@ -17,12 +17,11 @@ public static partial class PacketBuilder
 
         byte[] payload = builder.SizedByteArray();
         int totalSize = payload.Length + PacketSession.HeaderSize;
-        byte[] sendBuffer = new byte[totalSize];
 
-        BitConverter.GetBytes((ushort)totalSize).CopyTo(sendBuffer, 0);
-        Buffer.BlockCopy(payload, 0, sendBuffer, PacketSession.HeaderSize, payload.Length);
-
-        return new ArraySegment<byte>(sendBuffer);
+        var segment = SendBufferHelper.Open(totalSize);
+        BitConverter.GetBytes((ushort)totalSize).CopyTo(segment.Array!, segment.Offset);
+        Buffer.BlockCopy(payload, 0, segment.Array!, segment.Offset + PacketSession.HeaderSize, payload.Length);
+        return SendBufferHelper.Close(totalSize);
     }
 
     public static void Send<TTable, TObj>(ClientSession session, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)

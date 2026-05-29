@@ -21,11 +21,15 @@ public class RoomManager : Singleton<RoomManager>
     private bool _isHost = true;
     public int  _lastGuestId { get; private set; }
 
+    public string SessionCode { get; set; }
+
     public event Action          OnGameStarted;
-    public event Action<int>     OnRoomJoined;     // 새로 연결된 게스트의 PlayerId
+    public event Action<string>  OnSessionCodeReceived;
+    public event Action<int>     OnRoomJoined;
     public event Action<string>  OnRoomJoinFailed;
 
-    public void NotifyGameStarted() => OnGameStarted?.Invoke();
+    public void NotifyGameStarted()          => OnGameStarted?.Invoke();
+    public void NotifySessionCodeReceived(string code) => OnSessionCodeReceived?.Invoke(code);
 
     UdpSession _udpSession;
     IPEndPoint _myPublicEp;

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class RoomSync
@@ -56,27 +57,76 @@ public static class RoomSync
                 G_Equip.Pack, PacketType.G_Equip);
     }
 
-    public static void ItemGain(G_ItemGainT data)
+    public static void ItemGain(bool isPlayerGained, int boxUid, int itemTypeId, int amount, int addedSlotIndex, int removedSlotIndex)
     {
         if (IsSolo) return;
-        PacketBuilder.SendToHost(data, G_ItemGain.Pack, PacketType.G_ItemGain);
+        PacketBuilder.SendToHost(new G_ItemGainT
+        {
+            IsPlayerGained   = isPlayerGained,
+            BoxUid           = boxUid,
+            ItemTypeId       = itemTypeId,
+            Amount           = amount,
+            AddedSlotIndex   = addedSlotIndex,
+            RemovedSlotIndex = removedSlotIndex,
+        }, G_ItemGain.Pack, PacketType.G_ItemGain);
     }
 
-    public static void ItemExchange(G_ItemExchangeT data)
+    public static void ItemExchange(int boxUid, int playerItemId, int playerItemAmount, int playerSlotIndex, int boxItemId, int boxItemAmount, int boxSlotIndex)
     {
         if (IsSolo) return;
-        PacketBuilder.SendToHost(data, G_ItemExchange.Pack, PacketType.G_ItemExchange);
+        PacketBuilder.SendToHost(new G_ItemExchangeT
+        {
+            BoxUid           = boxUid,
+            PlayerItemId     = playerItemId,
+            PlayerItemAmount = playerItemAmount,
+            PlayerSlotIndex  = playerSlotIndex,
+            BoxItemId        = boxItemId,
+            BoxItemAmount    = boxItemAmount,
+            BoxSlotIndex     = boxSlotIndex,
+        }, G_ItemExchange.Pack, PacketType.G_ItemExchange);
     }
 
-    public static void ItemBoxUpdate(H_ItemBoxUpdateT data)
+    public static void ItemBoxUpdate(int boxUid, int itemTypeId, int amount, int slotIndex)
     {
         if (!RoomManager.HasGuests) return;
-        PacketBuilder.BroadcastToGuests(data, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
+        PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
+        {
+            BoxUid     = boxUid,
+            ItemTypeId = itemTypeId,
+            Amount     = amount,
+            SlotIndex  = slotIndex,
+        }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
     }
 
-    public static void ItemSpawn(H_ItemSpawnT data)
+    public static void StatSync(float hp, float maxHp)
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastToGuests(new H_StatSyncT
+            {
+                PlayerId = MyId,
+                Hp       = hp,
+                MaxHp    = maxHp,
+            }, H_StatSync.Pack, PacketType.H_StatSync);
+        else
+            PacketBuilder.SendToHost(new G_StatSyncT
+            {
+                Hp    = hp,
+                MaxHp = maxHp,
+            }, G_StatSync.Pack, PacketType.G_StatSync);
+    }
+
+    public static void ItemSpawn(int uid, int typeId, Vector3 pos, float rotation, List<int> itemIds)
     {
         if (!RoomManager.HasGuests) return;
-        PacketBuilder.BroadcastToGuests(data, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
+        PacketBuilder.BroadcastToGuests(new H_ItemSpawnT
+        {
+            Uid     = uid,
+            TypeId  = typeId,
+            Pos     = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+            Rotation = rotation,
+            ItemIds = itemIds,
+        }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
     }
 }

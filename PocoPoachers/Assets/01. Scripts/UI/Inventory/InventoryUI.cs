@@ -70,28 +70,14 @@ public class InventoryUI : MonoBehaviour
             bool playerGains = boxInventory == _inventory;
             target.AddItemAtSlot(addedSlotIndex, itemData, amount);
             _inventory.RemoveItemAtSlot(targetSlot.SlotIndex, itemData, amount);
-            RoomSync.ItemGain(new G_ItemGainT
-            {
-                IsPlayerGained   = playerGains,
-                BoxUid           = boxWo.Id,
-                ItemTypeId       = itemData.id,
-                Amount           = amount,
-                AddedSlotIndex   = addedSlotIndex,
-                RemovedSlotIndex = targetSlot.SlotIndex,
-            });
+            RoomSync.ItemGain(playerGains, boxWo.Id, itemData.id, amount, addedSlotIndex, targetSlot.SlotIndex);
         }
         else
         {
             // 호스트 또는 싱글플레이: 로컬에서 바로 적용
             target.AddItemAtSlot(addedSlotIndex, itemData, amount);
             _inventory.RemoveItemAtSlot(targetSlot.SlotIndex, itemData, amount);
-            RoomSync.ItemBoxUpdate(new H_ItemBoxUpdateT
-            {
-                BoxUid     = boxWo.Id,
-                ItemTypeId = itemData.id,
-                Amount     = boxInventory != _inventory ? amount : -amount,
-                SlotIndex  = boxInventory != _inventory ? -1 : targetSlot.SlotIndex,
-            });
+            RoomSync.ItemBoxUpdate(boxWo.Id, itemData.id, boxInventory != _inventory ? amount : -amount, boxInventory != _inventory ? -1 : targetSlot.SlotIndex);
         }
     }
 
