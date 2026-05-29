@@ -16,6 +16,9 @@ public abstract class GunBase : MonoBehaviour
     public ItemData ItemData => ItemTable.Instance.Get(_gunData.itemId);
     public GameObject Owner { get; set; }
 
+    public static event Action<float> OnReloadStarted;
+    public static event Action OnReloadEnded;
+
     public event Action<Vector2> OnShoot;
 
     private int _currentAmmo;
@@ -114,16 +117,19 @@ public abstract class GunBase : MonoBehaviour
 
         _isReloading = false;
         CrosshairUI.Instance?.StopReloadGauge();
+        OnReloadEnded?.Invoke();
     }
 
     private IEnumerator ReloadRoutine()
     {
         _isReloading = true;
+        OnReloadStarted?.Invoke(_gunData.reloadTime);
         CrosshairUI.Instance?.StartReloadGauge(_gunData.reloadTime);
         yield return new WaitForSeconds(_gunData.reloadTime);
         _currentAmmo = _gunData.magazineSize;
         _isReloading = false;
         _reloadCoroutine = null;
+        OnReloadEnded?.Invoke();
     }
 
     private void OnDrawGizmos()
