@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -24,7 +25,7 @@ public class PlayerController : MonoBehaviour
     private Inventory _inventory;
     private PlayerInputHandler _inputHander;
     private QuickSlotDropHandler[] _quickSlots;
-    private GameObject _interactObject;
+    private readonly List<GameObject> _interactObjects = new();
     private IInteractable _currentInteractable;
     private Coroutine _useCoroutine;
 
@@ -85,12 +86,13 @@ public class PlayerController : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.gameObject != gameObject) _interactObject = other.gameObject;
+        if (other.gameObject != gameObject)
+            _interactObjects.Add(other.gameObject);
     }
 
     private void OnTriggerExit(Collider other)
     {
-        _interactObject = null;
+        _interactObjects.Remove(other.gameObject);
     }
 
     void Interaction()
@@ -103,8 +105,9 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if (_interactObject == null) return;
-        if (!_interactObject.TryGetComponent<IInteractable>(out var interactable)) return;
+        GameObject nearest = GetNearestInteractable();
+        if (nearest == null) return;
+        if (!nearest.TryGetComponent<IInteractable>(out var interactable)) return;
 
         interactable.OnInteract(this);
         _currentInteractable = interactable;
@@ -130,6 +133,29 @@ public class PlayerController : MonoBehaviour
     public void LockCamera(bool locked)
     {
         _cameraController.SetLocked(locked);
+    }
+
+    private GameObject GetNearestInteractable()
+    {
+        _interactObjects.RemoveAll(o => o == null);
+
+        if (_interactObjects.Count == 1)
+            return _interactObjects[0].TryGetComponent<IInteractable>(out _) ? _interactObjects[0] : null;
+
+        GameObject nearest = null;
+        float minDist = float.MaxValue;
+
+        foreach (var obj in _interactObjects)
+        {
+            if (!obj.TryGetComponent<IInteractable>(out _)) continue;
+            float dist = Vector3.Distance(transform.position, obj.transform.position);
+            if (dist < minDist)
+            {
+                minDist = dist;
+                nearest = obj;
+            }
+        }
+        return nearest;
     }
 
     void ShowInventory()
