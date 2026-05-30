@@ -1778,6 +1778,7 @@ GameObject:
   - component: {fileID: 5024542309914292996}
   - component: {fileID: 6091269842797980000}
   - component: {fileID: 2820215744700688298}
+  - component: {fileID: 8759502445412506336}
   m_Layer: 11
   m_Name: TestAI
   m_TagString: Untagged
@@ -1847,6 +1848,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WorldObject
   _smooth: 14
+  _animSmooth: 0.1
 --- !u!195 &4598427870778627708
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -2066,6 +2068,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3224d77d1d960843af928d60bc212df, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SoundDetector
+--- !u!114 &8759502445412506336
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6112331380076343035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b6c86ebe4a125f41afbb25da6ad9336, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DeathEffect
 --- !u!1 &6318343186332685025
 GameObject:
   m_ObjectHideFlags: 0

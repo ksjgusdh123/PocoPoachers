@@ -13,6 +13,7 @@ public class EnemyStat : StatBase
         CurrentHp = 100f;
         _targetDetector = GetComponent<TargetDetector>();
         OnDamaged += OnHit;
+        OnDie += () => StartCoroutine(DeactivateNextFrame());   
     }
 
     private void OnHit(float damage, Vector3 pos, GameObject attacker)
@@ -24,5 +25,11 @@ public class EnemyStat : StatBase
     public void Initialize()
     {
 
+    }
+
+    private System.Collections.IEnumerator DeactivateNextFrame()
+    {
+        yield return null;
+        gameObject.SetActive(false);
     }
 }
