@@ -107,13 +107,31 @@ public class Inventory : MonoBehaviour
 
     public bool HasItem(ItemData itemData, int amount = 1)
     {
+        return GetItemCount(itemData) >= amount;
+    }
+
+    public int GetItemCount(ItemData itemData)
+    {
         int count = 0;
         for (int i = 0; i < _currentCapacity; i++)
         {
             if (!_slots[i].IsEmpty && _slots[i].ItemData == itemData)
                 count += _slots[i].Amount;
         }
-        return count >= amount;
+        return count;
+    }
+
+    // 여러 슬롯에 걸쳐 아이템 제거, 실제 제거된 수량 반환
+    public int RemoveItem(ItemData itemData, int amount)
+    {
+        int remaining = amount;
+        for (int i = 0; i < _currentCapacity && remaining > 0; i++)
+        {
+            if (_slots[i].IsEmpty || _slots[i].ItemData != itemData) continue;
+            remaining -= _slots[i].RemoveAmount(remaining);
+        }
+        ChangeInventory?.Invoke();
+        return amount - remaining;
     }
 
     public void SwapSlots(int indexA, int indexB)

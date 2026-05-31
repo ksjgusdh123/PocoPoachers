@@ -19,24 +19,30 @@ public class WeaponController : EquipableController
     }
 
     public static event Action<int, ItemData> OnWeaponChanged;
+    public static event Action<int, int> OnAmmoChanged; // (현재 탄약, 최대 탄약)
 
     private static readonly int WeaponSwitchHash = Animator.StringToHash("WeaponSwitch");
 
     private WeaponMount _mount;
     private PlayerInputHandler _inputHandler;
     private Animator _animator;
+    private Inventory _inventory;
     private GunBase _currentGun;
     private int _currentGunIndex = -1;
     private bool _isSwitching;
     private bool _wasFirePressed;
     private bool _wasAimPressed;
     private Action<Vector2> _cameraShakeHandler;
+    private Action _reloadRequestedHandler;
+    private Action<int> _reloadCompleteHandler;
+    private Action<int, int> _ammoChangedHandler;
 
     private void Awake()
     {
         _mount = GetComponent<WeaponMount>();
         _inputHandler = GetComponent<PlayerInputHandler>();
         _animator = GetComponentInChildren<Animator>();
+        _inventory = GetComponent<Inventory>();
     }
 
     private void Start()
@@ -118,6 +124,9 @@ public class WeaponController : EquipableController
         {
             if (_crosshairUI != null) prev.OnShoot -= _crosshairUI.OnShoot;
             if (_cameraShakeHandler != null) prev.OnShoot -= _cameraShakeHandler;
+            if (_reloadRequestedHandler != null) prev.OnReloadRequested -= _reloadRequestedHandler;
+            if (_reloadCompleteHandler != null) prev.OnReloadComplete -= _reloadCompleteHandler;
+            if (_ammoChangedHandler != null) prev.OnAmmoChanged -= _ammoChangedHandler;
             prev.gameObject.SetActive(false);
         }
 
@@ -132,6 +141,16 @@ public class WeaponController : EquipableController
             _cameraShakeHandler = _ => CameraShake.Instance?.Shake(
                 gun.GunData.shakeIntensity, gun.GunData.shakeDuration, gun.Muzzle.up);
             _currentGun.OnShoot += _cameraShakeHandler;
+
+            _reloadRequestedHandler = () => TryReloadFromInventory();
+            _reloadCompleteHandler = consumed => ConsumeAmmoFromInventory(consumed);
+            _ammoChangedHandler = (cur, max) => OnAmmoChanged?.Invoke(cur, max);
+            _currentGun.OnReloadRequested += _reloadRequestedHandler;
+            _currentGun.OnReloadComplete += _reloadCompleteHandler;
+            _currentGun.OnAmmoChanged += _ammoChangedHandler;
+
+            // 총 교체 시 현재 탄약 수 즉시 갱신
+            OnAmmoChanged?.Invoke(_currentGun.CurrentAmmo, _currentGun.GunData.magazineSize);
 
             if (_crosshairUI != null)
             {
@@ -166,7 +185,24 @@ public class WeaponController : EquipableController
     {
         if (_isSwitching) return;
         if (_inputHandler.IsReloadPressed)
-            _currentGun?.StartReload();
+            TryReloadFromInventory();
+    }
+
+    private void TryReloadFromInventory()
+    {
+        if (_currentGun == null || _inventory == null) return;
+        var ammoData = ItemTable.Instance.Get(_currentGun.GunData.ammoItemId);
+        if (ammoData == null) return;
+        int available = _inventory.GetItemCount(ammoData);
+        _currentGun.StartReload(available);
+    }
+
+    private void ConsumeAmmoFromInventory(int consumed)
+    {
+        if (_inventory == null || consumed <= 0) return;
+        var ammoData = ItemTable.Instance.Get(_currentGun.GunData.ammoItemId);
+        if (ammoData == null) return;
+        _inventory.RemoveItem(ammoData, consumed);
     }
 
     private void HandleCancelReloadInput()

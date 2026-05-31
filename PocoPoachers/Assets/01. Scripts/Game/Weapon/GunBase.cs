@@ -20,6 +20,9 @@ public abstract class GunBase : MonoBehaviour
     public static event Action OnReloadEnded;
 
     public event Action<Vector2> OnShoot;
+    public event Action OnReloadRequested;
+    public event Action<int> OnReloadComplete;
+    public event Action<int, int> OnAmmoChanged; // (현재 탄약, 최대 탄약)
 
     private int _currentAmmo;
     private bool _isReloading;
@@ -64,7 +67,7 @@ public abstract class GunBase : MonoBehaviour
         if (_isReloading || Time.time < _nextFireTime) return;
         if (_currentAmmo <= 0)
         {
-            StartReload();
+            OnReloadRequested?.Invoke();
             return;
         }
 
@@ -75,6 +78,7 @@ public abstract class GunBase : MonoBehaviour
         _soundGizmoRange = _gunData.soundRange;
         _soundGizmoTimer = 1f;
         _currentAmmo--;
+        OnAmmoChanged?.Invoke(_currentAmmo, _gunData.magazineSize);
         _nextFireTime = Time.time + 1f / _gunData.fireRate;
         _recoilDist = _gunData.recoilDistance;
         Vector2 muzzleScreen = Camera.main.WorldToScreenPoint(_muzzle.position);
@@ -85,7 +89,7 @@ public abstract class GunBase : MonoBehaviour
             + rightDir * UnityEngine.Random.Range(-_gunData.crosshairHorizontalKick, _gunData.crosshairHorizontalKick);
         OnShoot?.Invoke(kickVector);
 
-        if (_currentAmmo <= 0) StartReload();
+        if (_currentAmmo <= 0) OnReloadRequested?.Invoke();
     }
 
     protected abstract void Shoot();
@@ -101,10 +105,10 @@ public abstract class GunBase : MonoBehaviour
         return Quaternion.AngleAxis(angle, Vector3.up) * _muzzle.up;
     }
 
-    public void StartReload()
+    public void StartReload(int availableAmmo)
     {
-        if (_isReloading || _currentAmmo == _gunData.magazineSize) return;
-        _reloadCoroutine = StartCoroutine(ReloadRoutine());
+        if (_isReloading || _currentAmmo == _gunData.magazineSize || availableAmmo <= 0) return;
+        _reloadCoroutine = StartCoroutine(ReloadRoutine(availableAmmo));
     }
 
     public void CancelReload()
@@ -120,16 +124,20 @@ public abstract class GunBase : MonoBehaviour
         OnReloadEnded?.Invoke();
     }
 
-    private IEnumerator ReloadRoutine()
+    private IEnumerator ReloadRoutine(int availableAmmo)
     {
         _isReloading = true;
         OnReloadStarted?.Invoke(_gunData.reloadTime);
         CrosshairUI.Instance?.StartReloadGauge(_gunData.reloadTime);
         yield return new WaitForSeconds(_gunData.reloadTime);
-        _currentAmmo = _gunData.magazineSize;
+        int needed = _gunData.magazineSize - _currentAmmo;
+        int actual = Mathf.Min(needed, availableAmmo);
+        _currentAmmo += actual;
         _isReloading = false;
         _reloadCoroutine = null;
+        OnAmmoChanged?.Invoke(_currentAmmo, _gunData.magazineSize);
         OnReloadEnded?.Invoke();
+        OnReloadComplete?.Invoke(actual);
     }
 
     private void OnDrawGizmos()
