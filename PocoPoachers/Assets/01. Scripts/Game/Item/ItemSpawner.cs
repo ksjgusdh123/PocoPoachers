@@ -22,6 +22,7 @@ public class ItemSpawner : MonoBehaviour
     private List<int> _cachedArmorIds = new List<int>();
     private List<int> _cachedHelmetIds = new List<int>();
     private List<int> _cachedConsumableIds = new List<int>();
+    private List<int> _cachedBulletIds = new List<int>();
 
     int _nextUid = 1000;
     const int BOX_TYPE_ID = 301;
@@ -44,6 +45,7 @@ public class ItemSpawner : MonoBehaviour
             else if (item.Type == ItemType.Consumable) _cachedConsumableIds.Add(item.Id);
             else if (item.Type == ItemType.Armor) _cachedArmorIds.Add(item.Id);
             else if (item.Type == ItemType.Helmet) _cachedHelmetIds.Add(item.Id);
+            else if (item.Type == ItemType.Bullet) _cachedBulletIds.Add(item.Id);
         }
     }
 
@@ -75,6 +77,9 @@ public class ItemSpawner : MonoBehaviour
                 int pickedId = GetRandomItemId();
                 if (pickedId != -1) randomItems.Add(pickedId);
             }
+
+            // temp
+            randomItems.Add(601);
 
             var data = new H_ItemSpawnT
             {

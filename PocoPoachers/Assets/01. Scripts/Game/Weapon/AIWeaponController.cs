@@ -22,7 +22,8 @@ public class AIWeaponController : MonoBehaviour
 
     public void StartReload()
     {
-        _gun?.StartReload();
+        if (_gun != null)
+            _gun.StartReload(_gun.GunData.magazineSize);
     }
 
     public void EquipGun(int itemId)

@@ -17,6 +17,7 @@ public class GunData : ScriptableObject
     public float soundRange = 30f;
 
     [Header("탄환")]
+    public int ammoItemId;
     public float bulletSpeed = 20f;
     public float range = 50f;
     public GameObject bulletPrefab;

@@ -106,6 +106,11 @@ public class InventoryUI : MonoBehaviour
         Refresh();
     }
 
+    private void OnDisable()
+    {
+        _descriptionUI?.HideDescription();
+    }
+
     private void OnDestroy()
     {
         if (_inventory == null) return;
