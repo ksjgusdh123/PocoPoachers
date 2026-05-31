@@ -20,6 +20,7 @@ public class WeaponController : EquipableController
 
     public static event Action<int, ItemData> OnWeaponChanged;
     public static event Action<int, int> OnAmmoChanged; // (현재 탄약, 최대 탄약)
+    public static event Action<int> OnWeaponSwitched;  // (슬롯 인덱스)
 
     private static readonly int WeaponSwitchHash = Animator.StringToHash("WeaponSwitch");
 
@@ -149,8 +150,9 @@ public class WeaponController : EquipableController
             _currentGun.OnReloadComplete += _reloadCompleteHandler;
             _currentGun.OnAmmoChanged += _ammoChangedHandler;
 
-            // 총 교체 시 현재 탄약 수 즉시 갱신
+            // 총 교체 시 현재 탄약 수 및 슬롯 위치 즉시 갱신
             OnAmmoChanged?.Invoke(_currentGun.CurrentAmmo, _currentGun.GunData.magazineSize);
+            OnWeaponSwitched?.Invoke(index);
 
             if (_crosshairUI != null)
             {
