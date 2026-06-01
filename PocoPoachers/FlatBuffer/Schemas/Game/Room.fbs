@@ -41,3 +41,14 @@ table H_GuestJoined
 {
     info: [PlayerInfo];
 }
+
+table G_Leave
+{
+    player_id: int;
+}
+
+table H_Leave
+{
+    player_id: int;
+    is_host:   bool;
+}

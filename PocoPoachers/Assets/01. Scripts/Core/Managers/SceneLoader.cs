@@ -5,6 +5,7 @@ public class SceneLoader : Singleton<SceneLoader>
 {
     public void LoadLobbyScene()
     {
+        RoomManager.Instance?.LeaveRoom();
         NetworkManager.Instance?.LeaveGame();
         Cursor.visible   = true;
         Cursor.lockState = CursorLockMode.None;

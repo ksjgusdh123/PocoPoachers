@@ -117,6 +117,19 @@ public static class RoomSync
             }, G_StatSync.Pack, PacketType.G_StatSync);
     }
 
+    public static void Leave()
+    {
+        int id = MyId;
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastToGuests(
+                new H_LeaveT { PlayerId = id, IsHost = true },
+                H_Leave.Pack, PacketType.H_Leave);
+        else
+            PacketBuilder.SendToHost(
+                new G_LeaveT { PlayerId = id },
+                G_Leave.Pack, PacketType.G_Leave);
+    }
+
     public static void EnemySpawnToGuest(int guestPlayerId, int enemyId, Vector3 pos, float rotation, float hp, float maxHp)
     {
         PacketBuilder.SendToGuest(guestPlayerId, new H_EnemySpawnT

@@ -38,6 +38,9 @@ public class IngameMenuUI : MonoBehaviour
         if (NetworkManager.Instance != null)
             NetworkManager.Instance.OnDisconnected += OnDisconnected;
 
+        RoomManager.OnGuestLeft += OnGuestLeft;
+        RoomManager.OnHostLeft  += OnHostLeft;
+
         gameObject.SetActive(false);
     }
 
@@ -49,6 +52,9 @@ public class IngameMenuUI : MonoBehaviour
 
         if (NetworkManager.Instance != null)
             NetworkManager.Instance.OnDisconnected -= OnDisconnected;
+
+        RoomManager.OnGuestLeft -= OnGuestLeft;
+        RoomManager.OnHostLeft  -= OnHostLeft;
     }
 
     private void OnClickResume() => UIManager.GetInstance().Hide(UIType.IngameMenu);
@@ -78,6 +84,7 @@ public class IngameMenuUI : MonoBehaviour
             "게임을 종료하시겠습니까?",
             onConfirm: () =>
             {
+                RoomManager.Instance?.LeaveRoom();
                 NetworkManager.Instance?.LeaveGame();
 #if UNITY_EDITOR
                 UnityEditor.EditorApplication.isPlaying = false;
@@ -85,6 +92,28 @@ public class IngameMenuUI : MonoBehaviour
                 Application.Quit();
 #endif
             }
+        );
+    }
+
+    private void OnHostLeft()
+    {
+        UIManager.GetInstance().HideAll();
+        UIManager.GetInstance().ShowWarning(
+            "호스트 나감",
+            "호스트가 게임을 나갔습니다.\n메인화면으로 돌아가시겠습니까?",
+            onConfirm: () => SceneLoader.Instance.LoadLobbyScene(),
+            onCancel:  () => { /* TODO: 호스트 재입장 대기 처리 */ }
+        );
+    }
+
+    private void OnGuestLeft(int guestId)
+    {
+        UIManager.GetInstance().HideAll();
+        UIManager.GetInstance().ShowWarning(
+            "플레이어 나감",
+            "플레이어가 게임을 나갔습니다.\n로비로 돌아가시겠습니까?",
+            onConfirm: () => SceneLoader.Instance.LoadLobbyScene(),
+            onCancel:  () => { }
         );
     }
 

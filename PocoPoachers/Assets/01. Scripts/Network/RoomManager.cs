@@ -27,6 +27,8 @@ public class RoomManager : Singleton<RoomManager>
     public event Action<string>  OnSessionCodeReceived;
     public event Action<int>     OnRoomJoined;
     public event Action<string>  OnRoomJoinFailed;
+    public static event Action<int> OnGuestLeft;
+    public static event Action   OnHostLeft;
 
     public void NotifyGameStarted()          => OnGameStarted?.Invoke();
     public void NotifySessionCodeReceived(string code) => OnSessionCodeReceived?.Invoke(code);
@@ -35,8 +37,12 @@ public class RoomManager : Singleton<RoomManager>
     IPEndPoint _myPublicEp;
     IPEndPoint _hostEp;
 
-    readonly ConcurrentDictionary<int, IPEndPoint>     _guests   = new();
-    readonly ConcurrentDictionary<int, UdpHolePuncher> _punchers = new();
+    readonly ConcurrentDictionary<int, IPEndPoint>     _guests        = new();
+    readonly ConcurrentDictionary<int, UdpHolePuncher> _punchers      = new();
+    readonly ConcurrentDictionary<int, long>           _guestLastSeen = new();
+    long _hostLastSeen;
+
+    const long TIMEOUT_MS = 30_000L;
 
     protected override void Awake()
     {
@@ -53,6 +59,8 @@ public class RoomManager : Singleton<RoomManager>
         _isHost = true;
         _guests.Clear();
         _punchers.Clear();
+        _guestLastSeen.Clear();
+        _hostLastSeen = 0;
         NotifyGameStarted();
     }
 
@@ -61,6 +69,8 @@ public class RoomManager : Singleton<RoomManager>
         _isHost = isHost;
         _guests.Clear();
         _punchers.Clear();
+        _guestLastSeen.Clear();
+        _hostLastSeen = 0;
 
         ThreadPool.QueueUserWorkItem(_ => {
             _udpSession = new UdpSession();
@@ -93,13 +103,17 @@ public class RoomManager : Singleton<RoomManager>
         IPEndPoint ep = SelectEndPoint(target);
 
         if (!_isHost)
+        {
             _hostEp = ep;
+            _hostLastSeen = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        }
 
         var puncher = new UdpHolePuncher(_udpSession);
         _punchers[id] = puncher;
 
         puncher.OnSuccess += _ => {
             _guests[id] = ep;
+            _guestLastSeen[id] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             _punchers.TryRemove(id, out _);
             MainThreadDispatcher.Enqueue(() => {
                 if (_isHost)
@@ -150,6 +164,12 @@ public class RoomManager : Singleton<RoomManager>
         int senderId = 0;
         foreach (var kv in _guests)
             if (kv.Value.Equals(sender)) { senderId = kv.Key; break; }
+
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (_isHost && senderId != 0)
+            _guestLastSeen[senderId] = now;
+        else if (!_isHost)
+            _hostLastSeen = now;
 
         int captured = senderId;
         IPEndPoint capturedEp = sender;
@@ -280,15 +300,62 @@ public class RoomManager : Singleton<RoomManager>
         }
     }
 
+    void Update()
+    {
+        if (_udpSession == null) return;
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        if (_isHost)
+        {
+            var timedOut = new System.Collections.Generic.List<int>();
+            foreach (var kv in _guestLastSeen)
+                if (now - kv.Value > TIMEOUT_MS) timedOut.Add(kv.Key);
+            foreach (var id in timedOut)
+                RemoveGuest(id);
+        }
+        else if (_hostEp != null && _hostLastSeen > 0 && now - _hostLastSeen > TIMEOUT_MS)
+        {
+            HandleHostLeft();
+        }
+    }
+
+    public void RemoveGuest(int guestId)
+    {
+        if (!_guests.TryRemove(guestId, out _)) return;
+        _guestLastSeen.TryRemove(guestId, out _);
+
+        ObjectManager.Instance?.Despawn(ObjectKind.Player, guestId);
+        OnGuestLeft?.Invoke(guestId);
+
+        PacketBuilder.BroadcastToGuests(
+            new H_LeaveT { PlayerId = guestId, IsHost = false },
+            H_Leave.Pack, PacketType.H_Leave);
+    }
+
+    public void HandleHostLeft()
+    {
+        if (_hostEp == null) return;
+        _hostEp = null;
+        _hostLastSeen = 0;
+        LeaveRoom();
+        OnHostLeft?.Invoke();
+    }
+
     public void LeaveRoom()
     {
+        RoomSync.Leave();
+
         foreach (var p in _punchers.Values) p.Stop();
         _punchers.Clear();
         _guests.Clear();
+        _guestLastSeen.Clear();
+        _hostLastSeen = 0;
         _udpSession?.Close();
         _udpSession = null;
         _hostEp = null;
         _isHost = false;
+
+        ObjectManager.Instance?.Clear();
     }
 
     public void HandleFailure(string msg)

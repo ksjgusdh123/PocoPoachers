@@ -84,10 +84,12 @@ public class NetworkManager : Singleton<NetworkManager>
     public void OnSessionDisconnected()
     {
         Debug.Log("[NetworkManager] Disconnected");
+        bool wasIntentional = !IsLoggedIn;
         IsLoggedIn = false;
         MyPlayerId = -1;
         ObjectManager.Instance?.Clear();
-        OnDisconnected?.Invoke();
+        if (!wasIntentional)
+            OnDisconnected?.Invoke();
     }
 
     public void SendHeartbeat()

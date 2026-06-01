@@ -50,6 +50,8 @@ public struct FlatPacket : IFlatbufferObject
   public H_EnemyMove TypeAsH_EnemyMove() { return Type<H_EnemyMove>().Value; }
   public H_EnemyHit TypeAsH_EnemyHit() { return Type<H_EnemyHit>().Value; }
   public H_EnemyDie TypeAsH_EnemyDie() { return Type<H_EnemyDie>().Value; }
+  public G_Leave TypeAsG_Leave() { return Type<G_Leave>().Value; }
+  public H_Leave TypeAsH_Leave() { return Type<H_Leave>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -171,6 +173,12 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_EnemyDie:
         _o.Type.Value = this.Type<H_EnemyDie>().HasValue ? this.Type<H_EnemyDie>().Value.UnPack() : null;
+        break;
+      case PacketType.G_Leave:
+        _o.Type.Value = this.Type<G_Leave>().HasValue ? this.Type<G_Leave>().Value.UnPack() : null;
+        break;
+      case PacketType.H_Leave:
+        _o.Type.Value = this.Type<H_Leave>().HasValue ? this.Type<H_Leave>().Value.UnPack() : null;
         break;
     }
   }

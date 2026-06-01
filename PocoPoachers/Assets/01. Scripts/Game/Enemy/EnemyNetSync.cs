@@ -9,7 +9,6 @@ public class EnemyNetSync : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void ResetCounter() { _nextId = 1; _registry.Clear(); }
 
-    // 인스펙터에서 NavMeshAgent, BehaviorGraphAgent, TargetDetector, SoundDetector 등 할당
     [SerializeField] Behaviour[] _aiComponents;
     [SerializeField] float _syncInterval = 0.1f;
 
@@ -18,7 +17,6 @@ public class EnemyNetSync : MonoBehaviour
     EnemyStat _stat;
     float _timer;
 
-    // 게스트 측 보간용
     Vector3 _targetPos;
     float   _targetYaw;
     bool    _hasTarget;
@@ -94,7 +92,6 @@ public class EnemyNetSync : MonoBehaviour
         RoomSync.EnemyDie(EnemyId);
     }
 
-    // 게스트 입장 시 호스트가 모든 적 상태를 해당 게스트에게 전송
     public static void SendAllToGuest(int guestPlayerId)
     {
         foreach (var kv in _registry)
@@ -107,8 +104,6 @@ public class EnemyNetSync : MonoBehaviour
                 e._stat?.CurrentHp ?? 100f, e._stat?.MaxHp ?? 100f);
         }
     }
-
-    // 패킷 핸들러에서 호출하는 정적 메서드들
 
     public static void OnNetSpawn(int id, Vector3 pos, float rotation, float hp, float maxHp)
     {

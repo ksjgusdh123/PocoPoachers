@@ -36,6 +36,8 @@ public enum PacketType : byte
   H_EnemyMove = 29,
   H_EnemyHit = 30,
   H_EnemyDie = 31,
+  G_Leave = 32,
+  H_Leave = 33,
 };
 
 public class PacketTypeUnion {
@@ -110,6 +112,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_EnemyHit(H_EnemyHitT _h_enemyhit) { return new PacketTypeUnion{ Type = PacketType.H_EnemyHit, Value = _h_enemyhit }; }
   public H_EnemyDieT AsH_EnemyDie() { return this.As<H_EnemyDieT>(); }
   public static PacketTypeUnion FromH_EnemyDie(H_EnemyDieT _h_enemydie) { return new PacketTypeUnion{ Type = PacketType.H_EnemyDie, Value = _h_enemydie }; }
+  public G_LeaveT AsG_Leave() { return this.As<G_LeaveT>(); }
+  public static PacketTypeUnion FromG_Leave(G_LeaveT _g_leave) { return new PacketTypeUnion{ Type = PacketType.G_Leave, Value = _g_leave }; }
+  public H_LeaveT AsH_Leave() { return this.As<H_LeaveT>(); }
+  public static PacketTypeUnion FromH_Leave(H_LeaveT _h_leave) { return new PacketTypeUnion{ Type = PacketType.H_Leave, Value = _h_leave }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -145,6 +151,8 @@ public class PacketTypeUnion {
       case PacketType.H_EnemyMove: return H_EnemyMove.Pack(builder, _o.AsH_EnemyMove()).Value;
       case PacketType.H_EnemyHit: return H_EnemyHit.Pack(builder, _o.AsH_EnemyHit()).Value;
       case PacketType.H_EnemyDie: return H_EnemyDie.Pack(builder, _o.AsH_EnemyDie()).Value;
+      case PacketType.G_Leave: return G_Leave.Pack(builder, _o.AsG_Leave()).Value;
+      case PacketType.H_Leave: return H_Leave.Pack(builder, _o.AsH_Leave()).Value;
     }
   }
 }
@@ -250,6 +258,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_EnemyDie:
         result = H_EnemyDieVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_Leave:
+        result = G_LeaveVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_Leave:
+        result = H_LeaveVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;
