@@ -20,7 +20,7 @@ public class WeaponController : EquipableController
         }
     }
 
-    public static event Action<int, ItemData> OnWeaponChanged;
+    public static event Action<int, ItemData> OnWeaponChanged; // ItemData가 null이면 언이큅
     public static event Action<int, int> OnAmmoChanged; // (현재 탄약, 인벤토리 잔여 탄약)
     public static event Action<int> OnWeaponSwitched;  // (슬롯 인덱스)
 

@@ -16,18 +16,26 @@ public class AmmoUI : MonoBehaviour
 
         WeaponController.OnAmmoChanged += UpdateAmmoDisplay;
         WeaponController.OnWeaponSwitched += UpdatePosition;
+        WeaponController.OnWeaponChanged += OnWeaponChanged;
     }
 
     private void OnDestroy()
     {
         WeaponController.OnAmmoChanged -= UpdateAmmoDisplay;
         WeaponController.OnWeaponSwitched -= UpdatePosition;
+        WeaponController.OnWeaponChanged -= OnWeaponChanged;
     }
 
     private void UpdateAmmoDisplay(int current, int inventoryCount)
     {
         _currentAmmoText.text = current.ToString();
         _inventoryAmmoText.text = inventoryCount.ToString();
+    }
+
+    private void OnWeaponChanged(int slotIndex, ItemData data)
+    {
+        if (data == null && gameObject.activeSelf)
+            gameObject.SetActive(false);
     }
 
     private void UpdatePosition(int slotIndex)
