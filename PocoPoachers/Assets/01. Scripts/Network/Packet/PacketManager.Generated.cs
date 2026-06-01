@@ -28,5 +28,9 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.H_ConsumeItemResult, PacketHandlers.OnH_ConsumeItemResult);
         _onRecv.Add(PacketType.G_StatSync         , PacketHandlers.OnG_StatSync);
         _onRecv.Add(PacketType.H_StatSync         , PacketHandlers.OnH_StatSync);
+        _onRecv.Add(PacketType.H_EnemySpawn       , PacketHandlers.OnH_EnemySpawn);
+        _onRecv.Add(PacketType.H_EnemyMove        , PacketHandlers.OnH_EnemyMove);
+        _onRecv.Add(PacketType.H_EnemyHit         , PacketHandlers.OnH_EnemyHit);
+        _onRecv.Add(PacketType.H_EnemyDie         , PacketHandlers.OnH_EnemyDie);
     }
 }

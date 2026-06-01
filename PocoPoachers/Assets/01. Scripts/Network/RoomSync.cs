@@ -117,6 +117,49 @@ public static class RoomSync
             }, G_StatSync.Pack, PacketType.G_StatSync);
     }
 
+    public static void EnemySpawnToGuest(int guestPlayerId, int enemyId, Vector3 pos, float rotation, float hp, float maxHp)
+    {
+        PacketBuilder.SendToGuest(guestPlayerId, new H_EnemySpawnT
+        {
+            EnemyId  = enemyId,
+            Pos      = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+            Rotation = rotation,
+            Hp       = hp,
+            MaxHp    = maxHp,
+        }, H_EnemySpawn.Pack, PacketType.H_EnemySpawn);
+    }
+
+    public static void EnemyMove(int enemyId, Vector3 pos, float rotation)
+    {
+        if (!RoomManager.HasGuests) return;
+        PacketBuilder.BroadcastToGuests(new H_EnemyMoveT
+        {
+            EnemyId  = enemyId,
+            Pos      = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+            Rotation = rotation,
+        }, H_EnemyMove.Pack, PacketType.H_EnemyMove);
+    }
+
+    public static void EnemyHit(int enemyId, float hp, float maxHp)
+    {
+        if (!RoomManager.HasGuests) return;
+        PacketBuilder.BroadcastToGuests(new H_EnemyHitT
+        {
+            EnemyId = enemyId,
+            Hp      = hp,
+            MaxHp   = maxHp,
+        }, H_EnemyHit.Pack, PacketType.H_EnemyHit);
+    }
+
+    public static void EnemyDie(int enemyId)
+    {
+        if (!RoomManager.HasGuests) return;
+        PacketBuilder.BroadcastToGuests(new H_EnemyDieT
+        {
+            EnemyId = enemyId,
+        }, H_EnemyDie.Pack, PacketType.H_EnemyDie);
+    }
+
     public static void ItemSpawn(int uid, int typeId, Vector3 pos, float rotation, List<int> itemIds)
     {
         if (!RoomManager.HasGuests) return;

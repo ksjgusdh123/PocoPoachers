@@ -32,6 +32,10 @@ public enum PacketType : byte
   H_ConsumeItemResult = 25,
   G_StatSync = 26,
   H_StatSync = 27,
+  H_EnemySpawn = 28,
+  H_EnemyMove = 29,
+  H_EnemyHit = 30,
+  H_EnemyDie = 31,
 };
 
 public class PacketTypeUnion {
@@ -98,6 +102,14 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_StatSync(G_StatSyncT _g_statsync) { return new PacketTypeUnion{ Type = PacketType.G_StatSync, Value = _g_statsync }; }
   public H_StatSyncT AsH_StatSync() { return this.As<H_StatSyncT>(); }
   public static PacketTypeUnion FromH_StatSync(H_StatSyncT _h_statsync) { return new PacketTypeUnion{ Type = PacketType.H_StatSync, Value = _h_statsync }; }
+  public H_EnemySpawnT AsH_EnemySpawn() { return this.As<H_EnemySpawnT>(); }
+  public static PacketTypeUnion FromH_EnemySpawn(H_EnemySpawnT _h_enemyspawn) { return new PacketTypeUnion{ Type = PacketType.H_EnemySpawn, Value = _h_enemyspawn }; }
+  public H_EnemyMoveT AsH_EnemyMove() { return this.As<H_EnemyMoveT>(); }
+  public static PacketTypeUnion FromH_EnemyMove(H_EnemyMoveT _h_enemymove) { return new PacketTypeUnion{ Type = PacketType.H_EnemyMove, Value = _h_enemymove }; }
+  public H_EnemyHitT AsH_EnemyHit() { return this.As<H_EnemyHitT>(); }
+  public static PacketTypeUnion FromH_EnemyHit(H_EnemyHitT _h_enemyhit) { return new PacketTypeUnion{ Type = PacketType.H_EnemyHit, Value = _h_enemyhit }; }
+  public H_EnemyDieT AsH_EnemyDie() { return this.As<H_EnemyDieT>(); }
+  public static PacketTypeUnion FromH_EnemyDie(H_EnemyDieT _h_enemydie) { return new PacketTypeUnion{ Type = PacketType.H_EnemyDie, Value = _h_enemydie }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -129,6 +141,10 @@ public class PacketTypeUnion {
       case PacketType.H_ConsumeItemResult: return H_ConsumeItemResult.Pack(builder, _o.AsH_ConsumeItemResult()).Value;
       case PacketType.G_StatSync: return G_StatSync.Pack(builder, _o.AsG_StatSync()).Value;
       case PacketType.H_StatSync: return H_StatSync.Pack(builder, _o.AsH_StatSync()).Value;
+      case PacketType.H_EnemySpawn: return H_EnemySpawn.Pack(builder, _o.AsH_EnemySpawn()).Value;
+      case PacketType.H_EnemyMove: return H_EnemyMove.Pack(builder, _o.AsH_EnemyMove()).Value;
+      case PacketType.H_EnemyHit: return H_EnemyHit.Pack(builder, _o.AsH_EnemyHit()).Value;
+      case PacketType.H_EnemyDie: return H_EnemyDie.Pack(builder, _o.AsH_EnemyDie()).Value;
     }
   }
 }
@@ -222,6 +238,18 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_StatSync:
         result = H_StatSyncVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_EnemySpawn:
+        result = H_EnemySpawnVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_EnemyMove:
+        result = H_EnemyMoveVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_EnemyHit:
+        result = H_EnemyHitVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_EnemyDie:
+        result = H_EnemyDieVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

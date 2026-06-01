@@ -238,6 +238,8 @@ public class RoomManager : Singleton<RoomManager>
 
         SyncLocalEquipToGuest(newGuestId);
 
+        EnemyNetSync.SendAllToGuest(newGuestId);
+
         foreach (var original in om.SpawnedBoxes)
         {
             var currentItemIds = new List<int>();
