@@ -12,6 +12,7 @@ public class Inventory : MonoBehaviour
     private int _currentCapacity;
 
     public event Action ChangeInventory;
+    public event Action<ItemData> OnItemAdded;
 
     public Inventory InteractionInventory { get; set; }
     public IReadOnlyList<ItemSlot> Slots => _slots;
@@ -54,6 +55,7 @@ public class Inventory : MonoBehaviour
         if (slot.IsEmpty)
         {
             slot.Set(itemData, Mathf.Min(amount, itemData.MaxStack));
+            OnItemAdded?.Invoke(itemData);
             return true;
         }
 
@@ -61,6 +63,7 @@ public class Inventory : MonoBehaviour
         if (slot.Amount >= itemData.MaxStack) return false;
 
         slot.AddAmount(amount);
+        OnItemAdded?.Invoke(itemData);
         return true;
     }
 

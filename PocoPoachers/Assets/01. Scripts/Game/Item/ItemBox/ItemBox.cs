@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class ItemBox : MonoBehaviour, IInteractable
@@ -49,19 +50,23 @@ public class ItemBox : MonoBehaviour, IInteractable
         if (_isPlayerNearby && !HasBeenOpened) ShowPulse();
     }
 
-    public void Initialize(int[] itemIds)
+    public void Initialize(int[] itemIds, int[] itemCounts = null, HashSet<int> noRevealIds = null)
     {
         ItemIds = itemIds;
 
         if (!gameObject.TryGetComponent<Inventory>(out var inven))
             inven = gameObject.AddComponent<Inventory>();
 
-        foreach (int id in itemIds)
+        for (int i = 0; i < itemIds.Length; i++)
         {
-            ItemData data = ItemTable.Instance.Get(id);
+            ItemData data = ItemTable.Instance.Get(itemIds[i]);
             if (data == null) continue;
-            int slotIndex = inven.CanAddItem(data, 1);
-            if (slotIndex >= 0) inven.AddItemAtSlot(slotIndex, data, 1);
+            int count = (itemCounts != null && i < itemCounts.Length) ? itemCounts[i] : 1;
+            int slotIndex = inven.CanAddItem(data, count);
+            if (slotIndex < 0) continue;
+            inven.AddItemAtSlot(slotIndex, data, count);
+            if (noRevealIds != null && noRevealIds.Contains(itemIds[i]) && inven.Slots[slotIndex] is BoxItemSlot boxSlot)
+                boxSlot.skipReveal = true;
         }
     }
 

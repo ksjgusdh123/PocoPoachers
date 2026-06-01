@@ -13,11 +13,12 @@ public static partial class PacketHandlers
         Vector3 pos = new Vector3(x, y, z);
         float rotation = pkt.Rotation;
         int[] item_ids = pkt.GetItemIdsArray();
+        int[] item_counts = pkt.GetItemCountArray();
 
         MainThreadDispatcher.Enqueue(() =>
         {
             var box = ObjectManager.Instance?.SpawnItemBox(uid, typeId, pos, rotation);
-            box?.Initialize(item_ids);
+            box?.Initialize(item_ids, item_counts);
         });
     }
 
