@@ -97,6 +97,9 @@ public class PlayerController : MonoBehaviour
 
     void Interaction()
     {
+        var weapon = GetComponent<WeaponController>();
+        if (weapon != null && weapon.IsReloading) return;
+
         // 현재 열린 인터랙션이 있으면 닫기
         if (_currentInteractable != null)
         {
