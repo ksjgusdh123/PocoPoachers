@@ -7,6 +7,9 @@ public class WeaponController : EquipableController
     [SerializeField] private float _switchMidTime = 0.15f;
     [SerializeField] private CrosshairUI _crosshairUI;
 
+    public bool IsAiming    => _currentGun != null && _currentGun.IsAiming;
+    public bool IsReloading => _currentGun != null && _currentGun.IsReloading;
+
     public float MoveSpeedMultiplier
     {
         get

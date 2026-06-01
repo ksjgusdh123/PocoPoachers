@@ -22,8 +22,11 @@ table H_Shoot
 
 table G_StatSync
 {
-    hp:     float;
-    max_hp: float;
+    hp:      float;
+    max_hp:  float;
+    stamina: float;
+    hunger:  float;
+    thirst:  float;
 }
 
 table H_StatSync
@@ -31,4 +34,7 @@ table H_StatSync
     player_id: int;
     hp:        float;
     max_hp:    float;
+    stamina:   float;
+    hunger:    float;
+    thirst:    float;
 }

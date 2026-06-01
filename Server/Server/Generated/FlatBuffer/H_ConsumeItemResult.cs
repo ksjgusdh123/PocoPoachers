@@ -16,17 +16,21 @@ public struct H_ConsumeItemResult : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public H_ConsumeItemResult __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int ItemId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int PlayerId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int ItemId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<H_ConsumeItemResult> CreateH_ConsumeItemResult(FlatBufferBuilder builder,
+      int player_id = 0,
       int item_id = 0) {
-    builder.StartTable(1);
+    builder.StartTable(2);
     H_ConsumeItemResult.AddItemId(builder, item_id);
+    H_ConsumeItemResult.AddPlayerId(builder, player_id);
     return H_ConsumeItemResult.EndH_ConsumeItemResult(builder);
   }
 
-  public static void StartH_ConsumeItemResult(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddItemId(FlatBufferBuilder builder, int itemId) { builder.AddInt(0, itemId, 0); }
+  public static void StartH_ConsumeItemResult(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
+  public static void AddItemId(FlatBufferBuilder builder, int itemId) { builder.AddInt(1, itemId, 0); }
   public static Offset<H_ConsumeItemResult> EndH_ConsumeItemResult(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_ConsumeItemResult>(o);
@@ -37,21 +41,25 @@ public struct H_ConsumeItemResult : IFlatbufferObject
     return _o;
   }
   public void UnPackTo(H_ConsumeItemResultT _o) {
+    _o.PlayerId = this.PlayerId;
     _o.ItemId = this.ItemId;
   }
   public static Offset<H_ConsumeItemResult> Pack(FlatBufferBuilder builder, H_ConsumeItemResultT _o) {
     if (_o == null) return default(Offset<H_ConsumeItemResult>);
     return CreateH_ConsumeItemResult(
       builder,
+      _o.PlayerId,
       _o.ItemId);
   }
 }
 
 public class H_ConsumeItemResultT
 {
+  public int PlayerId { get; set; }
   public int ItemId { get; set; }
 
   public H_ConsumeItemResultT() {
+    this.PlayerId = 0;
     this.ItemId = 0;
   }
 }
@@ -62,7 +70,8 @@ static public class H_ConsumeItemResultVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*ItemId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*PlayerId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*ItemId*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

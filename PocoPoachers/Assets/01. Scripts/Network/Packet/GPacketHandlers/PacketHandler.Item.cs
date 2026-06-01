@@ -97,7 +97,8 @@ public static partial class PacketHandlers
 
         PacketBuilder.BroadcastToGuests(new H_ConsumeItemResultT
         {
-            ItemId = pkt.ItemId
+            PlayerId = RoomManager.LastGuestId,
+            ItemId   = pkt.ItemId,
         }, H_ConsumeItemResult.Pack, PacketType.H_ConsumeItemResult);
     }
 }

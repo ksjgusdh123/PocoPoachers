@@ -127,7 +127,9 @@ public class PlayerMovement : MonoBehaviour
             moveType == _lastMoveType)
             return;
 
-        RoomSync.Move(pos, yaw, moveType, _localVelX, _localVelZ, _isSprinting, _playerDodge.IsRolling);
+        bool isAiming    = _weaponController != null && _weaponController.IsAiming;
+        bool isReloading = _weaponController != null && _weaponController.IsReloading;
+        RoomSync.Move(pos, yaw, moveType, _localVelX, _localVelZ, _isSprinting, _playerDodge.IsRolling, isAiming, isReloading);
 
         _lastSentPos  = pos;
         _lastSentYaw  = yaw;

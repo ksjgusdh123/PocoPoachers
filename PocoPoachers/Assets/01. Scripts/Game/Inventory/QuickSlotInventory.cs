@@ -82,7 +82,8 @@ public class QuickSlotInventory : MonoBehaviour
         {
             PacketBuilder.BroadcastToGuests(new H_ConsumeItemResultT
             {
-                ItemId = usedItemData.id,
+                PlayerId = NetworkManager.Instance?.MyPlayerId ?? 0,
+                ItemId   = usedItemData.id,
             }, H_ConsumeItemResult.Pack, PacketType.H_ConsumeItemResult);
         }
         return true;

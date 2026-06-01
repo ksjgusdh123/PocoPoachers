@@ -1,6 +1,16 @@
-// 다른 클라이언트 플레이어의 HP를 추적하는 경량 컴포넌트
 public class RemotePlayerStat : StatBase
 {
+    public float Stamina { get; private set; }
+    public float Hunger  { get; private set; }
+    public float Thirst  { get; private set; }
+
+    public void SetVitalsFromNetwork(float stamina, float hunger, float thirst)
+    {
+        Stamina = stamina;
+        Hunger  = hunger;
+        Thirst  = thirst;
+    }
+
     protected override void Awake()
     {
         base.Awake();

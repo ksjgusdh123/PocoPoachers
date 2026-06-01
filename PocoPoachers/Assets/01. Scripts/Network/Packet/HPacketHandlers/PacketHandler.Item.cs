@@ -86,7 +86,16 @@ public static partial class PacketHandlers
 
     public static void OnH_ConsumeItemResult(FlatPacket root)
     {
-        // TODO: 게스트 측에서 아이템 소모 결과 처리
+        var pkt = root.TypeAsH_ConsumeItemResult();
+        var om = ObjectManager.Instance;
+        if (om == null) return;
+
+        if (!om.TryGet(ObjectKind.Player, pkt.PlayerId, out var worldObj)) return;
+
+        var itemData = ItemTable.Instance.Get(pkt.ItemId);
+        if (itemData == null) return;
+
+        ItemUseSystem.OnRemoteItemUsed?.Invoke(itemData, worldObj.gameObject);
     }
 
     private static Inventory FindLocalInventory()

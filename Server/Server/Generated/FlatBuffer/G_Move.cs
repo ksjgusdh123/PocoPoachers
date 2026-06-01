@@ -24,6 +24,8 @@ public struct G_Move : IFlatbufferObject
   public float VelocityZ { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public bool IsSprinting { get { int o = __p.__offset(16); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public bool IsRolling { get { int o = __p.__offset(18); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public bool IsAiming { get { int o = __p.__offset(20); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public bool IsReloading { get { int o = __p.__offset(22); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<G_Move> CreateG_Move(FlatBufferBuilder builder,
       int player_id = 0,
@@ -33,20 +35,24 @@ public struct G_Move : IFlatbufferObject
       float velocity_x = 0.0f,
       float velocity_z = 0.0f,
       bool is_sprinting = false,
-      bool is_rolling = false) {
-    builder.StartTable(8);
+      bool is_rolling = false,
+      bool is_aiming = false,
+      bool is_reloading = false) {
+    builder.StartTable(10);
     G_Move.AddVelocityZ(builder, velocity_z);
     G_Move.AddVelocityX(builder, velocity_x);
     G_Move.AddRotation(builder, rotation);
     G_Move.AddPos(builder, Vec3.Pack(builder, pos));
     G_Move.AddPlayerId(builder, player_id);
+    G_Move.AddIsReloading(builder, is_reloading);
+    G_Move.AddIsAiming(builder, is_aiming);
     G_Move.AddIsRolling(builder, is_rolling);
     G_Move.AddIsSprinting(builder, is_sprinting);
     G_Move.AddMoveType(builder, move_type);
     return G_Move.EndG_Move(builder);
   }
 
-  public static void StartG_Move(FlatBufferBuilder builder) { builder.StartTable(8); }
+  public static void StartG_Move(FlatBufferBuilder builder) { builder.StartTable(10); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddPos(FlatBufferBuilder builder, Offset<Vec3> posOffset) { builder.AddStruct(1, posOffset.Value, 0); }
   public static void AddRotation(FlatBufferBuilder builder, float rotation) { builder.AddFloat(2, rotation, 0.0f); }
@@ -55,6 +61,8 @@ public struct G_Move : IFlatbufferObject
   public static void AddVelocityZ(FlatBufferBuilder builder, float velocityZ) { builder.AddFloat(5, velocityZ, 0.0f); }
   public static void AddIsSprinting(FlatBufferBuilder builder, bool isSprinting) { builder.AddBool(6, isSprinting, false); }
   public static void AddIsRolling(FlatBufferBuilder builder, bool isRolling) { builder.AddBool(7, isRolling, false); }
+  public static void AddIsAiming(FlatBufferBuilder builder, bool isAiming) { builder.AddBool(8, isAiming, false); }
+  public static void AddIsReloading(FlatBufferBuilder builder, bool isReloading) { builder.AddBool(9, isReloading, false); }
   public static Offset<G_Move> EndG_Move(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<G_Move>(o);
@@ -73,6 +81,8 @@ public struct G_Move : IFlatbufferObject
     _o.VelocityZ = this.VelocityZ;
     _o.IsSprinting = this.IsSprinting;
     _o.IsRolling = this.IsRolling;
+    _o.IsAiming = this.IsAiming;
+    _o.IsReloading = this.IsReloading;
   }
   public static Offset<G_Move> Pack(FlatBufferBuilder builder, G_MoveT _o) {
     if (_o == null) return default(Offset<G_Move>);
@@ -85,7 +95,9 @@ public struct G_Move : IFlatbufferObject
       _o.VelocityX,
       _o.VelocityZ,
       _o.IsSprinting,
-      _o.IsRolling);
+      _o.IsRolling,
+      _o.IsAiming,
+      _o.IsReloading);
   }
 }
 
@@ -99,6 +111,8 @@ public class G_MoveT
   public float VelocityZ { get; set; }
   public bool IsSprinting { get; set; }
   public bool IsRolling { get; set; }
+  public bool IsAiming { get; set; }
+  public bool IsReloading { get; set; }
 
   public G_MoveT() {
     this.PlayerId = 0;
@@ -109,6 +123,8 @@ public class G_MoveT
     this.VelocityZ = 0.0f;
     this.IsSprinting = false;
     this.IsRolling = false;
+    this.IsAiming = false;
+    this.IsReloading = false;
   }
 }
 
@@ -126,6 +142,8 @@ static public class G_MoveVerify
       && verifier.VerifyField(tablePos, 14 /*VelocityZ*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 16 /*IsSprinting*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 18 /*IsRolling*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 20 /*IsAiming*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 22 /*IsReloading*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
