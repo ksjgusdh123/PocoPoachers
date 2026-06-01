@@ -160,6 +160,8 @@ public class PlayerController : MonoBehaviour
 
     void ShowInventory()
     {
+        var weapon = GetComponent<WeaponController>();
+        if (weapon != null && weapon.IsReloading) return;
         UIManager.GetInstance().Toggle(UIType.Inventory);
     }
 
