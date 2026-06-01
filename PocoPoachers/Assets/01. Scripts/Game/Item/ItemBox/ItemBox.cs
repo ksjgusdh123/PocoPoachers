@@ -8,11 +8,45 @@ public class ItemBox : MonoBehaviour, IInteractable
     public bool HasBeenOpened { get; private set; }
 
     private UIScalePulse _pulseUI;
+    private bool _isPlayerNearby;
+    private bool _isReloading;
 
     private void Awake()
     {
-        _proximityDetector.OnEnter += ShowPulse;
-        _proximityDetector.OnExit += HidePulse;
+        _proximityDetector.OnEnter += OnPlayerEntered;
+        _proximityDetector.OnExit += OnPlayerExited;
+        GunBase.OnReloadStarted += OnReloadStarted;
+        GunBase.OnReloadEnded += OnReloadEnded;
+    }
+
+    private void OnDestroy()
+    {
+        GunBase.OnReloadStarted -= OnReloadStarted;
+        GunBase.OnReloadEnded -= OnReloadEnded;
+    }
+
+    private void OnPlayerEntered()
+    {
+        _isPlayerNearby = true;
+        if (!_isReloading) ShowPulse();
+    }
+
+    private void OnPlayerExited()
+    {
+        _isPlayerNearby = false;
+        HidePulse();
+    }
+
+    private void OnReloadStarted(float _)
+    {
+        _isReloading = true;
+        HidePulse();
+    }
+
+    private void OnReloadEnded()
+    {
+        _isReloading = false;
+        if (_isPlayerNearby && !HasBeenOpened) ShowPulse();
     }
 
     public void Initialize(int[] itemIds)

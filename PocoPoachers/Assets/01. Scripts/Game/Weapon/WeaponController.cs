@@ -32,6 +32,7 @@ public class WeaponController : EquipableController
     private Animator _animator;
     private Inventory _inventory;
     private GunBase _currentGun;
+    private PlayerDodge _playerDodge;
     private int _currentGunIndex = -1;
     private bool _isSwitching;
     private bool _wasFirePressed;
@@ -47,6 +48,7 @@ public class WeaponController : EquipableController
         _inputHandler = GetComponent<PlayerInputHandler>();
         _animator = GetComponentInChildren<Animator>();
         _inventory = GetComponent<Inventory>();
+        _playerDodge = GetComponent<PlayerDodge>();
     }
 
     private void Start()
@@ -171,6 +173,7 @@ public class WeaponController : EquipableController
     private void HandleFireInput()
     {
         if (_currentGun == null || _isSwitching) return;
+        if (_playerDodge != null && _playerDodge.IsRolling) return;
 
         bool isFirePressed = _inputHandler.IsFirePressed;
         bool fireInput = _currentGun.GunData.fireMode == FireMode.Auto
@@ -210,6 +213,11 @@ public class WeaponController : EquipableController
         _inventory.RemoveItem(ammoData, consumed);
     }
 
+    public void CancelReload()
+    {
+        _currentGun?.CancelReload();
+    }
+
     private void HandleCancelReloadInput()
     {
         if (_currentGun != null && _currentGun.IsReloading)
@@ -219,6 +227,17 @@ public class WeaponController : EquipableController
     private void HandleAimInput()
     {
         if (_isSwitching) return;
+        if (_playerDodge != null && _playerDodge.IsRolling)
+        {
+            if (_wasAimPressed)
+            {
+                _wasAimPressed = false;
+                if (_currentGun != null) _currentGun.IsAiming = false;
+                _crosshairUI?.UpdateBaseSpread(_currentGun?.GunData, false);
+                CameraZoom.Instance?.SetAiming(false, _currentGun != null ? _currentGun.GunData.aimFOV : 45f, _currentGun != null ? _currentGun.GunData.aimTime : 0.2f);
+            }
+            return;
+        }
 
         if (_currentGun != null && _currentGun.IsReloading)
         {

@@ -44,8 +44,9 @@ public class Bullet : MonoBehaviour
     private void Update()
     {
         if (_isReleased) return;
-
-        float step = _speed * Time.deltaTime;
+        
+        float remaining = _range - _traveledDistance;
+        float step = Mathf.Min(_speed * Time.deltaTime, remaining);
         Vector3 origin = transform.position;
 
         if (TryGetHit(origin, step, out RaycastHit hit))

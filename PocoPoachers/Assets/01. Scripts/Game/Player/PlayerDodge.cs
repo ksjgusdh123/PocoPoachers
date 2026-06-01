@@ -20,6 +20,7 @@ public class PlayerDodge : MonoBehaviour
     private CharacterController _characterController;
     private Animator _animator;
     private PlayerStat _playerStat;
+    private WeaponController _weaponController;
     private float _lastDodgeTime = float.NegativeInfinity;
 
     private void Awake()
@@ -28,6 +29,7 @@ public class PlayerDodge : MonoBehaviour
         _characterController = GetComponent<CharacterController>();
         _animator = GetComponentInChildren<Animator>();
         _playerStat = GetComponent<PlayerStat>();
+        _weaponController = GetComponent<WeaponController>();
     }
 
     private void Start()
@@ -45,6 +47,8 @@ public class PlayerDodge : MonoBehaviour
         if (IsRolling) return;
         if (Time.time < _lastDodgeTime + _cooldown) return;
         if (_playerStat != null && !_playerStat.UseStamina(_dodgeStaminaCost)) return;
+
+        _weaponController?.CancelReload();
 
         Vector2 input = _inputHandler.MoveInput;
         Vector3 dodgeDir = input.sqrMagnitude > 0.01f
