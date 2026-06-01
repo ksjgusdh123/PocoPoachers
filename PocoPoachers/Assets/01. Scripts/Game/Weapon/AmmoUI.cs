@@ -4,7 +4,7 @@ using UnityEngine;
 public class AmmoUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _currentAmmoText;
-    [SerializeField] private TextMeshProUGUI _maxAmmoText;
+    [SerializeField] private TextMeshProUGUI _inventoryAmmoText;
     [SerializeField] private float[] _slotPositionsX = { 60f, 180f };
 
     private RectTransform _rectTransform;
@@ -24,10 +24,10 @@ public class AmmoUI : MonoBehaviour
         WeaponController.OnWeaponSwitched -= UpdatePosition;
     }
 
-    private void UpdateAmmoDisplay(int current, int max)
+    private void UpdateAmmoDisplay(int current, int inventoryCount)
     {
         _currentAmmoText.text = current.ToString();
-        _maxAmmoText.text = max.ToString();
+        _inventoryAmmoText.text = inventoryCount.ToString();
     }
 
     private void UpdatePosition(int slotIndex)
