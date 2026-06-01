@@ -16,6 +16,12 @@ public class MuzzleFlash : MonoBehaviour
     {
         _visualEffect = GetComponent<VisualEffect>();
         if (_flashLight != null) _flashLight.enabled = false;
+        _visualEffect?.Stop();
+    }
+
+    private void OnEnable()
+    {
+        _visualEffect?.Stop();
     }
 
     public void Play()
