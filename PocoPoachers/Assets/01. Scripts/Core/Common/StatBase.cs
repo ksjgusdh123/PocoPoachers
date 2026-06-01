@@ -16,7 +16,7 @@ public abstract class StatBase : MonoBehaviour, IDamageable
         OnDamaged += (_, __, ___) => HpWorldUI.Show(this);
     }
 
-    protected virtual float Defense => 0f;
+    public virtual float Defense => 0f;
 
     public void TakeDamage(float damage, GameObject attacker = null)
     {

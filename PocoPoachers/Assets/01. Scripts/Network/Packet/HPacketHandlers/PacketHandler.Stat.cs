@@ -1,3 +1,5 @@
+using UnityEngine;
+
 public static partial class PacketHandlers
 {
     public static void OnH_StatSync(FlatPacket root)
@@ -21,6 +23,9 @@ public static partial class PacketHandlers
             DamageTextUI.Show(damage, worldObj.transform.position + Vector3.up);
 
         if (stat is RemotePlayerStat remote)
+        {
             remote.SetVitalsFromNetwork(pkt.Stamina, pkt.Hunger, pkt.Thirst);
+            remote.SetArmorDefense(pkt.Defense);
+        }
     }
 }

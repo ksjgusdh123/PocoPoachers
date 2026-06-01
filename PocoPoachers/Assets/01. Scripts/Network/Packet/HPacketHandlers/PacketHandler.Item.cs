@@ -84,19 +84,7 @@ public static partial class PacketHandlers
         }
     }
 
-    public static void OnH_ConsumeItemResult(FlatPacket root)
-    {
-        var pkt = root.TypeAsH_ConsumeItemResult();
-        var om = ObjectManager.Instance;
-        if (om == null) return;
-
-        if (!om.TryGet(ObjectKind.Player, pkt.PlayerId, out var worldObj)) return;
-
-        var itemData = ItemTable.Instance.Get(pkt.ItemId);
-        if (itemData == null) return;
-
-        ItemUseSystem.OnRemoteItemUsed?.Invoke(itemData, worldObj.gameObject);
-    }
+    public static void OnH_ConsumeItemResult(FlatPacket root) { }
 
     private static Inventory FindLocalInventory()
     {

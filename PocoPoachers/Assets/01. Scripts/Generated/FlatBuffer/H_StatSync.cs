@@ -22,6 +22,7 @@ public struct H_StatSync : IFlatbufferObject
   public float Stamina { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float Hunger { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float Thirst { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public float Defense { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
 
   public static Offset<H_StatSync> CreateH_StatSync(FlatBufferBuilder builder,
       int player_id = 0,
@@ -29,8 +30,10 @@ public struct H_StatSync : IFlatbufferObject
       float max_hp = 0.0f,
       float stamina = 0.0f,
       float hunger = 0.0f,
-      float thirst = 0.0f) {
-    builder.StartTable(6);
+      float thirst = 0.0f,
+      float defense = 0.0f) {
+    builder.StartTable(7);
+    H_StatSync.AddDefense(builder, defense);
     H_StatSync.AddThirst(builder, thirst);
     H_StatSync.AddHunger(builder, hunger);
     H_StatSync.AddStamina(builder, stamina);
@@ -40,13 +43,14 @@ public struct H_StatSync : IFlatbufferObject
     return H_StatSync.EndH_StatSync(builder);
   }
 
-  public static void StartH_StatSync(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartH_StatSync(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddHp(FlatBufferBuilder builder, float hp) { builder.AddFloat(1, hp, 0.0f); }
   public static void AddMaxHp(FlatBufferBuilder builder, float maxHp) { builder.AddFloat(2, maxHp, 0.0f); }
   public static void AddStamina(FlatBufferBuilder builder, float stamina) { builder.AddFloat(3, stamina, 0.0f); }
   public static void AddHunger(FlatBufferBuilder builder, float hunger) { builder.AddFloat(4, hunger, 0.0f); }
   public static void AddThirst(FlatBufferBuilder builder, float thirst) { builder.AddFloat(5, thirst, 0.0f); }
+  public static void AddDefense(FlatBufferBuilder builder, float defense) { builder.AddFloat(6, defense, 0.0f); }
   public static Offset<H_StatSync> EndH_StatSync(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_StatSync>(o);
@@ -63,6 +67,7 @@ public struct H_StatSync : IFlatbufferObject
     _o.Stamina = this.Stamina;
     _o.Hunger = this.Hunger;
     _o.Thirst = this.Thirst;
+    _o.Defense = this.Defense;
   }
   public static Offset<H_StatSync> Pack(FlatBufferBuilder builder, H_StatSyncT _o) {
     if (_o == null) return default(Offset<H_StatSync>);
@@ -73,7 +78,8 @@ public struct H_StatSync : IFlatbufferObject
       _o.MaxHp,
       _o.Stamina,
       _o.Hunger,
-      _o.Thirst);
+      _o.Thirst,
+      _o.Defense);
   }
 }
 
@@ -85,6 +91,7 @@ public class H_StatSyncT
   public float Stamina { get; set; }
   public float Hunger { get; set; }
   public float Thirst { get; set; }
+  public float Defense { get; set; }
 
   public H_StatSyncT() {
     this.PlayerId = 0;
@@ -93,6 +100,7 @@ public class H_StatSyncT
     this.Stamina = 0.0f;
     this.Hunger = 0.0f;
     this.Thirst = 0.0f;
+    this.Defense = 0.0f;
   }
 }
 
@@ -108,6 +116,7 @@ static public class H_StatSyncVerify
       && verifier.VerifyField(tablePos, 10 /*Stamina*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 12 /*Hunger*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 14 /*Thirst*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 16 /*Defense*/, 4 /*float*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

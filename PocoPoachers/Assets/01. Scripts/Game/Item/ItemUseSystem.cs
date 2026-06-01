@@ -9,8 +9,6 @@ public static class ItemUseSystem
 
     // 아이템 사용 완료 시 발생 (UI 연출, 애니메이션 등이 구독)
     public static event Action<ItemData> OnItemUsed;
-    public static event Action<ItemData, GameObject> OnRemoteItemUsed;
-
     public static void Register(PlayerStat stat) => _playerStat = stat;
 
     // 인벤토리에서 직접 사용 (슬롯 UI 우클릭 경로)

@@ -18,7 +18,7 @@ public class PlayerStat : StatBase
     public float CurrentStamina { get; private set; }
     public float ArmorMoveSpeedMultiplier { get; private set; } = 1f;
 
-    protected override float Defense => _totalDefense;
+    public override float Defense => _totalDefense;
 
     public float MaxHunger => _maxHunger;
     public float CurrentHunger { get; private set; }
@@ -49,7 +49,7 @@ public class PlayerStat : StatBase
 
     protected override void OnLocalHpChanged(float hp, float maxHp)
     {
-        RoomSync.StatSync(hp, maxHp, CurrentStamina, CurrentHunger, CurrentThirst);
+        RoomSync.StatSync(hp, maxHp, CurrentStamina, CurrentHunger, CurrentThirst, Defense);
     }
 
     private void Start()
@@ -71,7 +71,7 @@ public class PlayerStat : StatBase
         if (_vitalSyncTimer <= 0f)
         {
             _vitalSyncTimer = VitalSyncInterval;
-            RoomSync.StatSync(CurrentHp, MaxHp, CurrentStamina, CurrentHunger, CurrentThirst);
+            RoomSync.StatSync(CurrentHp, MaxHp, CurrentStamina, CurrentHunger, CurrentThirst, Defense);
         }
     }
 

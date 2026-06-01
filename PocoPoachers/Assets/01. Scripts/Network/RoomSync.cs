@@ -37,7 +37,7 @@ public static class RoomSync
                 H_Shoot.Pack, PacketType.H_Shoot);
         else
             PacketBuilder.SendToHost(
-                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = gunData.bulletSpeed, Damage = gunData.damage, MaxRange = gunData.range },
+                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = gunData.bulletSpeed, Damage = gunData.damage, MaxRange = gunData.range, SoundRange = gunData.soundRange },
                 G_Shoot.Pack, PacketType.G_Shoot);
     }
 
@@ -98,7 +98,7 @@ public static class RoomSync
         }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
     }
 
-    public static void StatSync(float hp, float maxHp, float stamina = 0f, float hunger = 0f, float thirst = 0f)
+    public static void StatSync(float hp, float maxHp, float stamina = 0f, float hunger = 0f, float thirst = 0f, float defense = 0f)
     {
         if (IsSolo) return;
 
@@ -111,6 +111,7 @@ public static class RoomSync
                 Stamina  = stamina,
                 Hunger   = hunger,
                 Thirst   = thirst,
+                Defense  = defense,
             }, H_StatSync.Pack, PacketType.H_StatSync);
         else
             PacketBuilder.SendToHost(new G_StatSyncT
@@ -120,6 +121,7 @@ public static class RoomSync
                 Stamina = stamina,
                 Hunger  = hunger,
                 Thirst  = thirst,
+                Defense = defense,
             }, G_StatSync.Pack, PacketType.G_StatSync);
     }
 
