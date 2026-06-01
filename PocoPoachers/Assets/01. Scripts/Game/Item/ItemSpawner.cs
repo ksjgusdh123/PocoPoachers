@@ -1,6 +1,14 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
+[System.Serializable]
+public class ItemQuantityRange
+{
+    public ItemType Type;
+    public int Min = 1;
+    public int Max = 1;
+}
+
 // 호스트에서 호출하기
 
 public class ItemSpawner : MonoBehaviour
@@ -17,12 +25,12 @@ public class ItemSpawner : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float _armorChance = 0.3f;
     [SerializeField] private int _minItemPerBox = 1;
     [SerializeField] private int _maxItemPerBox = 3;
+    [SerializeField] private List<ItemQuantityRange> _quantityRanges = new List<ItemQuantityRange>();
+    [SerializeField] private int _defaultMinQuantity = 1;
+    [SerializeField] private int _defaultMaxQuantity = 1;
 
-    private List<int> _cachedWeaponIds = new List<int>();
-    private List<int> _cachedArmorIds = new List<int>();
-    private List<int> _cachedHelmetIds = new List<int>();
-    private List<int> _cachedConsumableIds = new List<int>();
-    private List<int> _cachedBulletIds = new List<int>();
+    private Dictionary<ItemType, List<int>> _cachedItemIds = new Dictionary<ItemType, List<int>>();
+    private Dictionary<ItemType, (int min, int max)> _quantityMap = new Dictionary<ItemType, (int, int)>();
 
     int _nextUid = 1000;
     const int BOX_TYPE_ID = 301;
@@ -39,14 +47,22 @@ public class ItemSpawner : MonoBehaviour
     {
         var table = ItemTable.Instance;
         if (table == null) return;
+        foreach (ItemType type in System.Enum.GetValues(typeof(ItemType)))
+            _cachedItemIds[type] = new List<int>();
         foreach (var item in table.All)
         {
-            if (item.Type == ItemType.Weapon) _cachedWeaponIds.Add(item.Id);
-            else if (item.Type == ItemType.Consumable) _cachedConsumableIds.Add(item.Id);
-            else if (item.Type == ItemType.Armor) _cachedArmorIds.Add(item.Id);
-            else if (item.Type == ItemType.Helmet) _cachedHelmetIds.Add(item.Id);
-            else if (item.Type == ItemType.Bullet) _cachedBulletIds.Add(item.Id);
+            if (_cachedItemIds.ContainsKey(item.Type))
+                _cachedItemIds[item.Type].Add(item.Id);
         }
+
+        foreach (var range in _quantityRanges)
+            _quantityMap[range.Type] = (range.Min, range.Max);
+    }
+
+    (int min, int max) GetQuantityRange(ItemType type)
+    {
+        if (_quantityMap.TryGetValue(type, out var range)) return range;
+        return (_defaultMinQuantity, _defaultMaxQuantity);
     }
 
     public void SpawnInitBoxes()
@@ -72,14 +88,19 @@ public class ItemSpawner : MonoBehaviour
             // 아이템 구성
             int itemCount = Random.Range(_minItemPerBox, _maxItemPerBox + 1);
             List<int> randomItems = new List<int>();
+            List<int> randomCounts = new List<int>();
             for (int j = 0; j < itemCount; j++)
             {
-                int pickedId = GetRandomItemId();
-                if (pickedId != -1) randomItems.Add(pickedId);
+                var (pickedId, pickedType) = GetRandomItemId();
+                if (pickedId == -1) continue;
+                var (min, max) = GetQuantityRange(pickedType);
+                randomItems.Add(pickedId);
+                randomCounts.Add(Random.Range(min, max + 1));
             }
 
             // temp
             randomItems.Add(601);
+            randomCounts.Add(30);
 
             var data = new H_ItemSpawnT
             {
@@ -88,11 +109,12 @@ public class ItemSpawner : MonoBehaviour
                 Pos = new Vec3T { X = randomPos.x, Y = randomPos.y, Z = randomPos.z },
                 Rotation = randomRot,
                 ItemIds = randomItems,
+                ItemCount = randomCounts,
             };
 
             omgr?.RegisterSpawnedBox(data);
             omgr?.SpawnItemBox(uid, BOX_TYPE_ID, randomPos, randomRot)
-                ?.Initialize(randomItems.ToArray());
+                ?.Initialize(randomItems.ToArray(), randomCounts.ToArray());
         }
 
         // temp
@@ -108,15 +130,19 @@ public class ItemSpawner : MonoBehaviour
         omgr.SpawnItemBox(iuid, 302, new Vector3(4.5f, 0f, 2f), 0);
     }
 
-    int GetRandomItemId()
+    (int id, ItemType type) GetRandomItemId()
     {
         float value = Random.value;
-        if (value < _armorChance && _cachedArmorIds.Count > 0)
-            return _cachedHelmetIds[Random.Range(0, _cachedHelmetIds.Count)];
-        else if (value < _weaponChance && _cachedWeaponIds.Count > 0)
-            return _cachedWeaponIds[Random.Range(0, _cachedWeaponIds.Count)];
+        var helmets = _cachedItemIds[ItemType.Helmet];
+        var weapons = _cachedItemIds[ItemType.Weapon];
+        var consumables = _cachedItemIds[ItemType.Consumable];
 
-        return _cachedConsumableIds.Count > 0 ? _cachedConsumableIds[Random.Range(0, _cachedConsumableIds.Count)] : -1;
+        if (value < _armorChance && helmets.Count > 0)
+            return (helmets[Random.Range(0, helmets.Count)], ItemType.Helmet);
+        else if (value < _weaponChance && weapons.Count > 0)
+            return (weapons[Random.Range(0, weapons.Count)], ItemType.Weapon);
+
+        return consumables.Count > 0 ? (consumables[Random.Range(0, consumables.Count)], ItemType.Consumable) : (-1, ItemType.None);
     }
 
     public void ResetSpawnState() => _nextUid = 1000;
