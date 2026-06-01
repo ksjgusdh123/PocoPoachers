@@ -40,7 +40,8 @@ public class BulletDecal : MonoBehaviour
         transform.SetParent(parent, true);
         transform.SetPositionAndRotation(position, rotation);
 
-        _baseScale = Vector3.one * size;
+        Vector3 ls = parent != null ? parent.lossyScale : Vector3.one;
+        _baseScale = new Vector3(size / ls.x, size / ls.y, size / ls.z);
         _lifeTimer = lifetime;
         _lifetime = lifetime;
         _popDuration = popDuration;

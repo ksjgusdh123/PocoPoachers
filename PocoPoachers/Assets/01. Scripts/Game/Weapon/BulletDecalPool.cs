@@ -11,7 +11,8 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
     [SerializeField] private VisualEffectAsset _decalVfxAsset;
     [SerializeField] private int _defaultCapacity = 32;
     [SerializeField] private int _maxDecals = 80;
-    [SerializeField] private float _size = 0.12f;
+    [SerializeField] private float _decalSize = 0.36f;
+    [SerializeField] private float _particleSize = 3.0f;
     [SerializeField] private float _lifetime = 0.2f;
     [SerializeField] private float _popDuration = 0.07f;
     [SerializeField] private float _popScale = 2.5f;
@@ -41,7 +42,7 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
             position,
             decalRotation,
             hit.collider.transform,
-            _size,
+            _decalSize,
             _lifetime,
             _popDuration,
             _popScale,
@@ -89,7 +90,8 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
         Transform visualEffectTransform = visualEffect.transform;
         visualEffectTransform.SetParent(parent, true);
         visualEffectTransform.SetPositionAndRotation(position, rotation);
-        visualEffectTransform.localScale = Vector3.one;
+        Vector3 ls = parent != null ? parent.lossyScale : Vector3.one;
+        visualEffectTransform.localScale = new Vector3(_particleSize / ls.x, _particleSize / ls.y, _particleSize / ls.z);
 
         visualEffect.Reinit();
         visualEffect.SendEvent("OnPlay");
