@@ -14,11 +14,13 @@ public class EnemyItemBoxDropper : MonoBehaviour
 
     private StatBase _stat;
     private AIWeaponController _weaponController;
+    private ArmorController _armorController;
 
     private void Awake()
     {
         _stat = GetComponent<StatBase>();
         _weaponController = GetComponent<AIWeaponController>();
+        _armorController = GetComponent<ArmorController>();
     }
 
     private void OnEnable()
@@ -39,7 +41,6 @@ public class EnemyItemBoxDropper : MonoBehaviour
         if (omgr == null) return;
 
         int uid = _nextUid++;
-
         Vector3 spawnPos = ItemSpawner.GetGroundPosition(transform.position, _groundLayer);
         float spawnRot = transform.eulerAngles.y;
 
@@ -47,7 +48,13 @@ public class EnemyItemBoxDropper : MonoBehaviour
         var itemCounts = new List<int>();
         var noRevealIds = new HashSet<int>();
 
-        // 장착 중인 총과 탄환 먼저 추가 (flip 제외)
+        CollectEquippedItems(itemIds, itemCounts, noRevealIds);
+        CollectRandomItems(itemIds, itemCounts);
+        SpawnBox(omgr, uid, spawnPos, spawnRot, itemIds, itemCounts, noRevealIds);
+    }
+
+    private void CollectEquippedItems(List<int> itemIds, List<int> itemCounts, HashSet<int> noRevealIds)
+    {
         var gun = _weaponController?.Gun;
         if (gun != null)
         {
@@ -63,16 +70,32 @@ public class EnemyItemBoxDropper : MonoBehaviour
             }
         }
 
-        // 랜덤 아이템 목록 추가
+        var armorMount = _armorController?.GetComponent<ArmorMount>();
+        if (armorMount != null)
+        {
+            int helmetId = armorMount.GetEquippedItemId();
+            if (helmetId > 0)
+            {
+                itemIds.Add(helmetId);
+                itemCounts.Add(1);
+                noRevealIds.Add(helmetId);
+            }
+        }
+    }
+
+    private void CollectRandomItems(List<int> itemIds, List<int> itemCounts)
+    {
         int itemCount = Random.Range(_minItemCount, _maxItemCount + 1);
         var rolledIds = ItemSpawner.Roll(itemCount);
         foreach (var id in rolledIds) { itemIds.Add(id); itemCounts.Add(1); }
+    }
 
-        // 호스트: 박스 스폰
+    private void SpawnBox(ObjectManager omgr, int uid, Vector3 spawnPos, float spawnRot,
+        List<int> itemIds, List<int> itemCounts, HashSet<int> noRevealIds)
+    {
         omgr.SpawnItemBox(uid, BOX_TYPE_ID, spawnPos, spawnRot)
             ?.Initialize(itemIds.ToArray(), itemCounts.ToArray(), noRevealIds);
 
-        // 나중에 접속한 게스트를 위해 등록
         var spawnData = new H_ItemSpawnT
         {
             Uid = uid,
@@ -83,7 +106,6 @@ public class EnemyItemBoxDropper : MonoBehaviour
             ItemCount = itemCounts,
         };
         omgr.RegisterSpawnedBox(spawnData);
-
         RoomSync.ItemSpawn(spawnData.Uid, spawnData.TypeId, spawnPos, spawnRot, itemIds);
     }
 }

@@ -14,7 +14,7 @@ public class ArmorMount : MonoBehaviour
     public ArmorBase ApplyEquip(int itemId)
     {
         ArmorBase armor = SpawnArmor(itemId);
-        if (armor == null) return null;
+        if (_helmet == null) return null;
 
         _equippedItemId = itemId;
         return armor;
