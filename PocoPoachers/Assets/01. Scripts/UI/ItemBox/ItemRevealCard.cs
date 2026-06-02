@@ -23,7 +23,7 @@ public class ItemRevealCard : MonoBehaviour
     public void CheckSlotState(BoxItemSlot slot)
     {
         var sprite = Resources.Load<Sprite>(BackFaceSpritePath);
-        if (_itemImage.sprite == null || slot.isOpen)
+        if (_itemImage.sprite == null || slot.isOpen || slot.skipReveal)
         {
             isFlip = false;
             return;

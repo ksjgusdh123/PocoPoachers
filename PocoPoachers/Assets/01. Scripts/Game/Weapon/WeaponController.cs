@@ -21,8 +21,8 @@ public class WeaponController : EquipableController
         }
     }
 
-    public static event Action<int, ItemData> OnWeaponChanged;
-    public static event Action<int, int> OnAmmoChanged; // (현재 탄약, 최대 탄약)
+    public static event Action<int, ItemData> OnWeaponChanged; // ItemData가 null이면 언이큅
+    public static event Action<int, int> OnAmmoChanged; // (현재 탄약, 인벤토리 잔여 탄약)
     public static event Action<int> OnWeaponSwitched;  // (슬롯 인덱스)
 
     private static readonly int WeaponSwitchHash = Animator.StringToHash("WeaponSwitch");
@@ -49,6 +49,9 @@ public class WeaponController : EquipableController
         _animator = GetComponentInChildren<Animator>();
         _inventory = GetComponent<Inventory>();
         _playerDodge = GetComponent<PlayerDodge>();
+
+        if (_inventory != null)
+            _inventory.OnItemAdded += OnItemAddedToInventory;
     }
 
     private void Start()
@@ -67,6 +70,8 @@ public class WeaponController : EquipableController
             _inputHandler.WeaponSwitch -= SwitchWeapon;
             _inputHandler.CancelReload -= HandleCancelReloadInput;
         }
+        if (_inventory != null)
+            _inventory.OnItemAdded -= OnItemAddedToInventory;
     }
 
     private void Update()
@@ -150,13 +155,13 @@ public class WeaponController : EquipableController
 
             _reloadRequestedHandler = () => TryReloadFromInventory();
             _reloadCompleteHandler = consumed => ConsumeAmmoFromInventory(consumed);
-            _ammoChangedHandler = (cur, max) => OnAmmoChanged?.Invoke(cur, max);
+            _ammoChangedHandler = (cur, _) => OnAmmoChanged?.Invoke(cur, GetInventoryAmmoCount());
             _currentGun.OnReloadRequested += _reloadRequestedHandler;
             _currentGun.OnReloadComplete += _reloadCompleteHandler;
             _currentGun.OnAmmoChanged += _ammoChangedHandler;
 
             // 총 교체 시 현재 탄약 수 및 슬롯 위치 즉시 갱신
-            OnAmmoChanged?.Invoke(_currentGun.CurrentAmmo, _currentGun.GunData.magazineSize);
+            OnAmmoChanged?.Invoke(_currentGun.CurrentAmmo, GetInventoryAmmoCount());
             OnWeaponSwitched?.Invoke(index);
 
             if (_crosshairUI != null)
@@ -211,6 +216,22 @@ public class WeaponController : EquipableController
         var ammoData = ItemTable.Instance.Get(_currentGun.GunData.ammoItemId);
         if (ammoData == null) return;
         _inventory.RemoveItem(ammoData, consumed);
+        OnAmmoChanged?.Invoke(_currentGun.CurrentAmmo, GetInventoryAmmoCount());
+    }
+
+    private int GetInventoryAmmoCount()
+    {
+        if (_currentGun == null || _inventory == null) return 0;
+        var ammoData = ItemTable.Instance.Get(_currentGun.GunData.ammoItemId);
+        return ammoData != null ? _inventory.GetItemCount(ammoData) : 0;
+    }
+
+    private void OnItemAddedToInventory(ItemData addedItem)
+    {
+        if (_currentGun == null) return;
+        if (addedItem.Type != ItemType.Bullet) return;
+        if (addedItem.Id != _currentGun.GunData.ammoItemId) return;
+        OnAmmoChanged?.Invoke(_currentGun.CurrentAmmo, GetInventoryAmmoCount());
     }
 
     public void CancelReload()

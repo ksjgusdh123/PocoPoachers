@@ -917,6 +917,24 @@ MonoBehaviour:
   _armorChance: 0.1
   _minItemPerBox: 5
   _maxItemPerBox: 5
+  _quantityRanges:
+  - Type: 1
+    Min: 1
+    Max: 3
+  - Type: 2
+    Min: 1
+    Max: 1
+  - Type: 5
+    Min: 1
+    Max: 1
+  - Type: 6
+    Min: 1
+    Max: 1
+  - Type: 7
+    Min: 20
+    Max: 30
+  _defaultMinQuantity: 1
+  _defaultMaxQuantity: 1
 --- !u!4 &233463963
 Transform:
   m_ObjectHideFlags: 0
@@ -939,7 +957,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 233463961}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c24950b1ff5902d419fba15b51e2e69b, type: 3}
   m_Name: 
@@ -5482,7 +5500,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AmmoUI
   _currentAmmoText: {fileID: 1293469123}
-  _maxAmmoText: {fileID: 1304170914}
+  _inventoryAmmoText: {fileID: 1304170914}
   _slotPositionsX:
   - 60
   - 180
