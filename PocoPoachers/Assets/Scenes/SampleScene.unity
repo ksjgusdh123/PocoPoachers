@@ -968,6 +968,7 @@ MonoBehaviour:
     enemies:
     - prefab: {fileID: 6112331380076343035, guid: 7eb711371b281a44c82543b723192d54, type: 3}
       count: 3
+      gunItemIds: 
 --- !u!1001 &248747884
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -4284,7 +4285,7 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6044460246266960544, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
   m_PrefabInstance: {fileID: 297130195943209335}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1719737670}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e22b6b1a64f5784488972505e1d8c762, type: 3}
@@ -4295,23 +4296,12 @@ MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5386810495183219512, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
   m_PrefabInstance: {fileID: 297130195943209335}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
+  m_GameObject: {fileID: 1719737670}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 40fd5f2137c486143ae64c45c1b59d82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponController
---- !u!114 &1170366766 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 8079698097342867631, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
-  m_PrefabInstance: {fileID: 297130195943209335}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 233d1bee345449449bc6c575a31776d9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ArmorController
 --- !u!1001 &1187880128
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6135,6 +6125,23 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 7534422146677278892, guid: eb53b42f68444b940bf4baad54c8406e, type: 3}
   m_PrefabInstance: {fileID: 1714898344}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &1719737670 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8183887473744995871, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
+  m_PrefabInstance: {fileID: 297130195943209335}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1719737683
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1719737670}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 82954198b5eb8294799ef9bedd2a25fa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerArmorController
 --- !u!1 &1733367043
 GameObject:
   m_ObjectHideFlags: 0
@@ -7877,10 +7884,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: Cube
       objectReference: {fileID: 0}
-    m_RemovedComponents: []
+    m_RemovedComponents:
+    - {fileID: 8079698097342867631, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 8183887473744995871, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
+      insertIndex: 10
+      addedObject: {fileID: 1719737683}
   m_SourcePrefab: {fileID: 100100000, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
 --- !u!224 &549531284425690522 stripped
 RectTransform:
@@ -7922,7 +7933,7 @@ PrefabInstance:
     - target: {fileID: 477834962040855154, guid: a6215a84846eb94488f58838d95e7c43, type: 3}
       propertyPath: _controller
       value: 
-      objectReference: {fileID: 1170366766}
+      objectReference: {fileID: 0}
     - target: {fileID: 477834962040855154, guid: a6215a84846eb94488f58838d95e7c43, type: 3}
       propertyPath: _inventoryUI
       value: 
@@ -8038,7 +8049,7 @@ PrefabInstance:
     - target: {fileID: 3850950560319093843, guid: a6215a84846eb94488f58838d95e7c43, type: 3}
       propertyPath: _controller
       value: 
-      objectReference: {fileID: 1170366766}
+      objectReference: {fileID: 1719737683}
     - target: {fileID: 3850950560319093843, guid: a6215a84846eb94488f58838d95e7c43, type: 3}
       propertyPath: _inventoryUI
       value: 
@@ -8126,7 +8137,7 @@ PrefabInstance:
     - target: {fileID: 6416733163412912536, guid: a6215a84846eb94488f58838d95e7c43, type: 3}
       propertyPath: _controller
       value: 
-      objectReference: {fileID: 1170366766}
+      objectReference: {fileID: 0}
     - target: {fileID: 6416733163412912536, guid: a6215a84846eb94488f58838d95e7c43, type: 3}
       propertyPath: _inventoryUI
       value: 
