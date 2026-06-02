@@ -5,39 +5,45 @@ using UnityEngine;
 /// </summary>
 public class Storage : MonoBehaviour, IInteractable
 {
+    [SerializeField] private string _saveKey = "storage";
+
+    private Inventory _inventory;
+
     private void Awake()
     {
+        _inventory = GetComponent<Inventory>();
+
         var storageUI = FindAnyObjectByType<StorageUI>(FindObjectsInactive.Include);
-        storageUI?.GetComponent<InventoryUI>()?.Bind(GetComponent<Inventory>());
+        storageUI?.GetComponent<InventoryUI>()?.Bind(_inventory);
         storageUI.gameObject.SetActive(false);
+
+        SaveManager.GetInstance().LoadInventory(_saveKey, _inventory);
     }
 
     public void OnInteract(PlayerController player)
     {
-        var inven = GetComponent<Inventory>();
-
         player.SetInventoryOpen(true);
 
         var storageUI = player.GetStorageUI;
         storageUI.SetActive(true);
 
-        player.PlayerInventory.InteractionInventory = inven;
-        inven.InteractionInventory = player.PlayerInventory;
+        player.PlayerInventory.InteractionInventory = _inventory;
+        _inventory.InteractionInventory = player.PlayerInventory;
 
         player.SwitchInputMap(PlayerInputMapType.ItemBox);
     }
 
     public void OnInteractExit(PlayerController player)
     {
-        var inven = GetComponent<Inventory>();
-
         player.PlayerInventory.InteractionInventory = null;
-        inven.InteractionInventory = null;
+        _inventory.InteractionInventory = null;
 
         player.GetStorageUI.SetActive(false);
         player.SetInventoryOpen(false);
 
         player.SwitchInputMap(PlayerInputMapType.Game);
         UIManager.GetInstance().ChangeMouseCursor(true);
+
+        SaveManager.GetInstance().SaveInventory(_saveKey, _inventory);
     }
 }

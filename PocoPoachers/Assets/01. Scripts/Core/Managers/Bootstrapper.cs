@@ -8,5 +8,6 @@ public class Bootstrapper : MonoBehaviour
         RoomManager.GetInstance();
         GameManager.GetInstance();
         SceneLoader.GetInstance();
+        SaveManager.GetInstance();
     }
 }
