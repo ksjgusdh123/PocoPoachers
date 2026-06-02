@@ -35,6 +35,8 @@ public class ItemSpawner : MonoBehaviour
     int _nextUid = 1000;
     const int BOX_TYPE_ID = 301;
 
+    public List<int> GunIds => _cachedItemIds[ItemType.Weapon];
+
     void Start()
     {
         CacheItemIds();

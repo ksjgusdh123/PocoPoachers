@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -6,6 +7,7 @@ public class EnemySpawnEntry
 {
     public GameObject prefab;
     public int count;
+    public int[] gunItemIds; // 랜덤으로 장착될 무기 ID 목록 (비어 있으면 기본값 사용)
 }
 
 [System.Serializable]
@@ -20,8 +22,11 @@ public class EnemySpawner : MonoBehaviour
 {
     [SerializeField] private EnemySpawnPoint[] spawnPoints;
 
+    private List<int> _gunIds;
+
     private void Start()
     {
+        _gunIds = GetComponent<ItemSpawner>().GunIds;
         SpawnAll();
     }
 
@@ -36,7 +41,15 @@ public class EnemySpawner : MonoBehaviour
                 for (int i = 0; i < entry.count; i++)
                 {
                     Vector3 spawnPos = GetRandomNavMeshPosition(point.centerPoint.position, point.radius);
-                    Instantiate(entry.prefab, spawnPos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f), enemiesParent);
+                    var enemy = Instantiate(entry.prefab, spawnPos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f), enemiesParent);
+
+                    var weaponCtrl = enemy.GetComponent<AIWeaponController>();
+                    if (weaponCtrl == null) continue;
+
+                    if (entry.gunItemIds != null && entry.gunItemIds.Length > 0)
+                        weaponCtrl.EquipGun(entry.gunItemIds[Random.Range(0, entry.gunItemIds.Length)]);
+                    else if (_gunIds != null && _gunIds.Count > 0)
+                        weaponCtrl.EquipGun(_gunIds[Random.Range(0, _gunIds.Count)]);
                 }
             }
         }

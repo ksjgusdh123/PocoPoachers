@@ -12,7 +12,6 @@ public class AIWeaponController : MonoBehaviour
 
     private void Start()
     {
-        EquipGun(204);
     }
 
     public void TryShoot()
