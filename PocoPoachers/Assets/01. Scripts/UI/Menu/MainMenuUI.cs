@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
-//  LobbyMenuUI
+//  MainMenuUI
 //  ├─ BtnNewGame        (Button)
 //  ├─ BtnLoad           (Button)
 //  ├─ BtnCoOp           (Button)
@@ -17,7 +17,7 @@ using UnityEngine.UI;
 //      └─ BtnClose      (Button)
 // ────────────────────────────────────────────────────────────────────────
 
-public class LobbyMenuUI : MonoBehaviour
+public class MainMenuUI : MonoBehaviour
 {
     private const float CONNECT_TIMEOUT = 5f;
 
@@ -55,7 +55,7 @@ public class LobbyMenuUI : MonoBehaviour
         SaveSlotButtonUI.OnSlotSelected -= OnSaveSlotSelected;
     }
 
-    void OnGameStarted() => SceneLoader.Instance.LoadGameScene();
+    void OnGameStarted() => SceneLoader.Instance.LoadShelterScene();
 
     void OnClickNewGame()
     {

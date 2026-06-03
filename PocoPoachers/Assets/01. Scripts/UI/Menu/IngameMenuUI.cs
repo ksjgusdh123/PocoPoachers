@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
@@ -11,7 +11,7 @@ using UnityEngine.UI;
 //  │   └── RightPanel          [VerticalLayoutGroup]
 //  │       ├── Btn_Resume
 //  │       ├── Btn_Options
-//  │       ├── Btn_ReturnToLobby
+//  │       ├── Btn_ReturnToMain
 //  │       └── Btn_Quit
 // ────────────────────────────────────────────────────────────────────────
 
@@ -23,7 +23,7 @@ public class IngameMenuUI : MonoBehaviour
     [Header("Right Panel Buttons")]
     [SerializeField] private Button _btnResume;
     [SerializeField] private Button _btnOptions;
-    [SerializeField] private Button _btnReturnToLobby;
+    [SerializeField] private Button _btnReturnToMain;
     [SerializeField] private Button _btnQuit;
 
     private void Awake()
@@ -32,7 +32,7 @@ public class IngameMenuUI : MonoBehaviour
 
         _btnResume        .onClick.AddListener(OnClickResume);
         _btnOptions       .onClick.AddListener(OnClickOptions);
-        _btnReturnToLobby .onClick.AddListener(OnClickReturnToLobby);
+        _btnReturnToMain .onClick.AddListener(OnClickReturnToMain);
         _btnQuit          .onClick.AddListener(OnClickQuit);
 
         if (NetworkManager.Instance != null)
@@ -64,15 +64,15 @@ public class IngameMenuUI : MonoBehaviour
         // TODO: Options 패널 연결
     }
 
-    private void OnClickReturnToLobby()
+    private void OnClickReturnToMain()
     {
         UIManager.GetInstance().ShowWarning(
-            "로비로 돌아가기",
-            "아이템이 소실됩니다.\n계속하시겠습니까?",
+            "메인화면으로 돌아가기",
+            "메인화면으로 돌아가시겠습니까?",
             onConfirm: () =>
             {
                 UIManager.GetInstance().Hide(UIType.IngameMenu);
-                SceneLoader.Instance.LoadLobbyScene();
+                SceneLoader.Instance.LoadTitleScene();
             }
         );
     }
@@ -101,7 +101,7 @@ public class IngameMenuUI : MonoBehaviour
         UIManager.GetInstance().ShowWarning(
             "호스트 나감",
             "호스트가 게임을 나갔습니다.\n메인화면으로 돌아가시겠습니까?",
-            onConfirm: () => SceneLoader.Instance.LoadLobbyScene(),
+            onConfirm: () => SceneLoader.Instance.LoadTitleScene(),
             onCancel:  () => { /* TODO: 호스트 재입장 대기 처리 */ }
         );
     }
@@ -111,8 +111,8 @@ public class IngameMenuUI : MonoBehaviour
         UIManager.GetInstance().HideAll();
         UIManager.GetInstance().ShowWarning(
             "플레이어 나감",
-            "플레이어가 게임을 나갔습니다.\n로비로 돌아가시겠습니까?",
-            onConfirm: () => SceneLoader.Instance.LoadLobbyScene(),
+            "플레이어가 게임을 나갔습니다.\n메인화면으로 돌아가시겠습니까?",
+            onConfirm: () => SceneLoader.Instance.LoadTitleScene(),
             onCancel:  () => { }
         );
     }
@@ -122,8 +122,8 @@ public class IngameMenuUI : MonoBehaviour
         UIManager.GetInstance().HideAll();
         UIManager.GetInstance().ShowWarning(
             "연결 끊김",
-            "서버와의 연결이 끊겼습니다.\n로비로 돌아가시겠습니까?",
-            onConfirm: () => SceneLoader.Instance.LoadLobbyScene()
+            "서버와의 연결이 끊겼습니다.\n메인화면으로 돌아가시겠습니까?",
+            onConfirm: () => SceneLoader.Instance.LoadTitleScene()
         );
     }
 }
