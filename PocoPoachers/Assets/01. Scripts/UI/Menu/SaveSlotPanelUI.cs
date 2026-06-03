@@ -17,7 +17,15 @@ public class SaveSlotPanelUI : MonoBehaviour
     private void Awake()
     {
         _btnClose?.onClick.AddListener(() => gameObject.SetActive(false));
+        SaveSlotButtonUI.OnSlotDeleted += OnSlotDeleted;
     }
+
+    private void OnDestroy()
+    {
+        SaveSlotButtonUI.OnSlotDeleted -= OnSlotDeleted;
+    }
+
+    private void OnSlotDeleted(int _) => Rebuild();
 
     private void OnEnable() => Rebuild();
 

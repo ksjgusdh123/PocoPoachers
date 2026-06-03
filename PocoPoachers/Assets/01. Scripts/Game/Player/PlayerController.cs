@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviour
     public GameObject GetStorageUI => StorageUI;
 
     private Inventory _inventory;
+    private SaveManager _saveManager;
     private PlayerInputHandler _inputHander;
     private QuickSlotDropHandler[] _quickSlots;
     private readonly List<GameObject> _interactObjects = new();
@@ -34,11 +35,12 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         _inventory = GetComponent<Inventory>();
+        _saveManager = SaveManager.GetInstance();
 
         var gm = GameManager.GetInstance();
         if (gm.ShouldLoadPlayerInventory)
         {
-            SaveManager.GetInstance().LoadInventory(PlayerSaveKey, _inventory);
+            _saveManager.LoadInventory(PlayerSaveKey, _inventory);
             gm.SetLoadPlayerInventory(false);
         }
 
@@ -63,7 +65,7 @@ public class PlayerController : MonoBehaviour
     private void OnDestroy()
     {
         if (_inventory != null)
-            SaveManager.GetInstance()?.SaveInventory(PlayerSaveKey, _inventory);
+            _saveManager?.SaveInventory(PlayerSaveKey, _inventory);
 
         var ui = UIManager.GetInstance();
         if (ui == null) return;

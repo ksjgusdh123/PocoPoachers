@@ -71,6 +71,14 @@ public class SaveManager : Singleton<SaveManager>
     public bool HasSave(int slotIndex) =>
         !string.IsNullOrEmpty(GetOrLoad(slotIndex).lastSavedAt);
 
+    public void DeleteSlot(int slotIndex)
+    {
+        _cache.Remove(slotIndex);
+        string path = SlotPath(slotIndex);
+        if (File.Exists(path))
+            File.Delete(path);
+    }
+
     public string GetLastSavedAt(int slotIndex) => GetOrLoad(slotIndex).lastSavedAt;
 
     public int GetSavedItemCount(int slotIndex, string key) =>
