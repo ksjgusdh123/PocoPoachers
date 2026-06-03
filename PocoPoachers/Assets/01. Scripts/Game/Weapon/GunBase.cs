@@ -100,9 +100,26 @@ public abstract class GunBase : MonoBehaviour
     protected Vector3 GetFireDirection()
     {
         float spread = IsAiming ? _gunData.aimSpreadAngle : _gunData.spreadAngle;
-        if (spread <= 0f) return _muzzle.up;
+        Vector3 baseDir = GetCrosshairGroundDirection();
+        if (spread <= 0f) return baseDir;
         float angle = UnityEngine.Random.Range(-spread / 2f, spread / 2f);
-        return Quaternion.AngleAxis(angle, Vector3.up) * _muzzle.up;
+        return Quaternion.AngleAxis(angle, Vector3.up) * baseDir;
+    }
+
+    private Vector3 GetCrosshairGroundDirection()
+    {
+        if (CrosshairUI.Instance == null || Camera.main == null)
+            return _muzzle.up;
+
+        Ray ray = Camera.main.ScreenPointToRay(CrosshairUI.Instance.ScreenPosition);
+        Plane plane = new Plane(Vector3.up, new Vector3(0f, _muzzle.position.y, 0f));
+
+        if (!plane.Raycast(ray, out float distance))
+            return _muzzle.up;
+
+        Vector3 targetPoint = ray.GetPoint(distance);
+        Vector3 dir = targetPoint - _muzzle.position;
+        return dir.sqrMagnitude < 0.001f ? _muzzle.up : dir.normalized;
     }
 
     public void StartReload(int availableAmmo)
