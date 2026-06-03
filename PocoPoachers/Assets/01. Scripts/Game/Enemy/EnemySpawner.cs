@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -6,6 +7,9 @@ public class EnemySpawnEntry
 {
     public GameObject prefab;
     public int count;
+    public int[] gunItemIds;    // 랜덤으로 장착될 무기 ID 목록 (비어 있으면 기본값 사용)
+    public int[] helmetItemIds; // 랜덤으로 장착될 헬멧 ID 목록 (비어 있으면 기본값 사용)
+    [Range(0f, 1f)] public float helmetSpawnChance = 0.5f;
 }
 
 [System.Serializable]
@@ -20,8 +24,13 @@ public class EnemySpawner : MonoBehaviour
 {
     [SerializeField] private EnemySpawnPoint[] spawnPoints;
 
+    private List<int> _gunIds;
+    private List<int> _helmetIds;
+
     private void Start()
     {
+        _gunIds = GetComponent<ItemSpawner>().GetIds(ItemType.Weapon);
+        _helmetIds = GetComponent<ItemSpawner>().GetIds(ItemType.Helmet);
         SpawnAll();
     }
 
@@ -36,10 +45,42 @@ public class EnemySpawner : MonoBehaviour
                 for (int i = 0; i < entry.count; i++)
                 {
                     Vector3 spawnPos = GetRandomNavMeshPosition(point.centerPoint.position, point.radius);
-                    Instantiate(entry.prefab, spawnPos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f), enemiesParent);
+                    var enemy = Instantiate(entry.prefab, spawnPos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f), enemiesParent);
+
+                    EquipWeapon(enemy, entry);
+                    EquipHelmet(enemy, entry);
                 }
             }
         }
+    }
+
+    private void EquipWeapon(GameObject enemy, EnemySpawnEntry entry)
+    {
+        var weaponCtrl = enemy.GetComponent<AIWeaponController>();
+        if (weaponCtrl == null) return;
+
+        if (entry.gunItemIds != null && entry.gunItemIds.Length > 0)
+            weaponCtrl.EquipGun(entry.gunItemIds[Random.Range(0, entry.gunItemIds.Length)]);
+        else if (_gunIds != null && _gunIds.Count > 0)
+            weaponCtrl.EquipGun(_gunIds[Random.Range(0, _gunIds.Count)]);
+    }
+
+    private void EquipHelmet(GameObject enemy, EnemySpawnEntry entry)
+    {
+        if (Random.value > entry.helmetSpawnChance) return;
+
+        var armorCtrl = enemy.GetComponent<ArmorController>();
+        if (armorCtrl == null) return;
+
+        int[] pool = (entry.helmetItemIds != null && entry.helmetItemIds.Length > 0)
+            ? entry.helmetItemIds
+            : (_helmetIds != null && _helmetIds.Count > 0 ? _helmetIds.ToArray() : null);
+
+        if (pool == null || pool.Length == 0) return;
+
+        var itemData = ItemTable.Instance.Get(pool[Random.Range(0, pool.Length)]);
+        if (itemData != null)
+            armorCtrl.Equip(itemData, 0);
     }
 
     private Vector3 GetRandomNavMeshPosition(Vector3 origin, float radius)

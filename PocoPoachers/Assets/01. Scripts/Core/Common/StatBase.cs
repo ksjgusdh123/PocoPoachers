@@ -16,7 +16,18 @@ public abstract class StatBase : MonoBehaviour, IDamageable
         OnDamaged += (_, __, ___) => HpWorldUI.Show(this);
     }
 
-    public virtual float Defense => 0f;
+    private float _totalDefense;
+    protected virtual float Defense => _totalDefense;
+
+    public virtual void ApplyArmorStat(ArmorData data)
+    {
+        _totalDefense += data.defense;
+    }
+
+    public virtual void RemoveArmorStat(ArmorData data)
+    {
+        _totalDefense = Mathf.Max(0f, _totalDefense - data.defense);
+    }
 
     public void TakeDamage(float damage, GameObject attacker = null)
     {

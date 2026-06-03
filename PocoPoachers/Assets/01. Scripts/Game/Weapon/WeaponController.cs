@@ -84,7 +84,7 @@ public class WeaponController : EquipableController
 
     public override void Equip(ItemData data, int slotIndex)
     {
-        GunBase gun = _mount.ApplyEquip(data.id, slotIndex);
+        GunBase gun = _mount.ApplyEquip(data.id, slotIndex);    
         if (gun == null) return;
 
         gun.Owner = gameObject;

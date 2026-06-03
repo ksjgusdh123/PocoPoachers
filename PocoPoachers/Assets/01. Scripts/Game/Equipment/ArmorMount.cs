@@ -3,6 +3,7 @@ using UnityEngine;
 public class ArmorMount : MonoBehaviour
 {
     [SerializeField] private Transform _helmetMountPoint;
+    public void SetMountPoint(Transform mountPoint) => _helmetMountPoint = mountPoint;
 
     private ArmorBase _helmet;
     private int _equippedItemId;
@@ -13,7 +14,7 @@ public class ArmorMount : MonoBehaviour
     public ArmorBase ApplyEquip(int itemId)
     {
         ArmorBase armor = SpawnArmor(itemId);
-        if (armor == null) return null;
+        if (_helmet == null) return null;
 
         _equippedItemId = itemId;
         return armor;

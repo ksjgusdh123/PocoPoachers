@@ -5,7 +5,7 @@ public class RemotePlayerStat : StatBase
     public float Thirst  { get; private set; }
 
     float _armorDefense;
-    public override float Defense => _armorDefense;
+    protected override float Defense => _armorDefense;
 
     public void SetVitalsFromNetwork(float stamina, float hunger, float thirst)
     {

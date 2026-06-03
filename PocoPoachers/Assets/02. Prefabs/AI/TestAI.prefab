@@ -32,6 +32,37 @@ Transform:
   - {fileID: 5538972398139909112}
   m_Father: {fileID: 8737693310982061816}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1330606292897565769
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2581431430919528200}
+  m_Layer: 11
+  m_Name: HelmetSocket
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2581431430919528200
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1330606292897565769}
+  serializedVersion: 2
+  m_LocalRotation: {x: -6.5483613e-10, y: 6.328821e-17, z: -3.4292584e-15, w: 1}
+  m_LocalPosition: {x: 0, y: -0.36, z: -0.044}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 87292599437176876}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1438580374213215040
 GameObject:
   m_ObjectHideFlags: 0
@@ -908,7 +939,8 @@ Transform:
   m_LocalPosition: {x: 8.840493e-24, y: 0.628728, z: 1.4551915e-11}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 2581431430919528200}
   m_Father: {fileID: 8198507658811392736}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2783021162208809769
@@ -1779,6 +1811,8 @@ GameObject:
   - component: {fileID: 6091269842797980000}
   - component: {fileID: 2820215744700688298}
   - component: {fileID: 8759502445412506336}
+  - component: {fileID: 4082276859572084947}
+  - component: {fileID: -2921427929991376190}
   m_Layer: 11
   m_Name: TestAI
   m_TagString: Untagged
@@ -2053,6 +2087,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::EnemyItemBoxDropper
   _minItemCount: 3
   _maxItemCount: 8
+  _minAmmoCount: 20
+  _maxAmmoCount: 30
   _groundLayer:
     serializedVersion: 2
     m_Bits: 1024
@@ -2080,6 +2116,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b6c86ebe4a125f41afbb25da6ad9336, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DeathEffect
+--- !u!114 &4082276859572084947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6112331380076343035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 233d1bee345449449bc6c575a31776d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ArmorController
+--- !u!114 &-2921427929991376190
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6112331380076343035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6202c96bc0637184488fb98e03fa4055, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ArmorMount
+  _helmetMountPoint: {fileID: 2581431430919528200}
 --- !u!1 &6318343186332685025
 GameObject:
   m_ObjectHideFlags: 0
