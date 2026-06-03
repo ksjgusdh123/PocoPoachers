@@ -29,9 +29,19 @@ public class PlayerController : MonoBehaviour
     private IInteractable _currentInteractable;
     private Coroutine _useCoroutine;
 
+    private const string PlayerSaveKey = "player_inventory";
+
     private void Start()
     {
         _inventory = GetComponent<Inventory>();
+
+        var gm = GameManager.GetInstance();
+        if (gm.ShouldLoadPlayerInventory)
+        {
+            SaveManager.GetInstance().LoadInventory(PlayerSaveKey, _inventory);
+            gm.SetLoadPlayerInventory(false);
+        }
+
         _quickSlots = FindObjectsByType<QuickSlotDropHandler>(FindObjectsInactive.Include)
             .OrderBy(s => s.gameObject.name).ToArray();
 
@@ -52,6 +62,9 @@ public class PlayerController : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (_inventory != null)
+            SaveManager.GetInstance()?.SaveInventory(PlayerSaveKey, _inventory);
+
         var ui = UIManager.GetInstance();
         if (ui == null) return;
         ui.Unregister(UIType.Inventory);

@@ -5,11 +5,16 @@ using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
 //  LobbyMenuUI
-//  ├─ BtnNewGame  (Button)
-//  ├─ BtnLoad     (Button)
-//  ├─ BtnCoOp     (Button)
-//  ├─ BtnQuit     (Button)
-//  └─ CoOpUI      (JoinCodeUI)
+//  ├─ BtnNewGame        (Button)
+//  ├─ BtnLoad           (Button)
+//  ├─ BtnCoOp           (Button)
+//  ├─ BtnQuit           (Button)
+//  ├─ CoOpUI            (JoinCodeUI)
+//  └─ PanelSaveSlots    (GameObject)
+//      ├─ SaveSlot_0    (SaveSlotUI)  slotIndex=0
+//      ├─ SaveSlot_1    (SaveSlotUI)  slotIndex=1
+//      ├─ SaveSlot_2    (SaveSlotUI)  slotIndex=2
+//      └─ BtnClose      (Button)
 // ────────────────────────────────────────────────────────────────────────
 
 public class LobbyMenuUI : MonoBehaviour
@@ -21,18 +26,23 @@ public class LobbyMenuUI : MonoBehaviour
     [SerializeField] Button     _btnCoOp;
     [SerializeField] Button     _btnQuit;
     [SerializeField] JoinCodeUI _coOpUI;
+    [SerializeField] GameObject _panelSaveSlots;
+    [SerializeField] Button     _btnCloseSaveSlots;
 
     void Awake()
     {
         RoomManager.Instance.OnGameStarted    += OnGameStarted;
         RoomManager.Instance.OnRoomJoinFailed += OnRoomJoinFailed;
+        SaveSlotButtonUI.OnSlotSelected       += OnSaveSlotSelected;
 
         _btnNewGame.onClick.AddListener(OnClickNewGame);
         _btnLoad   .onClick.AddListener(OnClickLoad);
         _btnCoOp   .onClick.AddListener(OnClickCoOp);
         _btnQuit   .onClick.AddListener(OnClickQuit);
+        _btnCloseSaveSlots?.onClick.AddListener(CloseSaveSlotPanel);
 
         _coOpUI.gameObject.SetActive(false);
+        _panelSaveSlots?.SetActive(false);
     }
 
     void OnDestroy()
@@ -42,12 +52,14 @@ public class LobbyMenuUI : MonoBehaviour
             RoomManager.Instance.OnGameStarted    -= OnGameStarted;
             RoomManager.Instance.OnRoomJoinFailed -= OnRoomJoinFailed;
         }
+        SaveSlotButtonUI.OnSlotSelected -= OnSaveSlotSelected;
     }
 
     void OnGameStarted() => SceneLoader.Instance.LoadGameScene();
 
     void OnClickNewGame()
     {
+        SaveManager.GetInstance().AllocateNewSlot();
         SetButtonsInteractable(false);
         StartCoroutine(CoConnectThen(
             onSuccess: () => RoomManager.Instance.StartAsHost(),
@@ -62,8 +74,31 @@ public class LobbyMenuUI : MonoBehaviour
 
     void OnClickLoad()
     {
-        // TODO: 세이브 데이터 로드 후 StartAsHost
+        _panelSaveSlots?.SetActive(true);
     }
+
+    void OnSaveSlotSelected(int slotIndex)
+    {
+        CloseSaveSlotPanel();
+        SaveManager.GetInstance().SetActiveSlot(slotIndex);
+        GameManager.GetInstance().SetLoadPlayerInventory(true);
+        SetButtonsInteractable(false);
+        StartCoroutine(CoConnectThen(
+            onSuccess: () => RoomManager.Instance.StartAsHost(),
+            onFail: () => UIManager.GetInstance().ShowWarning(
+                "연결 실패",
+                "서버에 연결할 수 없습니다.\n로컬 플레이로 진행하시겠습니까?",
+                onConfirm: () => RoomManager.Instance.StartLocalHost(),
+                onCancel:  () =>
+                {
+                    GameManager.GetInstance().SetLoadPlayerInventory(false);
+                    SetButtonsInteractable(true);
+                }
+            )
+        ));
+    }
+
+    void CloseSaveSlotPanel() => _panelSaveSlots?.SetActive(false);
 
     void OnClickCoOp()
     {
