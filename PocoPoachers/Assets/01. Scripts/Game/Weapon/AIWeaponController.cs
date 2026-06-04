@@ -63,6 +63,9 @@ public class AIWeaponController : MonoBehaviour
         if (agent.BlackboardReference.GetVariable("AttackRange", out BlackboardVariable<float> attackRange))
             attackRange.Value = gunData.range;
 
+        if (agent.BlackboardReference.GetVariable("HalfAttackRange", out BlackboardVariable<float> halfAttackRange))
+            halfAttackRange.Value = gunData.range * 0.5f;
+
         if (agent.BlackboardReference.GetVariable("ReloadingTime", out BlackboardVariable<float> reloadingTime))
             reloadingTime.Value = gunData.reloadTime;
 
