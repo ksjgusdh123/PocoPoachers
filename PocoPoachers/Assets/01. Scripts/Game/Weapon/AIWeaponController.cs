@@ -28,14 +28,31 @@ public class AIWeaponController : MonoBehaviour
     public void EquipGun(int itemId)
     {
         if (_gun != null)
+        {
+            _gun.OnReloadRequested -= OnReloadRequested;
             Destroy(_gun.gameObject);
+        }
 
         var itemData = ItemTable.Instance.Get(itemId);
         if (itemData == null) return;
         _gun = ResourceManager.Instance.Spawn<GunBase>(itemData.prefab, _mountPoint);
 
         if (_gun != null)
+        {
+            _gun.OnReloadRequested += OnReloadRequested;
             UpdateBlackboardGunData(_gun.GunData);
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (_gun != null)
+            _gun.OnReloadRequested -= OnReloadRequested;
+    }
+
+    private void OnReloadRequested()
+    {
+        _gun.StartReload(_gun.GunData.magazineSize);
     }
 
     private void UpdateBlackboardGunData(GunData gunData)
