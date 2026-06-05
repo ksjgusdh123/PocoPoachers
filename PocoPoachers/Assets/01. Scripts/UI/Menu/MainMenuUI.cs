@@ -55,7 +55,11 @@ public class MainMenuUI : MonoBehaviour
         SaveSlotButtonUI.OnSlotSelected -= OnSaveSlotSelected;
     }
 
-    void OnGameStarted() => SceneLoader.Instance.LoadShelterScene();
+    void OnGameStarted()
+    {
+        GameManager.Instance.SetSpawnId(SpawnId.FromTitle);
+        SceneLoader.Instance.LoadShelterScene();
+    }
 
     void OnClickNewGame()
     {

@@ -533,6 +533,7 @@ GameObject:
   - component: {fileID: 637986062}
   - component: {fileID: 637986061}
   - component: {fileID: 637986060}
+  - component: {fileID: 637986064}
   m_Layer: 0
   m_Name: Managers
   m_TagString: Untagged
@@ -599,6 +600,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &637986064
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 637986058}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1857e8b46ff843f409fc130bf7d5dfdb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  _playerPrefab: {fileID: 1500275326456394333, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
 --- !u!1 &895960987
 GameObject:
   m_ObjectHideFlags: 0
@@ -1335,7 +1349,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7980729207234009773, guid: 1167a182ed7024947a3f13166900de11, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.000065975575
+      value: 0.000897802
       objectReference: {fileID: 0}
     - target: {fileID: 8214910286319739864, guid: 1167a182ed7024947a3f13166900de11, type: 3}
       propertyPath: m_AnchorMax.y

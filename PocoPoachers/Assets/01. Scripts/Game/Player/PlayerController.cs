@@ -54,6 +54,11 @@ public class PlayerController : MonoBehaviour
         _inputHander.StartInteraction += Interaction;
         _inputHander.CancelItemUse += CancelConsuming;
 
+        if (_cameraController == null)
+            _cameraController = FindObjectOfType<CameraController>();
+        if (_cameraController != null)
+            _cameraController.SetTarget(transform);
+
         var ui = UIManager.GetInstance();
         ui.Register(UIType.Inventory, PlayerBagUI);
         ui.Register(UIType.Storage, StorageUI);
