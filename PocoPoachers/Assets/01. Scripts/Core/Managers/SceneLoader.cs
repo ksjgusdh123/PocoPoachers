@@ -1,15 +1,17 @@
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class SceneLoader : Singleton<SceneLoader>
 {
-    public void LoadLobbyScene()
+    public void LoadTitleScene()
     {
+        RoomManager.Instance?.LeaveRoom();
         NetworkManager.Instance?.LeaveGame();
         Cursor.visible   = true;
         Cursor.lockState = CursorLockMode.None;
-        SceneManager.LoadScene(SceneName.LobbyScene);
+        SceneManager.LoadScene(SceneName.Title);
     }
 
-    public void LoadGameScene() => SceneManager.LoadScene(SceneName.GameScene);
+    public void LoadShelterScene() => SceneManager.LoadScene(SceneName.Shelter);
+    public void LoadRaidTestScene() => SceneManager.LoadScene(SceneName.RaidTest);
 }

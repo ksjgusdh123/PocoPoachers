@@ -15,14 +15,22 @@ public static partial class PacketHandlers
             if (stat == null)
                 stat = worldObj.gameObject.AddComponent<RemotePlayerStat>();
             stat.SetHpFromNetwork(pkt.Hp, pkt.MaxHp);
+            if (stat is RemotePlayerStat remote)
+            {
+                remote.SetVitalsFromNetwork(pkt.Stamina, pkt.Hunger, pkt.Thirst);
+                remote.SetArmorDefense(pkt.Defense);
+            }
         }
 
-        // 다른 게스트들에게 브로드캐스트
         PacketBuilder.BroadcastToGuests(senderId, new H_StatSyncT
         {
             PlayerId = senderId,
             Hp       = pkt.Hp,
             MaxHp    = pkt.MaxHp,
+            Stamina  = pkt.Stamina,
+            Hunger   = pkt.Hunger,
+            Thirst   = pkt.Thirst,
+            Defense  = pkt.Defense,
         }, H_StatSync.Pack, PacketType.H_StatSync);
     }
 }

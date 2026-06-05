@@ -1,0 +1,29 @@
+﻿include "Common.fbs";
+
+table H_EnemySpawn
+{
+    enemy_id: int;
+    pos:      Vec3;
+    rotation: float;
+    hp:       float;
+    max_hp:   float;
+}
+
+table H_EnemyMove
+{
+    enemy_id: int;
+    pos:      Vec3;
+    rotation: float;
+}
+
+table H_EnemyHit
+{
+    enemy_id: int;
+    hp:       float;
+    max_hp:   float;
+}
+
+table H_EnemyDie
+{
+    enemy_id: int;
+}

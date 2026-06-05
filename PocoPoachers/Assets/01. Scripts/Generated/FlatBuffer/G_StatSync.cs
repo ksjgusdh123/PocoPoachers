@@ -18,19 +18,35 @@ public struct G_StatSync : IFlatbufferObject
 
   public float Hp { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float MaxHp { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public float Stamina { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public float Hunger { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public float Thirst { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public float Defense { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
 
   public static Offset<G_StatSync> CreateG_StatSync(FlatBufferBuilder builder,
       float hp = 0.0f,
-      float max_hp = 0.0f) {
-    builder.StartTable(2);
+      float max_hp = 0.0f,
+      float stamina = 0.0f,
+      float hunger = 0.0f,
+      float thirst = 0.0f,
+      float defense = 0.0f) {
+    builder.StartTable(6);
+    G_StatSync.AddDefense(builder, defense);
+    G_StatSync.AddThirst(builder, thirst);
+    G_StatSync.AddHunger(builder, hunger);
+    G_StatSync.AddStamina(builder, stamina);
     G_StatSync.AddMaxHp(builder, max_hp);
     G_StatSync.AddHp(builder, hp);
     return G_StatSync.EndG_StatSync(builder);
   }
 
-  public static void StartG_StatSync(FlatBufferBuilder builder) { builder.StartTable(2); }
+  public static void StartG_StatSync(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddHp(FlatBufferBuilder builder, float hp) { builder.AddFloat(0, hp, 0.0f); }
   public static void AddMaxHp(FlatBufferBuilder builder, float maxHp) { builder.AddFloat(1, maxHp, 0.0f); }
+  public static void AddStamina(FlatBufferBuilder builder, float stamina) { builder.AddFloat(2, stamina, 0.0f); }
+  public static void AddHunger(FlatBufferBuilder builder, float hunger) { builder.AddFloat(3, hunger, 0.0f); }
+  public static void AddThirst(FlatBufferBuilder builder, float thirst) { builder.AddFloat(4, thirst, 0.0f); }
+  public static void AddDefense(FlatBufferBuilder builder, float defense) { builder.AddFloat(5, defense, 0.0f); }
   public static Offset<G_StatSync> EndG_StatSync(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<G_StatSync>(o);
@@ -43,13 +59,21 @@ public struct G_StatSync : IFlatbufferObject
   public void UnPackTo(G_StatSyncT _o) {
     _o.Hp = this.Hp;
     _o.MaxHp = this.MaxHp;
+    _o.Stamina = this.Stamina;
+    _o.Hunger = this.Hunger;
+    _o.Thirst = this.Thirst;
+    _o.Defense = this.Defense;
   }
   public static Offset<G_StatSync> Pack(FlatBufferBuilder builder, G_StatSyncT _o) {
     if (_o == null) return default(Offset<G_StatSync>);
     return CreateG_StatSync(
       builder,
       _o.Hp,
-      _o.MaxHp);
+      _o.MaxHp,
+      _o.Stamina,
+      _o.Hunger,
+      _o.Thirst,
+      _o.Defense);
   }
 }
 
@@ -57,10 +81,18 @@ public class G_StatSyncT
 {
   public float Hp { get; set; }
   public float MaxHp { get; set; }
+  public float Stamina { get; set; }
+  public float Hunger { get; set; }
+  public float Thirst { get; set; }
+  public float Defense { get; set; }
 
   public G_StatSyncT() {
     this.Hp = 0.0f;
     this.MaxHp = 0.0f;
+    this.Stamina = 0.0f;
+    this.Hunger = 0.0f;
+    this.Thirst = 0.0f;
+    this.Defense = 0.0f;
   }
 }
 
@@ -72,6 +104,10 @@ static public class G_StatSyncVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*Hp*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*MaxHp*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Stamina*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*Hunger*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*Thirst*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*Defense*/, 4 /*float*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -22,6 +22,7 @@ public struct G_Shoot : IFlatbufferObject
   public float BulletSpeed { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float Damage { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float MaxRange { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public float SoundRange { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
 
   public static Offset<G_Shoot> CreateG_Shoot(FlatBufferBuilder builder,
       int player_id = 0,
@@ -29,8 +30,10 @@ public struct G_Shoot : IFlatbufferObject
       Vec3T direction = null,
       float bullet_speed = 0.0f,
       float damage = 0.0f,
-      float max_range = 0.0f) {
-    builder.StartTable(6);
+      float max_range = 0.0f,
+      float sound_range = 0.0f) {
+    builder.StartTable(7);
+    G_Shoot.AddSoundRange(builder, sound_range);
     G_Shoot.AddMaxRange(builder, max_range);
     G_Shoot.AddDamage(builder, damage);
     G_Shoot.AddBulletSpeed(builder, bullet_speed);
@@ -40,13 +43,14 @@ public struct G_Shoot : IFlatbufferObject
     return G_Shoot.EndG_Shoot(builder);
   }
 
-  public static void StartG_Shoot(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartG_Shoot(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddOrigin(FlatBufferBuilder builder, Offset<Vec3> originOffset) { builder.AddStruct(1, originOffset.Value, 0); }
   public static void AddDirection(FlatBufferBuilder builder, Offset<Vec3> directionOffset) { builder.AddStruct(2, directionOffset.Value, 0); }
   public static void AddBulletSpeed(FlatBufferBuilder builder, float bulletSpeed) { builder.AddFloat(3, bulletSpeed, 0.0f); }
   public static void AddDamage(FlatBufferBuilder builder, float damage) { builder.AddFloat(4, damage, 0.0f); }
   public static void AddMaxRange(FlatBufferBuilder builder, float maxRange) { builder.AddFloat(5, maxRange, 0.0f); }
+  public static void AddSoundRange(FlatBufferBuilder builder, float soundRange) { builder.AddFloat(6, soundRange, 0.0f); }
   public static Offset<G_Shoot> EndG_Shoot(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<G_Shoot>(o);
@@ -63,6 +67,7 @@ public struct G_Shoot : IFlatbufferObject
     _o.BulletSpeed = this.BulletSpeed;
     _o.Damage = this.Damage;
     _o.MaxRange = this.MaxRange;
+    _o.SoundRange = this.SoundRange;
   }
   public static Offset<G_Shoot> Pack(FlatBufferBuilder builder, G_ShootT _o) {
     if (_o == null) return default(Offset<G_Shoot>);
@@ -73,7 +78,8 @@ public struct G_Shoot : IFlatbufferObject
       _o.Direction,
       _o.BulletSpeed,
       _o.Damage,
-      _o.MaxRange);
+      _o.MaxRange,
+      _o.SoundRange);
   }
 }
 
@@ -85,6 +91,7 @@ public class G_ShootT
   public float BulletSpeed { get; set; }
   public float Damage { get; set; }
   public float MaxRange { get; set; }
+  public float SoundRange { get; set; }
 
   public G_ShootT() {
     this.PlayerId = 0;
@@ -93,6 +100,7 @@ public class G_ShootT
     this.BulletSpeed = 0.0f;
     this.Damage = 0.0f;
     this.MaxRange = 0.0f;
+    this.SoundRange = 0.0f;
   }
 }
 
@@ -108,6 +116,7 @@ static public class G_ShootVerify
       && verifier.VerifyField(tablePos, 10 /*BulletSpeed*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 12 /*Damage*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 14 /*MaxRange*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 16 /*SoundRange*/, 4 /*float*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -21,6 +21,9 @@ public static partial class PacketHandlers
 
         if (RoomManager.IsHost)
         {
+            if (pkt.SoundRange > 0f)
+                SoundEvent.Emit(origin, pkt.SoundRange, null);
+
             PacketBuilder.BroadcastToGuests(pkt.PlayerId,
                 new H_ShootT
                 {

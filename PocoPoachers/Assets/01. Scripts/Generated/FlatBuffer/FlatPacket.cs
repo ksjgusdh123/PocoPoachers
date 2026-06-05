@@ -46,6 +46,12 @@ public struct FlatPacket : IFlatbufferObject
   public H_ConsumeItemResult TypeAsH_ConsumeItemResult() { return Type<H_ConsumeItemResult>().Value; }
   public G_StatSync TypeAsG_StatSync() { return Type<G_StatSync>().Value; }
   public H_StatSync TypeAsH_StatSync() { return Type<H_StatSync>().Value; }
+  public H_EnemySpawn TypeAsH_EnemySpawn() { return Type<H_EnemySpawn>().Value; }
+  public H_EnemyMove TypeAsH_EnemyMove() { return Type<H_EnemyMove>().Value; }
+  public H_EnemyHit TypeAsH_EnemyHit() { return Type<H_EnemyHit>().Value; }
+  public H_EnemyDie TypeAsH_EnemyDie() { return Type<H_EnemyDie>().Value; }
+  public G_Leave TypeAsG_Leave() { return Type<G_Leave>().Value; }
+  public H_Leave TypeAsH_Leave() { return Type<H_Leave>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -155,6 +161,24 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_StatSync:
         _o.Type.Value = this.Type<H_StatSync>().HasValue ? this.Type<H_StatSync>().Value.UnPack() : null;
+        break;
+      case PacketType.H_EnemySpawn:
+        _o.Type.Value = this.Type<H_EnemySpawn>().HasValue ? this.Type<H_EnemySpawn>().Value.UnPack() : null;
+        break;
+      case PacketType.H_EnemyMove:
+        _o.Type.Value = this.Type<H_EnemyMove>().HasValue ? this.Type<H_EnemyMove>().Value.UnPack() : null;
+        break;
+      case PacketType.H_EnemyHit:
+        _o.Type.Value = this.Type<H_EnemyHit>().HasValue ? this.Type<H_EnemyHit>().Value.UnPack() : null;
+        break;
+      case PacketType.H_EnemyDie:
+        _o.Type.Value = this.Type<H_EnemyDie>().HasValue ? this.Type<H_EnemyDie>().Value.UnPack() : null;
+        break;
+      case PacketType.G_Leave:
+        _o.Type.Value = this.Type<G_Leave>().HasValue ? this.Type<G_Leave>().Value.UnPack() : null;
+        break;
+      case PacketType.H_Leave:
+        _o.Type.Value = this.Type<H_Leave>().HasValue ? this.Type<H_Leave>().Value.UnPack() : null;
         break;
     }
   }

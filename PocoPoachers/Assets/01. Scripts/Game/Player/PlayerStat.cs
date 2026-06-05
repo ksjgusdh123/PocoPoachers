@@ -31,6 +31,8 @@ public class PlayerStat : StatBase
     public event Action<float, float> OnThirstChanged;
 
     private float _lastStaminaUseTime = float.NegativeInfinity;
+    private float _vitalSyncTimer;
+    private const float VitalSyncInterval = 2f;
     private float _totalMaxHpBonus;
 
     protected override void Awake()
@@ -46,7 +48,7 @@ public class PlayerStat : StatBase
 
     protected override void OnLocalHpChanged(float hp, float maxHp)
     {
-        RoomSync.StatSync(hp, maxHp);
+        RoomSync.StatSync(hp, maxHp, CurrentStamina, CurrentHunger, CurrentThirst, Defense);
     }
 
     private void Start()
@@ -63,6 +65,13 @@ public class PlayerStat : StatBase
     {
         RegenerateStamina();
         DrainHungerAndThirst();
+
+        _vitalSyncTimer -= Time.deltaTime;
+        if (_vitalSyncTimer <= 0f)
+        {
+            _vitalSyncTimer = VitalSyncInterval;
+            RoomSync.StatSync(CurrentHp, MaxHp, CurrentStamina, CurrentHunger, CurrentThirst, Defense);
+        }
     }
 
     private void RegenerateStamina()

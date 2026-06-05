@@ -23,15 +23,27 @@ public class PlayerController : MonoBehaviour
     public GameObject GetStorageUI => StorageUI;
 
     private Inventory _inventory;
+    private SaveManager _saveManager;
     private PlayerInputHandler _inputHander;
     private QuickSlotDropHandler[] _quickSlots;
     private readonly List<GameObject> _interactObjects = new();
     private IInteractable _currentInteractable;
     private Coroutine _useCoroutine;
 
+    private const string PlayerSaveKey = "player_inventory";
+
     private void Start()
     {
         _inventory = GetComponent<Inventory>();
+        _saveManager = SaveManager.GetInstance();
+
+        var gm = GameManager.GetInstance();
+        if (gm.ShouldLoadPlayerInventory)
+        {
+            _saveManager.LoadInventory(PlayerSaveKey, _inventory);
+            gm.SetLoadPlayerInventory(false);
+        }
+
         _quickSlots = FindObjectsByType<QuickSlotDropHandler>(FindObjectsInactive.Include)
             .OrderBy(s => s.gameObject.name).ToArray();
 
@@ -41,6 +53,11 @@ public class PlayerController : MonoBehaviour
         _inputHander.ConsumeItemNumberKey += StartConsuming;
         _inputHander.StartInteraction += Interaction;
         _inputHander.CancelItemUse += CancelConsuming;
+
+        if (_cameraController == null)
+            _cameraController = FindObjectOfType<CameraController>();
+        if (_cameraController != null)
+            _cameraController.SetTarget(transform);
 
         var ui = UIManager.GetInstance();
         ui.Register(UIType.Inventory, PlayerBagUI);
@@ -52,6 +69,9 @@ public class PlayerController : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (_inventory != null)
+            _saveManager?.SaveInventory(PlayerSaveKey, _inventory);
+
         var ui = UIManager.GetInstance();
         if (ui == null) return;
         ui.Unregister(UIType.Inventory);

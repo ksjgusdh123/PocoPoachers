@@ -10,10 +10,12 @@ public enum ObjectKind
 
 public class WorldObject : MonoBehaviour
 {
-    static readonly int HashVelX      = Animator.StringToHash("VelocityX");
-    static readonly int HashVelZ      = Animator.StringToHash("VelocityZ");
-    static readonly int HashSprinting = Animator.StringToHash("IsSprinting");
-    static readonly int HashRoll      = Animator.StringToHash("Roll");
+    static readonly int HashVelX       = Animator.StringToHash("VelocityX");
+    static readonly int HashVelZ       = Animator.StringToHash("VelocityZ");
+    static readonly int HashSprinting  = Animator.StringToHash("IsSprinting");
+    static readonly int HashRoll       = Animator.StringToHash("Roll");
+    static readonly int HashAiming     = Animator.StringToHash("IsAiming");
+    static readonly int HashReloading  = Animator.StringToHash("IsReloading");
 
     [SerializeField] float _smooth = 14f;
     [SerializeField] float _animSmooth = 0.1f;
@@ -41,7 +43,7 @@ public class WorldObject : MonoBehaviour
         _animator = GetComponentInChildren<Animator>();
     }
 
-    public void SetMoveTarget(Vector3 worldPos, float yawDegrees, float velX = 0f, float velZ = 0f, bool isSprinting = false, bool isRolling = false)
+    public void SetMoveTarget(Vector3 worldPos, float yawDegrees, float velX = 0f, float velZ = 0f, bool isSprinting = false, bool isRolling = false, bool isAiming = false, bool isReloading = false)
     {
         _targetPos       = worldPos;
         _targetYaw       = yawDegrees;
@@ -61,6 +63,8 @@ public class WorldObject : MonoBehaviour
             {
                 _animator.SetLayerWeight(1, 1f);
             }
+            _animator.SetBool(HashAiming,    isAiming);
+            _animator.SetBool(HashReloading, isReloading);
         }
         _wasRolling = isRolling;
     }

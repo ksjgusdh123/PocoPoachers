@@ -6,7 +6,7 @@ public static class RoomSync
     private static int MyId => NetworkManager.Instance?.MyPlayerId ?? 0;
     private static bool IsSolo => RoomManager.IsHost && !RoomManager.HasGuests;
 
-    public static void Move(Vector3 pos, float yaw, sbyte moveType, float velX, float velZ, bool isSprinting, bool isRolling)
+    public static void Move(Vector3 pos, float yaw, sbyte moveType, float velX, float velZ, bool isSprinting, bool isRolling, bool isAiming = false, bool isReloading = false)
     {
         if (IsSolo) return;
 
@@ -15,11 +15,11 @@ public static class RoomSync
 
         if (RoomManager.IsHost)
             PacketBuilder.BroadcastToGuests(
-                new H_MoveT { PlayerId = id, Pos = vec, Rotation = yaw, MoveType = moveType, VelocityX = velX, VelocityZ = velZ, IsSprinting = isSprinting, IsRolling = isRolling },
+                new H_MoveT { PlayerId = id, Pos = vec, Rotation = yaw, MoveType = moveType, VelocityX = velX, VelocityZ = velZ, IsSprinting = isSprinting, IsRolling = isRolling, IsAiming = isAiming, IsReloading = isReloading },
                 H_Move.Pack, PacketType.H_Move);
         else
             PacketBuilder.SendToHost(
-                new G_MoveT { PlayerId = id, Pos = vec, Rotation = yaw, MoveType = moveType, VelocityX = velX, VelocityZ = velZ, IsSprinting = isSprinting, IsRolling = isRolling },
+                new G_MoveT { PlayerId = id, Pos = vec, Rotation = yaw, MoveType = moveType, VelocityX = velX, VelocityZ = velZ, IsSprinting = isSprinting, IsRolling = isRolling, IsAiming = isAiming, IsReloading = isReloading },
                 G_Move.Pack, PacketType.G_Move);
     }
 
@@ -37,7 +37,7 @@ public static class RoomSync
                 H_Shoot.Pack, PacketType.H_Shoot);
         else
             PacketBuilder.SendToHost(
-                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = gunData.bulletSpeed, Damage = gunData.damage, MaxRange = gunData.range },
+                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = gunData.bulletSpeed, Damage = gunData.damage, MaxRange = gunData.range, SoundRange = gunData.soundRange },
                 G_Shoot.Pack, PacketType.G_Shoot);
     }
 
@@ -98,7 +98,7 @@ public static class RoomSync
         }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
     }
 
-    public static void StatSync(float hp, float maxHp)
+    public static void StatSync(float hp, float maxHp, float stamina = 0f, float hunger = 0f, float thirst = 0f, float defense = 0f)
     {
         if (IsSolo) return;
 
@@ -108,13 +108,77 @@ public static class RoomSync
                 PlayerId = MyId,
                 Hp       = hp,
                 MaxHp    = maxHp,
+                Stamina  = stamina,
+                Hunger   = hunger,
+                Thirst   = thirst,
+                Defense  = defense,
             }, H_StatSync.Pack, PacketType.H_StatSync);
         else
             PacketBuilder.SendToHost(new G_StatSyncT
             {
-                Hp    = hp,
-                MaxHp = maxHp,
+                Hp      = hp,
+                MaxHp   = maxHp,
+                Stamina = stamina,
+                Hunger  = hunger,
+                Thirst  = thirst,
+                Defense = defense,
             }, G_StatSync.Pack, PacketType.G_StatSync);
+    }
+
+    public static void Leave()
+    {
+        int id = MyId;
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastToGuests(
+                new H_LeaveT { PlayerId = id, IsHost = true },
+                H_Leave.Pack, PacketType.H_Leave);
+        else
+            PacketBuilder.SendToHost(
+                new G_LeaveT { PlayerId = id },
+                G_Leave.Pack, PacketType.G_Leave);
+    }
+
+    public static void EnemySpawnToGuest(int guestPlayerId, int enemyId, Vector3 pos, float rotation, float hp, float maxHp)
+    {
+        PacketBuilder.SendToGuest(guestPlayerId, new H_EnemySpawnT
+        {
+            EnemyId  = enemyId,
+            Pos      = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+            Rotation = rotation,
+            Hp       = hp,
+            MaxHp    = maxHp,
+        }, H_EnemySpawn.Pack, PacketType.H_EnemySpawn);
+    }
+
+    public static void EnemyMove(int enemyId, Vector3 pos, float rotation)
+    {
+        if (!RoomManager.HasGuests) return;
+        PacketBuilder.BroadcastToGuests(new H_EnemyMoveT
+        {
+            EnemyId  = enemyId,
+            Pos      = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+            Rotation = rotation,
+        }, H_EnemyMove.Pack, PacketType.H_EnemyMove);
+    }
+
+    public static void EnemyHit(int enemyId, float hp, float maxHp)
+    {
+        if (!RoomManager.HasGuests) return;
+        PacketBuilder.BroadcastToGuests(new H_EnemyHitT
+        {
+            EnemyId = enemyId,
+            Hp      = hp,
+            MaxHp   = maxHp,
+        }, H_EnemyHit.Pack, PacketType.H_EnemyHit);
+    }
+
+    public static void EnemyDie(int enemyId)
+    {
+        if (!RoomManager.HasGuests) return;
+        PacketBuilder.BroadcastToGuests(new H_EnemyDieT
+        {
+            EnemyId = enemyId,
+        }, H_EnemyDie.Pack, PacketType.H_EnemyDie);
     }
 
     public static void ItemSpawn(int uid, int typeId, Vector3 pos, float rotation, List<int> itemIds)

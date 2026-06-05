@@ -10,8 +10,10 @@ public class CameraController : MonoBehaviour
     private Vector3 _velocity;
     private bool _isLocked;
 
-    public void SetLocked(bool locked) 
-    { 
+    public void SetTarget(Transform target) => _target = target;
+
+    public void SetLocked(bool locked)
+    {
         _isLocked = locked;
     }
 

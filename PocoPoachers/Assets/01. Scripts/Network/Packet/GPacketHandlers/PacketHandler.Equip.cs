@@ -1,13 +1,11 @@
-﻿using static UnityEditor.Progress;
-
 public static partial class PacketHandlers
 {
     public static void OnG_Equip(FlatPacket root)
     {
         var pkt = root.TypeAsG_Equip();
-        
-        int playerId = pkt.PlayerId;
-        int itemId = pkt.ItemId;
+
+        int playerId  = pkt.PlayerId;
+        int itemId    = pkt.ItemId;
         int slotIndex = pkt.SlotIndex;
 
         if (!ObjectManager.Instance.TryGet(ObjectKind.Player, playerId, out var worldObj)) return;

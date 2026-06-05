@@ -85,10 +85,7 @@ public static partial class PacketHandlers
         }
     }
 
-    public static void OnH_ConsumeItemResult(FlatPacket root)
-    {
-        // TODO: 게스트 측에서 아이템 소모 결과 처리
-    }
+    public static void OnH_ConsumeItemResult(FlatPacket root) { }
 
     private static Inventory FindLocalInventory()
     {

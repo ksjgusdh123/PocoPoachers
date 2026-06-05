@@ -5,6 +5,7 @@ include "Game/Room.fbs";
 include "Game/Movement.fbs";
 include "Game/Combat.fbs";
 include "Game/Item.fbs";
+include "Game/Enemy.fbs";
 
 union PacketType
 {
@@ -48,6 +49,14 @@ union PacketType
 
     G_StatSync,
     H_StatSync,
+
+    H_EnemySpawn,
+    H_EnemyMove,
+    H_EnemyHit,
+    H_EnemyDie,
+
+    G_Leave,
+    H_Leave,
 }
 
 table FlatPacket

@@ -1,9 +1,10 @@
-﻿public static partial class PacketHandlers
+public static partial class PacketHandlers
 {
     public static void OnH_Equip(FlatPacket root)
     {
         var pkt = root.TypeAsH_Equip();
         if (!ObjectManager.Instance.TryGet(ObjectKind.Player, pkt.PlayerId, out var worldObj)) return;
+
         var mount = worldObj.GetComponent<WeaponMount>();
         if (mount == null) return;
 
