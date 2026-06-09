@@ -4285,7 +4285,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -3.84, y: 0.39, z: 4.67098}
-  m_LocalScale: {x: 2.4761, y: 2.4761, z: 2.4761}
+  m_LocalScale: {x: 2.4761, y: 6.147166, z: 2.4761}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -6251,6 +6251,68 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 82954198b5eb8294799ef9bedd2a25fa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerArmorController
+--- !u!114 &1719737684
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1719737670}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81dd72221d6fc942bc00fcd503d4057, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerVision
+  _visionConfig: {fileID: 11400000, guid: 645df1c7444f4a148a6b1bc4721f06a1, type: 2}
+  _eyeHeight: 0.05
+  _detectInterval: 0.2
+  _targetLayer:
+    serializedVersion: 2
+    m_Bits: 2048
+  _wallLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  _showVision: 0
+  _visionColor: {r: 0, g: 1, b: 1, a: 0.8}
+  _lineWidth: 0.05
+--- !u!114 &1719737697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1719737670}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4726609a76b51cc489dd13e6e92f9371, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FogOfWarRenderer
+  _visionConfig: {fileID: 11400000, guid: 645df1c7444f4a148a6b1bc4721f06a1, type: 2}
+  _groundOffset: 0.05
+  _overlaySize: 500
+  _darkColor: {r: 0, g: 0, b: 0, a: 0.6}
+  _wallLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  _blurSize: 3
+  _blurIterations: 2
+--- !u!114 &1719737698
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1719737670}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11f33d49750b7b34c83a8a4ad569f394, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkinnedOutline
+  _color: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  _width: 0.0408
+  _waveSpeed: 3
+  _waveFrequency: 5
+  _waveAmplitude: 0.05
 --- !u!1 &1733367043
 GameObject:
   m_ObjectHideFlags: 0
@@ -8261,6 +8323,15 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 8183887473744995871, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
       insertIndex: 10
       addedObject: {fileID: 1719737683}
+    - targetCorrespondingSourceObject: {fileID: 8183887473744995871, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1719737684}
+    - targetCorrespondingSourceObject: {fileID: 8183887473744995871, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1719737697}
+    - targetCorrespondingSourceObject: {fileID: 8183887473744995871, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1719737698}
   m_SourcePrefab: {fileID: 100100000, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
 --- !u!224 &549531284425690522 stripped
 RectTransform:
