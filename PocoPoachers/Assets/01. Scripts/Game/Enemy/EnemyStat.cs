@@ -11,17 +11,26 @@ public class EnemyStat : StatBase
     protected override void Awake()
     {
         base.Awake();
-        MaxHp = 100f;
-        CurrentHp = 100f;
+
+        var data = EnemyTable.Instance.Get(_enemyId);
+        MaxHp = data?.MaxHp ?? 100f;
+        CurrentHp = MaxHp;
+        _totalDefenseRate = data?.DefenseRate ?? 0f;
+
         _targetDetector = GetComponent<TargetDetector>();
         OnDamaged += OnHit;
-        OnDie += () => StartCoroutine(DeactivateNextFrame());   
+        OnDie += () => StartCoroutine(DeactivateNextFrame());
     }
 
     private void OnHit(float damage, Vector3 pos, GameObject attacker)
     {
-        if (attacker == null) return;
+        if (!RoomManager.IsHost || attacker == null) return;
         _targetDetector?.ForceSetTarget(attacker);
+    }
+    public override void TakeDamage(float damage, GameObject attacker = null)
+    {
+        if (!RoomManager.IsHost) return;
+        base.TakeDamage(damage, attacker);
     }
 
     public void Initialize()
@@ -32,6 +41,7 @@ public class EnemyStat : StatBase
     private System.Collections.IEnumerator DeactivateNextFrame()
     {
         yield return null;
+        HpWorldUI.Hide(this);
         gameObject.SetActive(false);
     }
 }

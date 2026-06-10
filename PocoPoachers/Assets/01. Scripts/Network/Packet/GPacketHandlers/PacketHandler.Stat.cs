@@ -14,7 +14,7 @@ public static partial class PacketHandlers
             var stat = worldObj.GetComponent<StatBase>();
             if (stat == null)
                 stat = worldObj.gameObject.AddComponent<RemotePlayerStat>();
-            stat.SetHpFromNetwork(pkt.Hp, pkt.MaxHp);
+            stat.SetHpFromNetwork(pkt.Hp, pkt.MaxHp, 0);   
             if (stat is RemotePlayerStat remote)
             {
                 remote.SetVitalsFromNetwork(pkt.Stamina, pkt.Hunger, pkt.Thirst);

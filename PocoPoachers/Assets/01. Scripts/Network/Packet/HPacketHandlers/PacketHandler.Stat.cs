@@ -16,11 +16,11 @@ public static partial class PacketHandlers
             stat = worldObj.gameObject.AddComponent<RemotePlayerStat>();
 
         float prevHp = stat.CurrentHp;
-        stat.SetHpFromNetwork(pkt.Hp, pkt.MaxHp);
+        stat.SetHpFromNetwork(pkt.Hp, pkt.MaxHp, 0);
 
-        float damage = prevHp - pkt.Hp;
-        if (damage > 0.1f)
-            DamageTextUI.Show(damage, worldObj.transform.position + Vector3.up);
+        //float damage = prevHp - pkt.Hp;
+        //if (damage > 0.1f)
+        //    DamageTextUI.Show(damage, worldObj.transform.position + Vector3.up);
 
         if (stat is RemotePlayerStat remote)
         {

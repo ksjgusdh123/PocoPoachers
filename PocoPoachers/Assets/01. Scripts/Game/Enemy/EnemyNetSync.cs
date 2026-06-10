@@ -99,7 +99,7 @@ public class EnemyNetSync : MonoBehaviour
     void OnHostDamaged(float damage, Vector3 pos, GameObject attacker)
     {
         if (_stat == null) return;
-        RoomSync.EnemyHit(EnemyId, _stat.CurrentHp, _stat.MaxHp);
+        RoomSync.EnemyHit(EnemyId, _stat.CurrentHp, _stat.MaxHp, damage);
     }
 
     void OnHostDie()
@@ -135,7 +135,7 @@ public class EnemyNetSync : MonoBehaviour
         e._targetPos = pos;
         e._targetYaw = rotation;
         e._hasTarget = true;
-        e._stat?.SetHpFromNetwork(hp, maxHp);
+        e._stat?.SetHpFromNetwork(hp, maxHp, 0);
 
         if (weaponId != 0)
             e._weaponController?.EquipGun(weaponId);
@@ -171,10 +171,10 @@ public class EnemyNetSync : MonoBehaviour
         e._hasTarget = true;
     }
 
-    public static void OnNetHit(int id, float hp, float maxHp)
+    public static void OnNetHit(int id, float hp, float maxHp, float damage)
     {
         if (!_registry.TryGetValue(id, out var e) || e == null) return;
-        e._stat?.SetHpFromNetwork(hp, maxHp);
+        e._stat?.SetHpFromNetwork(hp, maxHp, damage);
     }
 
     public static void OnNetDie(int id)

@@ -19,22 +19,26 @@ public struct H_EnemyHit : IFlatbufferObject
   public int EnemyId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public float Hp { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float MaxHp { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public float Damage { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
 
   public static Offset<H_EnemyHit> CreateH_EnemyHit(FlatBufferBuilder builder,
       int enemy_id = 0,
       float hp = 0.0f,
-      float max_hp = 0.0f) {
-    builder.StartTable(3);
+      float max_hp = 0.0f,
+      float damage = 0.0f) {
+    builder.StartTable(4);
+    H_EnemyHit.AddDamage(builder, damage);
     H_EnemyHit.AddMaxHp(builder, max_hp);
     H_EnemyHit.AddHp(builder, hp);
     H_EnemyHit.AddEnemyId(builder, enemy_id);
     return H_EnemyHit.EndH_EnemyHit(builder);
   }
 
-  public static void StartH_EnemyHit(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartH_EnemyHit(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddEnemyId(FlatBufferBuilder builder, int enemyId) { builder.AddInt(0, enemyId, 0); }
   public static void AddHp(FlatBufferBuilder builder, float hp) { builder.AddFloat(1, hp, 0.0f); }
   public static void AddMaxHp(FlatBufferBuilder builder, float maxHp) { builder.AddFloat(2, maxHp, 0.0f); }
+  public static void AddDamage(FlatBufferBuilder builder, float damage) { builder.AddFloat(3, damage, 0.0f); }
   public static Offset<H_EnemyHit> EndH_EnemyHit(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_EnemyHit>(o);
@@ -48,6 +52,7 @@ public struct H_EnemyHit : IFlatbufferObject
     _o.EnemyId = this.EnemyId;
     _o.Hp = this.Hp;
     _o.MaxHp = this.MaxHp;
+    _o.Damage = this.Damage;
   }
   public static Offset<H_EnemyHit> Pack(FlatBufferBuilder builder, H_EnemyHitT _o) {
     if (_o == null) return default(Offset<H_EnemyHit>);
@@ -55,7 +60,8 @@ public struct H_EnemyHit : IFlatbufferObject
       builder,
       _o.EnemyId,
       _o.Hp,
-      _o.MaxHp);
+      _o.MaxHp,
+      _o.Damage);
   }
 }
 
@@ -64,11 +70,13 @@ public class H_EnemyHitT
   public int EnemyId { get; set; }
   public float Hp { get; set; }
   public float MaxHp { get; set; }
+  public float Damage { get; set; }
 
   public H_EnemyHitT() {
     this.EnemyId = 0;
     this.Hp = 0.0f;
     this.MaxHp = 0.0f;
+    this.Damage = 0.0f;
   }
 }
 
@@ -81,6 +89,7 @@ static public class H_EnemyHitVerify
       && verifier.VerifyField(tablePos, 4 /*EnemyId*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Hp*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*MaxHp*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*Damage*/, 4 /*float*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

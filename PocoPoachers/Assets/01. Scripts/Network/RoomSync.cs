@@ -164,7 +164,7 @@ public static class RoomSync
         }, H_EnemyMove.Pack, PacketType.H_EnemyMove);
     }
 
-    public static void EnemyHit(int enemyId, float hp, float maxHp)
+    public static void EnemyHit(int enemyId, float hp, float maxHp, float damage)
     {
         if (!RoomManager.HasGuests) return;
         PacketBuilder.BroadcastToGuests(new H_EnemyHitT
@@ -172,6 +172,7 @@ public static class RoomSync
             EnemyId = enemyId,
             Hp      = hp,
             MaxHp   = maxHp,
+            Damage = damage,
         }, H_EnemyHit.Pack, PacketType.H_EnemyHit);
     }
 

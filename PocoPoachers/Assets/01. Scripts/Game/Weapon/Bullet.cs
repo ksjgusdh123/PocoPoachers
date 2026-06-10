@@ -26,9 +26,10 @@ public class Bullet : MonoBehaviour
     {
         _trail = GetComponent<TrailRenderer>();
         EnsureWallMask();
+        _applyDamage = RoomManager.IsHost;
     }
 
-    public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease, GameObject attacker = null, bool applyDamage = true)
+    public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease, GameObject attacker = null)
     {
         _speed = speed;
         _damage = damage;
@@ -36,7 +37,6 @@ public class Bullet : MonoBehaviour
         _direction = direction.normalized;
         _onRelease = onRelease;
         _attacker = attacker;
-        _applyDamage = applyDamage;
         _traveledDistance = 0f;
         _isReleased = false;
     }

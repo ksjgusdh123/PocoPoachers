@@ -21,7 +21,7 @@ public static partial class PacketHandlers
     public static void OnH_EnemyHit(FlatPacket root)
     {
         var pkt = root.TypeAsH_EnemyHit();
-        EnemyNetSync.OnNetHit(pkt.EnemyId, pkt.Hp, pkt.MaxHp);
+        EnemyNetSync.OnNetHit(pkt.EnemyId, pkt.Hp, pkt.MaxHp, pkt.Damage);
     }
 
     public static void OnH_EnemyDie(FlatPacket root)

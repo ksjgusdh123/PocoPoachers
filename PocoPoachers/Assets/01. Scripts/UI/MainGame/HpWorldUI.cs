@@ -16,6 +16,12 @@ public class HpWorldUI : WorldUIElement
 
     private static readonly Dictionary<StatBase, HpWorldUI> _active = new Dictionary<StatBase, HpWorldUI>();
 
+    public static void Hide(StatBase stat)
+    {
+        if (_active.TryGetValue(stat, out var ui))
+            ui.Release();
+    }
+
     public static void Show(StatBase stat)
     {
         // 이미 표시 중이면 숨김 타이머만 리셋
