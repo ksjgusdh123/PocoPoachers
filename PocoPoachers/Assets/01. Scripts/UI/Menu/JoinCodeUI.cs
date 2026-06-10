@@ -10,7 +10,7 @@ using UnityEngine.UI;
 //  └─ BtnBack     (Button)          — 뒤로
 // ────────────────────────────────────────────────────────────────────────
 
-public class JoinCodeUI : MonoBehaviour
+public class JoinCodeUI : UIBase
 {
     private const float CONNECT_TIMEOUT = 5f;
 
@@ -20,22 +20,22 @@ public class JoinCodeUI : MonoBehaviour
 
     public static JoinCodeUI Instance { get; private set; }
 
-    void Awake()
+    protected override UIType UiType => UIType.JoinCode;
+
+    protected override void Awake()
     {
+        base.Awake();
+
         Instance = this;
 
-        UIManager.GetInstance().Register(UIType.JoinCode, gameObject);
-
         _btnJoin.onClick.AddListener(OnClickJoin);
-        _btnBack.onClick.AddListener(() => UIManager.GetInstance().Hide(UIType.JoinCode));
+        _btnBack.onClick.AddListener(Hide);
 
         _inputCode.characterLimit = 6;
         _inputCode.onValueChanged.AddListener(v => _btnJoin.interactable = v.Length == 6);
         _btnJoin.interactable = false;
 
         RoomManager.Instance.OnRoomJoinFailed += HandleFailed;
-
-        gameObject.SetActive(false);
     }
 
     void OnEnable()
@@ -44,18 +44,15 @@ public class JoinCodeUI : MonoBehaviour
         _btnJoin.interactable = false;
     }
 
-    void OnDestroy()
+    protected override void OnDestroy()
     {
-        if (Instance == this) Instance = null;
+        base.OnDestroy();
 
-        var ui = UIManager.GetInstance();
-        if (ui != null) ui.Unregister(UIType.JoinCode);
+        if (Instance == this) Instance = null;
 
         if (RoomManager.Instance != null)
             RoomManager.Instance.OnRoomJoinFailed -= HandleFailed;
     }
-
-    public void Show() => UIManager.GetInstance().Show(UIType.JoinCode);
 
     void OnClickJoin()
     {

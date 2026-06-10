@@ -15,7 +15,7 @@ using UnityEngine.UI;
 //  │       └── Btn_Quit
 // ────────────────────────────────────────────────────────────────────────
 
-public class IngameMenuUI : MonoBehaviour
+public class IngameMenuUI : UIBase
 {
     [Header("Left Panel")]
     [SerializeField] private TeamPanelUI _teamPanel;
@@ -26,9 +26,11 @@ public class IngameMenuUI : MonoBehaviour
     [SerializeField] private Button _btnReturnToMain;
     [SerializeField] private Button _btnQuit;
 
-    private void Awake()
+    protected override UIType UiType => UIType.IngameMenu;
+
+    protected override void Awake()
     {
-        UIManager.GetInstance().Register(UIType.IngameMenu, gameObject);
+        base.Awake();
 
         _btnResume        .onClick.AddListener(OnClickResume);
         _btnOptions       .onClick.AddListener(OnClickOptions);
@@ -40,15 +42,11 @@ public class IngameMenuUI : MonoBehaviour
 
         RoomManager.OnGuestLeft += OnGuestLeft;
         RoomManager.OnHostLeft  += OnHostLeft;
-
-        gameObject.SetActive(false);
     }
 
-    private void OnDestroy()
+    protected override void OnDestroy()
     {
-        var ui = UIManager.GetInstance();
-        if (ui == null) return;
-        ui.Unregister(UIType.IngameMenu);
+        base.OnDestroy();
 
         if (NetworkManager.Instance != null)
             NetworkManager.Instance.OnDisconnected -= OnDisconnected;
@@ -57,7 +55,7 @@ public class IngameMenuUI : MonoBehaviour
         RoomManager.OnHostLeft  -= OnHostLeft;
     }
 
-    private void OnClickResume() => UIManager.GetInstance().Hide(UIType.IngameMenu);
+    private void OnClickResume() => Hide();
 
     private void OnClickOptions()
     {
@@ -71,7 +69,7 @@ public class IngameMenuUI : MonoBehaviour
             "메인화면으로 돌아가시겠습니까?",
             onConfirm: () =>
             {
-                UIManager.GetInstance().Hide(UIType.IngameMenu);
+                Hide();
                 SceneLoader.Instance.LoadTitleScene();
             }
         );

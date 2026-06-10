@@ -12,7 +12,7 @@ using UnityEngine.UI;
 //      └── Btn_Ok      [Button]
 // ────────────────────────────────────────────────────────────────────────
 
-public class NoticePopupUI : MonoBehaviour
+public class NoticePopupUI : UIBase
 {
     [SerializeField] private TextMeshProUGUI _txtTitle;
     [SerializeField] private TextMeshProUGUI _txtMessage;
@@ -20,18 +20,17 @@ public class NoticePopupUI : MonoBehaviour
 
     public event Action OnOk;
 
-    private void Awake()
+    protected override UIType UiType => UIType.NoticePopup;
+
+    protected override void Awake()
     {
+        base.Awake();
+
         _btnOk.onClick.AddListener(() => OnOk?.Invoke());
-
-        UIManager.GetInstance().RegisterNoticePopup(this);
-        gameObject.SetActive(false);
     }
 
-    private void OnDestroy()
-    {
-        UIManager.GetInstance()?.UnregisterNoticePopup();
-    }
+    protected override void RegisterSelf()   => UIManager.GetInstance().RegisterNoticePopup(this);
+    protected override void UnregisterSelf() => UIManager.GetInstance().UnregisterNoticePopup();
 
     public void SetContent(string title, string message)
     {

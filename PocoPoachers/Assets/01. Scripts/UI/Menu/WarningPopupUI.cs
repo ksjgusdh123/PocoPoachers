@@ -13,7 +13,7 @@ using UnityEngine.UI;
 //      └── Btn_Cancel  [Button]
 // ────────────────────────────────────────────────────────────────────────
 
-public class WarningPopupUI : MonoBehaviour
+public class WarningPopupUI : UIBase
 {
     [SerializeField] private TextMeshProUGUI _txtTitle;
     [SerializeField] private TextMeshProUGUI _txtMessage;
@@ -23,19 +23,18 @@ public class WarningPopupUI : MonoBehaviour
     public event Action OnConfirmed;
     public event Action OnCancelled;
 
-    private void Awake()
+    protected override UIType UiType => UIType.WarningPopup;
+
+    protected override void Awake()
     {
+        base.Awake();
+
         _btnConfirm.onClick.AddListener(() => OnConfirmed?.Invoke());
         _btnCancel .onClick.AddListener(() => OnCancelled?.Invoke());
-
-        UIManager.GetInstance().RegisterWarningPopup(this);
-        gameObject.SetActive(false);
     }
 
-    private void OnDestroy()
-    {
-        UIManager.GetInstance()?.UnregisterWarningPopup();
-    }
+    protected override void RegisterSelf()   => UIManager.GetInstance().RegisterWarningPopup(this);
+    protected override void UnregisterSelf() => UIManager.GetInstance().UnregisterWarningPopup();
 
     public void SetContent(string title, string message)
     {
