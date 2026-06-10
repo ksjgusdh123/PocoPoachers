@@ -137,15 +137,21 @@ public abstract class GunBase : MonoBehaviour
         }
 
         _isReloading = false;
-        CrosshairUI.Instance?.StopReloadGauge();
-        OnReloadEnded?.Invoke();
+        if (Owner != null)
+        {
+            CrosshairUI.Instance?.StopReloadGauge();
+            OnReloadEnded?.Invoke();
+        }
     }
 
     private IEnumerator ReloadRoutine(int availableAmmo)
     {
         _isReloading = true;
-        OnReloadStarted?.Invoke(_gunData.reloadTime);
-        CrosshairUI.Instance?.StartReloadGauge(_gunData.reloadTime);
+        if (Owner != null)
+        {
+            OnReloadStarted?.Invoke(_gunData.reloadTime);
+            CrosshairUI.Instance?.StartReloadGauge(_gunData.reloadTime);
+        }
         yield return new WaitForSeconds(_gunData.reloadTime);
         int needed = _gunData.magazineSize - _currentAmmo;
         int actual = Mathf.Min(needed, availableAmmo);
@@ -153,7 +159,7 @@ public abstract class GunBase : MonoBehaviour
         _isReloading = false;
         _reloadCoroutine = null;
         OnAmmoChanged?.Invoke(_currentAmmo, _gunData.magazineSize);
-        OnReloadEnded?.Invoke();
+        if (Owner != null) OnReloadEnded?.Invoke();
         OnReloadComplete?.Invoke(actual);
     }
 
