@@ -6,6 +6,7 @@ public static class DataManager
 
     public static GunStatData GetGunStat(int id) => GunStatTable.Instance.Get(id);
     public static ArmorStatData GetArmorStat(int id) => ArmorStatTable.Instance.Get(id);
+    public static EnemyData GetEnemy(int id) => EnemyTable.Instance.Get(id);
 
     public static GunStatData GetGunStatByItemId(int itemId) => GetGunStat(itemId);
     public static ArmorStatData GetArmorStatByItemId(int itemId) => GetArmorStat(itemId);
