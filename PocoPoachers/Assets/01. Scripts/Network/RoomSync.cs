@@ -138,15 +138,18 @@ public static class RoomSync
                 G_Leave.Pack, PacketType.G_Leave);
     }
 
-    public static void EnemySpawnToGuest(int guestPlayerId, int enemyId, Vector3 pos, float rotation, float hp, float maxHp)
+    public static void EnemySpawnToGuest(int guestPlayerId, int enemyTypeId, int enemyId, Vector3 pos, float rotation, float hp, float maxHp, int weaponId, int helmetId)
     {
         PacketBuilder.SendToGuest(guestPlayerId, new H_EnemySpawnT
         {
+            EnemyTypeId = enemyTypeId,
             EnemyId  = enemyId,
             Pos      = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
             Rotation = rotation,
             Hp       = hp,
             MaxHp    = maxHp,
+            WeaponId = weaponId,
+            HelmetId = helmetId,
         }, H_EnemySpawn.Pack, PacketType.H_EnemySpawn);
     }
 

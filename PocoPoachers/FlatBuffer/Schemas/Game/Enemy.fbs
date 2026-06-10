@@ -2,11 +2,14 @@
 
 table H_EnemySpawn
 {
+    enemy_type_id: int;
     enemy_id: int;
     pos:      Vec3;
     rotation: float;
     hp:       float;
     max_hp:   float;
+    weapon_id: int;
+    helmet_id: int;
 }
 
 table H_EnemyMove

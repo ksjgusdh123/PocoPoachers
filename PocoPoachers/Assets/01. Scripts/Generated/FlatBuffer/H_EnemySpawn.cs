@@ -16,33 +16,45 @@ public struct H_EnemySpawn : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public H_EnemySpawn __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public int EnemyId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public Vec3? Pos { get { int o = __p.__offset(6); return o != 0 ? (Vec3?)(new Vec3()).__assign(o + __p.bb_pos, __p.bb) : null; } }
-  public float Rotation { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
-  public float Hp { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
-  public float MaxHp { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public int EnemyTypeId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int EnemyId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public Vec3? Pos { get { int o = __p.__offset(8); return o != 0 ? (Vec3?)(new Vec3()).__assign(o + __p.bb_pos, __p.bb) : null; } }
+  public float Rotation { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public float Hp { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public float MaxHp { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public int WeaponId { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int HelmetId { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<H_EnemySpawn> CreateH_EnemySpawn(FlatBufferBuilder builder,
+      int enemy_type_id = 0,
       int enemy_id = 0,
       Vec3T pos = null,
       float rotation = 0.0f,
       float hp = 0.0f,
-      float max_hp = 0.0f) {
-    builder.StartTable(5);
+      float max_hp = 0.0f,
+      int weapon_id = 0,
+      int helmet_id = 0) {
+    builder.StartTable(8);
+    H_EnemySpawn.AddHelmetId(builder, helmet_id);
+    H_EnemySpawn.AddWeaponId(builder, weapon_id);
     H_EnemySpawn.AddMaxHp(builder, max_hp);
     H_EnemySpawn.AddHp(builder, hp);
     H_EnemySpawn.AddRotation(builder, rotation);
     H_EnemySpawn.AddPos(builder, Vec3.Pack(builder, pos));
     H_EnemySpawn.AddEnemyId(builder, enemy_id);
+    H_EnemySpawn.AddEnemyTypeId(builder, enemy_type_id);
     return H_EnemySpawn.EndH_EnemySpawn(builder);
   }
 
-  public static void StartH_EnemySpawn(FlatBufferBuilder builder) { builder.StartTable(5); }
-  public static void AddEnemyId(FlatBufferBuilder builder, int enemyId) { builder.AddInt(0, enemyId, 0); }
-  public static void AddPos(FlatBufferBuilder builder, Offset<Vec3> posOffset) { builder.AddStruct(1, posOffset.Value, 0); }
-  public static void AddRotation(FlatBufferBuilder builder, float rotation) { builder.AddFloat(2, rotation, 0.0f); }
-  public static void AddHp(FlatBufferBuilder builder, float hp) { builder.AddFloat(3, hp, 0.0f); }
-  public static void AddMaxHp(FlatBufferBuilder builder, float maxHp) { builder.AddFloat(4, maxHp, 0.0f); }
+  public static void StartH_EnemySpawn(FlatBufferBuilder builder) { builder.StartTable(8); }
+  public static void AddEnemyTypeId(FlatBufferBuilder builder, int enemyTypeId) { builder.AddInt(0, enemyTypeId, 0); }
+  public static void AddEnemyId(FlatBufferBuilder builder, int enemyId) { builder.AddInt(1, enemyId, 0); }
+  public static void AddPos(FlatBufferBuilder builder, Offset<Vec3> posOffset) { builder.AddStruct(2, posOffset.Value, 0); }
+  public static void AddRotation(FlatBufferBuilder builder, float rotation) { builder.AddFloat(3, rotation, 0.0f); }
+  public static void AddHp(FlatBufferBuilder builder, float hp) { builder.AddFloat(4, hp, 0.0f); }
+  public static void AddMaxHp(FlatBufferBuilder builder, float maxHp) { builder.AddFloat(5, maxHp, 0.0f); }
+  public static void AddWeaponId(FlatBufferBuilder builder, int weaponId) { builder.AddInt(6, weaponId, 0); }
+  public static void AddHelmetId(FlatBufferBuilder builder, int helmetId) { builder.AddInt(7, helmetId, 0); }
   public static Offset<H_EnemySpawn> EndH_EnemySpawn(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_EnemySpawn>(o);
@@ -53,38 +65,50 @@ public struct H_EnemySpawn : IFlatbufferObject
     return _o;
   }
   public void UnPackTo(H_EnemySpawnT _o) {
+    _o.EnemyTypeId = this.EnemyTypeId;
     _o.EnemyId = this.EnemyId;
     _o.Pos = this.Pos.HasValue ? this.Pos.Value.UnPack() : null;
     _o.Rotation = this.Rotation;
     _o.Hp = this.Hp;
     _o.MaxHp = this.MaxHp;
+    _o.WeaponId = this.WeaponId;
+    _o.HelmetId = this.HelmetId;
   }
   public static Offset<H_EnemySpawn> Pack(FlatBufferBuilder builder, H_EnemySpawnT _o) {
     if (_o == null) return default(Offset<H_EnemySpawn>);
     return CreateH_EnemySpawn(
       builder,
+      _o.EnemyTypeId,
       _o.EnemyId,
       _o.Pos,
       _o.Rotation,
       _o.Hp,
-      _o.MaxHp);
+      _o.MaxHp,
+      _o.WeaponId,
+      _o.HelmetId);
   }
 }
 
 public class H_EnemySpawnT
 {
+  public int EnemyTypeId { get; set; }
   public int EnemyId { get; set; }
   public Vec3T Pos { get; set; }
   public float Rotation { get; set; }
   public float Hp { get; set; }
   public float MaxHp { get; set; }
+  public int WeaponId { get; set; }
+  public int HelmetId { get; set; }
 
   public H_EnemySpawnT() {
+    this.EnemyTypeId = 0;
     this.EnemyId = 0;
     this.Pos = new Vec3T();
     this.Rotation = 0.0f;
     this.Hp = 0.0f;
     this.MaxHp = 0.0f;
+    this.WeaponId = 0;
+    this.HelmetId = 0;
   }
 }
 
@@ -94,11 +118,14 @@ static public class H_EnemySpawnVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyField(tablePos, 4 /*EnemyId*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 6 /*Pos*/, 12 /*Vec3*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Rotation*/, 4 /*float*/, 4, false)
-      && verifier.VerifyField(tablePos, 10 /*Hp*/, 4 /*float*/, 4, false)
-      && verifier.VerifyField(tablePos, 12 /*MaxHp*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 4 /*EnemyTypeId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*EnemyId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*Pos*/, 12 /*Vec3*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*Rotation*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*Hp*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*MaxHp*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 16 /*WeaponId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 18 /*HelmetId*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

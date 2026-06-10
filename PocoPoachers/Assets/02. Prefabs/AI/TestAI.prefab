@@ -86,7 +86,7 @@ GameObject:
   - component: {fileID: 8759502445412506336}
   - component: {fileID: 4082276859572084947}
   - component: {fileID: -2921427929991376190}
-  - component: {fileID: -1261673096288099859}
+  - component: {fileID: -7253146039122799985}
   m_Layer: 11
   m_Name: TestAI
   m_TagString: Untagged
@@ -322,7 +322,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 89a443f101672eb4e90fd3fa04cc03e7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EnemyStat
-  _monsterId: 0
+  _enemyId: 1
 --- !u!114 &5024542309914292996
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -404,7 +404,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArmorMount
   _helmetMountPoint: {fileID: 4891981504221192749}
---- !u!114 &-1261673096288099859
+--- !u!114 &-7253146039122799985
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -413,9 +413,17 @@ MonoBehaviour:
   m_GameObject: {fileID: 6112331380076343035}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1f2387701f5256c4b80bce805fbbc7df, type: 3}
+  m_Script: {fileID: 11500000, guid: bcaec6002fbd6ff4db8d4becb163fe74, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::EnemyNetworkSetup
+  m_EditorClassIdentifier: Assembly-CSharp::EnemyNetSync
+  _aiComponents:
+  - {fileID: 7464591464131187483}
+  - {fileID: 4598427870778627708}
+  - {fileID: 4822316635192496057}
+  - {fileID: 9046571469568069600}
+  - {fileID: 2820215744700688298}
+  - {fileID: 6091269842797980000}
+  _syncInterval: 0.1
 --- !u!1001 &3358080835097842442
 PrefabInstance:
   m_ObjectHideFlags: 0

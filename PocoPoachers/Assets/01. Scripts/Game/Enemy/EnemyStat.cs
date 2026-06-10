@@ -2,7 +2,9 @@ using UnityEngine;
 
 public class EnemyStat : StatBase
 {
-    [SerializeField] private int _monsterId;
+    [SerializeField] private int _enemyId;
+
+    public int EnemyId => _enemyId;
 
     private TargetDetector _targetDetector;
 

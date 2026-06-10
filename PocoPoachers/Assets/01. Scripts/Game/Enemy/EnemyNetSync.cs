@@ -13,8 +13,12 @@ public class EnemyNetSync : MonoBehaviour
     [SerializeField] float _syncInterval = 0.1f;
 
     public int EnemyId { get; private set; }
+    public int EnemyTypeId => _stat?.EnemyId ?? 0;
 
     EnemyStat _stat;
+    AIWeaponController _weaponController;
+    ArmorController _armorController;
+    ArmorMount _armorMount;
     float _timer;
 
     Vector3 _targetPos;
@@ -26,6 +30,9 @@ public class EnemyNetSync : MonoBehaviour
         EnemyId = _nextId++;
         _registry[EnemyId] = this;
         _stat = GetComponent<EnemyStat>();
+        _weaponController = GetComponent<AIWeaponController>();
+        _armorController = GetComponent<ArmorController>();
+        _armorMount = GetComponent<ArmorMount>();
     }
 
     void Start()
@@ -53,6 +60,14 @@ public class EnemyNetSync : MonoBehaviour
             _stat.OnDamaged -= OnHostDamaged;
             _stat.OnDie     -= OnHostDie;
         }
+    }
+
+    // 호스트가 보내준 EnemyId로 등록을 갱신 (게스트가 패킷으로 받은 적을 새로 스폰했을 때 사용)
+    void AssignNetworkId(int id)
+    {
+        _registry.Remove(EnemyId);
+        EnemyId = id;
+        _registry[EnemyId] = this;
     }
 
     void Update()
@@ -98,21 +113,54 @@ public class EnemyNetSync : MonoBehaviour
         {
             var e = kv.Value;
             if (e == null) continue;
+            int weaponId = e._weaponController?.Gun?.ItemId ?? 0;
+            int helmetId = e._armorMount?.GetEquippedItemId() ?? 0;
             RoomSync.EnemySpawnToGuest(
-                guestPlayerId, e.EnemyId,
+                guestPlayerId, e.EnemyTypeId, e.EnemyId,
                 e.transform.position, e.transform.eulerAngles.y,
-                e._stat?.CurrentHp ?? 100f, e._stat?.MaxHp ?? 100f);
+                e._stat?.CurrentHp ?? 100f, e._stat?.MaxHp ?? 100f,
+                weaponId, helmetId);
         }
     }
 
-    public static void OnNetSpawn(int id, Vector3 pos, float rotation, float hp, float maxHp)
+    public static void OnNetSpawn(int id, int enemyTypeId, Vector3 pos, float rotation, float hp, float maxHp, int weaponId, int helmetId)
     {
-        if (!_registry.TryGetValue(id, out var e) || e == null) return;
+        if (!_registry.TryGetValue(id, out var e) || e == null)
+        {
+            e = SpawnFromType(enemyTypeId, id, pos, rotation);
+            if (e == null) return;
+        }
+
         e.transform.SetPositionAndRotation(pos, Quaternion.Euler(0f, rotation, 0f));
         e._targetPos = pos;
         e._targetYaw = rotation;
         e._hasTarget = true;
         e._stat?.SetHpFromNetwork(hp, maxHp);
+
+        if (weaponId != 0)
+            e._weaponController?.EquipGun(weaponId);
+
+        if (helmetId != 0)
+        {
+            var itemData = ItemTable.Instance.Get(helmetId);
+            if (itemData != null)
+                e._armorController?.Equip(itemData, 0);
+        }
+    }
+
+    static EnemyNetSync SpawnFromType(int enemyTypeId, int id, Vector3 pos, float rotation)
+    {
+        var spawner = Object.FindFirstObjectByType<EnemySpawner>();
+        if (spawner == null) return null;
+
+        var go = spawner.SpawnEnemyByTypeId(enemyTypeId, pos, Quaternion.Euler(0f, rotation, 0f));
+        if (go == null) return null;
+
+        var sync = go.GetComponent<EnemyNetSync>();
+        if (sync == null) return null;
+
+        sync.AssignNetworkId(id);
+        return sync;
     }
 
     public static void OnNetMove(int id, Vector3 pos, float rotation)

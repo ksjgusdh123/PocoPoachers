@@ -26,18 +26,20 @@ public class EnemySpawner : MonoBehaviour
 
     private List<int> _gunIds;
     private List<int> _helmetIds;
+    private Transform _enemiesParent;
 
     private void Start()
     {
-        _gunIds = GetComponent<ItemSpawner>().GetIds(ItemType.Weapon);
-        _helmetIds = GetComponent<ItemSpawner>().GetIds(ItemType.Helmet);
-        SpawnAll();
+        if (RoomManager.IsHost)
+        {
+            _gunIds = GetComponent<ItemSpawner>().GetIds(ItemType.Weapon);
+            _helmetIds = GetComponent<ItemSpawner>().GetIds(ItemType.Helmet);
+            SpawnAll();
+        }
     }
 
     private void SpawnAll()
     {
-        Transform enemiesParent = new GameObject("Enemies").transform;
-
         foreach (var point in spawnPoints)
         {
             foreach (var entry in point.enemies)
@@ -45,13 +47,41 @@ public class EnemySpawner : MonoBehaviour
                 for (int i = 0; i < entry.count; i++)
                 {
                     Vector3 spawnPos = GetRandomNavMeshPosition(point.centerPoint.position, point.radius);
-                    var enemy = Instantiate(entry.prefab, spawnPos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f), enemiesParent);
+                    var enemy = Instantiate(entry.prefab, spawnPos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f), GetEnemiesParent());
 
                     EquipWeapon(enemy, entry);
                     EquipHelmet(enemy, entry);
                 }
             }
         }
+    }
+
+    // enemyTypeId(EnemyStat.EnemyId)에 해당하는 프리팹을 찾아 스폰 (게스트가 호스트로부터 받은 적을 생성할 때 사용)
+    public GameObject SpawnEnemyByTypeId(int enemyTypeId, Vector3 pos, Quaternion rotation)
+    {
+        foreach (var point in spawnPoints)
+        {
+            foreach (var entry in point.enemies)
+            {
+                if (entry.prefab == null) continue;
+
+                var stat = entry.prefab.GetComponent<EnemyStat>();
+                if (stat == null || stat.EnemyId != enemyTypeId) continue;
+
+                return Instantiate(entry.prefab, pos, rotation, GetEnemiesParent());
+            }
+        }
+        return null;
+    }
+
+    private Transform GetEnemiesParent()
+    {
+        if (_enemiesParent == null)
+        {
+            var existing = GameObject.Find("Enemies");
+            _enemiesParent = existing != null ? existing.transform : new GameObject("Enemies").transform;
+        }
+        return _enemiesParent;
     }
 
     private void EquipWeapon(GameObject enemy, EnemySpawnEntry entry)
