@@ -127,7 +127,9 @@ public class TableGeneratorTool
         for (int col = 0; col < headers.Length; col++)
         {
             string header = headers[col];
-            if (!(header.Equals("type", StringComparison.OrdinalIgnoreCase) || header.EndsWith("_type", StringComparison.OrdinalIgnoreCase))) continue;
+            if (!(header.Equals("type", StringComparison.OrdinalIgnoreCase)
+                || header.EndsWith("_type", StringComparison.OrdinalIgnoreCase)
+                || header.EndsWith("_mode", StringComparison.OrdinalIgnoreCase))) continue;
 
             var rawValues = new List<string>();
             var rawSet = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
