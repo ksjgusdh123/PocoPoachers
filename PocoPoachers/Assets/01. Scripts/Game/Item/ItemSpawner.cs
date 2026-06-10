@@ -35,7 +35,13 @@ public class ItemSpawner : MonoBehaviour
     int _nextUid = 1000;
     const int BOX_TYPE_ID = 301;
 
-    public List<int> GetIds(ItemType type) => _cachedItemIds[type];
+    public List<int> GetIds(ItemType type)
+    {
+        if (_cachedItemIds.Count == 0)
+            CacheItemIds();
+
+        return _cachedItemIds.TryGetValue(type, out var ids) ? ids : new List<int>();
+    }
 
     void Start()
     {
@@ -47,6 +53,8 @@ public class ItemSpawner : MonoBehaviour
 
     void CacheItemIds()
     {
+        if (_cachedItemIds.Count > 0) return;
+
         var table = ItemTable.Instance;
         if (table == null) return;
         foreach (ItemType type in System.Enum.GetValues(typeof(ItemType)))
