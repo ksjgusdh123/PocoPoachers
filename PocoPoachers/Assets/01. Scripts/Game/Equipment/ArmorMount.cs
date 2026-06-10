@@ -40,6 +40,7 @@ public class ArmorMount : MonoBehaviour
         if (data == null) return null;
 
         ArmorBase armor = ResourceManager.Instance.Spawn<ArmorBase>(data.prefab, _helmetMountPoint);
+        if (armor != null) armor.SetItemId(itemId);
         _helmet = armor;
         return armor;
     }

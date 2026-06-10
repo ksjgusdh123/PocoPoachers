@@ -1,25 +1,24 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class ShotgunGun : GunBase
 {
     protected override void Shoot()
     {
-        for (int i = 0; i < _gunData.bulletsPerShot; i++)
+        for (int i = 0; i < _stat.PelletCount; i++)
         {
             Vector3 fireDir = GetFireDirection();
 
-            Bullet bullet = BulletPool.GetInstance().Get(_gunData.bulletPrefab, _muzzle.position, _muzzle.rotation);
+            Bullet bullet = BulletPool.GetInstance().Get(_bulletPrefab, _muzzle.position, _muzzle.rotation);
             bullet.Initialize(
-                _gunData.bulletSpeed,
-                _gunData.damage,
-                _gunData.range,
+                _stat.BulletSpeed,
+                _stat.Damage,
+                _stat.BulletRange,
                 fireDir,
-                () => BulletPool.GetInstance().Release(_gunData.bulletPrefab, bullet),
+                () => BulletPool.GetInstance().Release(_bulletPrefab, bullet),
                 Owner
             );
 
-            RoomSync.Shoot(_muzzle.position, fireDir, _gunData);
+            RoomSync.Shoot(_muzzle.position, fireDir, _stat);
         }
     }
 }
-

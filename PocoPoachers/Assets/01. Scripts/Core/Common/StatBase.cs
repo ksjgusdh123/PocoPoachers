@@ -16,24 +16,24 @@ public abstract class StatBase : MonoBehaviour, IDamageable
         OnDamaged += (_, __, ___) => HpWorldUI.Show(this);
     }
 
-    private float _totalDefense;
-    protected virtual float Defense => _totalDefense;
+    private float _totalDefenseRate;
+    protected virtual float DefenseRate => _totalDefenseRate;
 
-    public virtual void ApplyArmorStat(ArmorData data)
+    public virtual void ApplyArmorStat(ArmorStatData data)
     {
-        _totalDefense += data.defense;
+        _totalDefenseRate += data.DefenseRate;
     }
 
-    public virtual void RemoveArmorStat(ArmorData data)
+    public virtual void RemoveArmorStat(ArmorStatData data)
     {
-        _totalDefense = Mathf.Max(0f, _totalDefense - data.defense);
+        _totalDefenseRate = Mathf.Max(0f, _totalDefenseRate - data.DefenseRate);
     }
 
     public void TakeDamage(float damage, GameObject attacker = null)
     {
         if (CurrentHp <= 0f) return;
 
-        float actualDamage = Mathf.Max(0f, damage - Defense);
+        float actualDamage = damage * (1f - Mathf.Clamp01(DefenseRate));
         CurrentHp = Mathf.Max(0f, CurrentHp - actualDamage);
         OnHpChanged?.Invoke(CurrentHp, MaxHp);
         OnDamaged?.Invoke(actualDamage, transform.position, attacker);

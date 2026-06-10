@@ -23,7 +23,7 @@ public partial class ShotBulletAction : Action
 
         if (!WeaponController.Value.HasGun) return Status.Failure;
 
-        _fireInterval = 1f / WeaponController.Value.Gun.GunData.fireRate;
+        _fireInterval = 60f / WeaponController.Value.Gun.Stat.Rpm;
         _elapsedTime = 0f;
 
         WeaponController.Value.TryShoot();

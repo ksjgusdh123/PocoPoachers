@@ -15,12 +15,12 @@ public class ArmorController : EquipableController
     {
         ArmorBase current = _mount.GetArmor();
         if (current != null)
-            _stat.RemoveArmorStat(current.ArmorData);
+            _stat.RemoveArmorStat(current.Stat);
 
         ArmorBase armor = _mount.ApplyEquip(data.id);
         if (armor == null) return;
 
-        _stat.ApplyArmorStat(armor.ArmorData);
+        _stat.ApplyArmorStat(armor.Stat);
         OnEquipped(slotIndex, data);
     }
 
@@ -29,7 +29,7 @@ public class ArmorController : EquipableController
         ArmorBase current = _mount.GetArmor();
         if (current == null) return;
 
-        _stat.RemoveArmorStat(current.ArmorData);
+        _stat.RemoveArmorStat(current.Stat);
         _mount.ApplyUnequip();
         OnUnequipped(slotIndex);
     }

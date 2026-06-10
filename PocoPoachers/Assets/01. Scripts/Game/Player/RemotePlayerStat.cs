@@ -4,8 +4,8 @@ public class RemotePlayerStat : StatBase
     public float Hunger  { get; private set; }
     public float Thirst  { get; private set; }
 
-    float _armorDefense;
-    protected override float Defense => _armorDefense;
+    float _armorDefenseRate;
+    protected override float DefenseRate => _armorDefenseRate;
 
     public void SetVitalsFromNetwork(float stamina, float hunger, float thirst)
     {
@@ -14,7 +14,7 @@ public class RemotePlayerStat : StatBase
         Thirst  = thirst;
     }
 
-    public void SetArmorDefense(float defense) => _armorDefense = defense;
+    public void SetArmorDefenseRate(float defenseRate) => _armorDefenseRate = defenseRate;
 
     protected override void Awake()
     {

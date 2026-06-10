@@ -189,13 +189,13 @@ public class CrosshairUI : MonoBehaviour
         _dot.color = c;
     }
 
-    public void UpdateBaseSpread(GunData gunData, bool isAiming)
+    public void UpdateBaseSpread(GunStatData stat, bool isAiming)
     {
-        if (gunData == null) return;
-        _targetBaseSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree + _minSpread;
-        _maxSpread = (isAiming ? gunData.aimSpreadAngle : gunData.spreadAngle) * _pixelsPerDegree + _minSpread + _spreadIncrement * 3f;
-        _shakeIntensity = gunData.crosshairShakeIntensity;
-        _shakeDuration = gunData.crosshairShakeDuration;
+        if (stat == null) return;
+        _targetBaseSpread = (isAiming ? stat.AimSpread : stat.Spread) * _pixelsPerDegree + _minSpread;
+        _maxSpread = (isAiming ? stat.AimSpread : stat.Spread) * _pixelsPerDegree + _minSpread + _spreadIncrement * 3f;
+        _shakeIntensity = stat.CrosshairShakeIntensity;
+        _shakeDuration = stat.CrosshairShakeDuration;
     }
 
     public void ResetSpread()

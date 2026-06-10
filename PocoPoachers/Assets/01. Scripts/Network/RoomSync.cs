@@ -23,7 +23,7 @@ public static class RoomSync
                 G_Move.Pack, PacketType.G_Move);
     }
 
-    public static void Shoot(Vector3 origin, Vector3 direction, GunData gunData)
+    public static void Shoot(Vector3 origin, Vector3 direction, GunStatData stat)
     {
         if (IsSolo) return;
 
@@ -33,11 +33,11 @@ public static class RoomSync
 
         if (RoomManager.IsHost)
             PacketBuilder.BroadcastToGuests(
-                new H_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = gunData.bulletSpeed, Damage = gunData.damage, MaxRange = gunData.range },
+                new H_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange },
                 H_Shoot.Pack, PacketType.H_Shoot);
         else
             PacketBuilder.SendToHost(
-                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = gunData.bulletSpeed, Damage = gunData.damage, MaxRange = gunData.range, SoundRange = gunData.soundRange },
+                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, SoundRange = stat.SoundRange },
                 G_Shoot.Pack, PacketType.G_Shoot);
     }
 

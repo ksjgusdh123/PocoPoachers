@@ -16,8 +16,8 @@ public class WeaponController : EquipableController
         {
             if (_currentGun == null) return 1f;
             return _wasAimPressed
-                ? _currentGun.GunData.moveSpeedMultiplier * _currentGun.GunData.aimMoveSpeedMultiplier
-                : _currentGun.GunData.moveSpeedMultiplier;
+                ? _currentGun.Stat.MoveSpeedMultiplier * _currentGun.Stat.AimMoveSpeedMultiplier
+                : _currentGun.Stat.MoveSpeedMultiplier;
         }
     }
 
@@ -150,7 +150,7 @@ public class WeaponController : EquipableController
         {
             var gun = _currentGun;
             _cameraShakeHandler = _ => CameraShake.Instance?.Shake(
-                gun.GunData.shakeIntensity, gun.GunData.shakeDuration, gun.Muzzle.up);
+                gun.Stat.CameraShakeIntensity, gun.Stat.CameraShakeDuration, gun.Muzzle.up);
             _currentGun.OnShoot += _cameraShakeHandler;
 
             _reloadRequestedHandler = () => TryReloadFromInventory();
@@ -167,7 +167,7 @@ public class WeaponController : EquipableController
             if (_crosshairUI != null)
             {
                 _currentGun.OnShoot += _crosshairUI.OnShoot;
-                _crosshairUI.UpdateBaseSpread(_currentGun.GunData, false);
+                _crosshairUI.UpdateBaseSpread(_currentGun.Stat, false);
                 _crosshairUI.ResetSpread();
             }
         }
@@ -181,14 +181,14 @@ public class WeaponController : EquipableController
         if (_playerDodge != null && _playerDodge.IsRolling) return;
 
         bool isFirePressed = _inputHandler.IsFirePressed;
-        bool fireInput = _currentGun.GunData.fireMode == FireMode.Auto
+        bool fireInput = _currentGun.Stat.FiringMode == FiringMode.Auto
             ? isFirePressed
             : isFirePressed && !_wasFirePressed;
 
         if (fireInput)
         {
             _currentGun.TryShoot();
-            SoundEvent.Emit(_currentGun.Muzzle.position, _currentGun.GunData.soundRange, gameObject);
+            SoundEvent.Emit(_currentGun.Muzzle.position, _currentGun.Stat.SoundRange, gameObject);
         }
 
         _wasFirePressed = isFirePressed;
@@ -204,7 +204,7 @@ public class WeaponController : EquipableController
     private void TryReloadFromInventory()
     {
         if (_currentGun == null || _inventory == null) return;
-        var ammoData = ItemTable.Instance.Get(_currentGun.GunData.ammoItemId);
+        var ammoData = ItemTable.Instance.Get(_currentGun.Stat.AmmoItemId);
         if (ammoData == null) return;
         int available = _inventory.GetItemCount(ammoData);
         _currentGun.StartReload(available);
@@ -213,7 +213,7 @@ public class WeaponController : EquipableController
     private void ConsumeAmmoFromInventory(int consumed)
     {
         if (_inventory == null || consumed <= 0) return;
-        var ammoData = ItemTable.Instance.Get(_currentGun.GunData.ammoItemId);
+        var ammoData = ItemTable.Instance.Get(_currentGun.Stat.AmmoItemId);
         if (ammoData == null) return;
         _inventory.RemoveItem(ammoData, consumed);
         OnAmmoChanged?.Invoke(_currentGun.CurrentAmmo, GetInventoryAmmoCount());
@@ -222,7 +222,7 @@ public class WeaponController : EquipableController
     private int GetInventoryAmmoCount()
     {
         if (_currentGun == null || _inventory == null) return 0;
-        var ammoData = ItemTable.Instance.Get(_currentGun.GunData.ammoItemId);
+        var ammoData = ItemTable.Instance.Get(_currentGun.Stat.AmmoItemId);
         return ammoData != null ? _inventory.GetItemCount(ammoData) : 0;
     }
 
@@ -230,7 +230,7 @@ public class WeaponController : EquipableController
     {
         if (_currentGun == null) return;
         if (addedItem.Type != ItemType.Bullet) return;
-        if (addedItem.Id != _currentGun.GunData.ammoItemId) return;
+        if (addedItem.Id != _currentGun.Stat.AmmoItemId) return;
         OnAmmoChanged?.Invoke(_currentGun.CurrentAmmo, GetInventoryAmmoCount());
     }
 
@@ -254,8 +254,8 @@ public class WeaponController : EquipableController
             {
                 _wasAimPressed = false;
                 if (_currentGun != null) _currentGun.IsAiming = false;
-                _crosshairUI?.UpdateBaseSpread(_currentGun?.GunData, false);
-                CameraZoom.Instance?.SetAiming(false, _currentGun != null ? _currentGun.GunData.aimFOV : 45f, _currentGun != null ? _currentGun.GunData.aimTime : 0.2f);
+                _crosshairUI?.UpdateBaseSpread(_currentGun?.Stat, false);
+                CameraZoom.Instance?.SetAiming(false, GetAimFov(), GetAimTime());
             }
             return;
         }
@@ -266,8 +266,8 @@ public class WeaponController : EquipableController
             {
                 _wasAimPressed = false;
                 _currentGun.IsAiming = false;
-                _crosshairUI?.UpdateBaseSpread(_currentGun.GunData, false);
-                CameraZoom.Instance?.SetAiming(false, _currentGun.GunData.aimFOV, _currentGun.GunData.aimTime);
+                _crosshairUI?.UpdateBaseSpread(_currentGun.Stat, false);
+                CameraZoom.Instance?.SetAiming(false, GetAimFov(), GetAimTime());
             }
             return;
         }
@@ -277,10 +277,13 @@ public class WeaponController : EquipableController
 
         _wasAimPressed = isAimPressed;
         if (_currentGun != null) _currentGun.IsAiming = isAimPressed;
-        _crosshairUI?.UpdateBaseSpread(_currentGun?.GunData, isAimPressed);
-        CameraZoom.Instance?.SetAiming(
-            isAimPressed,
-            _currentGun != null ? _currentGun.GunData.aimFOV : 45f,
-            _currentGun != null ? _currentGun.GunData.aimTime : 0.2f);
+        _crosshairUI?.UpdateBaseSpread(_currentGun?.Stat, isAimPressed);
+        CameraZoom.Instance?.SetAiming(isAimPressed, GetAimFov(), GetAimTime());
     }
+
+    private float GetAimFov() =>
+        _currentGun != null ? _currentGun.Stat.AimFovMultiplier * CameraZoom.Instance.DefaultFOV : 45f;
+
+    private float GetAimTime() =>
+        _currentGun != null ? _currentGun.Stat.AimTime : 0.2f;
 }

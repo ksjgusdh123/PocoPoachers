@@ -4,6 +4,8 @@ public class CameraZoom : MonoBehaviour
 {
     public static CameraZoom Instance { get; private set; }
 
+    public float DefaultFOV => _defaultFOV;
+
     [SerializeField] private float _zoomOutTime = 0.3f;
 
     private Camera _camera;

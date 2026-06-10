@@ -4,16 +4,19 @@ using UnityEngine;
 
 public abstract class GunBase : MonoBehaviour
 {
-    [SerializeField] protected GunData _gunData;
+    [SerializeField] protected int _itemId;
     [SerializeField] protected Transform _muzzle;
     [SerializeField] private MuzzleFlash _muzzleFlash;
     [SerializeField] private Transform _shellEjectPort;
 
-    public GunData GunData => _gunData;
+    protected GunStatData _stat;
+    protected GameObject _bulletPrefab;
+
+    public int ItemId => _itemId;
+    public GunStatData Stat => _stat;
     public Transform Muzzle => _muzzle;
     public int CurrentAmmo => _currentAmmo;
     public bool IsReloading => _isReloading;
-    public ItemData ItemData => ItemTable.Instance.Get(_gunData.itemId);
     public GameObject Owner { get; set; }
 
     public static event Action<float> OnReloadStarted;
@@ -38,7 +41,9 @@ public abstract class GunBase : MonoBehaviour
 
     protected virtual void Awake()
     {
-        _currentAmmo = _gunData.magazineSize;
+        _stat = DataManager.GetGunStat(_itemId);
+        _bulletPrefab = Resources.Load<GameObject>(_stat.BulletPrefabPath);
+        _currentAmmo = _stat.MaxMagazine;
         _originLocalPos = transform.localPosition;
     }
 
@@ -54,7 +59,7 @@ public abstract class GunBase : MonoBehaviour
 
         if (_recoilDist <= 0f) return;
 
-        _recoilDist = Mathf.MoveTowards(_recoilDist, 0f, _gunData.recoilReturnSpeed * Time.deltaTime);
+        _recoilDist = Mathf.MoveTowards(_recoilDist, 0f, _stat.RecoilRecoverySpeed * Time.deltaTime);
 
         Vector3 recoilDirLocal = transform.parent != null
             ? transform.parent.InverseTransformDirection(-_muzzle.up)
@@ -75,18 +80,18 @@ public abstract class GunBase : MonoBehaviour
         _muzzleFlash?.Play();
         ShellCasingPool.Instance?.Eject(_shellEjectPort);
         _soundGizmoPosition = _muzzle.position;
-        _soundGizmoRange = _gunData.soundRange;
+        _soundGizmoRange = _stat.SoundRange;
         _soundGizmoTimer = 1f;
         _currentAmmo--;
-        OnAmmoChanged?.Invoke(_currentAmmo, _gunData.magazineSize);
-        _nextFireTime = Time.time + 1f / _gunData.fireRate;
-        _recoilDist = _gunData.recoilDistance;
+        OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
+        _nextFireTime = Time.time + 60f / _stat.Rpm;
+        _recoilDist = _stat.RecoilForce;
         Vector2 muzzleScreen = Camera.main.WorldToScreenPoint(_muzzle.position);
         Vector2 muzzleTipScreen = Camera.main.WorldToScreenPoint(_muzzle.position + _muzzle.up);
         Vector2 forwardDir = (muzzleTipScreen - muzzleScreen).normalized;
         Vector2 rightDir = new Vector2(forwardDir.y, -forwardDir.x);
-        Vector2 kickVector = forwardDir * _gunData.crosshairVerticalKick
-            + rightDir * UnityEngine.Random.Range(-_gunData.crosshairHorizontalKick, _gunData.crosshairHorizontalKick);
+        Vector2 kickVector = forwardDir * _stat.CrosshairKickV
+            + rightDir * UnityEngine.Random.Range(-_stat.CrosshairKickH, _stat.CrosshairKickH);
         OnShoot?.Invoke(kickVector);
 
         if (_currentAmmo <= 0) OnReloadRequested?.Invoke();
@@ -99,7 +104,7 @@ public abstract class GunBase : MonoBehaviour
 
     protected Vector3 GetFireDirection()
     {
-        float spread = IsAiming ? _gunData.aimSpreadAngle : _gunData.spreadAngle;
+        float spread = IsAiming ? _stat.AimSpread : _stat.Spread;
         Vector3 baseDir = GetCrosshairGroundDirection();
         if (spread <= 0f) return baseDir;
         float angle = UnityEngine.Random.Range(-spread / 2f, spread / 2f);
@@ -124,7 +129,7 @@ public abstract class GunBase : MonoBehaviour
 
     public void StartReload(int availableAmmo)
     {
-        if (_isReloading || _currentAmmo == _gunData.magazineSize || availableAmmo <= 0) return;
+        if (_isReloading || _currentAmmo == _stat.MaxMagazine || availableAmmo <= 0) return;
         _reloadCoroutine = StartCoroutine(ReloadRoutine(availableAmmo));
     }
 
@@ -149,16 +154,16 @@ public abstract class GunBase : MonoBehaviour
         _isReloading = true;
         if (Owner != null)
         {
-            OnReloadStarted?.Invoke(_gunData.reloadTime);
-            CrosshairUI.Instance?.StartReloadGauge(_gunData.reloadTime);
+            OnReloadStarted?.Invoke(_stat.ReloadTime);
+            CrosshairUI.Instance?.StartReloadGauge(_stat.ReloadTime);
         }
-        yield return new WaitForSeconds(_gunData.reloadTime);
-        int needed = _gunData.magazineSize - _currentAmmo;
+        yield return new WaitForSeconds(_stat.ReloadTime);
+        int needed = _stat.MaxMagazine - _currentAmmo;
         int actual = Mathf.Min(needed, availableAmmo);
         _currentAmmo += actual;
         _isReloading = false;
         _reloadCoroutine = null;
-        OnAmmoChanged?.Invoke(_currentAmmo, _gunData.magazineSize);
+        OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
         if (Owner != null) OnReloadEnded?.Invoke();
         OnReloadComplete?.Invoke(actual);
     }

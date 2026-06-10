@@ -22,7 +22,7 @@ public class AIWeaponController : MonoBehaviour
     public void StartReload()
     {
         if (_gun != null)
-            _gun.StartReload(_gun.GunData.magazineSize);
+            _gun.StartReload(_gun.Stat.MaxMagazine);
     }
 
     public void EquipGun(int itemId)
@@ -40,7 +40,7 @@ public class AIWeaponController : MonoBehaviour
         if (_gun != null)
         {
             _gun.OnReloadRequested += OnReloadRequested;
-            UpdateBlackboardGunData(_gun.GunData);
+            UpdateBlackboardGunStat(_gun.Stat);
         }
     }
 
@@ -52,24 +52,24 @@ public class AIWeaponController : MonoBehaviour
 
     private void OnReloadRequested()
     {
-        _gun.StartReload(_gun.GunData.magazineSize);
+        _gun.StartReload(_gun.Stat.MaxMagazine);
     }
 
-    private void UpdateBlackboardGunData(GunData gunData)
+    private void UpdateBlackboardGunStat(GunStatData stat)
     {
         var agent = GetComponent<BehaviorGraphAgent>();
         if (agent == null) return;
 
         if (agent.BlackboardReference.GetVariable("AttackRange", out BlackboardVariable<float> attackRange))
-            attackRange.Value = gunData.range;
+            attackRange.Value = stat.BulletRange;
 
         if (agent.BlackboardReference.GetVariable("HalfAttackRange", out BlackboardVariable<float> halfAttackRange))
-            halfAttackRange.Value = gunData.range * 0.5f;
+            halfAttackRange.Value = stat.BulletRange * 0.5f;
 
         if (agent.BlackboardReference.GetVariable("ReloadingTime", out BlackboardVariable<float> reloadingTime))
-            reloadingTime.Value = gunData.reloadTime;
+            reloadingTime.Value = stat.ReloadTime;
 
         var detector = GetComponent<TargetDetector>();
-        detector?.SetDetectRange(gunData.range);
+        detector?.SetDetectRange(stat.BulletRange);
     }
 }

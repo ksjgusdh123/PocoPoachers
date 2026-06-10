@@ -58,15 +58,15 @@ public class EnemyItemBoxDropper : MonoBehaviour
         var gun = _weaponController?.Gun;
         if (gun != null)
         {
-            itemIds.Add(gun.GunData.itemId);
+            itemIds.Add(gun.ItemId);
             itemCounts.Add(1);
-            noRevealIds.Add(gun.GunData.itemId);
+            noRevealIds.Add(gun.ItemId);
 
-            if (gun.GunData.ammoItemId > 0)
+            if (gun.Stat.AmmoItemId > 0)
             {
-                itemIds.Add(gun.GunData.ammoItemId);
+                itemIds.Add(gun.Stat.AmmoItemId);
                 itemCounts.Add(Random.Range(_minAmmoCount, _maxAmmoCount + 1));
-                noRevealIds.Add(gun.GunData.ammoItemId);
+                noRevealIds.Add(gun.Stat.AmmoItemId);
             }
         }
 

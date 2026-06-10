@@ -18,7 +18,7 @@ public class PlayerStat : StatBase
     public float CurrentStamina { get; private set; }
     public float ArmorMoveSpeedMultiplier { get; private set; } = 1f;
 
-    protected override float Defense => base.Defense;
+    protected override float DefenseRate => base.DefenseRate;
 
     public float MaxHunger => _maxHunger;
     public float CurrentHunger { get; private set; }
@@ -48,7 +48,7 @@ public class PlayerStat : StatBase
 
     protected override void OnLocalHpChanged(float hp, float maxHp)
     {
-        RoomSync.StatSync(hp, maxHp, CurrentStamina, CurrentHunger, CurrentThirst, Defense);
+        RoomSync.StatSync(hp, maxHp, CurrentStamina, CurrentHunger, CurrentThirst, DefenseRate);
     }
 
     private void Start()
@@ -70,7 +70,7 @@ public class PlayerStat : StatBase
         if (_vitalSyncTimer <= 0f)
         {
             _vitalSyncTimer = VitalSyncInterval;
-            RoomSync.StatSync(CurrentHp, MaxHp, CurrentStamina, CurrentHunger, CurrentThirst, Defense);
+            RoomSync.StatSync(CurrentHp, MaxHp, CurrentStamina, CurrentHunger, CurrentThirst, DefenseRate);
         }
     }
 
@@ -144,23 +144,23 @@ public class PlayerStat : StatBase
         OnStaminaChanged?.Invoke(CurrentStamina, _maxStamina);
     }
 
-    public override void ApplyArmorStat(ArmorData data)
+    public override void ApplyArmorStat(ArmorStatData data)
     {
         base.ApplyArmorStat(data);
-        _totalMaxHpBonus += data.maxHpBonus;
-        ArmorMoveSpeedMultiplier *= data.moveSpeedMultiplier;
+        _totalMaxHpBonus += data.MaxHpBonus;
+        ArmorMoveSpeedMultiplier *= data.MoveSpeedMultiplier;
 
         MaxHp = _maxHp + _totalMaxHpBonus;
-        CurrentHp = Mathf.Min(CurrentHp + data.maxHpBonus, MaxHp);
+        CurrentHp = Mathf.Min(CurrentHp + data.MaxHpBonus, MaxHp);
         RaiseHpChanged();
     }
 
-    public override void RemoveArmorStat(ArmorData data)
+    public override void RemoveArmorStat(ArmorStatData data)
     {
         base.RemoveArmorStat(data);
-        _totalMaxHpBonus = Mathf.Max(0f, _totalMaxHpBonus - data.maxHpBonus);
-        ArmorMoveSpeedMultiplier = data.moveSpeedMultiplier > 0f
-            ? ArmorMoveSpeedMultiplier / data.moveSpeedMultiplier
+        _totalMaxHpBonus = Mathf.Max(0f, _totalMaxHpBonus - data.MaxHpBonus);
+        ArmorMoveSpeedMultiplier = data.MoveSpeedMultiplier > 0f
+            ? ArmorMoveSpeedMultiplier / data.MoveSpeedMultiplier
             : 1f;
 
         MaxHp = _maxHp + _totalMaxHpBonus;
