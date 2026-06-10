@@ -13,7 +13,7 @@ using UnityEngine.UI;
 //      └── Btn_Cancel  [Button]
 // ────────────────────────────────────────────────────────────────────────
 
-public class WarningPopupUI : UIBase
+public class WarningPopupUI : PopupUIBase
 {
     [SerializeField] private TextMeshProUGUI _txtTitle;
     [SerializeField] private TextMeshProUGUI _txtMessage;
@@ -24,6 +24,10 @@ public class WarningPopupUI : UIBase
     public event Action OnCancelled;
 
     protected override UIType UiType => UIType.WarningPopup;
+
+    protected override TextMeshProUGUI TitleText   => _txtTitle;
+    protected override TextMeshProUGUI MessageText => _txtMessage;
+    protected override Button[]        Buttons     => new[] { _btnConfirm, _btnCancel };
 
     protected override void Awake()
     {

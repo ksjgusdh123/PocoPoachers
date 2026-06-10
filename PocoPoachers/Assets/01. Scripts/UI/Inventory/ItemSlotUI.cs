@@ -1,13 +1,10 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class ItemSlotUI : MonoBehaviour
+public class ItemSlotUI : ItemIconSlotUI
 {
-    [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private TextMeshProUGUI _amountText;
-    [SerializeField] private GameObject _itemVisual;
 
     public InventoryUI InventoryUI { get; private set; }
     public int SlotIndex { get; private set; }
@@ -46,24 +43,18 @@ public class ItemSlotUI : MonoBehaviour
             return;
         }
 
-        _icon.sprite = ResourceManager.Instance.LoadSprite(_settedSlot.ItemData.icon);
+        SetIcon(_settedSlot.ItemData);
         _nameText.text = _settedSlot.ItemData.ItemName;
         _amountText.text = _settedSlot.Amount >= 1 ? _settedSlot.Amount.ToString() : "";
         IsSettedItem = true;
-
-        if (_itemVisual != null)
-            _itemVisual.SetActive(true);
     }
 
     private void SetEmpty()
     {
-        _icon.sprite = null;
+        SetIcon(null);
         IsSettedItem = false;
         _nameText.text = "";
         _amountText.text = "";
-
-        if (_itemVisual != null)
-            _itemVisual.SetActive(false);
     }
 
     public void ClearSlot() => _settedSlot?.Clear();

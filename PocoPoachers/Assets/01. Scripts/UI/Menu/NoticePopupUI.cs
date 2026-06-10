@@ -12,7 +12,7 @@ using UnityEngine.UI;
 //      └── Btn_Ok      [Button]
 // ────────────────────────────────────────────────────────────────────────
 
-public class NoticePopupUI : UIBase
+public class NoticePopupUI : PopupUIBase
 {
     [SerializeField] private TextMeshProUGUI _txtTitle;
     [SerializeField] private TextMeshProUGUI _txtMessage;
@@ -21,6 +21,10 @@ public class NoticePopupUI : UIBase
     public event Action OnOk;
 
     protected override UIType UiType => UIType.NoticePopup;
+
+    protected override TextMeshProUGUI TitleText   => _txtTitle;
+    protected override TextMeshProUGUI MessageText => _txtMessage;
+    protected override Button[]        Buttons     => new[] { _btnOk };
 
     protected override void Awake()
     {
