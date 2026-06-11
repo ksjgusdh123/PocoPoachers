@@ -1,7 +1,7 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
-// 캐릭터 모델 루트(mini simple demo_01)에 붙이면
-// 자식의 모든 SkinnedMeshRenderer에 Mask + Outline 머티리얼을 추가
 public class SkinnedOutline : MonoBehaviour
 {
     [Header("Outline")]
@@ -16,7 +16,7 @@ public class SkinnedOutline : MonoBehaviour
     SkinnedMeshRenderer[] _smrs;
     Material _maskMat;
     Material _outlineMat;
-    Material[][] _originalMats;
+    readonly List<GameObject> _extraObjects = new();
 
     static readonly int ColorProp     = Shader.PropertyToID("_OutlineColor");
     static readonly int WidthProp     = Shader.PropertyToID("_OutlineWidth");
@@ -26,35 +26,28 @@ public class SkinnedOutline : MonoBehaviour
 
     void Awake()
     {
-        _smrs         = GetComponentsInChildren<SkinnedMeshRenderer>();
-        _maskMat      = new Material(Shader.Find("Custom/SkinnedOccludedOutlineMask"));
-        _outlineMat   = new Material(Shader.Find("Custom/SkinnedOccludedOutline"));
-        _originalMats = new Material[_smrs.Length][];
-
-        for (int i = 0; i < _smrs.Length; i++)
-            _originalMats[i] = _smrs[i].materials;
+        _smrs       = GetComponentsInChildren<SkinnedMeshRenderer>();
+        _maskMat    = new Material(Shader.Find("Custom/SkinnedOccludedOutlineMask"));
+        _outlineMat = new Material(Shader.Find("Custom/SkinnedOccludedOutline"));
     }
 
     void OnEnable()
     {
         SyncProperties();
-        for (int i = 0; i < _smrs.Length; i++)
+        foreach (var smr in _smrs)
         {
-            var mats = new Material[_originalMats[i].Length + 2];
-            _originalMats[i].CopyTo(mats, 0);
-            mats[^2] = _maskMat;
-            mats[^1] = _outlineMat;
-            _smrs[i].materials = mats;
+            _extraObjects.Add(CreateExtraSMR(smr, "OutlineMask",     _maskMat));
+            _extraObjects.Add(CreateExtraSMR(smr, "OutlineRenderer", _outlineMat));
         }
     }
 
     void OnDisable()
     {
-        for (int i = 0; i < _smrs.Length; i++)
-            _smrs[i].materials = _originalMats[i];
+        foreach (var go in _extraObjects)
+            if (go != null) Destroy(go);
+        _extraObjects.Clear();
     }
 
-    // Inspector에서 값 변경 시 Play 모드에서도 즉시 반영
     void OnValidate()
     {
         if (_outlineMat == null) return;
@@ -74,6 +67,22 @@ public class SkinnedOutline : MonoBehaviour
         _outlineMat.SetFloat(SpeedProp,     _waveSpeed);
         _outlineMat.SetFloat(FrequencyProp, _waveFrequency);
         _outlineMat.SetFloat(AmplitudeProp, _waveAmplitude);
+    }
+
+    GameObject CreateExtraSMR(SkinnedMeshRenderer src, string goName, Material mat)
+    {
+        var go  = new GameObject(goName);
+        go.transform.SetParent(src.transform.parent, false);
+
+        var dst               = go.AddComponent<SkinnedMeshRenderer>();
+        dst.sharedMesh        = src.sharedMesh;
+        dst.bones             = src.bones;
+        dst.rootBone          = src.rootBone;
+        dst.material          = mat;
+        dst.shadowCastingMode = ShadowCastingMode.Off;
+        dst.receiveShadows    = false;
+
+        return go;
     }
 
     public void SetOutline(Color color, float width)
