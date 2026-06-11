@@ -38,6 +38,7 @@ public class WeaponController : EquipableController
     private bool _isSwitching;
     private bool _wasFirePressed;
     private bool _wasAimPressed;
+    private bool _isCurrentGunVisible = true;
     private Action<Vector2> _cameraShakeHandler;
     private Action _reloadRequestedHandler;
     private Action<int> _reloadCompleteHandler;
@@ -147,6 +148,7 @@ public class WeaponController : EquipableController
         _currentGunIndex = index;
         _currentGun = _mount.GetGun(index);
         _currentGun?.gameObject.SetActive(true);
+        ApplyCurrentGunVisibility();
         _wasFirePressed = false;
 
         if (_currentGun != null)
@@ -242,6 +244,21 @@ public class WeaponController : EquipableController
     public void CancelReload()
     {
         _currentGun?.CancelReload();
+    }
+
+    public void SetCurrentGunVisible(bool visible)
+    {
+        if (_isCurrentGunVisible == visible) return;
+        _isCurrentGunVisible = visible;
+        ApplyCurrentGunVisibility();
+    }
+
+    private void ApplyCurrentGunVisibility()
+    {
+        if (_currentGun == null) return;
+
+        foreach (Renderer renderer in _currentGun.GetComponentsInChildren<Renderer>(true))
+            renderer.enabled = _isCurrentGunVisible;
     }
 
     private void HandleCancelReloadInput()
