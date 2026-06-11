@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5533732121404448168}
   - component: {fileID: -4834107517123186900}
   - component: {fileID: -4176429289971939643}
+  - component: {fileID: 5191968348425356124}
   m_Layer: 0
   m_Name: RemotePlayer
   m_TagString: Untagged
@@ -75,6 +76,50 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArmorMount
   _helmetMountPoint: {fileID: 5765154066918159956}
+--- !u!114 &5191968348425356124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5436741564957258347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a9d451192ba499042984bd9dc1ec6fe0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BagMount
+  _bagMountPoint: {fileID: 3722765544123238966}
+--- !u!1 &7975189391074451727
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3722765544123238966}
+  m_Layer: 0
+  m_Name: BagSocket
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3722765544123238966
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7975189391074451727}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.19894034, y: 0, z: 0, w: 0.98001164}
+  m_LocalPosition: {x: -0, y: 25.3, z: -55.6}
+  m_LocalScale: {x: 50, y: 50, z: 50}
+  m_ConstrainProportionsScale: 1
+  m_Children: []
+  m_Father: {fileID: 6469774507262814072}
+  m_LocalEulerAnglesHint: {x: 22.95, y: 0, z: 0}
 --- !u!1 &9210884504174788376
 GameObject:
   m_ObjectHideFlags: 0
@@ -216,6 +261,9 @@ PrefabInstance:
     - {fileID: 2385713798102207054, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
     - {fileID: 451689876601938359, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
     m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: 5758649491489129537, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3722765544123238966}
     - targetCorrespondingSourceObject: {fileID: 5654679832960411875, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4557323941656662614}
@@ -234,5 +282,10 @@ Transform:
 --- !u!4 &6366649273800264666 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5654679832960411875, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
+  m_PrefabInstance: {fileID: 1595282045598606137}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &6469774507262814072 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5758649491489129537, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
   m_PrefabInstance: {fileID: 1595282045598606137}
   m_PrefabAsset: {fileID: 0}
