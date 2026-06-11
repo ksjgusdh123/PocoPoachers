@@ -61,7 +61,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7a0a22f2714ca1146aab3e3bde01ab55, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponMount
-  _mountPoint: {fileID: 1235341369610038411, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
+  _mountPoint: {fileID: 4557323941656662614}
 --- !u!114 &-4176429289971939643
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -74,7 +74,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6202c96bc0637184488fb98e03fa4055, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ArmorMount
-  _helmetMountPoint: {fileID: 6645831651898584952, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
+  _helmetMountPoint: {fileID: 5765154066918159956}
 --- !u!1 &9210884504174788376
 GameObject:
   m_ObjectHideFlags: 0
@@ -182,6 +182,22 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 5053713355218916717, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 150
+      objectReference: {fileID: 0}
+    - target: {fileID: 5053713355218916717, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 150
+      objectReference: {fileID: 0}
+    - target: {fileID: 5053713355218916717, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 150
+      objectReference: {fileID: 0}
+    - target: {fileID: 5053713355218916717, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 16
+      objectReference: {fileID: 0}
     - target: {fileID: 5090587081827196812, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
       propertyPath: m_Name
       value: Character_0413da
@@ -203,52 +219,18 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 5654679832960411875, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4557323941656662614}
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5090587081827196812, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 8696712418927952109}
-    - targetCorrespondingSourceObject: {fileID: 5090587081827196812, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 653456113482756458}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
 --- !u!4 &926051942177537711 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 1943984681900563862, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
   m_PrefabInstance: {fileID: 1595282045598606137}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &5802590614645521589 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5090587081827196812, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
+--- !u!4 &5765154066918159956 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5053713355218916717, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
   m_PrefabInstance: {fileID: 1595282045598606137}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &8696712418927952109
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5802590614645521589}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a9c306364c794cb4f82d4079e9f27315, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WorldObject
-  _smooth: 14
-  _animSmooth: 0.1
---- !u!114 &653456113482756458
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5802590614645521589}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 40fd5f2137c486143ae64c45c1b59d82, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WeaponController
-  _switchMidTime: 0.15
-  _crosshairUI: {fileID: 0}
 --- !u!4 &6366649273800264666 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5654679832960411875, guid: 6285cf03d162d9b4d86e7376b1040cc8, type: 3}
