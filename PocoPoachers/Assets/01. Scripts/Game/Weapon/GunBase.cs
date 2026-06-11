@@ -101,29 +101,29 @@ public abstract class GunBase : MonoBehaviour
 
     public bool IsAiming { get; set; }
 
+    /// <summary>
+    /// 발사 기준 방향(스프레드 적용 전)을 결정하는 외부 콜백.
+    /// 미설정 시 총구가 바라보는 방향(_muzzle.up)을 사용한다.
+    /// 플레이어 무기는 WeaponController가 크로스헤어 기반 콜백을 주입한다.
+    /// </summary>
+    public Func<Vector3> AimDirectionProvider { get; set; }
 
     protected Vector3 GetFireDirection()
     {
         float spread = IsAiming ? _stat.AimSpread : _stat.Spread;
-        Vector3 baseDir = GetCrosshairGroundDirection();
+        Vector3 baseDir = GetBaseAimDirection();
         if (spread <= 0f) return baseDir;
         float angle = UnityEngine.Random.Range(-spread / 2f, spread / 2f);
         return Quaternion.AngleAxis(angle, Vector3.up) * baseDir;
     }
 
-    private Vector3 GetCrosshairGroundDirection()
+    private Vector3 GetBaseAimDirection()
     {
-        if (CrosshairUI.Instance == null || Camera.main == null)
-            return _muzzle.up;
+        if (AimDirectionProvider != null)
+            return AimDirectionProvider();
 
-        Ray ray = Camera.main.ScreenPointToRay(CrosshairUI.Instance.ScreenPosition);
-        Plane plane = new Plane(Vector3.up, new Vector3(0f, _muzzle.position.y, 0f));
-
-        if (!plane.Raycast(ray, out float distance))
-            return _muzzle.up;
-
-        Vector3 targetPoint = ray.GetPoint(distance);
-        Vector3 dir = targetPoint - _muzzle.position;
+        Vector3 dir = _muzzle.up;
+        dir.y = 0f;
         return dir.sqrMagnitude < 0.001f ? _muzzle.up : dir.normalized;
     }
 

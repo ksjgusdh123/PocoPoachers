@@ -138,6 +138,7 @@ public class WeaponController : EquipableController
             if (_reloadRequestedHandler != null) prev.OnReloadRequested -= _reloadRequestedHandler;
             if (_reloadCompleteHandler != null) prev.OnReloadComplete -= _reloadCompleteHandler;
             if (_ammoChangedHandler != null) prev.OnAmmoChanged -= _ammoChangedHandler;
+            prev.AimDirectionProvider = null;
             prev.gameObject.SetActive(false);
         }
 
@@ -152,6 +153,7 @@ public class WeaponController : EquipableController
             _cameraShakeHandler = _ => CameraShake.Instance?.Shake(
                 gun.Stat.CameraShakeIntensity, gun.Stat.CameraShakeDuration, gun.Muzzle.up);
             _currentGun.OnShoot += _cameraShakeHandler;
+            _currentGun.AimDirectionProvider = () => GetCrosshairGroundDirection(gun.Muzzle);
 
             _reloadRequestedHandler = () => TryReloadFromInventory();
             _reloadCompleteHandler = consumed => ConsumeAmmoFromInventory(consumed);
@@ -286,4 +288,20 @@ public class WeaponController : EquipableController
 
     private float GetAimTime() =>
         _currentGun != null ? _currentGun.Stat.AimTime : 0.2f;
+
+    private Vector3 GetCrosshairGroundDirection(Transform muzzle)
+    {
+        if (CrosshairUI.Instance == null || Camera.main == null)
+            return muzzle.up;
+
+        Ray ray = Camera.main.ScreenPointToRay(CrosshairUI.Instance.ScreenPosition);
+        Plane plane = new Plane(Vector3.up, new Vector3(0f, muzzle.position.y, 0f));
+
+        if (!plane.Raycast(ray, out float distance))
+            return muzzle.up;
+
+        Vector3 targetPoint = ray.GetPoint(distance);
+        Vector3 dir = targetPoint - muzzle.position;
+        return dir.sqrMagnitude < 0.001f ? muzzle.up : dir.normalized;
+    }
 }
