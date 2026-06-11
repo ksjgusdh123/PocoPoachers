@@ -63,28 +63,23 @@ public class QuickSlotDropHandler : ItemHolderDropHandler
         if (slot.IsEmpty)
         {
             ClearDisplay();
+            OnQuickSlotChanged?.Invoke(_quickSlotCount, null, 0);
             return;
         }
 
-        DroppedItemData = slot.ItemData;
-        DroppedAmount = slot.Amount;
-        _nameText.text = slot.ItemData.ItemName;
-        _icon.sprite = ResourceManager.Instance.LoadSprite(slot.ItemData.icon);
-        _icon.gameObject.SetActive(true);
-        _isSetted = true;
-        _countText.text = slot.Amount.ToString();
+        SetDisplay(slot.ItemData, slot.Amount);
         OnQuickSlotChanged?.Invoke(_quickSlotCount, slot.ItemData, slot.Amount);
     }
 
-    private void ClearDisplay()
+    protected override void SetDisplay(ItemData data, int amount)
     {
-        DroppedItemData = null;
-        DroppedAmount = 0;
-        _nameText.text = "";
-        _icon.sprite = null;
-        _icon.gameObject.SetActive(false);
-        _isSetted = false;
+        base.SetDisplay(data, amount);
+        _countText.text = amount >= 1 ? amount.ToString() : "";
+    }
+
+    protected override void ClearDisplay()
+    {
+        base.ClearDisplay();
         _countText.text = "";
-        OnQuickSlotChanged?.Invoke(_quickSlotCount, null, 0);
     }
 }

@@ -9,6 +9,20 @@ public abstract class ProgressUIBase : MonoBehaviour
     private float _elapsed;
     private bool _isFilling;
 
+    protected virtual void Awake()
+    {
+        Subscribe();
+        gameObject.SetActive(false);
+    }
+
+    protected virtual void OnDestroy()
+    {
+        Unsubscribe();
+    }
+
+    protected abstract void Subscribe();
+    protected abstract void Unsubscribe();
+
     protected virtual void Update()
     {
         if (!_isFilling) return;

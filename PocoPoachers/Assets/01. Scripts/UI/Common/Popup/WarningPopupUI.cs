@@ -39,10 +39,4 @@ public class WarningPopupUI : PopupUIBase
 
     protected override void RegisterSelf()   => UIManager.GetInstance().RegisterWarningPopup(this);
     protected override void UnregisterSelf() => UIManager.GetInstance().UnregisterWarningPopup();
-
-    public void SetContent(string title, string message)
-    {
-        if (_txtTitle   != null) _txtTitle.text   = title;
-        if (_txtMessage != null) _txtMessage.text = message;
-    }
 }

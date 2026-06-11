@@ -16,6 +16,12 @@ public abstract class PopupUIBase : UIBase
         ApplyTheme();
     }
 
+    public void SetContent(string title, string message)
+    {
+        if (TitleText   != null) TitleText.text   = title;
+        if (MessageText != null) MessageText.text = message;
+    }
+
     private void ApplyTheme()
     {
         if (_theme == null) return;

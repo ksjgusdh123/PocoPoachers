@@ -13,6 +13,7 @@ public class HpWorldUI : WorldUIBase
     private float _targetValue;
     private Coroutine _animCoroutine;
     private Coroutine _hideCoroutine;
+    private AnimatedSliderFill _sliderFill;
 
     private static readonly Dictionary<StatBase, HpWorldUI> _active = new Dictionary<StatBase, HpWorldUI>();
 
@@ -35,6 +36,7 @@ public class HpWorldUI : WorldUIBase
     private void SetStat(StatBase stat)
     {
         _stat = stat;
+        _sliderFill = new AnimatedSliderFill(_slider, _animSpeed);
 
         _targetValue = stat.MaxHp > 0f ? stat.CurrentHp / stat.MaxHp : 0f;
         _slider.value = _targetValue;
@@ -72,18 +74,7 @@ public class HpWorldUI : WorldUIBase
 
         if (_animCoroutine != null)
             StopCoroutine(_animCoroutine);
-        _animCoroutine = StartCoroutine(AnimateSlider());
-    }
-
-    private IEnumerator AnimateSlider()
-    {
-        while (!Mathf.Approximately(_slider.value, _targetValue))
-        {
-            _slider.value = Mathf.MoveTowards(_slider.value, _targetValue, _animSpeed * Time.deltaTime);
-            yield return null;
-        }
-        _slider.value = _targetValue;
-        _animCoroutine = null;
+        _animCoroutine = StartCoroutine(_sliderFill.AnimateTo(_targetValue));
     }
 
     private IEnumerator HideAfterDelay()

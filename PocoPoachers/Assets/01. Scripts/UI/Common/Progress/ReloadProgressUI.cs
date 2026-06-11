@@ -1,15 +1,12 @@
-using UnityEngine;
-
 public class ReloadProgressUI : ProgressUIBase
 {
-    private void Awake()
+    protected override void Subscribe()
     {
         GunBase.OnReloadStarted += StartFilling;
         GunBase.OnReloadEnded += StopFilling;
-        gameObject.SetActive(false);
     }
 
-    private void OnDestroy()
+    protected override void Unsubscribe()
     {
         GunBase.OnReloadStarted -= StartFilling;
         GunBase.OnReloadEnded -= StopFilling;

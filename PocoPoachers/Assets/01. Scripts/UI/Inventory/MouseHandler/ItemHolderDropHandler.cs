@@ -34,12 +34,7 @@ public abstract class ItemHolderDropHandler : BaseDropHandler, IPointerClickHand
     {
         if (data.ItemType != _itemType) return false;
 
-        DroppedItemData = data;
-        DroppedAmount = amount;
-        _nameText.text = data.ItemName;
-        _icon.sprite = ResourceManager.Instance.LoadSprite(data.icon);
-        _icon.gameObject.SetActive(true);
-        _isSetted = true;
+        SetDisplay(data, amount);
         return true;
     }
 
@@ -60,6 +55,21 @@ public abstract class ItemHolderDropHandler : BaseDropHandler, IPointerClickHand
             _inventoryUI.Inventory.AddItemAtSlot(slot, DroppedItemData, DroppedAmount);
         }
 
+        ClearDisplay();
+    }
+
+    protected virtual void SetDisplay(ItemData data, int amount)
+    {
+        DroppedItemData = data;
+        DroppedAmount = amount;
+        _nameText.text = data.ItemName;
+        _icon.sprite = ResourceManager.Instance.LoadSprite(data.icon);
+        _icon.gameObject.SetActive(true);
+        _isSetted = true;
+    }
+
+    protected virtual void ClearDisplay()
+    {
         DroppedItemData = null;
         DroppedAmount = 0;
         _nameText.text = "";

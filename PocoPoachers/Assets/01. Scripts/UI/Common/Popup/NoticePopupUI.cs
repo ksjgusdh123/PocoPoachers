@@ -35,10 +35,4 @@ public class NoticePopupUI : PopupUIBase
 
     protected override void RegisterSelf()   => UIManager.GetInstance().RegisterNoticePopup(this);
     protected override void UnregisterSelf() => UIManager.GetInstance().UnregisterNoticePopup();
-
-    public void SetContent(string title, string message)
-    {
-        if (_txtTitle   != null) _txtTitle.text   = title;
-        if (_txtMessage != null) _txtMessage.text = message;
-    }
 }

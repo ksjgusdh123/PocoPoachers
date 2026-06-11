@@ -1,4 +1,3 @@
-using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,11 +11,13 @@ public class HpUI : MonoBehaviour
 
     private float _targetValue;
     private Coroutine _animCoroutine;
+    private AnimatedSliderFill _sliderFill;
 
     public void Setup(StatBase stat)
     {
         _stat = stat;
         _stat.OnHpChanged += Refresh;
+        _sliderFill = new AnimatedSliderFill(_slider, _animSpeed);
 
         // 초기값은 애니메이션 없이 바로 적용
         _targetValue = _stat.MaxHp > 0f ? _stat.CurrentHp / _stat.MaxHp : 0f;
@@ -43,18 +44,7 @@ public class HpUI : MonoBehaviour
 
         if (_animCoroutine != null)
             StopCoroutine(_animCoroutine);
-        _animCoroutine = StartCoroutine(AnimateSlider());
-    }
-
-    private IEnumerator AnimateSlider()
-    {
-        while (!Mathf.Approximately(_slider.value, _targetValue))
-        {
-            _slider.value = Mathf.MoveTowards(_slider.value, _targetValue, _animSpeed * Time.deltaTime);
-            yield return null;
-        }
-        _slider.value = _targetValue;
-        _animCoroutine = null;
+        _animCoroutine = StartCoroutine(_sliderFill.AnimateTo(_targetValue));
     }
 
     private void UpdateText(float current, float max)
