@@ -19,6 +19,7 @@ public class Bullet : MonoBehaviour
     private Action _onRelease;
     private bool _applyDamage = true;
     private bool _isReleased;
+    private bool _showHitMarker;
     private TrailRenderer _trail;
     private GameObject _attacker;
 
@@ -39,6 +40,8 @@ public class Bullet : MonoBehaviour
         _attacker = attacker;
         _traveledDistance = 0f;
         _isReleased = false;
+        // 로컬 플레이어가 쏜 총알에만 히트마커 표시 (AI/원격 플레이어 총알은 attacker가 null이거나 PlayerController가 없음)
+        _showHitMarker = attacker != null && attacker.TryGetComponent<PlayerController>(out _);
     }
 
     private void Update()
@@ -53,8 +56,8 @@ public class Bullet : MonoBehaviour
         {
             transform.position = hit.point;
 
-            // 히트마커 (임시로 지금은 모든 총알에 적용 중, 서버 연결할 때 자기 총알에만 적용되도록 수정해야할 듯)
-            CrosshairUI.Instance?.ShowHitMarker();
+            if (_showHitMarker)
+                CrosshairUI.Instance?.ShowHitMarker();
 
             if (_applyDamage && hit.collider.TryGetComponent<IDamageable>(out var damageable))
             {
