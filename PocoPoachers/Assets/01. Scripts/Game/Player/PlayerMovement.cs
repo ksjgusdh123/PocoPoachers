@@ -36,6 +36,8 @@ public class PlayerMovement : MonoBehaviour
 
     public static Transform LocalTransform { get; private set; }
 
+    public bool IsSprinting => _isSprinting;
+
     private void OnEnable() { LocalTransform = transform; }
     private void OnDisable() { if (LocalTransform == transform) LocalTransform = null; }
 

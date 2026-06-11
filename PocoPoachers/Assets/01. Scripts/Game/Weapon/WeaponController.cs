@@ -33,6 +33,7 @@ public class WeaponController : EquipableController
     private Inventory _inventory;
     private GunBase _currentGun;
     private PlayerDodge _playerDodge;
+    private PlayerMovement _playerMovement;
     private int _currentGunIndex = -1;
     private bool _isSwitching;
     private bool _wasFirePressed;
@@ -49,6 +50,7 @@ public class WeaponController : EquipableController
         _animator = GetComponentInChildren<Animator>();
         _inventory = GetComponent<Inventory>();
         _playerDodge = GetComponent<PlayerDodge>();
+        _playerMovement = GetComponent<PlayerMovement>();
 
         if (_inventory != null)
             _inventory.OnItemAdded += OnItemAddedToInventory;
@@ -181,6 +183,7 @@ public class WeaponController : EquipableController
     {
         if (_currentGun == null || _isSwitching) return;
         if (_playerDodge != null && _playerDodge.IsRolling) return;
+        if (_playerMovement != null && _playerMovement.IsSprinting) return;
 
         bool isFirePressed = _inputHandler.IsFirePressed;
         bool fireInput = _currentGun.Stat.FiringMode == FiringMode.Auto
