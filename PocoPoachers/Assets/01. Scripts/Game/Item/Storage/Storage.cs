@@ -22,6 +22,8 @@ public class Storage : MonoBehaviour, IInteractable
 
     public void OnInteract(PlayerController player)
     {
+        SoundManager.GetInstance().PlaySfx("sfx_storage_open");
+
         player.SetInventoryOpen(true);
 
         var storageUI = player.GetStorageUI;
@@ -35,6 +37,8 @@ public class Storage : MonoBehaviour, IInteractable
 
     public void OnInteractExit(PlayerController player)
     {
+        SoundManager.GetInstance().PlaySfx("sfx_storage_close");
+
         player.PlayerInventory.InteractionInventory = null;
         _inventory.InteractionInventory = null;
 

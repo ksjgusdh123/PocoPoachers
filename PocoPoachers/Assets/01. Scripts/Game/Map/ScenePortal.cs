@@ -9,6 +9,8 @@ public class ScenePortal : MonoBehaviour, IInteractable
 
     public void OnInteract(PlayerController player)
     {
+        SoundManager.GetInstance().PlaySfx("sfx_portal");
+
         GameManager.Instance.SetSpawnId(_spawnId);
         LoadTargetScene();
     }

@@ -6,11 +6,10 @@ public class SoundManager : Singleton<SoundManager>
     private const string PREF_BGM_VOLUME    = "Settings.BgmVolume";
     private const string PREF_SFX_VOLUME    = "Settings.SfxVolume";
 
-    private const string CLICK_SFX_PATH = "Audio/SFX/UI_Click";
+    private const string CLICK_SFX_KEY = "ui_click";
 
     private AudioSource _bgmSource;
     private AudioSource _sfxSource;
-    private AudioClip _buttonClickClip;
 
     public float MasterVolume { get; private set; }
     public float BgmVolume { get; private set; }
@@ -31,28 +30,27 @@ public class SoundManager : Singleton<SoundManager>
         BgmVolume    = PlayerPrefs.GetFloat(PREF_BGM_VOLUME, 1f);
         SfxVolume    = PlayerPrefs.GetFloat(PREF_SFX_VOLUME, 1f);
         ApplyBgmVolume();
-
-        _buttonClickClip = ResourceManager.GetInstance().Load<AudioClip>(CLICK_SFX_PATH);
     }
 
-    public void PlayBgm(AudioClip clip)
+    public void PlayBgm(string key)
     {
-        if (clip == null) return;
-        if (_bgmSource.clip == clip && _bgmSource.isPlaying) return;
+        var data = SoundTable.Instance.Get(key);
+        if (data == null) return;
 
-        _bgmSource.clip = clip;
-        _bgmSource.Play();
+        PlayBgmClip(ResourceManager.GetInstance().Load<AudioClip>(data.Path));
     }
 
     public void StopBgm() => _bgmSource.Stop();
 
-    public void PlaySfx(AudioClip clip)
+    public void PlaySfx(string key)
     {
-        if (clip == null) return;
-        _sfxSource.PlayOneShot(clip, MasterVolume * SfxVolume);
+        var data = SoundTable.Instance.Get(key);
+        if (data == null) return;
+
+        PlaySfxClip(ResourceManager.GetInstance().Load<AudioClip>(data.Path));
     }
 
-    public void PlayButtonClick() => PlaySfx(_buttonClickClip);
+    public void PlayButtonClick() => PlaySfx(CLICK_SFX_KEY);
 
     public void SetMasterVolume(float value)
     {
@@ -72,6 +70,21 @@ public class SoundManager : Singleton<SoundManager>
     {
         SfxVolume = Mathf.Clamp01(value);
         PlayerPrefs.SetFloat(PREF_SFX_VOLUME, SfxVolume);
+    }
+
+    private void PlayBgmClip(AudioClip clip)
+    {
+        if (clip == null) return;
+        if (_bgmSource.clip == clip && _bgmSource.isPlaying) return;
+
+        _bgmSource.clip = clip;
+        _bgmSource.Play();
+    }
+
+    private void PlaySfxClip(AudioClip clip)
+    {
+        if (clip == null) return;
+        _sfxSource.PlayOneShot(clip, MasterVolume * SfxVolume);
     }
 
     private void ApplyBgmVolume() => _bgmSource.volume = MasterVolume * BgmVolume;

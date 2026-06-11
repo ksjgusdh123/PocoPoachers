@@ -74,6 +74,8 @@ public class ItemBox : MonoBehaviour, IInteractable
     {
         var inven = GetComponent<Inventory>();
 
+        SoundManager.GetInstance().PlaySfx("sfx_box_open");
+
         player.SetInventoryOpen(true);
 
         var boxUI = player.BoxUI;
@@ -92,6 +94,8 @@ public class ItemBox : MonoBehaviour, IInteractable
     public void OnInteractExit(PlayerController player)
     {
         var inven = GetComponent<Inventory>();
+
+        SoundManager.GetInstance().PlaySfx("sfx_box_close");
 
         player.PlayerInventory.InteractionInventory = null;
         inven.InteractionInventory = null;

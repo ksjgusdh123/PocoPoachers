@@ -19,6 +19,12 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     // 장비 슬롯 우클릭 상태
     public event Action<ItemHolderDropHandler> OnEquipRightClick;
 
+    // 슬롯 간 드래그로 아이템이 배치(스왑/이동/장착) 완료됨
+    public event Action OnItemPlaced;
+
+    // 슬롯 간 드래그를 내려놓았지만 배치에 실패함
+    public event Action OnItemPlaceFailed;
+
     // Ctrl 클릭 누적 상태
     public ItemSlotUI PendingSlot { get; private set; }
     public int PendingAmount { get; private set; }
@@ -203,5 +209,15 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     public void InvokeEquipRightClick(ItemHolderDropHandler handler)
     {
         OnEquipRightClick?.Invoke(handler);
+    }
+
+    public void InvokeItemPlaced()
+    {
+        OnItemPlaced?.Invoke();
+    }
+
+    public void InvokeItemPlaceFailed()
+    {
+        OnItemPlaceFailed?.Invoke();
     }
 }

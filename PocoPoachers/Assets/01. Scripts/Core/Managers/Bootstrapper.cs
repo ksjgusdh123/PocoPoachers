@@ -11,5 +11,6 @@ public class Bootstrapper : MonoBehaviour
         SaveManager.GetInstance();
         SoundManager.GetInstance();
         LocalizationManager.GetInstance();
+        UISoundManager.GetInstance();
     }
 }
