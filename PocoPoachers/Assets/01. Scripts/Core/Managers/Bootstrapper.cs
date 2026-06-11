@@ -10,5 +10,6 @@ public class Bootstrapper : MonoBehaviour
         SceneLoader.GetInstance();
         SaveManager.GetInstance();
         SoundManager.GetInstance();
+        LocalizationManager.GetInstance();
     }
 }

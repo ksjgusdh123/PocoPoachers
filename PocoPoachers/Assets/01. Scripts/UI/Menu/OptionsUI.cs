@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -5,18 +8,24 @@ using UnityEngine.UI;
 //  OptionsUI   [Canvas / CanvasGroup]
 //  ├── Dimmer            [Image]
 //  └── Panel
-//      ├── Slider_Master [Slider]
-//      ├── Slider_Bgm    [Slider]
-//      ├── Slider_Sfx    [Slider]
-//      └── Btn_Close     [Button]
+//      ├── Slider_Master     [Slider]
+//      ├── Slider_Bgm        [Slider]
+//      ├── Slider_Sfx        [Slider]
+//      ├── Dropdown_Language [TMP_Dropdown]
+//      └── Btn_Close         [Button]
 // ────────────────────────────────────────────────────────────────────────
 
 public class OptionsUI : UIBase
 {
+    private static readonly string[] LanguageNames = { "한국어", "English" };
+
     [Header("Volume Sliders")]
     [SerializeField] private Slider _masterSlider;
     [SerializeField] private Slider _bgmSlider;
     [SerializeField] private Slider _sfxSlider;
+
+    [Header("Language")]
+    [SerializeField] private TMP_Dropdown _languageDropdown;
 
     [Header("Buttons")]
     [SerializeField] private Button _btnClose;
@@ -36,6 +45,13 @@ public class OptionsUI : UIBase
         _masterSlider.onValueChanged.AddListener(sound.SetMasterVolume);
         _bgmSlider.onValueChanged.AddListener(sound.SetBgmVolume);
         _sfxSlider.onValueChanged.AddListener(sound.SetSfxVolume);
+
+        var localization = LocalizationManager.GetInstance();
+
+        _languageDropdown.ClearOptions();
+        _languageDropdown.AddOptions(new List<string>(LanguageNames));
+        _languageDropdown.SetValueWithoutNotify(Array.IndexOf(LocalizationManager.SupportedLanguages, localization.CurrentLanguage));
+        _languageDropdown.onValueChanged.AddListener(index => localization.SetLanguage(LocalizationManager.SupportedLanguages[index]));
 
         _btnClose.onClick.AddListener(Hide);
     }
