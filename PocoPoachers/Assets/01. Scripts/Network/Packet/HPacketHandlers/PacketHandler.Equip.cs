@@ -8,9 +8,22 @@ public static partial class PacketHandlers
         ApplyRemoteEquip(worldObj, pkt.ItemId, pkt.SlotIndex);
     }
 
-    // 원격 플레이어의 장착 상태 적용 (슬롯 0~1: 무기, 2부터: 방어구 — UI EquipDropHandler의 _slotIndex 규칙과 동일)
+    // 원격 플레이어의 장착 상태 적용 (UI EquipDropHandler의 _slotIndex 규칙과 동일)
+    // 슬롯 0~1: 무기, 2~4: 방어구, 5: 가방
     static void ApplyRemoteEquip(WorldObject worldObj, int itemId, int slotIndex)
     {
+        if (slotIndex == 4)
+        {
+            var bagMount = worldObj.GetComponent<BagMount>();
+            if (bagMount == null) return;
+
+            if (itemId == 0)
+                bagMount.ApplyUnequip();
+            else
+                bagMount.ApplyEquip(itemId);
+            return;
+        }
+
         if (slotIndex >= 2)
         {
             var armorMount = worldObj.GetComponent<ArmorMount>();

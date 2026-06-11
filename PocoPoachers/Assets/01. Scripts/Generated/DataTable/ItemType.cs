@@ -9,4 +9,5 @@ public enum ItemType : int
     Helmet = 5,
     Armor = 6,
     Bullet = 7,
+    Bag = 8,
 }

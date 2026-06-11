@@ -13,7 +13,6 @@ public partial class EnemyData
     public int forget_range;
     public int fov_angle;
     public int attack_range;
-    public string prefab = "";
 
     public int Id { get => id; set => id = value; }
 
@@ -33,7 +32,5 @@ public partial class EnemyData
     public int FovAngle { get => fov_angle; set => fov_angle = value; }
 
     public int AttackRange { get => attack_range; set => attack_range = value; }
-
-    public string Prefab { get => prefab; set => prefab = value; }
 
 }

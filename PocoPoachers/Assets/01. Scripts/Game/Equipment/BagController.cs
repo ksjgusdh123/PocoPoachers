@@ -1,0 +1,57 @@
+using System;
+using UnityEngine;
+
+// 플레이어 가방 장착 관리 (ArmorController와 동일한 구조)
+// 장착 시 비주얼(BagMount) + 인벤토리 용량 확장, 용량 수치는 ItemData.effect_value 사용
+public class BagController : EquipableController
+{
+    public static event Action<int, ItemData> OnBagChanged;
+
+    private BagMount _mount;
+    private Inventory _inventory;
+
+    private int _appliedCapacity;
+
+    private void Awake()
+    {
+        _mount = GetComponent<BagMount>();
+        _inventory = GetComponent<Inventory>();
+    }
+
+    // slotIndex는 가방 UI의 EquipDropHandler._slotIndex (무기 0~1, 방어구 2~3에 이어서 4 사용)
+    public override void Equip(ItemData data, int slotIndex)
+    {
+        //if (!_mount.ApplyEquip(data.id)) return;
+
+        // 기존 가방의 용량 보너스 제거 후 새 가방 적용
+        if (_appliedCapacity > 0)
+            _inventory.ReduceCapacity(_appliedCapacity);
+
+        _appliedCapacity = data.EffectValue;
+        _inventory.ExpandCapacity(_appliedCapacity);
+
+        OnBagChanged?.Invoke(slotIndex, data);
+        RoomSync.Equip(data.id, slotIndex);
+    }
+
+    // 벗으면 줄어들 용량에 현재 아이템 + 반환될 가방(1칸)이 다 들어갈 때만 해제 허용
+    public override bool CanUnequip(int slotIndex)
+    {
+        if (_appliedCapacity <= 0) return true;
+        return _inventory.CanReduceCapacity(_appliedCapacity, 1);
+    }
+
+    public override void Unequip(int slotIndex)
+    {
+        //if (_mount.GetEquippedItemId() == 0) return;
+
+        //_mount.ApplyUnequip();
+
+        if (_appliedCapacity > 0)
+            _inventory.ReduceCapacity(_appliedCapacity);
+        _appliedCapacity = 0;
+
+        OnBagChanged?.Invoke(slotIndex, null);
+        RoomSync.Equip(0, slotIndex);
+    }
+}
