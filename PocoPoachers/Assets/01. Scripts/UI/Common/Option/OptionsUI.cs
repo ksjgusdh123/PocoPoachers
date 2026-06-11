@@ -17,7 +17,11 @@ using UnityEngine.UI;
 
 public class OptionsUI : UIBase
 {
-    private static readonly string[] LanguageNames = { "한국어", "English" };
+    private static readonly Dictionary<SystemLanguage, string> LanguageDisplayNames = new()
+    {
+        { SystemLanguage.Korean, "한국어" },
+        { SystemLanguage.English, "English" },
+    };
 
     [Header("Volume Sliders")]
     [SerializeField] private Slider _masterSlider;
@@ -48,8 +52,12 @@ public class OptionsUI : UIBase
 
         var localization = LocalizationManager.GetInstance();
 
+        var languageOptions = new List<string>();
+        foreach (var language in LocalizationManager.SupportedLanguages)
+            languageOptions.Add(LanguageDisplayNames.TryGetValue(language, out var name) ? name : language.ToString());
+
         _languageDropdown.ClearOptions();
-        _languageDropdown.AddOptions(new List<string>(LanguageNames));
+        _languageDropdown.AddOptions(languageOptions);
         _languageDropdown.SetValueWithoutNotify(Array.IndexOf(LocalizationManager.SupportedLanguages, localization.CurrentLanguage));
         _languageDropdown.onValueChanged.AddListener(index => localization.SetLanguage(LocalizationManager.SupportedLanguages[index]));
 

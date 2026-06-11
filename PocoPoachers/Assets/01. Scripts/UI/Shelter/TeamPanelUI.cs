@@ -89,7 +89,9 @@ public class TeamPanelUI : MonoBehaviour
             if (!nm.IsLoggedIn)
             {
                 _btnInvite.interactable = true;
-                UIManager.GetInstance().ShowNotice("연결 실패", "서버에 연결할 수 없습니다.");
+                UIManager.GetInstance().ShowNotice(
+                    LocalizationManager.GetInstance().GetString("network.connect_failed_title"),
+                    LocalizationManager.GetInstance().GetString("network.connect_failed_message"));
                 yield break;
             }
         }
@@ -106,7 +108,9 @@ public class TeamPanelUI : MonoBehaviour
     private void OnRoomJoinFailed(string _)
     {
         _btnInvite.interactable = true;
-        UIManager.GetInstance().ShowNotice("초대 실패", "방 생성에 실패했습니다.");
+        UIManager.GetInstance().ShowNotice(
+            LocalizationManager.GetInstance().GetString("network.invite_failed_title"),
+            LocalizationManager.GetInstance().GetString("network.invite_failed_message"));
     }
 
     private void ShowCode(string code)

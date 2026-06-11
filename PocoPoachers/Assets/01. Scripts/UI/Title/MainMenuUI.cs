@@ -68,8 +68,8 @@ public class MainMenuUI : MonoBehaviour
         StartCoroutine(CoConnectThen(
             onSuccess: () => RoomManager.Instance.StartAsHost(),
             onFail:    () => UIManager.GetInstance().ShowWarning(
-                "연결 실패",
-                "서버에 연결할 수 없습니다.\n로컬 플레이로 진행하시겠습니까?",
+                LocalizationManager.GetInstance().GetString("network.connect_failed_title"),
+                LocalizationManager.GetInstance().GetString("network.local_play_fallback"),
                 onConfirm: () => RoomManager.Instance.StartLocalHost(),
                 onCancel:  () => SetButtonsInteractable(true)
             )
@@ -90,8 +90,8 @@ public class MainMenuUI : MonoBehaviour
         StartCoroutine(CoConnectThen(
             onSuccess: () => RoomManager.Instance.StartAsHost(),
             onFail: () => UIManager.GetInstance().ShowWarning(
-                "연결 실패",
-                "서버에 연결할 수 없습니다.\n로컬 플레이로 진행하시겠습니까?",
+                LocalizationManager.GetInstance().GetString("network.connect_failed_title"),
+                LocalizationManager.GetInstance().GetString("network.local_play_fallback"),
                 onConfirm: () => RoomManager.Instance.StartLocalHost(),
                 onCancel:  () =>
                 {
@@ -112,7 +112,9 @@ public class MainMenuUI : MonoBehaviour
             onFail:    () =>
             {
                 SetButtonsInteractable(true);
-                UIManager.GetInstance().ShowNotice("연결 실패", "서버에 연결할 수 없습니다.\n협동 플레이는 서버 연결이 필요합니다.");
+                UIManager.GetInstance().ShowNotice(
+                    LocalizationManager.GetInstance().GetString("network.connect_failed_title"),
+                    LocalizationManager.GetInstance().GetString("network.coop_requires_server"));
             }
         ));
     }

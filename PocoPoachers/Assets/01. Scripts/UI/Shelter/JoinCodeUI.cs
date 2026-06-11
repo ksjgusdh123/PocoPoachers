@@ -57,7 +57,13 @@ public class JoinCodeUI : UIBase
     void OnClickJoin()
     {
         var nm = NetworkManager.Instance;
-        if (nm == null) { UIManager.GetInstance().ShowNotice("연결 오류", "서버에 연결되어 있지 않습니다."); return; }
+        if (nm == null)
+        {
+            UIManager.GetInstance().ShowNotice(
+                LocalizationManager.GetInstance().GetString("network.not_connected_title"),
+                LocalizationManager.GetInstance().GetString("network.not_connected_message"));
+            return;
+        }
 
         _btnJoin.interactable = false;
 
@@ -84,7 +90,9 @@ public class JoinCodeUI : UIBase
 
         if (!NetworkManager.Instance.IsLoggedIn)
         {
-            UIManager.GetInstance().ShowNotice("연결 실패", "서버에 연결할 수 없습니다.");
+            UIManager.GetInstance().ShowNotice(
+                LocalizationManager.GetInstance().GetString("network.connect_failed_title"),
+                LocalizationManager.GetInstance().GetString("network.connect_failed_message"));
             _btnJoin.interactable = _inputCode.text.Length == 6;
             yield break;
         }
@@ -95,8 +103,11 @@ public class JoinCodeUI : UIBase
     public void HandleJoinRoom(bool success)
     {
         if (!success)
-            UIManager.GetInstance().ShowNotice("참가 실패", "방이 존재하지 않거나 입장이 불가능합니다.");
+            UIManager.GetInstance().ShowNotice(
+                LocalizationManager.GetInstance().GetString("network.join_failed_title"),
+                LocalizationManager.GetInstance().GetString("network.join_failed_message"));
     }
 
-    void HandleFailed(string reason) => UIManager.GetInstance().ShowNotice("연결 실패", reason);
+    void HandleFailed(string reason) => UIManager.GetInstance().ShowNotice(
+        LocalizationManager.GetInstance().GetString("network.connect_failed_title"), reason);
 }

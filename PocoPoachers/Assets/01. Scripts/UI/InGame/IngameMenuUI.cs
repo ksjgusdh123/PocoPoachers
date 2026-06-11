@@ -62,8 +62,8 @@ public class IngameMenuUI : UIBase
     private void OnClickReturnToMain()
     {
         UIManager.GetInstance().ShowWarning(
-            "메인화면으로 돌아가기",
-            "메인화면으로 돌아가시겠습니까?",
+            LocalizationManager.GetInstance().GetString("menu.return_to_title_title"),
+            LocalizationManager.GetInstance().GetString("menu.return_to_title_message"),
             onConfirm: () =>
             {
                 Hide();
@@ -75,8 +75,8 @@ public class IngameMenuUI : UIBase
     private void OnClickQuit()
     {
         UIManager.GetInstance().ShowWarning(
-            "게임 종료",
-            "게임을 종료하시겠습니까?",
+            LocalizationManager.GetInstance().GetString("menu.quit_game_title"),
+            LocalizationManager.GetInstance().GetString("menu.quit_game_message"),
             onConfirm: () =>
             {
                 RoomManager.Instance?.LeaveRoom();
@@ -94,8 +94,8 @@ public class IngameMenuUI : UIBase
     {
         UIManager.GetInstance().HideAll();
         UIManager.GetInstance().ShowWarning(
-            "호스트 나감",
-            "호스트가 게임을 나갔습니다.\n메인화면으로 돌아가시겠습니까?",
+            LocalizationManager.GetInstance().GetString("menu.host_left_title"),
+            LocalizationManager.GetInstance().GetString("menu.host_left_message"),
             onConfirm: () => SceneLoader.Instance.LoadTitleScene(),
             onCancel:  () => { /* TODO: 호스트 재입장 대기 처리 */ }
         );
@@ -105,8 +105,8 @@ public class IngameMenuUI : UIBase
     {
         UIManager.GetInstance().HideAll();
         UIManager.GetInstance().ShowWarning(
-            "플레이어 나감",
-            "플레이어가 게임을 나갔습니다.\n메인화면으로 돌아가시겠습니까?",
+            LocalizationManager.GetInstance().GetString("menu.guest_left_title"),
+            LocalizationManager.GetInstance().GetString("menu.guest_left_message"),
             onConfirm: () => SceneLoader.Instance.LoadTitleScene(),
             onCancel:  () => { }
         );
@@ -116,8 +116,8 @@ public class IngameMenuUI : UIBase
     {
         UIManager.GetInstance().HideAll();
         UIManager.GetInstance().ShowWarning(
-            "연결 끊김",
-            "서버와의 연결이 끊겼습니다.\n메인화면으로 돌아가시겠습니까?",
+            LocalizationManager.GetInstance().GetString("menu.disconnected_title"),
+            LocalizationManager.GetInstance().GetString("menu.disconnected_message"),
             onConfirm: () => SceneLoader.Instance.LoadTitleScene()
         );
     }

@@ -39,7 +39,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: -0.0012512207, y: -1.4877014}
+  m_AnchoredPosition: {x: -0.0012207031, y: -1.4877014}
   m_SizeDelta: {x: -0.0025024414, y: 2.9754028}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1250498224844449091
@@ -352,6 +352,7 @@ GameObject:
   - component: {fileID: 3806540591633434169}
   - component: {fileID: 912058895428182952}
   - component: {fileID: 334477088736168128}
+  - component: {fileID: 7000000000000000001}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -478,6 +479,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7000000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3627265108851028239}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32b9e00930b889b4f8dc12716e1fe8cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
+  _key: title.new_game
 --- !u!1 &4140145947559054311
 GameObject:
   m_ObjectHideFlags: 0
@@ -489,6 +503,7 @@ GameObject:
   - component: {fileID: 73829388410345463}
   - component: {fileID: 1856342140564485499}
   - component: {fileID: 6773887169370016549}
+  - component: {fileID: 7000000000000000002}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -615,6 +630,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7000000000000000002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4140145947559054311}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32b9e00930b889b4f8dc12716e1fe8cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
+  _key: common.quit
 --- !u!1 &5238921704309318517
 GameObject:
   m_ObjectHideFlags: 0
@@ -626,6 +654,7 @@ GameObject:
   - component: {fileID: 5878018309666240469}
   - component: {fileID: 1812261394339156280}
   - component: {fileID: 3440029348709232906}
+  - component: {fileID: 7000000000000000003}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -752,6 +781,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7000000000000000003
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5238921704309318517}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32b9e00930b889b4f8dc12716e1fe8cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
+  _key: title.coop
 --- !u!1 &5525504025804064130
 GameObject:
   m_ObjectHideFlags: 0
@@ -884,6 +926,7 @@ GameObject:
   - component: {fileID: 6458147022803701340}
   - component: {fileID: 6655146809028273111}
   - component: {fileID: 1052047510917113026}
+  - component: {fileID: 7000000000000000004}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -1010,6 +1053,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7000000000000000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5937422987298240424}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32b9e00930b889b4f8dc12716e1fe8cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
+  _key: title.load
 --- !u!1 &6351951367511278768
 GameObject:
   m_ObjectHideFlags: 0
@@ -1681,7 +1737,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8106209193574445523, guid: 41943aa4240838048b1be93d896b7376, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.0000018104344
+      value: 0.00018096871
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
