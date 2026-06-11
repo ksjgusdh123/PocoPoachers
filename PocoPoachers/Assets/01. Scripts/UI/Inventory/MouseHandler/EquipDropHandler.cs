@@ -27,6 +27,9 @@ public class EquipDropHandler : ItemHolderDropHandler
 
     public override void Unequip()
     {
+        // 컨트롤러가 해제를 거부하면(예: 가방 해제 시 인벤토리 공간 부족) 중단
+        if (_controller != null && !_controller.CanUnequip(_slotIndex)) return;
+
         base.Unequip();
         _controller?.Unequip(_slotIndex);
         if (_itemVisual != null)

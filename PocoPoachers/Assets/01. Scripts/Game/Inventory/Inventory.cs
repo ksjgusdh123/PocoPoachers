@@ -83,6 +83,35 @@ public class Inventory : MonoBehaviour
         ChangeInventory?.Invoke();
     }
 
+    // 용량을 count만큼 줄여도 보유 아이템(+reservedSlots개 추가 예정분)이 모두 들어가는지 확인
+    public bool CanReduceCapacity(int count, int reservedSlots = 0)
+    {
+        int newCapacity = Mathf.Max(_currentCapacity - count, _initialCapacity);
+        return ItemCount + reservedSlots <= newCapacity;
+    }
+
+    // 현재 용량 축소 (초기 용량 미만 불가)
+    // 축소될 영역의 아이템은 앞쪽 빈 슬롯으로 이동, 자리가 없으면 접근 불가 상태로 남음
+    public void ReduceCapacity(int count)
+    {
+        int newCapacity = Mathf.Max(_currentCapacity - count, _initialCapacity);
+
+        for (int i = newCapacity; i < _currentCapacity; i++)
+        {
+            if (_slots[i].IsEmpty) continue;
+            for (int j = 0; j < newCapacity; j++)
+            {
+                if (!_slots[j].IsEmpty) continue;
+                _slots[j].Set(_slots[i].ItemData, _slots[i].Amount);
+                _slots[i].Clear();
+                break;
+            }
+        }
+
+        _currentCapacity = newCapacity;
+        ChangeInventory?.Invoke();
+    }
+
     // 추가 가능한 첫 번째 슬롯 인덱스 반환, 불가능하면 -1
     public int CanAddItem(ItemData itemData, int amount = 1)
     {

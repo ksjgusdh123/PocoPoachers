@@ -108,9 +108,11 @@ public class ItemSpawner : MonoBehaviour
                 randomCounts.Add(Random.Range(min, max + 1));
             }
 
-            // temp
+            // temp 601 - bullet 700 : bag
             randomItems.Add(601);
             randomCounts.Add(30);
+            randomItems.Add(700);
+            randomCounts.Add(1);
 
             var data = new H_ItemSpawnT
             {
