@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class ItemIconSlotUI : MonoBehaviour
+public abstract class SlotUIBase : MonoBehaviour
 {
     [SerializeField] protected Image _icon;
 

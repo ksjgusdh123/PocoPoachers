@@ -2,7 +2,7 @@ using System.Collections;
 using TMPro;
 using UnityEngine;
 
-public class SpeechBubble : WorldUIElement
+public class SpeechBubble : WorldUIBase
 {
     [SerializeField] private TextMeshProUGUI _text;
 

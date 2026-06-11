@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public abstract class ProgressUI : MonoBehaviour
+public abstract class ProgressUIBase : MonoBehaviour
 {
     [SerializeField] protected Slider _slider;
 

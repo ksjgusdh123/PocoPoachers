@@ -2,7 +2,7 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
-public class DamageTextUI : WorldUIElement
+public class DamageTextUI : WorldUIBase
 {
     [SerializeField] private TextMeshProUGUI _text;
 

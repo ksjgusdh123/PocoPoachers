@@ -1,11 +1,8 @@
-using TMPro;
 using UnityEngine;
 
-public class ConsumableSlotUI : ItemIconSlotUI
+public class ConsumableSlotUI : ItemSlotUIBase
 {
     [SerializeField] private int _slotIndex;
-    [SerializeField] private TextMeshProUGUI _nameText;
-    [SerializeField] private TextMeshProUGUI _countText;
 
     private void Awake()
     {
@@ -16,9 +13,6 @@ public class ConsumableSlotUI : ItemIconSlotUI
     {
         if (slotIndex != _slotIndex) return;
 
-        bool hasItem = data != null;
-        SetIcon(data);
-        _nameText.text = hasItem ? data.ItemName : "";
-        _countText.text = hasItem ? amount.ToString() : "";
+        SetDisplay(data, amount);
     }
 }

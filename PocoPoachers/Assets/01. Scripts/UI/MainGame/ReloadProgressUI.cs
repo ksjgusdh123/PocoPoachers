@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class ReloadProgressUI : ProgressUI
+public class ReloadProgressUI : ProgressUIBase
 {
     private void Awake()
     {

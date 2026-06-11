@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public abstract class WorldUIElement : MonoBehaviour
+public abstract class WorldUIBase : MonoBehaviour
 {
     public WorldUIType UIType { get; private set; }
 

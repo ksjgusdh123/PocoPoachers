@@ -8,7 +8,11 @@ public class ThemedButtonUI : MonoBehaviour
 
     private void Awake()
     {
-        if (_theme == null) return;
-        UIThemeUtil.ApplyButtonStyle(GetComponent<Button>(), _theme.buttonSprite, _theme.buttonColors, _theme.buttonFont, _theme.buttonTextColor);
+        var button = GetComponent<Button>();
+
+        if (_theme != null)
+            UIThemeUtil.ApplyButtonStyle(button, _theme.buttonSprite, _theme.buttonColors, _theme.buttonFont, _theme.buttonTextColor);
+
+        button.onClick.AddListener(SoundManager.GetInstance().PlayButtonClick);
     }
 }

@@ -1,11 +1,5 @@
-using TMPro;
-using UnityEngine;
-
-public class ItemSlotUI : ItemIconSlotUI
+public class ItemSlotUI : ItemSlotUIBase
 {
-    [SerializeField] private TextMeshProUGUI _nameText;
-    [SerializeField] private TextMeshProUGUI _amountText;
-
     public InventoryUI InventoryUI { get; private set; }
     public int SlotIndex { get; private set; }
     public bool IsSettedItem { get; private set; }
@@ -39,22 +33,13 @@ public class ItemSlotUI : ItemIconSlotUI
     {
         if (_settedSlot.IsEmpty)
         {
-            SetEmpty();
+            ClearDisplay();
+            IsSettedItem = false;
             return;
         }
 
-        SetIcon(_settedSlot.ItemData);
-        _nameText.text = _settedSlot.ItemData.ItemName;
-        _amountText.text = _settedSlot.Amount >= 1 ? _settedSlot.Amount.ToString() : "";
+        SetDisplay(_settedSlot.ItemData, _settedSlot.Amount);
         IsSettedItem = true;
-    }
-
-    private void SetEmpty()
-    {
-        SetIcon(null);
-        IsSettedItem = false;
-        _nameText.text = "";
-        _amountText.text = "";
     }
 
     public void ClearSlot() => _settedSlot?.Clear();

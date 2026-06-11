@@ -6,8 +6,11 @@ public class SoundManager : Singleton<SoundManager>
     private const string PREF_BGM_VOLUME    = "Settings.BgmVolume";
     private const string PREF_SFX_VOLUME    = "Settings.SfxVolume";
 
+    private const string CLICK_SFX_PATH = "Audio/SFX/UI_Click";
+
     private AudioSource _bgmSource;
     private AudioSource _sfxSource;
+    private AudioClip _buttonClickClip;
 
     public float MasterVolume { get; private set; }
     public float BgmVolume { get; private set; }
@@ -28,6 +31,8 @@ public class SoundManager : Singleton<SoundManager>
         BgmVolume    = PlayerPrefs.GetFloat(PREF_BGM_VOLUME, 1f);
         SfxVolume    = PlayerPrefs.GetFloat(PREF_SFX_VOLUME, 1f);
         ApplyBgmVolume();
+
+        _buttonClickClip = ResourceManager.GetInstance().Load<AudioClip>(CLICK_SFX_PATH);
     }
 
     public void PlayBgm(AudioClip clip)
@@ -46,6 +51,8 @@ public class SoundManager : Singleton<SoundManager>
         if (clip == null) return;
         _sfxSource.PlayOneShot(clip, MasterVolume * SfxVolume);
     }
+
+    public void PlayButtonClick() => PlaySfx(_buttonClickClip);
 
     public void SetMasterVolume(float value)
     {

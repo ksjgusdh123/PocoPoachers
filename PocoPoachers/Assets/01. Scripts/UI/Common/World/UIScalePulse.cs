@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIScalePulse : WorldUIElement
+public class UIScalePulse : WorldUIBase
 {
     [SerializeField] private RectTransform _targetTransform;
     [SerializeField] private Image _icon;

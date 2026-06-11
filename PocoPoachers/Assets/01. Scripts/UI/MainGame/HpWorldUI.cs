@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HpWorldUI : WorldUIElement
+public class HpWorldUI : WorldUIBase
 {
     [SerializeField] private Slider _slider;
     [SerializeField] private float _animSpeed = 5f;

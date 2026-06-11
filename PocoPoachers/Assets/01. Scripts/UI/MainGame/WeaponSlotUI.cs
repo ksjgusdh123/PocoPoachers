@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class WeaponSlotUI : ItemIconSlotUI
+public class WeaponSlotUI : SlotUIBase
 {
     [SerializeField] private int _slotIndex;
 
