@@ -28,7 +28,7 @@ public class InventoryUI : MonoBehaviour
                 slots[i].SetIndex(i);
         }
 
-        _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
+        EnsureDescriptionUI();
 
         if (_inventory != null)
         {
@@ -44,7 +44,7 @@ public class InventoryUI : MonoBehaviour
 
         var manager = SlotInteractionManager.GetInstance();
         manager.OnHoverEnter += _descriptionUI.ShowDescription;
-        manager.OnHoverExit += _ => _descriptionUI.HideDescription();
+        manager.OnHoverExit += HandleHoverExit;
     }
 
     public void OnSlotDoubleClicked()
@@ -100,7 +100,7 @@ public class InventoryUI : MonoBehaviour
             slot.OnChanged += RefreshCountText;
         if (_slotUIs == null)
         {
-            _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
+            EnsureDescriptionUI();
             GenerateSlots();
         }
         Refresh();
@@ -113,11 +113,25 @@ public class InventoryUI : MonoBehaviour
 
     private void OnDestroy()
     {
+        var manager = SlotInteractionManager.GetInstance();
+        if (manager != null)
+        {
+            manager.OnHoverEnter -= _descriptionUI.ShowDescription;
+            manager.OnHoverExit -= HandleHoverExit;
+        }
+
         if (_inventory == null) return;
         _inventory.ChangeInventory -= Refresh;
         foreach (var slot in _inventory.Slots)
             slot.OnChanged -= RefreshCountText;
     }
+
+    private void EnsureDescriptionUI()
+    {
+        _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
+    }
+
+    private void HandleHoverExit(ItemSlotUI _) => _descriptionUI.HideDescription();
 
     private void OnClickSort()
     {

@@ -24,6 +24,16 @@ public class VitalUI : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        if (_stat == null) return;
+
+        if (_isHunger)
+            _stat.OnHungerChanged -= Refresh;
+        else
+            _stat.OnThirstChanged -= Refresh;
+    }
+
     private void Refresh(float current, float max)
     {
         _fillImage.fillAmount = max > 0f ? current / max : 0f;

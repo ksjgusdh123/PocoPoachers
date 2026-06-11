@@ -9,6 +9,11 @@ public class WeaponSlotUI : SlotUIBase
         WeaponController.OnWeaponChanged += OnWeaponChanged;
     }
 
+    private void OnDestroy()
+    {
+        WeaponController.OnWeaponChanged -= OnWeaponChanged;
+    }
+
     private void OnWeaponChanged(int slotIndex, ItemData data)
     {
         if (slotIndex != _slotIndex - 1) return;

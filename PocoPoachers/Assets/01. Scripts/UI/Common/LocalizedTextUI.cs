@@ -21,7 +21,9 @@ public class LocalizedTextUI : MonoBehaviour
 
     private void OnDisable()
     {
-        LocalizationManager.GetInstance().OnLanguageChanged -= Refresh;
+        var manager = LocalizationManager.GetInstance();
+        if (manager == null) return;
+        manager.OnLanguageChanged -= Refresh;
     }
 
     private void Refresh()

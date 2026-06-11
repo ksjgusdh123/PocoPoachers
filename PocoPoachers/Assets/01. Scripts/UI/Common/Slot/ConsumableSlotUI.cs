@@ -9,6 +9,11 @@ public class ConsumableSlotUI : ItemSlotUIBase
         QuickSlotDropHandler.OnQuickSlotChanged += OnQuickSlotChanged;
     }
 
+    private void OnDestroy()
+    {
+        QuickSlotDropHandler.OnQuickSlotChanged -= OnQuickSlotChanged;
+    }
+
     private void OnQuickSlotChanged(int slotIndex, ItemData data, int amount)
     {
         if (slotIndex != _slotIndex) return;
