@@ -57,10 +57,7 @@ public class IngameMenuUI : UIBase
 
     private void OnClickResume() => Hide();
 
-    private void OnClickOptions()
-    {
-        // TODO: Options 패널 연결
-    }
+    private void OnClickOptions() => UIManager.GetInstance().Show(UIType.Options);
 
     private void OnClickReturnToMain()
     {

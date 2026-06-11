@@ -13,6 +13,7 @@ public enum UIType
     WarningPopup,
     NoticePopup,
     JoinCode,
+    Options,
 }
 
 public class UIManager : Singleton<UIManager>
