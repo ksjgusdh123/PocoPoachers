@@ -6,6 +6,8 @@ public class ItemRevealCard : MonoBehaviour
 {
     const string BackFaceSpritePath = "Keyboard_F";
 
+    private static Sprite _backFaceSprite;
+
     BoxItemSlot _currentSlot;
     Sprite originFrameImage;
     Color originFrameColor;
@@ -18,20 +20,21 @@ public class ItemRevealCard : MonoBehaviour
     {
         originFrameImage = _backFrameImage.sprite;
         originFrameColor = _backFrameImage.color;
+
+        _backFaceSprite ??= Resources.Load<Sprite>(BackFaceSpritePath);
     }
 
     public void CheckSlotState(BoxItemSlot slot)
     {
-        var sprite = Resources.Load<Sprite>(BackFaceSpritePath);
         if (_itemImage.sprite == null || slot.isOpen || slot.skipReveal)
         {
             isFlip = false;
             return;
         }
 
-        if (sprite != null)
+        if (_backFaceSprite != null)
         {
-            _backFrameImage.sprite = sprite;
+            _backFrameImage.sprite = _backFaceSprite;
             _currentSlot = slot;
         }
         _itemImage.gameObject.SetActive(false);
@@ -40,7 +43,6 @@ public class ItemRevealCard : MonoBehaviour
 
     public void Reveal()
     {
-        Debug.Log("Reveal");
         _backFrameImage.DOFade(0f, 0.3f)
             .OnComplete(() => 
             {

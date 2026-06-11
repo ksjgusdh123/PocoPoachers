@@ -29,8 +29,9 @@ public class DamageTextUI : WorldUIBase
         color.a = 1f;
         _text.color = color;
 
-        Vector3 towardCamera = -Camera.main.transform.forward;
-        Vector3 cameraRight = Camera.main.transform.right;
+        Transform cameraTransform = Camera.main.transform;
+        Vector3 towardCamera = -cameraTransform.forward;
+        Vector3 cameraRight = cameraTransform.right;
         float randomSide = Random.Range(-1f, 1f);
 
         Vector3 popTarget = worldPosition + Vector3.up * 1f + towardCamera * 0.5f;

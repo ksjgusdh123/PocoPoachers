@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -11,6 +12,7 @@ public class StorageUI : InventoryUI
 
     private int _currentPage = 0;
     private ItemType _filterType = ItemType.None;
+    private readonly List<int> _visibleIndices = new();
 
     public int PageCount => Mathf.CeilToInt((float)Inventory.CurrentCapacity / _pageSize);
 
@@ -73,9 +75,9 @@ public void NextPage()
     }
 
     // 필터 조건에 맞는 슬롯 인덱스 목록 반환
-    private System.Collections.Generic.List<int> GetVisibleIndices()
+    private List<int> GetVisibleIndices()
     {
-        var result = new System.Collections.Generic.List<int>();
+        _visibleIndices.Clear();
         for (int i = 0; i < Inventory.CurrentCapacity; i++)
         {
             var slot = Inventory.Slots[i];
@@ -83,15 +85,15 @@ public void NextPage()
             // 필터 없음: 빈 슬롯 포함 전체 표시
             if (_filterType == ItemType.None)
             {
-                result.Add(i);
+                _visibleIndices.Add(i);
                 continue;
             }
 
             // 필터 있음: 해당 타입 아이템만 표시
             if (!slot.IsEmpty && slot.ItemData.ItemType == _filterType)
-                result.Add(i);
+                _visibleIndices.Add(i);
         }
-        return result;
+        return _visibleIndices;
     }
 
     protected override void RefreshCountText()
