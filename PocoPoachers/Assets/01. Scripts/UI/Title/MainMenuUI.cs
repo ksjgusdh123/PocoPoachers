@@ -31,6 +31,8 @@ public class MainMenuUI : MonoBehaviour
 
     void Awake()
     {
+        SoundManager.GetInstance().PlayBgm("bgm_main");
+
         RoomManager.Instance.OnGameStarted    += OnGameStarted;
         RoomManager.Instance.OnRoomJoinFailed += OnRoomJoinFailed;
         SaveSlotButtonUI.OnSlotSelected       += OnSaveSlotSelected;
