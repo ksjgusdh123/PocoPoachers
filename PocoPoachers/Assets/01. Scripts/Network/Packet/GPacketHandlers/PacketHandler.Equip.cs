@@ -9,13 +9,8 @@ public static partial class PacketHandlers
         int slotIndex = pkt.SlotIndex;
 
         if (!ObjectManager.Instance.TryGet(ObjectKind.Player, playerId, out var worldObj)) return;
-        var mount = worldObj.GetComponent<WeaponMount>();
-        if (mount == null) return;
 
-        if (itemId == 0)
-            mount.ApplyUnequip(slotIndex);
-        else
-            mount.ApplyEquip(itemId, slotIndex);
+        ApplyRemoteEquip(worldObj, itemId, slotIndex);
 
         if (RoomManager.IsHost)
         {
