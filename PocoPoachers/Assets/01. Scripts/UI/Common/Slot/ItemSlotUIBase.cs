@@ -9,8 +9,10 @@ public abstract class ItemSlotUIBase : SlotUIBase
     protected void SetDisplay(ItemData data, int amount)
     {
         SetIcon(data);
-        _nameText.text = data != null ? data.ItemName : "";
-        _amountText.text = data != null && amount >= 1 ? amount.ToString() : "";
+        if (_nameText != null)
+            _nameText.text = data != null ? data.ItemName : "";
+        if (_amountText != null)
+            _amountText.text = data != null && amount >= 1 ? amount.ToString() : "";
     }
 
     protected void ClearDisplay() => SetDisplay(null, 0);

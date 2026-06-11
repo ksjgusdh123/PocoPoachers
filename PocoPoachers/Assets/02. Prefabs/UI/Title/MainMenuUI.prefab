@@ -111,7 +111,7 @@ GameObject:
   - component: {fileID: 1260209026949561836}
   - component: {fileID: 7731846974801608086}
   - component: {fileID: 4500233430946360969}
-  - component: {fileID: 1145782450008088057}
+  - component: {fileID: 6976256824811743385}
   m_Layer: 5
   m_Name: btnLoad
   m_TagString: Untagged
@@ -221,7 +221,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &1145782450008088057
+--- !u!114 &6976256824811743385
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -246,6 +246,7 @@ GameObject:
   - component: {fileID: 3451851154820061024}
   - component: {fileID: 6501887621519354377}
   - component: {fileID: 8528150672624677670}
+  - component: {fileID: 5892563288142697788}
   m_Layer: 5
   m_Name: btnCoOp
   m_TagString: Untagged
@@ -355,6 +356,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &5892563288142697788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2158163395941147806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c46766e441318ca4e92891a786e05cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
+  _theme: {fileID: 11400000, guid: f045bebcca42d92468fa204def1c2a16, type: 2}
 --- !u!1 &3627265108851028239
 GameObject:
   m_ObjectHideFlags: 0
@@ -820,6 +834,7 @@ GameObject:
   - component: {fileID: 6537911054005742454}
   - component: {fileID: 2082319909178465749}
   - component: {fileID: 4606770827815801401}
+  - component: {fileID: 7258860290219764138}
   m_Layer: 5
   m_Name: btnNewGame
   m_TagString: Untagged
@@ -929,6 +944,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &7258860290219764138
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5525504025804064130}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c46766e441318ca4e92891a786e05cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
+  _theme: {fileID: 11400000, guid: f045bebcca42d92468fa204def1c2a16, type: 2}
 --- !u!1 &5937422987298240424
 GameObject:
   m_ObjectHideFlags: 0
@@ -1092,6 +1120,7 @@ GameObject:
   - component: {fileID: 6587299689011179891}
   - component: {fileID: 5219058023776930824}
   - component: {fileID: 8959616326212715396}
+  - component: {fileID: 4886811585817497981}
   m_Layer: 5
   m_Name: btnQuit
   m_TagString: Untagged
@@ -1201,6 +1230,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &4886811585817497981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6351951367511278768}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c46766e441318ca4e92891a786e05cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
+  _theme: {fileID: 11400000, guid: f045bebcca42d92468fa204def1c2a16, type: 2}
 --- !u!1 &7725759922105965870
 GameObject:
   m_ObjectHideFlags: 0
@@ -1615,7 +1657,13 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5261361885071195457, guid: 86b5d31083a575e4187ddc3fb17ead4b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 753087924048107440}
+    - targetCorrespondingSourceObject: {fileID: 9212989780967283941, guid: 86b5d31083a575e4187ddc3fb17ead4b, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3237026838769891474}
   m_SourcePrefab: {fileID: 100100000, guid: 86b5d31083a575e4187ddc3fb17ead4b, type: 3}
 --- !u!114 &2879441678043139170 stripped
 MonoBehaviour:
@@ -1633,6 +1681,42 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 2988396347280803027, guid: 86b5d31083a575e4187ddc3fb17ead4b, type: 3}
   m_PrefabInstance: {fileID: 1928546278761236721}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &6036950357006202288 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5261361885071195457, guid: 86b5d31083a575e4187ddc3fb17ead4b, type: 3}
+  m_PrefabInstance: {fileID: 1928546278761236721}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &753087924048107440
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6036950357006202288}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c46766e441318ca4e92891a786e05cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
+  _theme: {fileID: 11400000, guid: f045bebcca42d92468fa204def1c2a16, type: 2}
+--- !u!1 &7284730708888441876 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9212989780967283941, guid: 86b5d31083a575e4187ddc3fb17ead4b, type: 3}
+  m_PrefabInstance: {fileID: 1928546278761236721}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3237026838769891474
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7284730708888441876}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c46766e441318ca4e92891a786e05cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
+  _theme: {fileID: 11400000, guid: f045bebcca42d92468fa204def1c2a16, type: 2}
 --- !u!1001 &2215266057491721086
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1751,7 +1835,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8106209193574445523, guid: 41943aa4240838048b1be93d896b7376, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.00013756627
+      value: -0.0000035926514
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

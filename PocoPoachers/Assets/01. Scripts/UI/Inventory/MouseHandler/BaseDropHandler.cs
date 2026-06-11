@@ -15,8 +15,13 @@ public abstract class BaseDropHandler : MonoBehaviour, IDropHandler
     {
         var manager = SlotInteractionManager.GetInstance();
         if (manager.DraggedSlot == null) return;
-        if (!HandleDrop(manager))
+        if (HandleDrop(manager))
         {
+            manager.InvokeItemPlaced();
+        }
+        else
+        {
+            manager.InvokeItemPlaceFailed();
             _rectTransform.DOKill();
             _rectTransform.DOShakeAnchorPos(0.4f, strength: new Vector2(10f, 0f), vibrato: 20, randomness: 0);
         }

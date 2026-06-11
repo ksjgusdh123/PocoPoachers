@@ -134,6 +134,7 @@ GameObject:
   - component: {fileID: 482331530792869188}
   - component: {fileID: 973757308918945522}
   - component: {fileID: 2357251438379911743}
+  - component: {fileID: 2097564154083126010}
   m_Layer: 5
   m_Name: btnOK
   m_TagString: Untagged
@@ -243,6 +244,19 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &2097564154083126010
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3556357363115770760}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c46766e441318ca4e92891a786e05cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
+  _theme: {fileID: 11400000, guid: f045bebcca42d92468fa204def1c2a16, type: 2}
 --- !u!1 &5111061198644420623
 GameObject:
   m_ObjectHideFlags: 0
@@ -489,19 +503,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7280983016836957326}
   m_CullTransparentMesh: 1
---- !u!114 &7000000000000000018
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7280983016836957326}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32b9e00930b889b4f8dc12716e1fe8cb, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
-  _key: common.confirm
 --- !u!114 &7483751636529231325
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -594,6 +595,19 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7000000000000000018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7280983016836957326}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32b9e00930b889b4f8dc12716e1fe8cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
+  _key: common.confirm
 --- !u!1 &8473944644318653999
 GameObject:
   m_ObjectHideFlags: 0

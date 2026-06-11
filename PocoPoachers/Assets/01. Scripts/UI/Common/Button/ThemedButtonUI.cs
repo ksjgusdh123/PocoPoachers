@@ -12,7 +12,5 @@ public class ThemedButtonUI : MonoBehaviour
 
         if (_theme != null)
             UIThemeUtil.ApplyButtonStyle(button, _theme.buttonSprite, _theme.buttonColors, _theme.buttonFont, _theme.buttonTextColor);
-
-        button.onClick.AddListener(SoundManager.GetInstance().PlayButtonClick);
     }
 }
