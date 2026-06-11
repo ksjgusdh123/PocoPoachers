@@ -64,6 +64,7 @@ public class PlayerDodge : MonoBehaviour
         IsInvincible = true;
         _lastDodgeTime = Time.time;
         transform.rotation = Quaternion.LookRotation(direction);
+        _weaponController?.SetCurrentGunVisible(false);
         _animator.SetTrigger("Roll");
         _animator.SetLayerWeight(1, 0f);
 
@@ -76,6 +77,7 @@ public class PlayerDodge : MonoBehaviour
         }
 
         _animator.SetLayerWeight(1, 1f);
+        _weaponController?.SetCurrentGunVisible(true);
         IsInvincible = false;
         IsRolling = false;
         IsRecovering = true;
