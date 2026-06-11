@@ -274,7 +274,7 @@ public class TableGeneratorTool
                 }
                 else if (types[i] == "int" && int.TryParse(raw, out int iv)) obj[headers[i]] = iv;
                 else if (types[i] == "float" && float.TryParse(raw, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out float fv)) obj[headers[i]] = fv;
-                else obj[headers[i]] = raw;
+                else obj[headers[i]] = raw.Replace("\\n", "\n");
             }
             list.Add(obj);
         }

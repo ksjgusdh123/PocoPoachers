@@ -23,11 +23,6 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     public ItemSlotUI PendingSlot { get; private set; }
     public int PendingAmount { get; private set; }
 
-    protected override void Awake()
-    {
-        //FindAnyObjectByType<>
-    }
-
     // 플레이어 ↔ 플레이어: 로컬 교환만
     public void InvokeLocalSwap(ItemSlotUI slotA, ItemSlotUI slotB)
     {
@@ -47,56 +42,42 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         int boxSlot         = box.SlotIndex;
         int boxUid          = box.InventoryUI.Box.Id;
 
+        ApplyExchangeLocally(player, boxUid, boxSlot, boxItem, boxAmount, playerSlot, playerItem, playerAmount);
+
         if (!RoomManager.IsHost)
         {
             // 낙관적 업데이트: 즉시 로컬 적용 후 호스트에 요청
-            var om = ObjectManager.Instance;
-            if (om != null && om.TryGet(ObjectKind.ItemBox, boxUid, out var boxObj))
-            {
-                var boxInv = boxObj.GetComponent<Inventory>();
-                if (boxInv != null)
-                {
-                    if (boxItem != null && boxAmount > 0) boxInv.RemoveItemAtSlot(boxSlot, boxItem, boxAmount);
-                    if (playerItem != null && playerAmount > 0) boxInv.AddItemAtSlot(boxSlot, playerItem, playerAmount);
-                }
-            }
-            var playerInv = player.InventoryUI.Inventory;
-            if (playerInv != null)
-            {
-                if (playerItem != null && playerAmount > 0) playerInv.RemoveItemAtSlot(playerSlot, playerItem, playerAmount);
-                if (boxItem != null && boxAmount > 0) playerInv.AddItemAtSlot(playerSlot, boxItem, boxAmount);
-            }
             RoomSync.ItemExchange(boxUid, playerItem?.id ?? 0, playerAmount, playerSlot, boxItem?.id ?? 0, boxAmount, boxSlot);
         }
         else
         {
-            var om = ObjectManager.Instance;
-            if (om != null && om.TryGet(ObjectKind.ItemBox, boxUid, out var boxObj))
-            {
-                var boxInv = boxObj.GetComponent<Inventory>();
-                if (boxInv != null)
-                {
-                    if (boxItem != null && boxAmount > 0)
-                        boxInv.RemoveItemAtSlot(boxSlot, boxItem, boxAmount);
-                    if (playerItem != null && playerAmount > 0)
-                        boxInv.AddItemAtSlot(boxSlot, playerItem, playerAmount);
-                }
-            }
-
-            var playerInv = player.InventoryUI.Inventory;
-            if (playerInv != null)
-            {
-                if (playerItem != null && playerAmount > 0)
-                    playerInv.RemoveItemAtSlot(playerSlot, playerItem, playerAmount);
-                if (boxItem != null && boxAmount > 0)
-                    playerInv.AddItemAtSlot(playerSlot, boxItem, boxAmount);
-            }
-
             if (boxItem != null)
                 RoomSync.ItemBoxUpdate(boxUid, boxItem.id, -boxAmount, boxSlot);
 
             if (playerItem != null)
                 RoomSync.ItemBoxUpdate(boxUid, playerItem.id, playerAmount, boxSlot);
+        }
+    }
+
+    // 박스 ↔ 플레이어 인벤토리에 교환 결과를 동일하게 반영 (호스트/게스트 공통)
+    private void ApplyExchangeLocally(ItemSlotUI player, int boxUid, int boxSlot, ItemData boxItem, int boxAmount, int playerSlot, ItemData playerItem, int playerAmount)
+    {
+        var om = ObjectManager.Instance;
+        if (om != null && om.TryGet(ObjectKind.ItemBox, boxUid, out var boxObj))
+        {
+            var boxInv = boxObj.GetComponent<Inventory>();
+            if (boxInv != null)
+            {
+                if (boxItem != null && boxAmount > 0) boxInv.RemoveItemAtSlot(boxSlot, boxItem, boxAmount);
+                if (playerItem != null && playerAmount > 0) boxInv.AddItemAtSlot(boxSlot, playerItem, playerAmount);
+            }
+        }
+
+        var playerInv = player.InventoryUI.Inventory;
+        if (playerInv != null)
+        {
+            if (playerItem != null && playerAmount > 0) playerInv.RemoveItemAtSlot(playerSlot, playerItem, playerAmount);
+            if (boxItem != null && boxAmount > 0) playerInv.AddItemAtSlot(playerSlot, boxItem, boxAmount);
         }
     }
 
@@ -117,17 +98,16 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
 
         int playerSlotIndex = fromIsBox ? to.SlotIndex : from.SlotIndex;
 
+        from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
+        to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
+
         if (!RoomManager.IsHost)
         {
             // 낙관적 업데이트: 즉시 로컬 적용 후 호스트에 요청
-            from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
-            to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
             RoomSync.ItemGain(playerGains, boxUid, data.id, amount, playerGains ? playerSlotIndex : boxSlotIndex, playerGains ? boxSlotIndex : playerSlotIndex);
         }
         else
         {
-            from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
-            to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
             RoomSync.ItemBoxUpdate(boxUid, data.id, playerGains ? -amount : amount, boxSlotIndex);
         }
     }

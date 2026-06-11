@@ -8,7 +8,7 @@ public class WorldUIManager : Singleton<WorldUIManager>
     private struct WorldUIEntry
     {
         public WorldUIType type;
-        public WorldUIElement prefab;
+        public WorldUIBase prefab;
         public Vector3 offset;
         [Min(0)] public int initialPoolSize;
     }
@@ -16,8 +16,8 @@ public class WorldUIManager : Singleton<WorldUIManager>
     [SerializeField] private Canvas _worldCanvas;
     [SerializeField] private WorldUIEntry[] _entries;
 
-    private Dictionary<WorldUIType, Queue<WorldUIElement>> _pools;
-    private Dictionary<WorldUIType, WorldUIElement> _prefabMap;
+    private Dictionary<WorldUIType, Queue<WorldUIBase>> _pools;
+    private Dictionary<WorldUIType, WorldUIBase> _prefabMap;
     private Dictionary<WorldUIType, Vector3> _offsetMap;
 
     protected override void Awake()
@@ -28,31 +28,31 @@ public class WorldUIManager : Singleton<WorldUIManager>
 
     private void InitPools()
     {
-        _pools = new Dictionary<WorldUIType, Queue<WorldUIElement>>();
-        _prefabMap = new Dictionary<WorldUIType, WorldUIElement>();
+        _pools = new Dictionary<WorldUIType, Queue<WorldUIBase>>();
+        _prefabMap = new Dictionary<WorldUIType, WorldUIBase>();
         _offsetMap = new Dictionary<WorldUIType, Vector3>();
 
         foreach (WorldUIEntry entry in _entries)
         {
-            _pools[entry.type] = new Queue<WorldUIElement>();
+            _pools[entry.type] = new Queue<WorldUIBase>();
             _prefabMap[entry.type] = entry.prefab;
             _offsetMap[entry.type] = entry.offset;
 
             for (int i = 0; i < entry.initialPoolSize; i++)
             {
-                WorldUIElement element = Instantiate(entry.prefab, _worldCanvas.transform);
+                WorldUIBase element = Instantiate(entry.prefab, _worldCanvas.transform);
                 element.gameObject.SetActive(false);
                 _pools[entry.type].Enqueue(element);
             }
         }
     }
 
-    public T Create<T>(WorldUIType type, Transform target) where T : WorldUIElement
+    public T Create<T>(WorldUIType type, Transform target) where T : WorldUIBase
     {
         return Create<T>(type, target, _offsetMap.TryGetValue(type, out var offset) ? offset : Vector3.zero);
     }
 
-    public T Create<T>(WorldUIType type, Transform target, Vector3 offset) where T : WorldUIElement
+    public T Create<T>(WorldUIType type, Transform target, Vector3 offset) where T : WorldUIBase
     {
         T element = Get<T>(type);
         if (element == null) return null;
@@ -62,13 +62,13 @@ public class WorldUIManager : Singleton<WorldUIManager>
         return element;
     }
 
-    public void Return(WorldUIElement element)
+    public void Return(WorldUIBase element)
     {
         element.gameObject.SetActive(false);
         _pools[element.UIType].Enqueue(element);
     }
 
-    private T Get<T>(WorldUIType type) where T : WorldUIElement
+    private T Get<T>(WorldUIType type) where T : WorldUIBase
     {
         if (!_prefabMap.ContainsKey(type))
         {
