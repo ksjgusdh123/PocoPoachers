@@ -16,7 +16,12 @@ public static partial class PacketHandlers
         var prefab = pool?.NetworkBulletPrefab;
         if (prefab == null) return;
 
+        // 발사자 오브젝트를 찾아 전달 — 같은 태그(아군) 충돌 무시 판정에 사용
+        GameObject attacker = null;
+        if (ObjectManager.Instance != null && ObjectManager.Instance.TryGet(ObjectKind.Player, pkt.PlayerId, out var shooterObj))
+            attacker = shooterObj.gameObject;
+
         var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(direction));
-        bullet.Initialize(pkt.BulletSpeed, pkt.Damage, pkt.MaxRange, direction, () => pool.Release(prefab, bullet));
+        bullet.Initialize(pkt.BulletSpeed, pkt.Damage, pkt.MaxRange, direction, () => pool.Release(prefab, bullet), attacker);
     }
 }

@@ -17,7 +17,16 @@ public abstract class GunBase : MonoBehaviour
     public Transform Muzzle => _muzzle;
     public int CurrentAmmo => _currentAmmo;
     public bool IsReloading => _isReloading;
-    public GameObject Owner { get; set; }
+    public GameObject Owner
+    {
+        get => _owner;
+        set
+        {
+            _owner = value;
+            // 재장전 게이지 등 UI는 로컬 플레이어(PlayerController 보유)의 총에만 표시
+            _isLocalPlayerOwner = value != null && value.TryGetComponent<PlayerController>(out _);
+        }
+    }
 
     public static event Action<float> OnReloadStarted;
     public static event Action OnReloadEnded;
@@ -27,6 +36,8 @@ public abstract class GunBase : MonoBehaviour
     public event Action<int> OnReloadComplete;
     public event Action<int, int> OnAmmoChanged; // (현재 탄약, 최대 탄약)
 
+    private GameObject _owner;
+    private bool _isLocalPlayerOwner;
     private int _currentAmmo;
     private bool _isReloading;
     private float _nextFireTime;
@@ -142,7 +153,7 @@ public abstract class GunBase : MonoBehaviour
         }
 
         _isReloading = false;
-        if (Owner != null)
+        if (_isLocalPlayerOwner)
         {
             CrosshairUI.Instance?.StopReloadGauge();
             OnReloadEnded?.Invoke();
@@ -152,7 +163,7 @@ public abstract class GunBase : MonoBehaviour
     private IEnumerator ReloadRoutine(int availableAmmo)
     {
         _isReloading = true;
-        if (Owner != null)
+        if (_isLocalPlayerOwner)
         {
             OnReloadStarted?.Invoke(_stat.ReloadTime);
             CrosshairUI.Instance?.StartReloadGauge(_stat.ReloadTime);
@@ -164,7 +175,7 @@ public abstract class GunBase : MonoBehaviour
         _isReloading = false;
         _reloadCoroutine = null;
         OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
-        if (Owner != null) OnReloadEnded?.Invoke();
+        if (_isLocalPlayerOwner) OnReloadEnded?.Invoke();
         OnReloadComplete?.Invoke(actual);
     }
 

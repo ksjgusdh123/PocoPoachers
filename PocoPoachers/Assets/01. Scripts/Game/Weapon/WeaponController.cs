@@ -269,7 +269,7 @@ public class WeaponController : EquipableController
 
     private void HandleAimInput()
     {
-        if (_isSwitching) return;
+        if (_currentGunIndex < 0 || _isSwitching) return;
         if (_playerDodge != null && _playerDodge.IsRolling)
         {
             if (_wasAimPressed)

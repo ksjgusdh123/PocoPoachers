@@ -10,6 +10,7 @@ public static partial class PacketHandlers
             if (!pkt.Info(i).HasValue) continue;
             var info = pkt.Info(i).Value;
             var p = info.Pos;
+            
             ObjectManager.Instance?.QueueMove(
                 ObjectKind.Player, info.PlayerId,
                 new Vector3(p.X, p.Y, p.Z), info.Rotation, 0);

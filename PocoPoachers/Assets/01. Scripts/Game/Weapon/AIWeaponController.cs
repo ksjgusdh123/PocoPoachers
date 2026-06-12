@@ -39,6 +39,7 @@ public class AIWeaponController : MonoBehaviour
 
         if (_gun != null)
         {
+            _gun.Owner = gameObject;
             _gun.OnReloadRequested += OnReloadRequested;
             UpdateBlackboardGunStat(_gun.Stat);
         }

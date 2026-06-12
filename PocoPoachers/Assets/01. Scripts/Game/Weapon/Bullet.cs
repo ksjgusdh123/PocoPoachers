@@ -22,6 +22,7 @@ public class Bullet : MonoBehaviour
     private bool _showHitMarker;
     private TrailRenderer _trail;
     private GameObject _attacker;
+    private int _attackerLayer = -1;
 
     private void Awake()
     {
@@ -38,6 +39,7 @@ public class Bullet : MonoBehaviour
         _direction = direction.normalized;
         _onRelease = onRelease;
         _attacker = attacker;
+        _attackerLayer = attacker != null ? attacker.layer : -1;
         _traveledDistance = 0f;
         _isReleased = false;
         // 로컬 플레이어가 쏜 총알에만 히트마커 표시 (AI/원격 플레이어 총알은 attacker가 null이거나 PlayerController가 없음)
@@ -101,6 +103,8 @@ public class Bullet : MonoBehaviour
         {
             RaycastHit hit = HitBuffer[i];
             if (hit.collider == null) continue;
+            // 발사자와 같은 레이어(아군)는 충돌 무시 — 관통해서 계속 진행
+            if (_attackerLayer >= 0 && hit.collider.gameObject.layer == _attackerLayer) continue;
             if (hit.distance >= closestDistance) continue;
 
             closestHit = hit;
