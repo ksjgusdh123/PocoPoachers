@@ -52,6 +52,9 @@ public class InventoryUI : MonoBehaviour
         var targetSlot = SlotInteractionManager.GetInstance().HoveredSlot;
         if (targetSlot == null) return;
 
+        // 아직 공개되지 않은(리빌 진행 중) 박스 슬롯은 가져갈 수 없음
+        if (IsSlotUnrevealed(targetSlot.SlotIndex)) return;
+
         var target = _inventory.InteractionInventory;
         ItemData itemData = targetSlot.SlotItemData;
         int amount = targetSlot.SavedAmountItem;
@@ -80,6 +83,10 @@ public class InventoryUI : MonoBehaviour
             RoomSync.ItemBoxUpdate(boxWo.Id, itemData.id, boxInventory != _inventory ? amount : -amount, boxInventory != _inventory ? -1 : targetSlot.SlotIndex);
         }
     }
+
+    // 아직 공개(리빌)되지 않은 박스 슬롯인지 — 가져가기/설명 표시 차단에 사용
+    public bool IsSlotUnrevealed(int slotIndex) =>
+        _inventory.Slots[slotIndex] is BoxItemSlot boxSlot && !boxSlot.isOpen && !boxSlot.skipReveal;
 
     public void OnSlotDropped()
     {
