@@ -35,10 +35,10 @@ public class EnemyStat : StatBase
         if (!RoomManager.IsHost || attacker == null) return;
         _targetDetector?.ForceSetTarget(attacker);
     }
-    public override void TakeDamage(float damage, GameObject attacker = null)
+    public override bool TakeDamage(float damage, GameObject attacker = null)
     {
-        if (!RoomManager.IsHost) return;
-        base.TakeDamage(damage, attacker);
+        if (!RoomManager.IsHost) return false;
+        return base.TakeDamage(damage, attacker);
     }
 
     public void Initialize()

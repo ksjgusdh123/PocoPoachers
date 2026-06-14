@@ -13,7 +13,6 @@ public class PlayerDodge : MonoBehaviour
 
     public bool IsRolling { get; private set; }
     public bool IsRecovering { get; private set; }
-    public bool IsInvincible { get; private set; }
 
     private PlayerInputHandler _inputHandler;
     private CharacterController _characterController;
@@ -60,7 +59,7 @@ public class PlayerDodge : MonoBehaviour
     private IEnumerator DodgeRoutine(Vector3 direction)
     {
         IsRolling = true;
-        IsInvincible = true;
+        _playerStat?.SetInvincible(true);
         _lastDodgeTime = Time.time;
         transform.rotation = Quaternion.LookRotation(direction);
         _weaponController?.SetCurrentGunVisible(false);
@@ -77,7 +76,7 @@ public class PlayerDodge : MonoBehaviour
 
         _animator.SetLayerWeight(1, 1f);
         _weaponController?.SetCurrentGunVisible(true);
-        IsInvincible = false;
+        _playerStat?.SetInvincible(false);
         IsRolling = false;
         IsRecovering = true;
         yield return new WaitForSeconds(_recoveryDuration);

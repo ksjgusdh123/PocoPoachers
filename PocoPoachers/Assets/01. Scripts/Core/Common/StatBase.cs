@@ -31,9 +31,9 @@ public abstract class StatBase : MonoBehaviour, IDamageable
         _totalDefenseRate = Mathf.Max(0f, _totalDefenseRate - data.DefenseRate);
     }
 
-    public virtual void TakeDamage(float damage, GameObject attacker = null)
+    public virtual bool TakeDamage(float damage, GameObject attacker = null)
     {
-        if (CurrentHp <= 0f) return;
+        if (CurrentHp <= 0f) return false;
 
         float actualDamage = damage * (1f - Mathf.Clamp01(DefenseRate));
         CurrentHp = Mathf.Max(0f, CurrentHp - actualDamage);
@@ -43,6 +43,8 @@ public abstract class StatBase : MonoBehaviour, IDamageable
 
         if (CurrentHp <= 0f)
             OnDie?.Invoke();
+
+        return true;
     }
 
     // 로컬 HP 변화 시 추가 처리가 필요한 서브클래스에서 오버라이드
