@@ -11,6 +11,8 @@ public abstract class StatBase : MonoBehaviour, IDamageable
     public event Action<float, Vector3, GameObject> OnDamaged;
     public event Action OnDie;
 
+    public bool IsDead { get; private set; }
+
     protected float _totalDefenseRate;
 
     protected virtual void Awake()
@@ -42,9 +44,17 @@ public abstract class StatBase : MonoBehaviour, IDamageable
         OnLocalHpChanged(CurrentHp, MaxHp);
 
         if (CurrentHp <= 0f)
-            OnDie?.Invoke();
+            Die();
 
         return true;
+    }
+
+    // 사망 처리 — HP 고갈, 배터리 방전 등에서 호출. 한 번만 OnDie 발생
+    protected void Die()
+    {
+        if (IsDead) return;
+        IsDead = true;
+        OnDie?.Invoke();
     }
 
     // 로컬 HP 변화 시 추가 처리가 필요한 서브클래스에서 오버라이드

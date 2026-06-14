@@ -107,6 +107,9 @@ public class PlayerStat : StatBase
 
         CurrentBattery = Mathf.Max(0f, CurrentBattery - _reduceBatteryRate * Time.deltaTime);
         OnBatteryChanged?.Invoke(CurrentBattery, _maxBattery);
+
+        if (CurrentBattery <= 0f)
+            Die();  // 배터리 방전 = 사망
     }
 
     public void Heal(float amount)

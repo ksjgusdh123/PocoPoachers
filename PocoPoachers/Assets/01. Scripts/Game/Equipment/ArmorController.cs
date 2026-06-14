@@ -5,6 +5,8 @@ public class ArmorController : EquipableController
     protected ArmorMount _mount;
     protected StatBase _stat;
 
+    private int _equippedSlotIndex = -1;
+
     protected virtual void Awake()
     {
         _mount = GetComponent<ArmorMount>();
@@ -21,6 +23,7 @@ public class ArmorController : EquipableController
         if (armor == null) return;
 
         _stat.ApplyArmorStat(armor.Stat);
+        _equippedSlotIndex = slotIndex;
         OnEquipped(slotIndex, data);
     }
 
@@ -31,8 +34,18 @@ public class ArmorController : EquipableController
 
         _stat.RemoveArmorStat(current.Stat);
         _mount.ApplyUnequip();
+        _equippedSlotIndex = -1;
+        RaiseUnequipped(slotIndex);
         OnUnequipped(slotIndex);
     }
+
+    public override void UnequipAll()
+    {
+        if (_mount.GetArmor() != null)
+            Unequip(_equippedSlotIndex);
+    }
+
+    public override int GetEquippedId(int slotIndex) => _mount.GetEquippedItemId();
 
     protected virtual void OnEquipped(int slotIndex, ItemData data) { }
     protected virtual void OnUnequipped(int slotIndex) { }

@@ -23,6 +23,7 @@ public class PlayerController : MonoBehaviour
     public GameObject GetStorageUI => StorageUI;
 
     private Inventory _inventory;
+    private PlayerStat _playerStat;
     private SaveManager _saveManager;
     private PlayerInputHandler _inputHander;
     private QuickSlotDropHandler[] _quickSlots;
@@ -36,6 +37,10 @@ public class PlayerController : MonoBehaviour
     {
         _inventory = GetComponent<Inventory>();
         _saveManager = SaveManager.GetInstance();
+
+        _playerStat = GetComponent<PlayerStat>();
+        if (_playerStat != null)
+            _playerStat.OnDie += HandleDeath;
 
         var gm = GameManager.GetInstance();
         if (gm.ShouldLoadPlayerInventory)
@@ -67,8 +72,20 @@ public class PlayerController : MonoBehaviour
         ui.OnPanelClosed += OnPanelClosed;
     }
 
+    // 사망 시 메인 인벤토리 비우기 + 장착 무기/방어구/가방 모두 해제
+    private void HandleDeath()
+    {
+        _inventory?.Clear();
+
+        foreach (var equip in GetComponents<EquipableController>())
+            equip.UnequipAll();
+    }
+
     private void OnDestroy()
     {
+        if (_playerStat != null)
+            _playerStat.OnDie -= HandleDeath;
+
         if (_inventory != null)
             _saveManager?.SaveInventory(PlayerSaveKey, _inventory);
 
