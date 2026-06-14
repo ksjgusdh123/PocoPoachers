@@ -8,6 +8,7 @@ using UnityEngine.UI;
 //  ├─ BtnNewGame        (Button)
 //  ├─ BtnLoad           (Button)
 //  ├─ BtnCoOp           (Button)
+//  ├─ BtnOption         (Button)
 //  ├─ BtnQuit           (Button)
 //  ├─ CoOpUI            (JoinCodeUI)
 //  └─ PanelSaveSlots    (GameObject)
@@ -24,6 +25,7 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] Button     _btnNewGame;
     [SerializeField] Button     _btnLoad;
     [SerializeField] Button     _btnCoOp;
+    [SerializeField] Button     _btnOption;
     [SerializeField] Button     _btnQuit;
     [SerializeField] JoinCodeUI _coOpUI;
     [SerializeField] GameObject _panelSaveSlots;
@@ -40,6 +42,7 @@ public class MainMenuUI : MonoBehaviour
         _btnNewGame.onClick.AddListener(OnClickNewGame);
         _btnLoad   .onClick.AddListener(OnClickLoad);
         _btnCoOp   .onClick.AddListener(OnClickCoOp);
+        _btnOption .onClick.AddListener(OnClickOption);
         _btnQuit   .onClick.AddListener(OnClickQuit);
         _btnCloseSaveSlots?.onClick.AddListener(CloseSaveSlotPanel);
 
@@ -120,6 +123,8 @@ public class MainMenuUI : MonoBehaviour
             }
         ));
     }
+
+    void OnClickOption() => UIManager.GetInstance().Show(UIType.Options);
 
     void OnClickQuit()
     {
