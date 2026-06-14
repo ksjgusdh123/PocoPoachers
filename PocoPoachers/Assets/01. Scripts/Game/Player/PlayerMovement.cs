@@ -2,10 +2,9 @@ using UnityEngine;
 
 [RequireComponent(typeof(CharacterController))]
 [RequireComponent(typeof(PlayerInputHandler))]
+[RequireComponent(typeof(PlayerStat))]
 public class PlayerMovement : MonoBehaviour
 {
-    [SerializeField] private float _moveSpeed = 5f;
-    [SerializeField] private float _sprintSpeed = 8f;
     [SerializeField] private float _acceleration = 10f;
     [SerializeField] private float _sprintStaminaDrain = 20f;
     [SerializeField] private float _itemUseSpeedMultiplier = 0.4f; // 아이템 사용 중 이동속도 배율
@@ -90,9 +89,10 @@ public class PlayerMovement : MonoBehaviour
           _playerStat.DrainStamina(_sprintStaminaDrain * Time.deltaTime);
 
       float weaponMultiplier = _weaponController != null ? _weaponController.MoveSpeedMultiplier : 1f;
-      float armorMultiplier = _playerStat != null ? _playerStat.ArmorMoveSpeedMultiplier : 1f;
+      // 기준 속도(방어구 배율 포함)는 PlayerStat에서, 무기/아이템 사용 배율은 여기서 곱한다
+      float baseSpeed = isSprinting ? _playerStat.SprintSpeed : _playerStat.MoveSpeed;
       float targetSpeed = moveDir == Vector3.zero ? 0f
-          : (isSprinting ? _sprintSpeed : _moveSpeed) * weaponMultiplier * _currentItemUseMultiplier * armorMultiplier;
+          : baseSpeed * weaponMultiplier * _currentItemUseMultiplier;
       Vector3 targetVelocity = moveDir * targetSpeed;
 
       // 입력 없으면 즉시 정지, 입력 있으면 부드럽게 가속
@@ -102,8 +102,8 @@ public class PlayerMovement : MonoBehaviour
           _currentVelocity = Vector3.MoveTowards(_currentVelocity, targetVelocity, _acceleration * Time.deltaTime);
 
       Vector3 localVelocity = transform.InverseTransformDirection(_currentVelocity);
-      _localVelX = localVelocity.x / _moveSpeed;
-      _localVelZ = localVelocity.z / _moveSpeed;
+      _localVelX = localVelocity.x / _playerStat.BaseMoveSpeed;
+      _localVelZ = localVelocity.z / _playerStat.BaseMoveSpeed;
       _isSprinting = isSprinting;
       _animator.SetFloat("VelocityX", _localVelX, 0.1f, Time.deltaTime);
       _animator.SetFloat("VelocityZ", _localVelZ, 0.1f, Time.deltaTime);

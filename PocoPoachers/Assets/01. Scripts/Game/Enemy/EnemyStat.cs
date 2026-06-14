@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyStat : StatBase
 {
@@ -16,6 +17,13 @@ public class EnemyStat : StatBase
         MaxHp = data?.MaxHp ?? 100f;
         CurrentHp = MaxHp;
         _totalDefenseRate = data?.DefenseRate ?? 0f;
+
+        // 데이터테이블의 이동속도를 NavMeshAgent에 적용 (값이 없으면 프리팹 기본값 유지)
+        if (data != null && data.MoveSpeed > 0f)
+        {
+            var agent = GetComponent<NavMeshAgent>();
+            if (agent != null) agent.speed = data.MoveSpeed;
+        }
 
         _targetDetector = GetComponent<TargetDetector>();
         OnDamaged += OnHit;

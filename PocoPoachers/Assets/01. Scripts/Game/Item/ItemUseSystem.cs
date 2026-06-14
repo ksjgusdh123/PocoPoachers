@@ -44,10 +44,8 @@ public static class ItemUseSystem
                 _playerStat.Heal(itemData.effect_value);
                 break;
             case EffectType.Hunger:
-                _playerStat.EatFood(itemData.effect_value);
-                break;
             case EffectType.Thirst:
-                _playerStat.DrinkWater(itemData.effect_value);
+                _playerStat.ChargeBattery(itemData.effect_value);
                 break;
             case EffectType.Stamina:
                 _playerStat.RestoreStamina(itemData.effect_value);

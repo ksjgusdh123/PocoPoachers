@@ -24,7 +24,7 @@ public static partial class PacketHandlers
 
         if (stat is RemotePlayerStat remote)
         {
-            remote.SetVitalsFromNetwork(pkt.Stamina, pkt.Hunger, pkt.Thirst);
+            remote.SetVitalsFromNetwork(pkt.Stamina, pkt.Battery);
             remote.SetArmorDefenseRate(pkt.Defense);
         }
     }

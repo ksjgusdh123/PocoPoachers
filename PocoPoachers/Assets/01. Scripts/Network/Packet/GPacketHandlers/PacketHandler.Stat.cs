@@ -17,7 +17,7 @@ public static partial class PacketHandlers
             stat.SetHpFromNetwork(pkt.Hp, pkt.MaxHp, 0);   
             if (stat is RemotePlayerStat remote)
             {
-                remote.SetVitalsFromNetwork(pkt.Stamina, pkt.Hunger, pkt.Thirst);
+                remote.SetVitalsFromNetwork(pkt.Stamina, pkt.Battery);
                 remote.SetArmorDefenseRate(pkt.Defense);
             }
         }
@@ -28,8 +28,7 @@ public static partial class PacketHandlers
             Hp       = pkt.Hp,
             MaxHp    = pkt.MaxHp,
             Stamina  = pkt.Stamina,
-            Hunger   = pkt.Hunger,
-            Thirst   = pkt.Thirst,
+            Battery  = pkt.Battery,
             Defense  = pkt.Defense,
         }, H_StatSync.Pack, PacketType.H_StatSync);
     }
