@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.AI;
 
 public class EnemyStat : StatBase
 {
@@ -17,6 +18,13 @@ public class EnemyStat : StatBase
         CurrentHp = MaxHp;
         _totalDefenseRate = data?.DefenseRate ?? 0f;
 
+        // 데이터테이블의 이동속도를 NavMeshAgent에 적용 (값이 없으면 프리팹 기본값 유지)
+        if (data != null && data.MoveSpeed > 0f)
+        {
+            var agent = GetComponent<NavMeshAgent>();
+            if (agent != null) agent.speed = data.MoveSpeed;
+        }
+
         _targetDetector = GetComponent<TargetDetector>();
         OnDamaged += OnHit;
         OnDie += () => StartCoroutine(DeactivateNextFrame());
@@ -27,10 +35,10 @@ public class EnemyStat : StatBase
         if (!RoomManager.IsHost || attacker == null) return;
         _targetDetector?.ForceSetTarget(attacker);
     }
-    public override void TakeDamage(float damage, GameObject attacker = null)
+    public override bool TakeDamage(float damage, GameObject attacker = null)
     {
-        if (!RoomManager.IsHost) return;
-        base.TakeDamage(damage, attacker);
+        if (!RoomManager.IsHost) return false;
+        return base.TakeDamage(damage, attacker);
     }
 
     public void Initialize()

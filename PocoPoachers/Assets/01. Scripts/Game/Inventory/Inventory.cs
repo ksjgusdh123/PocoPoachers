@@ -112,6 +112,14 @@ public class Inventory : MonoBehaviour
         ChangeInventory?.Invoke();
     }
 
+    // 모든 슬롯을 비운다 (사망 등으로 인벤토리 전체 삭제 시)
+    public void Clear()
+    {
+        for (int i = 0; i < _slots.Count; i++)
+            _slots[i].Clear();
+        ChangeInventory?.Invoke();
+    }
+
     // 추가 가능한 첫 번째 슬롯 인덱스 반환, 불가능하면 -1
     public int CanAddItem(ItemData itemData, int amount = 1)
     {

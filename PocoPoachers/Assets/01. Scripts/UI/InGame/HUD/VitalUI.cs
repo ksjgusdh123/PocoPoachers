@@ -4,7 +4,6 @@ using UnityEngine.UI;
 public class VitalUI : MonoBehaviour
 {
     [SerializeField] private Image _fillImage;
-    [SerializeField] private bool _isHunger;
 
     private PlayerStat _stat;
 
@@ -12,26 +11,15 @@ public class VitalUI : MonoBehaviour
     {
         _stat = stat;
 
-        if (_isHunger)
-        {
-            _stat.OnHungerChanged += Refresh;
-            Refresh(_stat.CurrentHunger, _stat.MaxHunger);
-        }
-        else
-        {
-            _stat.OnThirstChanged += Refresh;
-            Refresh(_stat.CurrentThirst, _stat.MaxThirst);
-        }
+        _stat.OnBatteryChanged += Refresh;
+        Refresh(_stat.CurrentBattery, _stat.MaxBattery);
     }
 
     private void OnDestroy()
     {
         if (_stat == null) return;
 
-        if (_isHunger)
-            _stat.OnHungerChanged -= Refresh;
-        else
-            _stat.OnThirstChanged -= Refresh;
+        _stat.OnBatteryChanged -= Refresh;
     }
 
     private void Refresh(float current, float max)

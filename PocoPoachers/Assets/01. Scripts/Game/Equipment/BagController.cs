@@ -11,6 +11,7 @@ public class BagController : EquipableController
     private Inventory _inventory;
 
     private int _appliedCapacity;
+    private int _equippedSlotIndex = -1;
 
     private void Awake()
     {
@@ -30,6 +31,7 @@ public class BagController : EquipableController
         _appliedCapacity = data.EffectValue;
         _inventory.ExpandCapacity(_appliedCapacity);
 
+        _equippedSlotIndex = slotIndex;
         OnBagChanged?.Invoke(slotIndex, data);
         RoomSync.Equip(data.id, slotIndex);
     }
@@ -50,8 +52,18 @@ public class BagController : EquipableController
         if (_appliedCapacity > 0)
             _inventory.ReduceCapacity(_appliedCapacity);
         _appliedCapacity = 0;
+        _equippedSlotIndex = -1;
 
         OnBagChanged?.Invoke(slotIndex, null);
+        RaiseUnequipped(slotIndex);
         RoomSync.Equip(0, slotIndex);
     }
+
+    public override void UnequipAll()
+    {
+        if (_mount.GetEquippedItemId() != 0)
+            Unequip(_equippedSlotIndex);
+    }
+
+    public override int GetEquippedId(int slotIndex) => _mount.GetEquippedItemId();
 }

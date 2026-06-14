@@ -8,13 +8,11 @@ public class PlayerDodge : MonoBehaviour
     [SerializeField] private float _dodgeSpeed = 10f;
     [SerializeField] private float _dodgeDuration = 0.5f;
     [SerializeField] private float _cooldown = 1f;
-    [SerializeField] private float _dodgeStaminaCost = 25f;
 
     [SerializeField] private float _recoveryDuration = 0.4f;
 
     public bool IsRolling { get; private set; }
     public bool IsRecovering { get; private set; }
-    public bool IsInvincible { get; private set; }
 
     private PlayerInputHandler _inputHandler;
     private CharacterController _characterController;
@@ -46,7 +44,7 @@ public class PlayerDodge : MonoBehaviour
     {
         if (IsRolling) return;
         if (Time.time < _lastDodgeTime + _cooldown) return;
-        if (_playerStat != null && !_playerStat.UseStamina(_dodgeStaminaCost)) return;
+        if (_playerStat != null && !_playerStat.TryUseDodgeStamina()) return;
 
         _weaponController?.CancelReload();
 
@@ -61,7 +59,7 @@ public class PlayerDodge : MonoBehaviour
     private IEnumerator DodgeRoutine(Vector3 direction)
     {
         IsRolling = true;
-        IsInvincible = true;
+        _playerStat?.SetInvincible(true);
         _lastDodgeTime = Time.time;
         transform.rotation = Quaternion.LookRotation(direction);
         _weaponController?.SetCurrentGunVisible(false);
@@ -78,7 +76,7 @@ public class PlayerDodge : MonoBehaviour
 
         _animator.SetLayerWeight(1, 1f);
         _weaponController?.SetCurrentGunVisible(true);
-        IsInvincible = false;
+        _playerStat?.SetInvincible(false);
         IsRolling = false;
         IsRecovering = true;
         yield return new WaitForSeconds(_recoveryDuration);
