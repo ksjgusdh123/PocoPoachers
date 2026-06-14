@@ -8,7 +8,6 @@ public class PlayerDodge : MonoBehaviour
     [SerializeField] private float _dodgeSpeed = 10f;
     [SerializeField] private float _dodgeDuration = 0.5f;
     [SerializeField] private float _cooldown = 1f;
-    [SerializeField] private float _dodgeStaminaCost = 25f;
 
     [SerializeField] private float _recoveryDuration = 0.4f;
 
@@ -46,7 +45,7 @@ public class PlayerDodge : MonoBehaviour
     {
         if (IsRolling) return;
         if (Time.time < _lastDodgeTime + _cooldown) return;
-        if (_playerStat != null && !_playerStat.UseStamina(_dodgeStaminaCost)) return;
+        if (_playerStat != null && !_playerStat.TryUseDodgeStamina()) return;
 
         _weaponController?.CancelReload();
 

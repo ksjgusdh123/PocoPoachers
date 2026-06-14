@@ -6,7 +6,6 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     [SerializeField] private float _acceleration = 10f;
-    [SerializeField] private float _sprintStaminaDrain = 20f;
     [SerializeField] private float _itemUseSpeedMultiplier = 0.4f; // 아이템 사용 중 이동속도 배율
 
     [SerializeField] private float _sendInterval = 0.1f;
@@ -86,7 +85,7 @@ public class PlayerMovement : MonoBehaviour
       bool isSprinting = _inputHandler.IsSprintPressed && moveDir != Vector3.zero && CanSprint();
 
       if (isSprinting)
-          _playerStat.DrainStamina(_sprintStaminaDrain * Time.deltaTime);
+          _playerStat.DrainSprintStamina();
 
       float weaponMultiplier = _weaponController != null ? _weaponController.MoveSpeedMultiplier : 1f;
       // 기준 속도(방어구 배율 포함)는 PlayerStat에서, 무기/아이템 사용 배율은 여기서 곱한다

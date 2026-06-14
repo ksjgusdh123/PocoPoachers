@@ -7,6 +7,8 @@ public class PlayerStat : StatBase
     [SerializeField] private float _maxStamina = 100f;
     [SerializeField] private float _staminaRegenRate = 15f;
     [SerializeField] private float _staminaRegenDelay = 1f;
+    [SerializeField] private float _sprintStaminaDrain = 10f;  // 달리기 초당 소모량
+    [SerializeField] private float _dodgeStaminaCost = 20f;    // 구르기 1회 소모량
 
     [Header("이동")]
     [SerializeField] private float _moveSpeed = 5f;    // 걷기 기준 속도
@@ -118,8 +120,11 @@ public class PlayerStat : StatBase
         OnStaminaChanged?.Invoke(CurrentStamina, _maxStamina);
     }
 
+    // 구르기 시도 — 스태미나가 충분하면 소모하고 true, 부족하면 false
+    public bool TryUseDodgeStamina() => UseStamina(_dodgeStaminaCost);
+
     // 소모 성공 여부를 반환 (부족하면 false)
-    public bool UseStamina(float amount)
+    private bool UseStamina(float amount)
     {
         if (CurrentStamina < amount) return false;
 
@@ -129,8 +134,14 @@ public class PlayerStat : StatBase
         return true;
     }
 
-    // 매 프레임 소모용 (달리기) — 가능한 만큼만 소모하고 남은 양 반환
-    public void DrainStamina(float amount)
+    // 달리기 중 매 프레임 호출 — 초당 _sprintStaminaDrain 만큼 소모
+    public void DrainSprintStamina()
+    {
+        DrainStamina(_sprintStaminaDrain * Time.deltaTime);
+    }
+
+    // 매 프레임 소모용 — 가능한 만큼만 소모
+    private void DrainStamina(float amount)
     {
         CurrentStamina = Mathf.Max(0f, CurrentStamina - amount);
         _lastStaminaUseTime = Time.time;
