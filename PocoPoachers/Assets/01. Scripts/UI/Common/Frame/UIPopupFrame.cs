@@ -1,18 +1,13 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
-//  UIFrame
+//  UIPopupFrame
 //  ├─ Dimmer        (Image)
 //  └─ Panel         (Image)
 //      ├─ Txt_Title (TextMeshProUGUI)
-//      ├─ Btn_Close (Button)
 //      └─ Content   (RectTransform)  ← 패널별 콘텐츠 배치 영역
 // ────────────────────────────────────────────────────────────────────────
 
-public class UIFrame : UIFrameBase
+public class UIPopupFrame : UIFrameBase
 {
-    [SerializeField] private Button _btnClose;
-
-    public Button BtnClose => _btnClose;
 }

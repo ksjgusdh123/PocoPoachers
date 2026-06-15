@@ -4,10 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
-//  WarningPopup [WarningPopupUI]
-//  ├── Popup_Dimmer    [Image]
-//  └── Popup_Panel
-//      ├── Txt_Title   [TextMeshProUGUI]
+//  WarningPopupUI [UIPopupFrame]
+//  └── Content
 //      ├── Txt_Message [TextMeshProUGUI]
 //      ├── Btn_Confirm [Button]
 //      └── Btn_Cancel  [Button]
@@ -15,7 +13,6 @@ using UnityEngine.UI;
 
 public class WarningPopupUI : PopupUIBase
 {
-    [SerializeField] private TextMeshProUGUI _txtTitle;
     [SerializeField] private TextMeshProUGUI _txtMessage;
     [SerializeField] private Button          _btnConfirm;
     [SerializeField] private Button          _btnCancel;
@@ -25,9 +22,7 @@ public class WarningPopupUI : PopupUIBase
 
     protected override UIType UiType => UIType.WarningPopup;
 
-    protected override TextMeshProUGUI TitleText   => _txtTitle;
     protected override TextMeshProUGUI MessageText => _txtMessage;
-    protected override Button[]        Buttons     => new[] { _btnConfirm, _btnCancel };
 
     protected override void Awake()
     {
