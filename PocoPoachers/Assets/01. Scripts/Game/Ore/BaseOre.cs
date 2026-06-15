@@ -1,12 +1,15 @@
+using System.Collections;
 using UnityEngine;
 
 // 광물 오브젝트의 베이스. id를 세팅하면 MineralTable에서 정보를 읽어 자신을 구성한다.
-public class BaseOre : MonoBehaviour
+public class BaseOre : MonoBehaviour, IInteractable
 {
-    [SerializeField] private int _id;   // 인스펙터에서 지정하는 광물 id
+    [SerializeField] private int _id;             // 인스펙터에서 지정하는 광물 id
+    [SerializeField] private float _mineDuration = 2f;   // 채광에 걸리는 시간(초)
 
     private MineralData _data;
     private int _currentHp;
+    private Coroutine _mineCoroutine;
 
     public int Id => _id;
     public MineralData Data => _data;
@@ -31,6 +34,35 @@ public class BaseOre : MonoBehaviour
 
         _currentHp = _data.MaxHp;
         OnSetup();
+    }
+
+    public void OnInteract(PlayerController player)
+    {
+        if (_mineCoroutine != null) return;   // 이미 채광 중이면 무시
+        _mineCoroutine = StartCoroutine(MineRoutine(player));
+    }
+
+    // 채광 진행: _mineDuration 초 뒤 완료하고 플레이어 상호작용을 해제시킨다.
+    private IEnumerator MineRoutine(PlayerController player)
+    {
+        Debug.Log("채광중");
+
+        yield return new WaitForSeconds(_mineDuration);
+
+        _mineCoroutine = null;
+        // TODO: 채광 완료 처리(체력 차감/드롭 등)는 다음 단계에서
+        Debug.Log("채광 완료");
+        player.EndInteraction(this);   // PlayerController가 _currentInteractable을 null로 비움
+    }
+
+    public void OnInteractExit(PlayerController player)
+    {
+        // 채광 도중 다시 상호작용하면 취소
+        if (_mineCoroutine != null)
+        {
+            StopCoroutine(_mineCoroutine);
+            _mineCoroutine = null;
+        }
     }
 
     // 파생 클래스에서 모델/이펙트 등 추가 세팅이 필요할 때 오버라이드
