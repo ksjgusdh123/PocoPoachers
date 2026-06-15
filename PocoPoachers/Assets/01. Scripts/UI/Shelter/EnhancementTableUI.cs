@@ -13,60 +13,32 @@ public enum EnhancementStatType
 
 public class EnhancementTableUI : MonoBehaviour
 {
-    [Serializable]
-    private class StatRow
-    {
-        [SerializeField] private EnhancementStatType _statType;
-        [SerializeField] private TextMeshProUGUI _nameText;
-        [SerializeField] private TextMeshProUGUI _levelText;
-        [SerializeField] private TextMeshProUGUI _valueText;
-        [SerializeField] private TextMeshProUGUI _costText;
-        [SerializeField] private Button _enhanceButton;
+    [Header("Stat Select Buttons")]
+    [SerializeField] private Button _hpButton;
+    [SerializeField] private Button _batteryButton;
+    [SerializeField] private Button _staminaButton;
+    [SerializeField] private Button _speedButton;
 
-        public EnhancementStatType StatType => _statType;
-        public Button EnhanceButton => _enhanceButton;
-
-        public void Refresh(string statName, int level, float currentValue, float nextValue, string costText)
-        {
-            if (_nameText != null)
-                _nameText.text = statName;
-
-            if (_levelText != null)
-                _levelText.text = $"Lv. {level}";
-
-            if (_valueText != null)
-                _valueText.text = $"{FormatValue(currentValue)} > {FormatValue(nextValue)}";
-
-            if (_costText != null)
-                _costText.text = costText;
-        }
-
-        private static string FormatValue(float value)
-        {
-            return Mathf.Approximately(value, Mathf.Round(value))
-                ? Mathf.RoundToInt(value).ToString()
-                : value.ToString("0.##");
-        }
-    }
-
-    [SerializeField] private StatRow[] _rows;
+    [Header("Detail Panel")]
+    [SerializeField] private TextMeshProUGUI _nameText;
+    [SerializeField] private TextMeshProUGUI _levelText;
+    [SerializeField] private TextMeshProUGUI _valueText;
+    [SerializeField] private TextMeshProUGUI _costText;
+    [SerializeField] private Button _enhanceButton;
 
     private PlayerController _player;
     private PlayerStat _playerStat;
+    private EnhancementStatType _selectedStatType = EnhancementStatType.MaxHp;
 
     public event Action<EnhancementStatType> EnhanceRequested;
 
     private void Awake()
     {
-        if (_rows == null) return;
-
-        foreach (var row in _rows)
-        {
-            if (row?.EnhanceButton == null) continue;
-
-            EnhancementStatType statType = row.StatType;
-            row.EnhanceButton.onClick.AddListener(() => OnClickEnhance(statType));
-        }
+        _hpButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MaxHp));
+        _batteryButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MaxBattery));
+        _staminaButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MaxStamina));
+        _speedButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MoveSpeed));
+        _enhanceButton?.onClick.AddListener(OnClickEnhance);
     }
 
     public void Open(PlayerController player)
@@ -74,34 +46,39 @@ public class EnhancementTableUI : MonoBehaviour
         _player = player;
         _playerStat = player != null ? player.GetComponent<PlayerStat>() : null;
 
-        Refresh();
+        SelectStat(_selectedStatType);
     }
 
     public void Refresh()
     {
-        if (_playerStat == null || _rows == null) return;
+        if (_playerStat == null) return;
 
-        foreach (var row in _rows)
-        {
-            if (row == null) continue;
+        float currentValue = GetCurrentValue(_selectedStatType);
+        float nextValue = currentValue + GetPreviewIncrease(_selectedStatType);
 
-            EnhancementStatType statType = row.StatType;
-            float currentValue = GetCurrentValue(statType);
-            float nextValue = currentValue + GetPreviewIncrease(statType);
+        if (_nameText != null)
+            _nameText.text = GetDisplayName(_selectedStatType);
 
-            row.Refresh(
-                GetDisplayName(statType),
-                GetCurrentLevel(statType),
-                currentValue,
-                nextValue,
-                GetCostText(statType));
-        }
+        if (_levelText != null)
+            _levelText.text = $"Lv. {GetCurrentLevel(_selectedStatType)}";
+
+        if (_valueText != null)
+            _valueText.text = $"{FormatValue(currentValue)} > {FormatValue(nextValue)}";
+
+        if (_costText != null)
+            _costText.text = GetCostText(_selectedStatType);
     }
 
-    private void OnClickEnhance(EnhancementStatType statType)
+    private void SelectStat(EnhancementStatType statType)
     {
-        EnhanceRequested?.Invoke(statType);
-        Debug.Log($"Enhancement requested: {statType}");
+        _selectedStatType = statType;
+        Refresh();
+    }
+
+    private void OnClickEnhance()
+    {
+        EnhanceRequested?.Invoke(_selectedStatType);
+        Debug.Log($"Enhancement requested: {_selectedStatType}");
     }
 
     private float GetCurrentValue(EnhancementStatType statType)
@@ -148,5 +125,12 @@ public class EnhancementTableUI : MonoBehaviour
     private static string GetCostText(EnhancementStatType statType)
     {
         return "Cost not set";
+    }
+
+    private static string FormatValue(float value)
+    {
+        return Mathf.Approximately(value, Mathf.Round(value))
+            ? Mathf.RoundToInt(value).ToString()
+            : value.ToString("0.##");
     }
 }

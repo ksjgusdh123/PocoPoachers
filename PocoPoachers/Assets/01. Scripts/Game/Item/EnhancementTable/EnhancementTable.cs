@@ -6,8 +6,6 @@ public class EnhancementTable : MonoBehaviour, IInteractable
     {
         //SoundManager.GetInstance().PlaySfx("sfx_storage_open");
 
-        player.SetInventoryOpen(true);
-
         var enhancementTableUI = player.GetEnhancementTableUI;
         enhancementTableUI?.SendMessage("Open", player, SendMessageOptions.DontRequireReceiver);
 
@@ -21,7 +19,6 @@ public class EnhancementTable : MonoBehaviour, IInteractable
         //SoundManager.GetInstance().PlaySfx("sfx_storage_close");
 
         UIManager.GetInstance().Hide(UIType.EnhancementTable);
-        player.SetInventoryOpen(false);
 
         player.SwitchInputMap(PlayerInputMapType.Game);
         UIManager.GetInstance().ChangeMouseCursor(true);
