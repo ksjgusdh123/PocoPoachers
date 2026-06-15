@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
     public static event Action<float> OnUseStarted;  // 사용 시작 (사용 시간 전달)
     public static event Action OnUseCancelled;        // 사용 취소
 
+    private WeaponController _playerWeaponController;
     [SerializeField] private GameObject PlayerBagUI;
     [SerializeField] private GameObject PlayerMainGameUI;
     [SerializeField] private GameObject boxUI;
@@ -35,6 +36,7 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
+        _playerWeaponController = GetComponent<WeaponController>();
         _inventory = GetComponent<Inventory>();
         _saveManager = SaveManager.GetInstance();
 
@@ -134,8 +136,7 @@ public class PlayerController : MonoBehaviour
 
     void Interaction()
     {
-        var weapon = GetComponent<WeaponController>();
-        if (weapon != null && weapon.IsReloading) return;
+        if (_playerWeaponController != null && _playerWeaponController.IsReloading) return;
 
         // 현재 열린 인터랙션이 있으면 닫기
         if (_currentInteractable != null)
@@ -151,6 +152,16 @@ public class PlayerController : MonoBehaviour
 
         interactable.OnInteract(this);
         _currentInteractable = interactable;
+    }
+
+    /// <summary>
+    /// 상호작용 오브젝트가 스스로 상호작용을 끝낼 때 호출한다. (예: 채광 완료)
+    /// 호출한 오브젝트가 현재 상호작용 중인 대상일 때만 해제한다.
+    /// </summary>
+    public void EndInteraction(IInteractable interactable)
+    {
+        if (_currentInteractable != interactable) return;
+        _currentInteractable = null;
     }
 
     /// <summary>
