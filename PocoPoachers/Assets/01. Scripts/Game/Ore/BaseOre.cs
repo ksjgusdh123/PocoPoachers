@@ -103,12 +103,35 @@ public class BaseOre : MonoBehaviour, IInteractable
         yield return new WaitForSeconds(_mineDuration);
 
         _mineCoroutine = null;
-        // TODO: 채광 완료 처리(체력 차감/드롭 등)는 다음 단계에서
         Debug.Log("채광 완료");
         OnMineEnded?.Invoke();         // 채광 게이지 숨김
+        GiveDrop(player);              // 드롭템을 상호작용한 플레이어 인벤토리에 지급
         player.EndInteraction(this);   // PlayerController가 _currentInteractable을 null로 비움
 
         if (_isPlayerNearby) ShowPulse();   // 완료 후 근처에 있으면 펄스 재등장
+    }
+
+    // 채광 완료 시 드롭템(drop_item_id × drop_amount)을 플레이어 인벤토리에 넣는다.
+    private void GiveDrop(PlayerController player)
+    {
+        if (_data == null) return;
+
+        ItemData dropData = ItemTable.Instance.Get(_data.DropItemId);
+        if (dropData == null)
+        {
+            Debug.LogWarning($"[BaseOre] 드롭 아이템을 찾을 수 없습니다. drop_item_id={_data.DropItemId}");
+            return;
+        }
+
+        Inventory inventory = player.PlayerInventory;
+        int slotIndex = inventory.CanAddItem(dropData, _data.DropAmount);
+        if (slotIndex < 0)
+        {
+            Debug.Log("[BaseOre] 인벤토리가 가득 차 드롭을 지급하지 못했습니다.");
+            return;
+        }
+
+        inventory.AddItemAtSlot(slotIndex, dropData, _data.DropAmount);
     }
 
     public void OnInteractExit(PlayerController player)
