@@ -3,14 +3,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public enum EnhancementStatType
-{
-    MaxHp,
-    MaxBattery,
-    MaxStamina,
-    MoveSpeed,
-}
-
 public class EnhancementTableUI : MonoBehaviour
 {
     [Header("Stat Select Buttons")]
@@ -28,6 +20,7 @@ public class EnhancementTableUI : MonoBehaviour
 
     private PlayerController _player;
     private PlayerStat _playerStat;
+    private PlayerEnhancement _playerEnhancement;
     private EnhancementStatType _selectedStatType = EnhancementStatType.MaxHp;
 
     public event Action<EnhancementStatType> EnhanceRequested;
@@ -45,13 +38,24 @@ public class EnhancementTableUI : MonoBehaviour
     {
         _player = player;
         _playerStat = player != null ? player.GetComponent<PlayerStat>() : null;
+        _playerEnhancement = player != null ? player.GetComponent<PlayerEnhancement>() : null;
+
+        if (_playerStat == null)
+            Debug.LogWarning("EnhancementTableUI requires PlayerStat on player.");
+
+        if (_playerEnhancement == null)
+            Debug.LogWarning("EnhancementTableUI requires PlayerEnhancement on player.");
 
         SelectStat(_selectedStatType);
     }
 
     public void Refresh()
     {
-        if (_playerStat == null) return;
+        if (_playerStat == null || _playerEnhancement == null)
+        {
+            SetUnavailable();
+            return;
+        }
 
         float currentValue = GetCurrentValue(_selectedStatType);
         float nextValue = currentValue + GetPreviewIncrease(_selectedStatType);
@@ -78,7 +82,11 @@ public class EnhancementTableUI : MonoBehaviour
     private void OnClickEnhance()
     {
         EnhanceRequested?.Invoke(_selectedStatType);
-        Debug.Log($"Enhancement requested: {_selectedStatType}");
+
+        if (_playerEnhancement == null) return;
+        if (!_playerEnhancement.TryEnhance(_selectedStatType)) return;
+
+        Refresh();
     }
 
     private float GetCurrentValue(EnhancementStatType statType)
@@ -93,21 +101,14 @@ public class EnhancementTableUI : MonoBehaviour
         };
     }
 
-    private static float GetPreviewIncrease(EnhancementStatType statType)
+    private float GetPreviewIncrease(EnhancementStatType statType)
     {
-        return statType switch
-        {
-            EnhancementStatType.MaxHp => 10f,
-            EnhancementStatType.MaxBattery => 10f,
-            EnhancementStatType.MaxStamina => 10f,
-            EnhancementStatType.MoveSpeed => 0.25f,
-            _ => 0f
-        };
+        return _playerEnhancement.GetNextIncrease(statType);
     }
 
-    private static int GetCurrentLevel(EnhancementStatType statType)
+    private int GetCurrentLevel(EnhancementStatType statType)
     {
-        return 0;
+        return _playerEnhancement.GetLevel(statType);
     }
 
     private static string GetDisplayName(EnhancementStatType statType)
@@ -122,9 +123,9 @@ public class EnhancementTableUI : MonoBehaviour
         };
     }
 
-    private static string GetCostText(EnhancementStatType statType)
+    private string GetCostText(EnhancementStatType statType)
     {
-        return "Cost not set";
+        return _playerEnhancement.GetCostText(statType);
     }
 
     private static string FormatValue(float value)
@@ -132,5 +133,20 @@ public class EnhancementTableUI : MonoBehaviour
         return Mathf.Approximately(value, Mathf.Round(value))
             ? Mathf.RoundToInt(value).ToString()
             : value.ToString("0.##");
+    }
+
+    private void SetUnavailable()
+    {
+        if (_nameText != null)
+            _nameText.text = "Unavailable";
+
+        if (_levelText != null)
+            _levelText.text = "Lv. -";
+
+        if (_valueText != null)
+            _valueText.text = "-";
+
+        if (_costText != null)
+            _costText.text = "Missing PlayerEnhancement";
     }
 }

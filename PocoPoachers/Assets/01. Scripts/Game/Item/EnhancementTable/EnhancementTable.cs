@@ -6,10 +6,10 @@ public class EnhancementTable : MonoBehaviour, IInteractable
     {
         //SoundManager.GetInstance().PlaySfx("sfx_storage_open");
 
+        UIManager.GetInstance().Show(UIType.EnhancementTable);
+
         var enhancementTableUI = player.GetEnhancementTableUI;
         enhancementTableUI?.SendMessage("Open", player, SendMessageOptions.DontRequireReceiver);
-
-        UIManager.GetInstance().Show(UIType.EnhancementTable);
 
         player.SwitchInputMap(PlayerInputMapType.ItemBox);
     }
