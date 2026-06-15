@@ -5,14 +5,16 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
-//  OptionsUI   [Canvas / CanvasGroup]
+//  OptionsUI   [UIFrame]
 //  ├── Dimmer            [Image]
 //  └── Panel
-//      ├── Slider_Master     [Slider]
-//      ├── Slider_Bgm        [Slider]
-//      ├── Slider_Sfx        [Slider]
-//      ├── Dropdown_Language [TMP_Dropdown]
-//      └── Btn_Close         [Button]
+//      ├── Txt_Title     [TextMeshProUGUI]
+//      ├── Btn_Close     [Button]
+//      └── Content
+//          ├── Slider_Master     [Slider]
+//          ├── Slider_Bgm        [Slider]
+//          ├── Slider_Sfx        [Slider]
+//          └── Dropdown_Language [TMP_Dropdown]
 // ────────────────────────────────────────────────────────────────────────
 
 public class OptionsUI : UIBase
@@ -23,6 +25,9 @@ public class OptionsUI : UIBase
         { SystemLanguage.English, "English" },
     };
 
+    [Header("Frame")]
+    [SerializeField] private UIFrame _frame;
+
     [Header("Volume Sliders")]
     [SerializeField] private Slider _masterSlider;
     [SerializeField] private Slider _bgmSlider;
@@ -30,9 +35,6 @@ public class OptionsUI : UIBase
 
     [Header("Language")]
     [SerializeField] private TMP_Dropdown _languageDropdown;
-
-    [Header("Buttons")]
-    [SerializeField] private Button _btnClose;
 
     protected override UIType UiType => UIType.Options;
 
@@ -61,6 +63,6 @@ public class OptionsUI : UIBase
         _languageDropdown.SetValueWithoutNotify(Array.IndexOf(LocalizationManager.SupportedLanguages, localization.CurrentLanguage));
         _languageDropdown.onValueChanged.AddListener(index => localization.SetLanguage(LocalizationManager.SupportedLanguages[index]));
 
-        _btnClose.onClick.AddListener(Hide);
+        _frame.BtnClose.onClick.AddListener(Hide);
     }
 }
