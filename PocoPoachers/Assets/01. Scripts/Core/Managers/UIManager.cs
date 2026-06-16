@@ -17,6 +17,7 @@ public enum UIType
     NoticePopup,
     JoinCode,
     Options,
+    PlanetSelect,
 }
 
 public class UIManager : Singleton<UIManager>

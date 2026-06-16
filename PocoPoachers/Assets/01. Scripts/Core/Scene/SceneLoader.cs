@@ -14,4 +14,5 @@ public class SceneLoader : Singleton<SceneLoader>
 
     public void LoadShelterScene() => SceneManager.LoadScene(SceneName.Shelter);
     public void LoadRaidTestScene() => SceneManager.LoadScene(SceneName.RaidTest);
+    public void LoadPlanetScene(int planetId) => SceneManager.LoadScene($"SC_Raid_{planetId}");
 }

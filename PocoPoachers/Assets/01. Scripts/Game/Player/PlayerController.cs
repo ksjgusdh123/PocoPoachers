@@ -162,6 +162,17 @@ public class PlayerController : MonoBehaviour
 
     private void OnPanelClosed(UIType type)
     {
+        // ESC로 PlanetSelect가 닫혔을 때 _currentInteractable 정리
+        if (type == UIType.PlanetSelect)
+        {
+            if (_currentInteractable != null)
+            {
+                _currentInteractable.OnInteractExit(this);
+                _currentInteractable = null;
+            }
+            return;
+        }
+
         if (type != UIType.Inventory && type != UIType.IngameMenu && type != UIType.EnhancementTable) return;
         if (UIManager.GetInstance().IsAnyPanelOpen) return;
 
