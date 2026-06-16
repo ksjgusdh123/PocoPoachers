@@ -104,7 +104,6 @@ public abstract class GunBase : MonoBehaviour
         _currentAmmo--;
         OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
         _currentDurability = Mathf.Max(0f, _currentDurability - _durabilityDecreasePerShot);
-        Debug.Log("내구도 : " + _currentDurability);
         OnDurabilityChanged?.Invoke(_currentDurability);
         _nextFireTime = Time.time + 60f / _stat.Rpm;
         _recoilDist = _stat.RecoilForce;

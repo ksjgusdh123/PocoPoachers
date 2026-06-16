@@ -17,12 +17,16 @@ public class ArmorController : EquipableController
     {
         ArmorBase current = _mount.GetArmor();
         if (current != null)
+        {
             _stat.RemoveArmorStat(current.Stat);
+            _stat.OnDamaged -= OnDamaged;
+        }
 
         ArmorBase armor = _mount.ApplyEquip(data.id);
         if (armor == null) return;
 
         _stat.ApplyArmorStat(armor.Stat);
+        _stat.OnDamaged += OnDamaged;
         _equippedSlotIndex = slotIndex;
         OnEquipped(slotIndex, data);
     }
@@ -33,10 +37,16 @@ public class ArmorController : EquipableController
         if (current == null) return;
 
         _stat.RemoveArmorStat(current.Stat);
+        _stat.OnDamaged -= OnDamaged;
         _mount.ApplyUnequip();
         _equippedSlotIndex = -1;
         RaiseUnequipped(slotIndex);
         OnUnequipped(slotIndex);
+    }
+
+    private void OnDamaged(float damage, Vector3 _, GameObject __)
+    {
+        _mount.GetArmor()?.DecreaseDurability(damage);
     }
 
     public override void UnequipAll()
