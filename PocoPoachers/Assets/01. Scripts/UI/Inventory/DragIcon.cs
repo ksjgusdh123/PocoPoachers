@@ -28,16 +28,11 @@ public class DragIcon : MonoBehaviour
     {
         gameObject.SetActive(false);
         _icon.sprite = null;
-        _count.text = null;
+        _count.text = "";
     }
 
     public void UpdatePosition(Vector2 position)
     {
         transform.position = position;
-    }
-
-    public void UpdateCount(int count)
-    {
-        _count.text = count.ToString();
     }
 }

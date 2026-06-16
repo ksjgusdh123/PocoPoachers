@@ -5,7 +5,10 @@ public class EquipDropHandler : ItemHolderDropHandler
 {
     [SerializeField] private GameObject _itemVisual;
     [SerializeField] private int _slotIndex;
-    [SerializeField] private EquipableController _controller;
+    private EquipableController _controller;
+
+    public int SlotIndex => _slotIndex;
+    public void SetController(EquipableController controller) => _controller = controller;
 
 
     protected override bool OnItemDropped(ItemData data, int amount)

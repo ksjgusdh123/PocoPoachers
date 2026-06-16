@@ -43,7 +43,7 @@ public class InventoryUI : MonoBehaviour
         if (_sortButton) _sortButton.onClick.AddListener(OnClickSort);
 
         var manager = SlotInteractionManager.GetInstance();
-        manager.OnHoverEnter += _descriptionUI.ShowDescription;
+        if (_descriptionUI != null) manager.OnHoverEnter += _descriptionUI.ShowDescription;
         manager.OnHoverExit += HandleHoverExit;
     }
 
@@ -80,7 +80,8 @@ public class InventoryUI : MonoBehaviour
             // 호스트 또는 싱글플레이: 로컬에서 바로 적용
             target.AddItemAtSlot(addedSlotIndex, itemData, amount);
             _inventory.RemoveItemAtSlot(targetSlot.SlotIndex, itemData, amount);
-            RoomSync.ItemBoxUpdate(boxWo.Id, itemData.id, boxInventory != _inventory ? amount : -amount, boxInventory != _inventory ? -1 : targetSlot.SlotIndex);
+            if (isNetworked)
+                RoomSync.ItemBoxUpdate(boxWo.Id, itemData.id, boxInventory != _inventory ? amount : -amount, boxInventory != _inventory ? -1 : targetSlot.SlotIndex);
         }
     }
 
@@ -123,7 +124,7 @@ public class InventoryUI : MonoBehaviour
         var manager = SlotInteractionManager.GetInstance();
         if (manager != null)
         {
-            manager.OnHoverEnter -= _descriptionUI.ShowDescription;
+            if (_descriptionUI != null) manager.OnHoverEnter -= _descriptionUI.ShowDescription;
             manager.OnHoverExit -= HandleHoverExit;
         }
 
@@ -138,7 +139,7 @@ public class InventoryUI : MonoBehaviour
         _descriptionUI ??= FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
     }
 
-    private void HandleHoverExit(ItemSlotUI _) => _descriptionUI.HideDescription();
+    private void HandleHoverExit(ItemSlotUI _) => _descriptionUI?.HideDescription();
 
     private void OnClickSort()
     {
@@ -156,7 +157,7 @@ public class InventoryUI : MonoBehaviour
             _slotUIs[i].SetIndex(i);
         }
 
-        _descriptionUI.HideDescription();
+        _descriptionUI?.HideDescription();
     }
 
     // 인벤토리 데이터 기반으로 전체 UI 갱신

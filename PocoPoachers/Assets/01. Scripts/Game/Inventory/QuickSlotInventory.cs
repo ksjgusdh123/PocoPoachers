@@ -10,6 +10,7 @@ public class QuickSlotInventory : MonoBehaviour
     private ItemSlot[] _slots;
 
     public int SlotCount => _slotCount;
+    public int StartIndex => _startIndex;
 
     private void Awake()
     {

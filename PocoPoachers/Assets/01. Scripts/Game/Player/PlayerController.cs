@@ -47,6 +47,8 @@ public class PlayerController : MonoBehaviour
         _quickSlots = FindObjectsByType<QuickSlotDropHandler>(FindObjectsInactive.Include)
             .OrderBy(s => s.gameObject.name).ToArray();
 
+        InitQuickSlots();
+
         _inputHander = GetComponent<PlayerInputHandler>();
         _inputHander.GoInventory += ShowInventory;
         _inputHander.RegisterItemNumberKey += RegisterItem;
@@ -65,12 +67,46 @@ public class PlayerController : MonoBehaviour
         ui.Register(UIType.ItemBoxReveal, boxUI);
         ui.OnPanelOpened += OnPanelOpened;
         ui.OnPanelClosed += OnPanelClosed;
+
+        InitEquipSlots();
+    }
+
+    private void InitQuickSlots()
+    {
+        var quickSlotInventory = GetComponent<QuickSlotInventory>();
+        var inventoryUI = PlayerBagUI.GetComponentInChildren<InventoryUI>(true);
+
+        for (int i = 0; i < _quickSlots.Length; i++)
+            _quickSlots[i].Init(inventoryUI, quickSlotInventory, quickSlotInventory.StartIndex + i);
+    }
+
+    private void InitEquipSlots()
+    {
+        var weaponController = GetComponent<WeaponController>();
+        var armorController = GetComponent<PlayerArmorController>();
+        var bagController = GetComponent<BagController>();
+
+        foreach (var handler in PlayerBagUI.GetComponentsInChildren<EquipDropHandler>(true))
+        {
+            if (handler.SlotIndex <= 1) handler.SetController(weaponController);
+            else if (handler.SlotIndex <= 3) handler.SetController(armorController);
+            else handler.SetController(bagController);
+        }
     }
 
     private void OnDestroy()
     {
         if (_inventory != null)
             _saveManager?.SaveInventory(PlayerSaveKey, _inventory);
+
+        if (_inputHander != null)
+        {
+            _inputHander.GoInventory -= ShowInventory;
+            _inputHander.RegisterItemNumberKey -= RegisterItem;
+            _inputHander.ConsumeItemNumberKey -= StartConsuming;
+            _inputHander.StartInteraction -= Interaction;
+            _inputHander.CancelItemUse -= CancelConsuming;
+        }
 
         var ui = UIManager.GetInstance();
         if (ui == null) return;

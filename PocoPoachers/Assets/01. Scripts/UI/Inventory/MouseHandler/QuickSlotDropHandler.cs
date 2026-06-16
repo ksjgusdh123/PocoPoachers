@@ -7,15 +7,21 @@ public class QuickSlotDropHandler : ItemHolderDropHandler
     public static event Action<int, ItemData, int> OnQuickSlotChanged;
 
     [SerializeField] private TextMeshProUGUI _countText;
-    [SerializeField] private int _quickSlotCount;
-    [SerializeField] private QuickSlotInventory _quickSlotInventory;
+    private int _quickSlotCount;
+    private QuickSlotInventory _quickSlotInventory;
 
-    private void Start()
+    public void Init(InventoryUI inventoryUI, QuickSlotInventory quickSlotInventory, int quickSlotCount)
     {
-        // TODO : 시작할 때 자기 인벤찾아야함
-        // TEMP
-        _quickSlotInventory = FindAnyObjectByType<QuickSlotInventory>();
+        _inventoryUI = inventoryUI;
+        _quickSlotInventory = quickSlotInventory;
+        _quickSlotCount = quickSlotCount;
         _quickSlotInventory.GetSlot(_quickSlotCount).OnChanged += OnSlotChanged;
+    }
+
+    private void OnDestroy()
+    {
+        if (_quickSlotInventory == null) return;
+        _quickSlotInventory.GetSlot(_quickSlotCount).OnChanged -= OnSlotChanged;
     }
 
     // 드래그 드롭: 인벤토리에서 아이템 꺼내 QuickSlotInventory에 저장
