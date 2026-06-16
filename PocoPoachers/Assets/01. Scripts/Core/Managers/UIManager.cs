@@ -8,6 +8,7 @@ public enum UIType
     Inventory,
     Storage,
     EnhancementTable,
+    GunEnhancementTable,
     ItemBoxReveal,
     EquipContextMenu,
     IngameMenu,
