@@ -17,6 +17,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject StorageUI;
     [SerializeField] private GameObject EnhancementTableUI;
     [SerializeField] private GameObject GunEnhancementTableUI;
+    [SerializeField] private GameObject RepairWorkbenchUI;
     [SerializeField] private CameraController _cameraController;
     [SerializeField] private float _useItemDuration = 1.5f;
 
@@ -26,6 +27,7 @@ public class PlayerController : MonoBehaviour
     public GameObject GetStorageUI => StorageUI;
     public GameObject GetEnhancementTableUI => EnhancementTableUI;
     public GameObject GetGunEnhancementTableUI => GunEnhancementTableUI;
+    public GameObject GetRepairWorkbenchUI => RepairWorkbenchUI;
 
     private Inventory _inventory;
     private PlayerStat _playerStat;
@@ -75,6 +77,7 @@ public class PlayerController : MonoBehaviour
         ui.Register(UIType.Storage, StorageUI);
         ui.Register(UIType.EnhancementTable, EnhancementTableUI);
         ui.Register(UIType.GunEnhancementTable, GunEnhancementTableUI);
+        ui.Register(UIType.RepairWorkbench, RepairWorkbenchUI);
         ui.Register(UIType.ItemBoxReveal, boxUI);
         ui.OnPanelOpened += OnPanelOpened;
         ui.OnPanelClosed += OnPanelClosed;
