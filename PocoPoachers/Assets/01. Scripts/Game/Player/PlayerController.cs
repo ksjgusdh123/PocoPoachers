@@ -162,8 +162,8 @@ public class PlayerController : MonoBehaviour
 
     private void OnPanelClosed(UIType type)
     {
-        // ESC로 PlanetSelect가 닫혔을 때 _currentInteractable 정리
-        if (type == UIType.PlanetSelect)
+        // ESC로 UI가 닫혔을 때 _currentInteractable 정리
+        if (type == UIType.PlanetSelect || type == UIType.ShelterUpgrade)
         {
             if (_currentInteractable != null)
             {

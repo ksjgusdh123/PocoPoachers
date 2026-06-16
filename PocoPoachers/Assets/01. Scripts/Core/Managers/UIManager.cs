@@ -18,6 +18,7 @@ public enum UIType
     JoinCode,
     Options,
     PlanetSelect,
+    ShelterUpgrade,
 }
 
 public class UIManager : Singleton<UIManager>

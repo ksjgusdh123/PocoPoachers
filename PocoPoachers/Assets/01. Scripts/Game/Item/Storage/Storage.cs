@@ -7,6 +7,7 @@ public class Storage : MonoBehaviour, IInteractable
 {
     [SerializeField] private string _saveKey = "storage";
 
+    public Inventory StorageInventory => _inventory;
     private Inventory _inventory;
 
     private void Awake()

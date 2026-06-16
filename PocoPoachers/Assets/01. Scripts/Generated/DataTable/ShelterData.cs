@@ -6,29 +6,23 @@ public partial class ShelterData
 {
     public int id;
     public int shelter_level;
-    public float need_iron_ingot;
-    public float need_copper_ingot;
-    public float need_titanium_ingot;
-    public float need_circuit;
-    public float need_uranium;
-    public float need_high_circuit;
+    public int need_item1_id;
+    public int need_item1_count;
+    public int need_item2_id;
+    public int need_item2_count;
     public int unlocked_planet_tier;
 
     public int Id { get => id; set => id = value; }
 
     public int ShelterLevel { get => shelter_level; set => shelter_level = value; }
 
-    public float NeedIronIngot { get => need_iron_ingot; set => need_iron_ingot = value; }
+    public int NeedItem1Id { get => need_item1_id; set => need_item1_id = value; }
 
-    public float NeedCopperIngot { get => need_copper_ingot; set => need_copper_ingot = value; }
+    public int NeedItem1Count { get => need_item1_count; set => need_item1_count = value; }
 
-    public float NeedTitaniumIngot { get => need_titanium_ingot; set => need_titanium_ingot = value; }
+    public int NeedItem2Id { get => need_item2_id; set => need_item2_id = value; }
 
-    public float NeedCircuit { get => need_circuit; set => need_circuit = value; }
-
-    public float NeedUranium { get => need_uranium; set => need_uranium = value; }
-
-    public float NeedHighCircuit { get => need_high_circuit; set => need_high_circuit = value; }
+    public int NeedItem2Count { get => need_item2_count; set => need_item2_count = value; }
 
     public int UnlockedPlanetTier { get => unlocked_planet_tier; set => unlocked_planet_tier = value; }
 

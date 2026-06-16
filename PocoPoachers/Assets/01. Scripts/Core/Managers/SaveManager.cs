@@ -128,10 +128,21 @@ public class SaveManager : Singleton<SaveManager>
         public List<SlotSaveEntry> slots = new List<SlotSaveEntry>();
     }
 
+    public void SaveShelterLevel(int level)
+    {
+        var data = GetOrLoad(_activeSlot);
+        data.shelterLevel = level;
+        data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    public int LoadShelterLevel() => GetOrLoad(_activeSlot).shelterLevel;
+
     [Serializable]
     private class GameSaveData
     {
         public string lastSavedAt;
+        public int shelterLevel = 1;
         public List<InventorySaveEntry> inventories = new List<InventorySaveEntry>();
 
         public void SetInventory(string key, List<SlotSaveEntry> entries)

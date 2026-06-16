@@ -18,8 +18,7 @@ public class PlanetSelectUI : UIBase
         foreach (var data in PlanetTable.Instance.All)
         {
             var slot = Instantiate(_slotPrefab, _content);
-            // TODO: 쉘터 레벨 시스템 구현 후 실제 해금 조건으로 교체
-            bool isUnlocked = true;
+            bool isUnlocked = ShelterManager.GetInstance().IsPlanetUnlocked(data);
             slot.Setup(data, isUnlocked);
         }
     }

@@ -9,6 +9,7 @@ public class Bootstrapper : MonoBehaviour
         GameManager.GetInstance();
         SceneLoader.GetInstance();
         SaveManager.GetInstance();
+        ShelterManager.GetInstance();
         SoundManager.GetInstance();
         LocalizationManager.GetInstance();
         UISoundManager.GetInstance();
