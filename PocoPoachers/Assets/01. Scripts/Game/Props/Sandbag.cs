@@ -12,11 +12,12 @@ public class Sandbag : MonoBehaviour, IDamageable
 
     private int _hitCount;
 
-    public void TakeDamage(float damage, GameObject attacker = null)
+    public bool TakeDamage(float damage, GameObject attacker = null)
     {
         _hitCount++;
         if (_hitCount >= _maxHits)
             HandleDie();
+        return true;
     }
 
     private void HandleDie()

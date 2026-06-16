@@ -10,10 +10,14 @@ public class PlayerController : MonoBehaviour
     public static event Action<float> OnUseStarted;  // 사용 시작 (사용 시간 전달)
     public static event Action OnUseCancelled;        // 사용 취소
 
+    private WeaponController _playerWeaponController;
     [SerializeField] private GameObject PlayerBagUI;
     [SerializeField] private GameObject PlayerMainGameUI;
     [SerializeField] private GameObject boxUI;
     [SerializeField] private GameObject StorageUI;
+    [SerializeField] private GameObject EnhancementTableUI;
+    [SerializeField] private GameObject GunEnhancementTableUI;
+    [SerializeField] private GameObject RepairWorkbenchUI;
     [SerializeField] private CameraController _cameraController;
     [SerializeField] private float _useItemDuration = 1.5f;
 
@@ -21,8 +25,12 @@ public class PlayerController : MonoBehaviour
     public Inventory PlayerInventory => _inventory;
     public GameObject BoxUI => boxUI;
     public GameObject GetStorageUI => StorageUI;
+    public GameObject GetEnhancementTableUI => EnhancementTableUI;
+    public GameObject GetGunEnhancementTableUI => GunEnhancementTableUI;
+    public GameObject GetRepairWorkbenchUI => RepairWorkbenchUI;
 
     private Inventory _inventory;
+    private PlayerStat _playerStat;
     private SaveManager _saveManager;
     private PlayerInputHandler _inputHander;
     private QuickSlotDropHandler[] _quickSlots;
@@ -34,8 +42,13 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
+        _playerWeaponController = GetComponent<WeaponController>();
         _inventory = GetComponent<Inventory>();
         _saveManager = SaveManager.GetInstance();
+
+        _playerStat = GetComponent<PlayerStat>();
+        if (_playerStat != null)
+            _playerStat.OnDie += HandleDeath;
 
         var gm = GameManager.GetInstance();
         if (gm.ShouldLoadPlayerInventory)
@@ -64,6 +77,9 @@ public class PlayerController : MonoBehaviour
         var ui = UIManager.GetInstance();
         ui.Register(UIType.Inventory, PlayerBagUI);
         ui.Register(UIType.Storage, StorageUI);
+        ui.Register(UIType.EnhancementTable, EnhancementTableUI);
+        ui.Register(UIType.GunEnhancementTable, GunEnhancementTableUI);
+        ui.Register(UIType.RepairWorkbench, RepairWorkbenchUI);
         ui.Register(UIType.ItemBoxReveal, boxUI);
         ui.OnPanelOpened += OnPanelOpened;
         ui.OnPanelClosed += OnPanelClosed;
@@ -76,7 +92,8 @@ public class PlayerController : MonoBehaviour
         var quickSlotInventory = GetComponent<QuickSlotInventory>();
         var inventoryUI = PlayerBagUI.GetComponentInChildren<InventoryUI>(true);
 
-        for (int i = 0; i < _quickSlots.Length; i++)
+        int count = Mathf.Min(_quickSlots.Length, quickSlotInventory.SlotCount);
+        for (int i = 0; i < count; i++)
             _quickSlots[i].Init(inventoryUI, quickSlotInventory, quickSlotInventory.StartIndex + i);
     }
 
@@ -94,8 +111,20 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // 사망 시 메인 인벤토리 비우기 + 장착 무기/방어구/가방 모두 해제
+    private void HandleDeath()
+    {
+        _inventory?.Clear();
+
+        foreach (var equip in GetComponents<EquipableController>())
+            equip.UnequipAll();
+    }
+
     private void OnDestroy()
     {
+        if (_playerStat != null)
+            _playerStat.OnDie -= HandleDeath;
+
         if (_inventory != null)
             _saveManager?.SaveInventory(PlayerSaveKey, _inventory);
 
@@ -112,6 +141,7 @@ public class PlayerController : MonoBehaviour
         if (ui == null) return;
         ui.Unregister(UIType.Inventory);
         ui.Unregister(UIType.Storage);
+        ui.Unregister(UIType.EnhancementTable);
         ui.Unregister(UIType.ItemBoxReveal);
         ui.OnPanelOpened -= OnPanelOpened;
         ui.OnPanelClosed -= OnPanelClosed;
@@ -121,16 +151,18 @@ public class PlayerController : MonoBehaviour
     {
         if (type == UIType.Inventory)
             PlayerMainGameUI.SetActive(false);
-        else if (type != UIType.IngameMenu)
+        else if (type != UIType.IngameMenu && type != UIType.EnhancementTable)
             return;
 
         LockCamera(true);
-        _inputHander.SwitchInputActionMap(PlayerInputMapType.Inventory);
+        _inputHander.SwitchInputActionMap(type == UIType.EnhancementTable
+            ? PlayerInputMapType.ItemBox
+            : PlayerInputMapType.Inventory);
     }
 
     private void OnPanelClosed(UIType type)
     {
-        if (type != UIType.Inventory && type != UIType.IngameMenu) return;
+        if (type != UIType.Inventory && type != UIType.IngameMenu && type != UIType.EnhancementTable) return;
         if (UIManager.GetInstance().IsAnyPanelOpen) return;
 
         if (type == UIType.Inventory)
@@ -153,8 +185,7 @@ public class PlayerController : MonoBehaviour
 
     void Interaction()
     {
-        var weapon = GetComponent<WeaponController>();
-        if (weapon != null && weapon.IsReloading) return;
+        if (_playerWeaponController != null && _playerWeaponController.IsReloading) return;
 
         // 현재 열린 인터랙션이 있으면 닫기
         if (_currentInteractable != null)
@@ -170,6 +201,16 @@ public class PlayerController : MonoBehaviour
 
         interactable.OnInteract(this);
         _currentInteractable = interactable;
+    }
+
+    /// <summary>
+    /// 상호작용 오브젝트가 스스로 상호작용을 끝낼 때 호출한다. (예: 채광 완료)
+    /// 호출한 오브젝트가 현재 상호작용 중인 대상일 때만 해제한다.
+    /// </summary>
+    public void EndInteraction(IInteractable interactable)
+    {
+        if (_currentInteractable != interactable) return;
+        _currentInteractable = null;
     }
 
     /// <summary>

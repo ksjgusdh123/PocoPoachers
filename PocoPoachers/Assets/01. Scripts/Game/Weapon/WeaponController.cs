@@ -25,6 +25,8 @@ public class WeaponController : EquipableController
     public static event Action<int, int> OnAmmoChanged; // (현재 탄약, 인벤토리 잔여 탄약)
     public static event Action<int> OnWeaponSwitched;  // (슬롯 인덱스)
 
+    private const int WeaponSlotCount = 2;  // 무기 장착 슬롯 수 (0, 1)
+
     private static readonly int WeaponSwitchHash = Animator.StringToHash("WeaponSwitch");
 
     private WeaponMount _mount;
@@ -105,10 +107,20 @@ public class WeaponController : EquipableController
         _mount.ApplyUnequip(slotIndex);
         if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
         OnWeaponChanged?.Invoke(slotIndex, null);
+        RaiseUnequipped(slotIndex);
         RoomSync.Equip(0, slotIndex);
     }
 
+    public override void UnequipAll()
+    {
+        // 무기 슬롯 0, 1 모두 해제
+        for (int i = 0; i < WeaponSlotCount; i++)
+            Unequip(i);
+    }
+
     public int GetEquippedItemId(int slotIndex) => _mount.GetEquippedItemId(slotIndex);
+
+    public override int GetEquippedId(int slotIndex) => _mount.GetEquippedItemId(slotIndex);
 
 
     private void SwitchWeapon(int index)

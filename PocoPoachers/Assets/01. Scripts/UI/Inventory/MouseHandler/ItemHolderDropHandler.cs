@@ -38,7 +38,7 @@ public abstract class ItemHolderDropHandler : BaseDropHandler, IPointerClickHand
         return true;
     }
 
-    public void OnPointerClick(PointerEventData eventData)
+    public virtual void OnPointerClick(PointerEventData eventData)
     {
         if (eventData.button != PointerEventData.InputButton.Right) return;
         if (!_isSetted) return;

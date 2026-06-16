@@ -10,6 +10,33 @@ public class EquipDropHandler : ItemHolderDropHandler
     public int SlotIndex => _slotIndex;
     public void SetController(EquipableController controller) => _controller = controller;
 
+    private void OnEnable()
+    {
+        if (_controller == null) return;
+
+        _controller.OnSlotUnequipped += OnSlotUnequipped;
+
+        // UI가 닫혀 있는 동안(사망 등) 해제됐을 수 있으니, 열릴 때 실제 장착 상태로 동기화
+        if (_isSetted && _controller.GetEquippedId(_slotIndex) == 0)
+            OnSlotUnequipped(_slotIndex);
+    }
+
+    private void OnDisable()
+    {
+        if (_controller != null)
+            _controller.OnSlotUnequipped -= OnSlotUnequipped;
+    }
+
+    // 외부(사망 등)에서 장비가 해제되면 UI 표시를 정리한다 (인벤토리 반납 없이)
+    private void OnSlotUnequipped(int slotIndex)
+    {
+        if (slotIndex != _slotIndex) return;
+
+        ClearDisplay();
+        if (_itemVisual != null)
+            _itemVisual.SetActive(false);
+    }
+
 
     protected override bool OnItemDropped(ItemData data, int amount)
     {

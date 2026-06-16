@@ -56,20 +56,28 @@ public class Bullet : MonoBehaviour
 
         if (TryGetHit(origin, step, out RaycastHit hit))
         {
-            transform.position = hit.point;
-
-            if (_showHitMarker)
-                CrosshairUI.Instance?.ShowHitMarker();
-
             if (_applyDamage && hit.collider.TryGetComponent<IDamageable>(out var damageable))
             {
-                damageable.TakeDamage(_damage, _attacker);
+                // 무적 등으로 데미지가 무효면 관통 — 충돌을 무시하고 정상 전진
+                if (!damageable.TakeDamage(_damage, _attacker))
+                {
+                    transform.position = origin + _direction * step;
+                    _traveledDistance += step;
+                    if (_traveledDistance >= _range)
+                        Release();
+                    return;
+                }
 
                 if (hit.collider.TryGetComponent<Sandbag>(out _))
                     SandVFXPool.Instance?.Spawn(hit);
                 else
                     BloodVFXPool.Instance?.Spawn(hit);
             }
+
+            transform.position = hit.point;   // 실제로 멈추는 경우에만 충돌 지점에 붙임
+
+            if (_showHitMarker)
+                CrosshairUI.Instance?.ShowHitMarker();
 
             if (IsWallHit(hit.collider))
                 BulletDecalPool.Instance?.Spawn(hit);

@@ -35,6 +35,9 @@ public abstract class GunBase : MonoBehaviour
     public event Action OnReloadRequested;
     public event Action<int> OnReloadComplete;
     public event Action<int, int> OnAmmoChanged; // (현재 탄약, 최대 탄약)
+    public event Action<float> OnDurabilityChanged; // (현재 내구도 0~1)
+
+    [SerializeField] private float _durabilityDecreasePerShot = 0.01f;
 
     private GameObject _owner;
     private bool _isLocalPlayerOwner;
@@ -42,6 +45,9 @@ public abstract class GunBase : MonoBehaviour
     private bool _isReloading;
     private float _nextFireTime;
     private Coroutine _reloadCoroutine;
+    private float _currentDurability;
+
+    public float CurrentDurability => _currentDurability;
 
     private Vector3 _originLocalPos;
     private float _recoilDist;
@@ -55,6 +61,7 @@ public abstract class GunBase : MonoBehaviour
         _stat = DataManager.GetGunStat(_itemId);
         _bulletPrefab = Resources.Load<GameObject>(_stat.BulletPrefabPath);
         _currentAmmo = _stat.MaxMagazine;
+        _currentDurability = 1f;
         _originLocalPos = transform.localPosition;
     }
 
@@ -81,6 +88,7 @@ public abstract class GunBase : MonoBehaviour
     public void TryShoot()
     {
         if (_isReloading || Time.time < _nextFireTime) return;
+        if (_currentDurability <= 0) return;
         if (_currentAmmo <= 0)
         {
             OnReloadRequested?.Invoke();
@@ -95,6 +103,8 @@ public abstract class GunBase : MonoBehaviour
         _soundGizmoTimer = 1f;
         _currentAmmo--;
         OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
+        _currentDurability = Mathf.Max(0f, _currentDurability - _durabilityDecreasePerShot);
+        OnDurabilityChanged?.Invoke(_currentDurability);
         _nextFireTime = Time.time + 60f / _stat.Rpm;
         _recoilDist = _stat.RecoilForce;
         Vector2 muzzleScreen = Camera.main.WorldToScreenPoint(_muzzle.position);

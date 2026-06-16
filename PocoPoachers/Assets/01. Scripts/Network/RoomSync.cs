@@ -98,7 +98,7 @@ public static class RoomSync
         }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
     }
 
-    public static void StatSync(float hp, float maxHp, float stamina = 0f, float hunger = 0f, float thirst = 0f, float defense = 0f)
+    public static void StatSync(float hp, float maxHp, float stamina = 0f, float battery = 0f, float defense = 0f)
     {
         if (IsSolo) return;
 
@@ -109,8 +109,7 @@ public static class RoomSync
                 Hp       = hp,
                 MaxHp    = maxHp,
                 Stamina  = stamina,
-                Hunger   = hunger,
-                Thirst   = thirst,
+                Battery  = battery,
                 Defense  = defense,
             }, H_StatSync.Pack, PacketType.H_StatSync);
         else
@@ -119,8 +118,7 @@ public static class RoomSync
                 Hp      = hp,
                 MaxHp   = maxHp,
                 Stamina = stamina,
-                Hunger  = hunger,
-                Thirst  = thirst,
+                Battery = battery,
                 Defense = defense,
             }, G_StatSync.Pack, PacketType.G_StatSync);
     }
