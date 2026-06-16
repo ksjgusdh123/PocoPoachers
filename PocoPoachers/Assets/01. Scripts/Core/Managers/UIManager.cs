@@ -7,6 +7,7 @@ public enum UIType
 {
     Inventory,
     Storage,
+    EnhancementTable,
     ItemBoxReveal,
     EquipContextMenu,
     IngameMenu,

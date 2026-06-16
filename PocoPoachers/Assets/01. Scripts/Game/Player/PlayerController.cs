@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject PlayerMainGameUI;
     [SerializeField] private GameObject boxUI;
     [SerializeField] private GameObject StorageUI;
+    [SerializeField] private GameObject EnhancementTableUI;
     [SerializeField] private CameraController _cameraController;
     [SerializeField] private float _useItemDuration = 1.5f;
 
@@ -22,6 +23,7 @@ public class PlayerController : MonoBehaviour
     public Inventory PlayerInventory => _inventory;
     public GameObject BoxUI => boxUI;
     public GameObject GetStorageUI => StorageUI;
+    public GameObject GetEnhancementTableUI => EnhancementTableUI;
 
     private Inventory _inventory;
     private PlayerStat _playerStat;
@@ -69,6 +71,7 @@ public class PlayerController : MonoBehaviour
         var ui = UIManager.GetInstance();
         ui.Register(UIType.Inventory, PlayerBagUI);
         ui.Register(UIType.Storage, StorageUI);
+        ui.Register(UIType.EnhancementTable, EnhancementTableUI);
         ui.Register(UIType.ItemBoxReveal, boxUI);
         ui.OnPanelOpened += OnPanelOpened;
         ui.OnPanelClosed += OnPanelClosed;
@@ -95,6 +98,7 @@ public class PlayerController : MonoBehaviour
         if (ui == null) return;
         ui.Unregister(UIType.Inventory);
         ui.Unregister(UIType.Storage);
+        ui.Unregister(UIType.EnhancementTable);
         ui.Unregister(UIType.ItemBoxReveal);
         ui.OnPanelOpened -= OnPanelOpened;
         ui.OnPanelClosed -= OnPanelClosed;
@@ -104,16 +108,18 @@ public class PlayerController : MonoBehaviour
     {
         if (type == UIType.Inventory)
             PlayerMainGameUI.SetActive(false);
-        else if (type != UIType.IngameMenu)
+        else if (type != UIType.IngameMenu && type != UIType.EnhancementTable)
             return;
 
         LockCamera(true);
-        _inputHander.SwitchInputActionMap(PlayerInputMapType.Inventory);
+        _inputHander.SwitchInputActionMap(type == UIType.EnhancementTable
+            ? PlayerInputMapType.ItemBox
+            : PlayerInputMapType.Inventory);
     }
 
     private void OnPanelClosed(UIType type)
     {
-        if (type != UIType.Inventory && type != UIType.IngameMenu) return;
+        if (type != UIType.Inventory && type != UIType.IngameMenu && type != UIType.EnhancementTable) return;
         if (UIManager.GetInstance().IsAnyPanelOpen) return;
 
         if (type == UIType.Inventory)
