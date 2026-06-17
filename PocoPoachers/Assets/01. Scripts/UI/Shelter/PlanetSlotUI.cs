@@ -12,7 +12,7 @@ public class PlanetSlotUI : MonoBehaviour
     public void Setup(PlanetData data, bool isUnlocked)
     {
         _data = data;
-        _nameText.text = data.PlanetName;
+        _nameText.text = LocalizationManager.GetInstance().GetString(data.PlanetName);
         _button.interactable = isUnlocked;
         _button.onClick.AddListener(OnClick);
     }
