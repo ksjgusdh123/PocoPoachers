@@ -14,8 +14,8 @@ public class DescriptionUI : MonoBehaviour
         if (slot.InventoryUI != null && slot.InventoryUI.IsSlotUnrevealed(slot.SlotIndex)) return;
         if (!gameObject.activeSelf) gameObject.SetActive(true);
         transform.position = slot.transform.position + _offset;
-        _name.text = slot.SlotItemData.ItemName;
-        _description.text = slot.SlotItemData.Description;
+        _name.text = LocalizationManager.GetInstance().GetString(slot.SlotItemData.ItemName);
+        _description.text = LocalizationManager.GetInstance().GetString(slot.SlotItemData.Description);
     }
 
     public void HideDescription()

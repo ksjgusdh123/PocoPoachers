@@ -201,7 +201,9 @@ public class Inventory : MonoBehaviour
             if (b.IsEmpty) return -1;
 
             int typeCompare = a.ItemData.ItemType.CompareTo(b.ItemData.ItemType);
-            return typeCompare != 0 ? typeCompare : string.Compare(a.ItemData.ItemName, b.ItemData.ItemName);
+            return typeCompare != 0 ? typeCompare : string.Compare(
+                LocalizationManager.GetInstance().GetString(a.ItemData.ItemName),
+                LocalizationManager.GetInstance().GetString(b.ItemData.ItemName));
         }));
 
         ChangeInventory?.Invoke();

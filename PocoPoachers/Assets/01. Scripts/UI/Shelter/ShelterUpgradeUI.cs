@@ -55,7 +55,7 @@ public class ShelterUpgradeUI : UIBase
     private void SetItemRow(TextMeshProUGUI nameText, TextMeshProUGUI countText, int itemId, int required)
     {
         var itemData = ItemTable.Instance.Get(itemId);
-        nameText.text = itemData != null ? itemData.Name : $"ID:{itemId}";
+        nameText.text = itemData != null ? LocalizationManager.GetInstance().GetString(itemData.Name) : $"ID:{itemId}";
         int current = (itemData != null && _storage != null) ? _storage.GetItemCount(itemData) : 0;
         countText.text = $"{current} / {required}";
     }

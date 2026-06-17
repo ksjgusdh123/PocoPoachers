@@ -10,7 +10,7 @@ public abstract class ItemSlotUIBase : SlotUIBase
     {
         SetIcon(data);
         if (_nameText != null)
-            _nameText.text = data != null ? data.ItemName : "";
+            _nameText.text = data != null ? LocalizationManager.GetInstance().GetString(data.ItemName) : "";
         if (_amountText != null)
             _amountText.text = data != null && amount >= 1 ? amount.ToString() : "";
     }

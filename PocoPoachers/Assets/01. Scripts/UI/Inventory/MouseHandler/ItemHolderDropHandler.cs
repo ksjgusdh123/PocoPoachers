@@ -62,7 +62,7 @@ public abstract class ItemHolderDropHandler : BaseDropHandler, IPointerClickHand
     {
         DroppedItemData = data;
         DroppedAmount = amount;
-        _nameText.text = data.ItemName;
+        _nameText.text = LocalizationManager.GetInstance().GetString(data.ItemName);
         _icon.sprite = ResourceManager.Instance.LoadSprite(data.icon);
         _icon.gameObject.SetActive(true);
         _isSetted = true;

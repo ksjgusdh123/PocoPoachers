@@ -103,7 +103,7 @@ public class PlayerEnhancement : MonoBehaviour
             if (materialCost == null || materialCost.amount <= 0) continue;
 
             var itemData = DataManager.GetItem(materialCost.itemId);
-            string itemName = itemData != null ? itemData.ItemName : $"Unknown Item({materialCost.itemId})";
+            string itemName = itemData != null ? LocalizationManager.GetInstance().GetString(itemData.ItemName) : $"Unknown Item({materialCost.itemId})";
 
             if (sb.Length > 0) sb.Append(", ");
             sb.Append(itemName);
