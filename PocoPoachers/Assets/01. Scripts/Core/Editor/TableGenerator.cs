@@ -70,6 +70,9 @@ public class TableGeneratorTool
         var (headers, rows) = ReadCsv(csvPath);
         if (headers.Length == 0 || rows.Count == 0) return;
 
+        (headers, rows) = StripDesignerColumns(headers, rows);
+        if (headers.Length == 0) return;
+
         var types = InferTypes(headers, rows);
         var enumColumns = BuildEnumColumns(className, headers, rows);
         foreach (var pair in enumColumns)
@@ -81,6 +84,17 @@ public class TableGeneratorTool
         WriteJson(fileName, headers, types, rows, enumColumns, clientJsonOut);
 
         Debug.Log($"[{ToolName}] 변환 완료: {Path.GetFileName(csvPath)}");
+    }
+
+    // 헤더가 '_'로 시작하는 컬럼은 기획용 메모로 간주하고 C#/JSON 생성에서 제외한다.
+    private static (string[] headers, List<string[]> rows) StripDesignerColumns(string[] headers, List<string[]> rows)
+    {
+        var keepCols = Enumerable.Range(0, headers.Length).Where(i => !headers[i].StartsWith("_")).ToArray();
+        if (keepCols.Length == headers.Length) return (headers, rows);
+
+        var newHeaders = keepCols.Select(i => headers[i]).ToArray();
+        var newRows = rows.Select(row => keepCols.Select(i => i < row.Length ? row[i] : "").ToArray()).ToList();
+        return (newHeaders, newRows);
     }
 
     private static (string[] headers, List<string[]> rows) ReadCsv(string path)
