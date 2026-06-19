@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class PlanetSlotUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _nameText;
+    [SerializeField] private Image _icon;
     [SerializeField] private Button _button;
 
     private PlanetData _data;
@@ -13,6 +14,7 @@ public class PlanetSlotUI : MonoBehaviour
     {
         _data = data;
         _nameText.text = LocalizationManager.GetInstance().GetString(data.PlanetName);
+        _icon.sprite = ResourceManager.Instance.LoadSprite(data.IconPath);
         _button.interactable = isUnlocked;
         _button.onClick.AddListener(OnClick);
     }

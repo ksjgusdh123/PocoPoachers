@@ -32,7 +32,7 @@ public class SaveSlotButtonUI : MonoBehaviour
         bool hasSave = sm.HasSave(slotIndex);
 
         if (_txtInfo != null)
-            _txtInfo.text = hasSave ? sm.GetLastSavedAt(slotIndex) : "빈 슬롯";
+            _txtInfo.text = hasSave ? sm.GetLastSavedAt(slotIndex) : LocalizationManager.GetInstance().GetString("save.empty_slot");
 
         if (_btn != null)
             _btn.interactable = hasSave;

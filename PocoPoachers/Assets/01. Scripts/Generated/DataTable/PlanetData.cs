@@ -13,6 +13,7 @@ public partial class PlanetData
     public float max_session_time;
     public float fog_density;
     public float draw_distance;
+    public string icon = "";
 
     public int Id { get => id; set => id = value; }
 
@@ -31,5 +32,7 @@ public partial class PlanetData
     public float FogDensity { get => fog_density; set => fog_density = value; }
 
     public float DrawDistance { get => draw_distance; set => draw_distance = value; }
+
+    public string IconPath { get => icon; set => icon = value; }
 
 }

@@ -27,7 +27,7 @@ public class ShelterUpgradeUI : UIBase
     private void Refresh()
     {
         var shelter = ShelterManager.GetInstance();
-        _levelText.text = $"쉘터 Lv. {shelter.CurrentLevel}";
+        _levelText.text = string.Format(LocalizationManager.GetInstance().GetString("shelter.level_format"), shelter.CurrentLevel);
 
         var next = shelter.GetNextLevelData();
         if (next == null)
