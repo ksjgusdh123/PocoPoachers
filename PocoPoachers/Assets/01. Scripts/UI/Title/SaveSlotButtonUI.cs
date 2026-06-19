@@ -13,6 +13,7 @@ public class SaveSlotButtonUI : MonoBehaviour
     [SerializeField] private Button _btnDelete;
 
     private int _slotIndex;
+    private bool _hasSave;
 
     private void Awake()
     {
@@ -24,20 +25,38 @@ public class SaveSlotButtonUI : MonoBehaviour
         });
     }
 
+    private void OnEnable()
+    {
+        LocalizationManager.GetInstance().OnLanguageChanged += RefreshInfoText;
+    }
+
+    private void OnDisable()
+    {
+        var manager = LocalizationManager.GetInstance();
+        if (manager == null) return;
+        manager.OnLanguageChanged -= RefreshInfoText;
+    }
+
     public void Init(int slotIndex)
     {
         _slotIndex = slotIndex;
 
         var sm = SaveManager.GetInstance();
-        bool hasSave = sm.HasSave(slotIndex);
+        _hasSave = sm.HasSave(slotIndex);
 
-        if (_txtInfo != null)
-            _txtInfo.text = hasSave ? sm.GetLastSavedAt(slotIndex) : LocalizationManager.GetInstance().GetString("save.empty_slot");
+        RefreshInfoText();
 
         if (_btn != null)
-            _btn.interactable = hasSave;
+            _btn.interactable = _hasSave;
 
         if (_btnDelete != null)
-            _btnDelete.interactable = hasSave;
+            _btnDelete.interactable = _hasSave;
+    }
+
+    private void RefreshInfoText()
+    {
+        if (_txtInfo == null) return;
+        var sm = SaveManager.GetInstance();
+        _txtInfo.text = _hasSave ? sm.GetLastSavedAt(_slotIndex) : LocalizationManager.GetInstance().GetString("save.empty_slot");
     }
 }

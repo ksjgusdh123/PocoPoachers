@@ -18,6 +18,18 @@ public class ShelterUpgradeUI : UIBase
 
     private Inventory _storage;
 
+    private void OnEnable()
+    {
+        LocalizationManager.GetInstance().OnLanguageChanged += Refresh;
+    }
+
+    private void OnDisable()
+    {
+        var manager = LocalizationManager.GetInstance();
+        if (manager == null) return;
+        manager.OnLanguageChanged -= Refresh;
+    }
+
     public void Open(Inventory storage)
     {
         _storage = storage;

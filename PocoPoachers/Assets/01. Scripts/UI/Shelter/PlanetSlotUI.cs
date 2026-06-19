@@ -10,13 +10,31 @@ public class PlanetSlotUI : MonoBehaviour
 
     private PlanetData _data;
 
+    private void OnEnable()
+    {
+        LocalizationManager.GetInstance().OnLanguageChanged += RefreshName;
+    }
+
+    private void OnDisable()
+    {
+        var manager = LocalizationManager.GetInstance();
+        if (manager == null) return;
+        manager.OnLanguageChanged -= RefreshName;
+    }
+
     public void Setup(PlanetData data, bool isUnlocked)
     {
         _data = data;
-        _nameText.text = LocalizationManager.GetInstance().GetString(data.PlanetName);
+        RefreshName();
         _icon.sprite = ResourceManager.Instance.LoadSprite(data.IconPath);
         _button.interactable = isUnlocked;
         _button.onClick.AddListener(OnClick);
+    }
+
+    private void RefreshName()
+    {
+        if (_data == null) return;
+        _nameText.text = LocalizationManager.GetInstance().GetString(_data.PlanetName);
     }
 
     private void OnClick()
