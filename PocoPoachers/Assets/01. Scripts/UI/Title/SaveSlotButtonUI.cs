@@ -27,6 +27,7 @@ public class SaveSlotButtonUI : MonoBehaviour
 
     private void OnEnable()
     {
+        RefreshInfoText();
         LocalizationManager.GetInstance().OnLanguageChanged += RefreshInfoText;
     }
 

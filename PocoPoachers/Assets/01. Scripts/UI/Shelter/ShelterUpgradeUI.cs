@@ -20,6 +20,7 @@ public class ShelterUpgradeUI : UIBase
 
     private void OnEnable()
     {
+        Refresh();
         LocalizationManager.GetInstance().OnLanguageChanged += Refresh;
     }
 

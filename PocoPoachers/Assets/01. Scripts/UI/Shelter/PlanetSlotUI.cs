@@ -12,6 +12,7 @@ public class PlanetSlotUI : MonoBehaviour
 
     private void OnEnable()
     {
+        RefreshName();
         LocalizationManager.GetInstance().OnLanguageChanged += RefreshName;
     }
 
