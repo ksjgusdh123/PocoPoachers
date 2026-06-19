@@ -12,7 +12,7 @@ public abstract class ProgressUIBase : MonoBehaviour
     protected virtual void Awake()
     {
         Subscribe();
-        gameObject.SetActive(false);
+        Hide();
     }
 
     protected virtual void OnDestroy()
@@ -34,19 +34,29 @@ public abstract class ProgressUIBase : MonoBehaviour
             StopFilling();
     }
 
+    protected void Show() => gameObject.SetActive(true);
+    protected void Hide() => gameObject.SetActive(false);
+
     protected void StartFilling(float duration)
     {
         _duration = duration;
         _elapsed = 0f;
         _slider.value = 0f;
         _isFilling = true;
-        gameObject.SetActive(true);
+        Show();
     }
 
     protected void StopFilling()
     {
         _isFilling = false;
         _slider.value = 0f;
-        gameObject.SetActive(false);
+        Hide();
+    }
+
+    // 시간 기반이 아닌, 외부에서 계산된 진행률(예: AsyncOperation.progress)을 그대로 반영할 때 사용
+    protected void SetProgress(float value)
+    {
+        _isFilling = false;
+        _slider.value = Mathf.Clamp01(value);
     }
 }
