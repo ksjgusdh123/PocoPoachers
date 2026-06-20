@@ -88,6 +88,10 @@ GameObject:
   - component: {fileID: 4316088541578925105}
   - component: {fileID: 5046165650715079621}
   - component: {fileID: 2546489878523151994}
+  - component: {fileID: 8674998174659162563}
+  - component: {fileID: 5278562045186556185}
+  - component: {fileID: 7707555306937921155}
+  - component: {fileID: 6698582916204891045}
   m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
@@ -215,6 +219,9 @@ MonoBehaviour:
   PlayerMainGameUI: {fileID: 0}
   boxUI: {fileID: 0}
   StorageUI: {fileID: 0}
+  EnhancementTableUI: {fileID: 0}
+  GunEnhancementTableUI: {fileID: 0}
+  RepairWorkbenchUI: {fileID: 0}
   _cameraController: {fileID: 0}
   _useItemDuration: 1.5
 --- !u!114 &7471307466492674918
@@ -229,10 +236,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 249845d406ff2b347822e6d7e0857af2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  _moveSpeed: 5
-  _sprintSpeed: 8
   _acceleration: 10
-  _sprintStaminaDrain: 20
   _itemUseSpeedMultiplier: 0.4
   _sendInterval: 0.1
   _minMoveSqrEpsilon: 0.0004
@@ -267,7 +271,6 @@ MonoBehaviour:
   _dodgeSpeed: 10
   _dodgeDuration: 0.5
   _cooldown: 1
-  _dodgeStaminaCost: 25
   _recoveryDuration: 0.4
 --- !u!114 &6044460246266960544
 MonoBehaviour:
@@ -338,10 +341,12 @@ MonoBehaviour:
   _maxStamina: 100
   _staminaRegenRate: 15
   _staminaRegenDelay: 1
-  _maxHunger: 100
-  _maxThirst: 100
-  _hungerDrainRate: 1
-  _thirstDrainRate: 2
+  _sprintStaminaDrain: 10
+  _dodgeStaminaCost: 20
+  _moveSpeed: 5
+  _sprintSpeed: 8
+  _maxBattery: 100
+  _reduceBatteryRate: 1
 --- !u!114 &6791762616065091423
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -395,6 +400,97 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BagMount
   _bagMountPoint: {fileID: 3520312019052795702}
+--- !u!114 &8674998174659162563
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8183887473744995871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d81dd72221d6fc942bc00fcd503d4057, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerVision
+  _visionConfig: {fileID: 11400000, guid: 645df1c7444f4a148a6b1bc4721f06a1, type: 2}
+  _eyeHeight: 0.05
+  _detectInterval: 0.2
+  _targetLayer:
+    serializedVersion: 2
+    m_Bits: 2048
+  _wallLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  _showVision: 0
+  _visionColor: {r: 0, g: 1, b: 1, a: 0.8}
+  _lineWidth: 0.05
+--- !u!114 &5278562045186556185
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8183887473744995871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4726609a76b51cc489dd13e6e92f9371, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FogOfWarRenderer
+  _visionConfig: {fileID: 11400000, guid: 645df1c7444f4a148a6b1bc4721f06a1, type: 2}
+  _groundOffset: 0.05
+  _overlaySize: 500
+  _darkColor: {r: 0, g: 0, b: 0, a: 0.6}
+  _wallLayer:
+    serializedVersion: 2
+    m_Bits: 256
+  _blurSize: 3
+  _blurIterations: 2
+--- !u!114 &7707555306937921155
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8183887473744995871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11f33d49750b7b34c83a8a4ad569f394, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkinnedOutline
+  _color: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  _width: 0.0408
+  _waveSpeed: 3
+  _waveFrequency: 5
+  _waveAmplitude: 0.05
+--- !u!114 &6698582916204891045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8183887473744995871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f8adcc067994e2a9a2d2c3bb1cbf519, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerEnhancement
+  _maxHpLevel: 0
+  _maxBatteryLevel: 0
+  _maxStaminaLevel: 0
+  _moveSpeedLevel: 0
+  _maxLevel: 4
+  _baseCost: 2
+  _costIncreasePerLevel: 2
+  _maxHpIncreasePerLevel: 10
+  _maxBatteryIncreasePerLevel: 10
+  _maxStaminaIncreasePerLevel: 10
+  _moveSpeedIncreasePerLevel: 0.25
+  _costTables:
+  - statType: 0
+    levelCosts:
+    - materials:
+      - itemId: 101
+        amount: 1
 --- !u!1001 &8572826895787655771
 PrefabInstance:
   m_ObjectHideFlags: 0
