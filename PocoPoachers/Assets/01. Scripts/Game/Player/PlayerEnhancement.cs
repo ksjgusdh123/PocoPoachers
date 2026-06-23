@@ -1,31 +1,10 @@
-using System;
-using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using UnityEngine;
 
 [RequireComponent(typeof(PlayerStat))]
 public class PlayerEnhancement : MonoBehaviour
 {
-    [Serializable]
-    private class EnhancementMaterialCost
-    {
-        public int itemId = 0;
-        public int amount = 1;
-    }
-
-    [Serializable]
-    private class EnhancementLevelCost
-    {
-        public List<EnhancementMaterialCost> materials = new();
-    }
-
-    [Serializable]
-    private class EnhancementCostTable
-    {
-        public EnhancementStatType statType = EnhancementStatType.MaxHp;
-        public List<EnhancementLevelCost> levelCosts = new();
-    }
-
     [Header("Level")]
     [SerializeField] private int _maxHpLevel;
     [SerializeField] private int _maxBatteryLevel;
@@ -40,7 +19,6 @@ public class PlayerEnhancement : MonoBehaviour
     [SerializeField] private float _maxBatteryIncreasePerLevel = 10f;
     [SerializeField] private float _maxStaminaIncreasePerLevel = 10f;
     [SerializeField] private float _moveSpeedIncreasePerLevel = 0.25f;
-    [SerializeField] private List<EnhancementCostTable> _costTables = new();
 
     private PlayerStat _playerStat;
     private Inventory _inventory;
@@ -93,25 +71,27 @@ public class PlayerEnhancement : MonoBehaviour
     {
         if (IsMaxLevel(statType)) return "MAX";
 
-        var levelCost = GetLevelCost(statType);
-        if (levelCost == null || levelCost.materials == null || levelCost.materials.Count == 0)
-            return $"Parts x{GetCostAmount(statType)}";
+        var costData = GetCostData(statType);
+        if (costData == null) return $"Parts x{GetCostAmount(statType)}";
 
         var sb = new StringBuilder();
-        foreach (var materialCost in levelCost.materials)
-        {
-            if (materialCost == null || materialCost.amount <= 0) continue;
-
-            var itemData = DataManager.GetItem(materialCost.itemId);
-            string itemName = itemData != null ? LocalizationManager.GetInstance().GetString(itemData.ItemName) : $"Unknown Item({materialCost.itemId})";
-
-            if (sb.Length > 0) sb.Append(", ");
-            sb.Append(itemName);
-            sb.Append(" x");
-            sb.Append(materialCost.amount);
-        }
+        AppendCostText(sb, costData.NeedItem1Id, costData.NeedItem1Count);
+        AppendCostText(sb, costData.NeedItem2Id, costData.NeedItem2Count);
 
         return sb.Length > 0 ? sb.ToString() : $"Parts x{GetCostAmount(statType)}";
+    }
+
+    private void AppendCostText(StringBuilder sb, int itemId, int amount)
+    {
+        if (itemId <= 0 || amount <= 0) return;
+
+        var itemData = DataManager.GetItem(itemId);
+        string itemName = itemData != null ? LocalizationManager.GetInstance().GetString(itemData.ItemName) : $"Unknown Item({itemId})";
+
+        if (sb.Length > 0) sb.Append(", ");
+        sb.Append(itemName);
+        sb.Append(" x");
+        sb.Append(amount);
     }
 
     public bool TryEnhance(EnhancementStatType statType)
@@ -158,69 +138,47 @@ public class PlayerEnhancement : MonoBehaviour
         };
     }
 
-    private EnhancementLevelCost GetLevelCost(EnhancementStatType statType)
+    private EnhancementCostData GetCostData(EnhancementStatType statType)
     {
-        int level = GetLevel(statType);
-
-        foreach (var costTable in _costTables)
-        {
-            if (costTable == null || costTable.statType != statType) continue;
-            if (costTable.levelCosts == null || level < 0 || level >= costTable.levelCosts.Count) return null;
-
-            return costTable.levelCosts[level];
-        }
-
-        return null;
+        int nextLevel = GetLevel(statType) + 1;
+        return EnhancementCostTable.Instance.All.FirstOrDefault(d => d.stat == statType.ToString() && d.level == nextLevel);
     }
 
     private bool CanConsumeCost(EnhancementStatType statType)
     {
-        var levelCost = GetLevelCost(statType);
-        if (levelCost == null || levelCost.materials == null || levelCost.materials.Count == 0)
-            return true;
-
+        var costData = GetCostData(statType);
+        if (costData == null) return true;
         if (_inventory == null) return false;
 
-        foreach (var pair in GetRequiredAmounts(levelCost))
-        {
-            var itemData = DataManager.GetItem(pair.Key);
-            if (itemData == null) return false;
-            if (!_inventory.HasItem(itemData, pair.Value)) return false;
-        }
+        return HasItem(costData.NeedItem1Id, costData.NeedItem1Count)
+            && HasItem(costData.NeedItem2Id, costData.NeedItem2Count);
+    }
 
-        return true;
+    private bool HasItem(int itemId, int amount)
+    {
+        if (itemId <= 0 || amount <= 0) return true;
+
+        var itemData = DataManager.GetItem(itemId);
+        return itemData != null && _inventory.HasItem(itemData, amount);
     }
 
     private void ConsumeCost(EnhancementStatType statType)
     {
-        var levelCost = GetLevelCost(statType);
-        if (levelCost == null || levelCost.materials == null || levelCost.materials.Count == 0)
-            return;
+        var costData = GetCostData(statType);
+        if (costData == null) return;
 
-        foreach (var pair in GetRequiredAmounts(levelCost))
-        {
-            var itemData = DataManager.GetItem(pair.Key);
-            if (itemData == null) continue;
-
-            _inventory.RemoveItem(itemData, pair.Value);
-        }
+        RemoveItem(costData.NeedItem1Id, costData.NeedItem1Count);
+        RemoveItem(costData.NeedItem2Id, costData.NeedItem2Count);
     }
 
-    private Dictionary<int, int> GetRequiredAmounts(EnhancementLevelCost levelCost)
+    private void RemoveItem(int itemId, int amount)
     {
-        var requiredAmounts = new Dictionary<int, int>();
+        if (itemId <= 0 || amount <= 0) return;
 
-        foreach (var materialCost in levelCost.materials)
-        {
-            if (materialCost == null || materialCost.itemId <= 0 || materialCost.amount <= 0) continue;
+        var itemData = DataManager.GetItem(itemId);
+        if (itemData == null) return;
 
-            if (requiredAmounts.ContainsKey(materialCost.itemId))
-                requiredAmounts[materialCost.itemId] += materialCost.amount;
-            else
-                requiredAmounts[materialCost.itemId] = materialCost.amount;
-        }
-
-        return requiredAmounts;
+        _inventory.RemoveItem(itemData, amount);
     }
 
     private void ApplyToPlayerStat()

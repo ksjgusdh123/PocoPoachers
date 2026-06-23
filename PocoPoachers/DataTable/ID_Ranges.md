@@ -20,6 +20,7 @@
 | `2001 ~ 2999` | Enemy | ⚠️ TODO: 현재 1,2,3 → 2001,2002,2003 으로 변경 필요 |
 | `3001 ~ 3999` | Mineral (광물 오브젝트) | ⚠️ TODO: 현재 1,2,3 → 3001,3002,3003 으로 변경 필요 |
 | `4001 ~ 4999` | Shelter | |
+| `5001 ~ 5999` | EnhancementCost (PlayerEnhancement 강화 재료) | stat(EnhancementStatType 이름) + level 조합당 1행 |
 
 ---
 
