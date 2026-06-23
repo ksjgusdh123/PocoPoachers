@@ -13,5 +13,8 @@ public class Bootstrapper : MonoBehaviour
         SoundManager.GetInstance();
         LocalizationManager.GetInstance();
         UISoundManager.GetInstance();
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        CheatConsole.GetInstance();
+#endif
     }
 }

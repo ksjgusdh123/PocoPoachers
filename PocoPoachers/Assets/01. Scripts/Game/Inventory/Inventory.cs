@@ -133,7 +133,7 @@ public class Inventory : MonoBehaviour
                 if (firstAvailableIndex < 0) firstAvailableIndex = i;
                 remaining -= itemData.MaxStack;
             }
-            else if (_slots[i].ItemData == itemData)
+            else if (_slots[i].ItemData.id == itemData.id)
             {
                 if (firstAvailableIndex < 0) firstAvailableIndex = i;
                 remaining -= itemData.MaxStack - _slots[i].Amount;
@@ -143,6 +143,35 @@ public class Inventory : MonoBehaviour
         }
 
         return -1;
+    }
+
+    // 여러 슬롯에 걸쳐 아이템 추가, 실제 추가된 수량 반환
+    public int AddItem(ItemData itemData, int amount = 1)
+    {
+        if (itemData == null || amount <= 0) return 0;
+
+        int remaining = amount;
+        int added = 0;
+
+        while (remaining > 0)
+        {
+            int slotIndex = CanAddItem(itemData, remaining);
+            if (slotIndex < 0) break;
+
+            var slot = _slots[slotIndex];
+            int space = slot.IsEmpty ? itemData.MaxStack : itemData.MaxStack - slot.Amount;
+            int toAdd = Mathf.Min(remaining, space);
+
+            if (!AddItemAtSlot(slotIndex, itemData, toAdd)) break;
+
+            added += toAdd;
+            remaining -= toAdd;
+        }
+
+        if (added > 0)
+            ChangeInventory?.Invoke();
+
+        return added;
     }
 
     public bool HasItem(ItemData itemData, int amount = 1)
@@ -155,7 +184,7 @@ public class Inventory : MonoBehaviour
         int count = 0;
         for (int i = 0; i < _currentCapacity; i++)
         {
-            if (!_slots[i].IsEmpty && _slots[i].ItemData == itemData)
+            if (!_slots[i].IsEmpty && _slots[i].ItemData.id == itemData.id)
                 count += _slots[i].Amount;
         }
         return count;
@@ -167,7 +196,7 @@ public class Inventory : MonoBehaviour
         int remaining = amount;
         for (int i = 0; i < _currentCapacity && remaining > 0; i++)
         {
-            if (_slots[i].IsEmpty || _slots[i].ItemData != itemData) continue;
+            if (_slots[i].IsEmpty || _slots[i].ItemData.id != itemData.id) continue;
             remaining -= _slots[i].RemoveAmount(remaining);
         }
         ChangeInventory?.Invoke();

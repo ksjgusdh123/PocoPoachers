@@ -40,10 +40,14 @@ public class PlayerController : MonoBehaviour
 
     private const string PlayerSaveKey = "player_inventory";
 
+    private void Awake()
+    {
+        _inventory = GetComponent<Inventory>();
+    }
+
     private void Start()
     {
         _playerWeaponController = GetComponent<WeaponController>();
-        _inventory = GetComponent<Inventory>();
         _saveManager = SaveManager.GetInstance();
 
         _playerStat = GetComponent<PlayerStat>();
@@ -56,6 +60,8 @@ public class PlayerController : MonoBehaviour
             _saveManager.LoadInventory(PlayerSaveKey, _inventory);
             gm.SetLoadPlayerInventory(false);
         }
+
+        BindPlayerInventoryUI();
 
         _quickSlots = FindObjectsByType<QuickSlotDropHandler>(FindObjectsInactive.Include)
             .OrderBy(s => s.gameObject.name).ToArray();
@@ -85,6 +91,12 @@ public class PlayerController : MonoBehaviour
         ui.OnPanelClosed += OnPanelClosed;
 
         InitEquipSlots();
+    }
+
+    private void BindPlayerInventoryUI()
+    {
+        if (PlayerBagUI == null || _inventory == null) return;
+        PlayerBagUI.GetComponentInChildren<InventoryUI>(true)?.Bind(_inventory);
     }
 
     private void InitQuickSlots()
