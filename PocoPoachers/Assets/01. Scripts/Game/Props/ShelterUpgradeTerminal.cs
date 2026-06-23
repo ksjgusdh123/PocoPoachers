@@ -6,10 +6,12 @@ public class ShelterUpgradeTerminal : MonoBehaviour, IInteractable
     {
         player.LockCamera(true);
         player.SwitchInputMap(PlayerInputMapType.ItemBox);
-        UIManager.GetInstance().Show(UIType.ShelterUpgrade);
 
         var storage = FindAnyObjectByType<Storage>();
-        FindAnyObjectByType<ShelterUpgradeUI>(FindObjectsInactive.Include)?.Open(storage?.StorageInventory);
+        FindAnyObjectByType<ShelterUpgradeUI>(FindObjectsInactive.Include)
+            ?.Open(storage?.StorageInventory, player.PlayerInventory);
+
+        UIManager.GetInstance().Show(UIType.ShelterUpgrade);
     }
 
     public void OnInteractExit(PlayerController player)

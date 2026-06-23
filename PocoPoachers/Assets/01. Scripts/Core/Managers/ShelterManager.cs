@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 public class ShelterManager : Singleton<ShelterManager>
@@ -16,17 +15,36 @@ public class ShelterManager : Singleton<ShelterManager>
         return CurrentLevel >= planet.NeedShelterLevel;
     }
 
-    // 창고 인벤토리에서 재료를 소비하고 레벨 업
-    public bool TryUpgrade(Inventory storage)
+    // 플레이어 인벤 + 창고 재료를 합산해 소비 후 레벨 업 (플레이어 우선 차감)
+    public bool TryUpgrade(Inventory player, Inventory storage)
     {
         var nextData = GetNextLevelData();
         if (nextData == null) return false;
-        if (!HasRequiredItems(storage, nextData)) return false;
+        if (!HasRequiredItems(player, storage, nextData)) return false;
 
-        ConsumeItems(storage, nextData);
-        CurrentLevel = nextData.ShelterLevel;
-        SaveManager.GetInstance().SaveShelterLevel(CurrentLevel);
+        ConsumeItems(player, storage, nextData);
+        ApplyLevel(nextData.ShelterLevel);
         return true;
+    }
+
+    public bool ForceUpgradeLevel()
+    {
+        var nextData = GetNextLevelData();
+        if (nextData == null) return false;
+
+        ApplyLevel(nextData.ShelterLevel);
+        return true;
+    }
+
+    public void SetLevel(int level)
+    {
+        ApplyLevel(Mathf.Max(1, level));
+    }
+
+    void ApplyLevel(int level)
+    {
+        CurrentLevel = level;
+        SaveManager.GetInstance().SaveShelterLevel(CurrentLevel);
     }
 
     public ShelterData GetNextLevelData()
@@ -37,30 +55,49 @@ public class ShelterManager : Singleton<ShelterManager>
         return null;
     }
 
-    public bool HasRequiredItems(Inventory storage, ShelterData data)
+    public bool HasRequiredItems(Inventory player, Inventory storage, ShelterData data)
     {
-        return CheckItem(storage, data.NeedItem1Id, data.NeedItem1Count)
-            && CheckItem(storage, data.NeedItem2Id, data.NeedItem2Count);
+        return CheckItem(player, storage, data.NeedItem1Id, data.NeedItem1Count)
+            && CheckItem(player, storage, data.NeedItem2Id, data.NeedItem2Count);
     }
 
-    private bool CheckItem(Inventory storage, int itemId, int count)
+    public int GetCombinedItemCount(Inventory player, Inventory storage, int itemId)
+    {
+        if (itemId == 0) return 0;
+
+        var itemData = ItemTable.Instance.Get(itemId);
+        if (itemData == null) return 0;
+
+        int count = 0;
+        if (player != null) count += player.GetItemCount(itemData);
+        if (storage != null) count += storage.GetItemCount(itemData);
+        return count;
+    }
+
+    private bool CheckItem(Inventory player, Inventory storage, int itemId, int count)
     {
         if (itemId == 0) return true;
-        if (storage == null) return false;
-        var itemData = ItemTable.Instance.Get(itemId);
-        return itemData != null && storage.GetItemCount(itemData) >= count;
+        return GetCombinedItemCount(player, storage, itemId) >= count;
     }
 
-    private void ConsumeItems(Inventory storage, ShelterData data)
+    private void ConsumeItems(Inventory player, Inventory storage, ShelterData data)
     {
-        TryConsume(storage, data.NeedItem1Id, data.NeedItem1Count);
-        TryConsume(storage, data.NeedItem2Id, data.NeedItem2Count);
+        TryConsume(player, storage, data.NeedItem1Id, data.NeedItem1Count);
+        TryConsume(player, storage, data.NeedItem2Id, data.NeedItem2Count);
     }
 
-    private void TryConsume(Inventory storage, int itemId, int count)
+    private void TryConsume(Inventory player, Inventory storage, int itemId, int count)
     {
         if (itemId == 0) return;
+
         var itemData = ItemTable.Instance.Get(itemId);
-        if (itemData != null) storage.RemoveItem(itemData, count);
+        if (itemData == null) return;
+
+        int remaining = count;
+        if (player != null)
+            remaining -= player.RemoveItem(itemData, remaining);
+
+        if (remaining > 0 && storage != null)
+            storage.RemoveItem(itemData, remaining);
     }
 }

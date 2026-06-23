@@ -25,6 +25,8 @@ public class CheatConsole : Singleton<CheatConsole>
     bool _focusInput;
     string _input = string.Empty;
     Vector2 _scroll;
+    bool _scrollToBottom;
+    GUIStyle _logStyle;
 
     protected override void Awake()
     {
@@ -39,6 +41,7 @@ public class CheatConsole : Singleton<CheatConsole>
         _commands["give"] = new CheatEntry { Usage = "give <itemId> [amount]", Handler = CmdGive };
         _commands["clear"] = new CheatEntry { Usage = "clear", Handler = _ => CmdClear() };
         _commands["items"] = new CheatEntry { Usage = "items [limit]", Handler = CmdItems };
+        _commands["shelter"] = new CheatEntry { Usage = "shelter [level <n>|upgrade|need]", Handler = CmdShelter };
     }
 
     void Update()
@@ -73,21 +76,34 @@ public class CheatConsole : Singleton<CheatConsole>
         if (!_isVisible)
             return;
 
-        const float width = 640f;
-        const float height = 360f;
+        EnsureLogStyle();
+
+        const float width = 720f;
+        const float height = 420f;
         var rect = new Rect(16f, 16f, width, height);
 
         GUI.Box(rect, "Cheat Console");
 
-        var logRect = new Rect(rect.x + 8f, rect.y + 24f, rect.width - 16f, rect.height - 64f);
-        var viewRect = new Rect(0f, 0f, logRect.width - 24f, _log.Count * 20f + 8f);
+        var logRect = new Rect(rect.x + 8f, rect.y + 28f, rect.width - 16f, rect.height - 72f);
+        string content = string.Join("\n", _log);
+        float contentWidth = logRect.width - 20f;
+        float contentHeight = _logStyle.CalcHeight(new GUIContent(content), contentWidth);
+        contentHeight = Mathf.Max(contentHeight, logRect.height);
 
-        _scroll = GUI.BeginScrollView(logRect, _scroll, viewRect);
-        GUI.Label(new Rect(0f, 0f, viewRect.width, viewRect.height), string.Join("\n", _log));
+        var viewRect = new Rect(0f, 0f, contentWidth, contentHeight);
+
+        if (_scrollToBottom)
+        {
+            _scroll.y = Mathf.Max(0f, contentHeight - logRect.height);
+            _scrollToBottom = false;
+        }
+
+        _scroll = GUI.BeginScrollView(logRect, _scroll, viewRect, false, true);
+        GUI.Label(new Rect(0f, 0f, contentWidth, contentHeight), content, _logStyle);
         GUI.EndScrollView();
 
         GUI.SetNextControlName(InputControlName);
-        var inputRect = new Rect(rect.x + 8f, rect.y + rect.height - 32f, rect.width - 16f, 24f);
+        var inputRect = new Rect(rect.x + 8f, rect.y + rect.height - 36f, rect.width - 16f, 28f);
         _input = GUI.TextField(inputRect, _input);
 
         if (_focusInput)
@@ -95,6 +111,20 @@ public class CheatConsole : Singleton<CheatConsole>
             GUI.FocusControl(InputControlName);
             _focusInput = false;
         }
+    }
+
+    void EnsureLogStyle()
+    {
+        if (_logStyle != null)
+            return;
+
+        _logStyle = new GUIStyle(GUI.skin.label)
+        {
+            wordWrap = true,
+            richText = false,
+            fontSize = 14,
+            clipping = TextClipping.Overflow,
+        };
     }
 
     void Submit(string line)
@@ -216,6 +246,126 @@ public class CheatConsole : Singleton<CheatConsole>
         Log($"총 {count}개 표시 (items [limit])");
     }
 
+    void CmdShelter(string[] args)
+    {
+        if (!RequireHost())
+            return;
+
+        var shelter = ShelterManager.GetInstance();
+
+        if (args.Length == 0)
+        {
+            LogShelterStatus(shelter);
+            return;
+        }
+
+        if (string.Equals(args[0], "level", StringComparison.OrdinalIgnoreCase))
+        {
+            if (args.Length < 2 || !int.TryParse(args[1], out int level))
+            {
+                Log("사용법: shelter level <n>");
+                return;
+            }
+
+            shelter.SetLevel(level);
+            Log($"[CHEAT] 쉘터 Lv.{shelter.CurrentLevel} 설정");
+            return;
+        }
+
+        if (string.Equals(args[0], "upgrade", StringComparison.OrdinalIgnoreCase))
+        {
+            if (!shelter.ForceUpgradeLevel())
+            {
+                Log("이미 최대 레벨입니다.");
+                return;
+            }
+
+            Log($"[CHEAT] 쉘터 Lv.{shelter.CurrentLevel} 업그레이드");
+            return;
+        }
+
+        if (string.Equals(args[0], "need", StringComparison.OrdinalIgnoreCase))
+        {
+            GiveNextUpgradeMaterials(shelter);
+            return;
+        }
+
+        Log("사용법: shelter | shelter level <n> | shelter upgrade | shelter need");
+    }
+
+    void LogShelterStatus(ShelterManager shelter)
+    {
+        Log($"쉘터 Lv.{shelter.CurrentLevel}");
+
+        var next = shelter.GetNextLevelData();
+        if (next == null)
+        {
+            Log("다음 레벨 없음 (최대)");
+            return;
+        }
+
+        Log($"다음 Lv.{next.ShelterLevel}");
+        LogUpgradeRequirement(next, shelter);
+    }
+
+    void LogUpgradeRequirement(ShelterData data, ShelterManager shelter)
+    {
+        TryGetPlayerInventory(out var player);
+        var storage = FindStorageInventory();
+
+        if (data.NeedItem1Id != 0)
+        {
+            int have = shelter.GetCombinedItemCount(player, storage, data.NeedItem1Id);
+            Log($"  item {data.NeedItem1Id}: {have} / {data.NeedItem1Count}");
+        }
+
+        if (data.NeedItem2Id != 0)
+        {
+            int have = shelter.GetCombinedItemCount(player, storage, data.NeedItem2Id);
+            Log($"  item {data.NeedItem2Id}: {have} / {data.NeedItem2Count}");
+        }
+    }
+
+    void GiveNextUpgradeMaterials(ShelterManager shelter)
+    {
+        var next = shelter.GetNextLevelData();
+        if (next == null)
+        {
+            Log("이미 최대 레벨입니다.");
+            return;
+        }
+
+        if (!TryGetPlayerInventory(out var inventory))
+            return;
+
+        GiveUpgradeItem(inventory, next.NeedItem1Id, next.NeedItem1Count);
+        GiveUpgradeItem(inventory, next.NeedItem2Id, next.NeedItem2Count);
+        Log($"[CHEAT] Lv.{next.ShelterLevel} 업그레이드 재료 지급");
+    }
+
+    void GiveUpgradeItem(Inventory inventory, int itemId, int count)
+    {
+        if (itemId == 0 || count <= 0)
+            return;
+
+        var itemData = ItemTable.Instance.Get(itemId);
+        if (itemData == null)
+        {
+            Log($"아이템 ID {itemId}를 찾을 수 없습니다.");
+            return;
+        }
+
+        int added = inventory.AddItem(itemData, count);
+        if (added < count)
+            Log($"item {itemId}: {added}/{count}만 추가됨 (인벤토리 부족)");
+    }
+
+    static Inventory FindStorageInventory()
+    {
+        var storage = FindAnyObjectByType<Storage>(FindObjectsInactive.Exclude);
+        return storage != null ? storage.StorageInventory : null;
+    }
+
     bool RequireHost()
     {
         if (RoomManager.IsHost)
@@ -266,7 +416,7 @@ public class CheatConsole : Singleton<CheatConsole>
         if (_log.Count > MaxLogLines)
             _log.RemoveAt(0);
 
-        _scroll.y = float.MaxValue;
+        _scrollToBottom = true;
     }
 }
 #endif

@@ -17,6 +17,20 @@ public class ShelterUpgradeUI : UIBase
     protected override UIType UiType => UIType.ShelterUpgrade;
 
     private Inventory _storage;
+    private Inventory _player;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        _upgradeButton.onClick.AddListener(OnClickUpgrade);
+    }
+
+    protected override void OnDestroy()
+    {
+        if (_upgradeButton != null)
+            _upgradeButton.onClick.RemoveListener(OnClickUpgrade);
+        base.OnDestroy();
+    }
 
     private void OnEnable()
     {
@@ -31,9 +45,10 @@ public class ShelterUpgradeUI : UIBase
         manager.OnLanguageChanged -= Refresh;
     }
 
-    public void Open(Inventory storage)
+    public void Open(Inventory storage, Inventory player)
     {
         _storage = storage;
+        _player = player;
         Refresh();
     }
 
@@ -62,20 +77,24 @@ public class ShelterUpgradeUI : UIBase
         if (hasItem2)
             SetItemRow(_item2NameText, _item2CountText, next.NeedItem2Id, next.NeedItem2Count);
 
-        _upgradeButton.interactable = shelter.HasRequiredItems(_storage, next);
+        _upgradeButton.interactable = shelter.HasRequiredItems(_player, _storage, next);
     }
 
     private void SetItemRow(TextMeshProUGUI nameText, TextMeshProUGUI countText, int itemId, int required)
     {
         var itemData = ItemTable.Instance.Get(itemId);
         nameText.text = itemData != null ? LocalizationManager.GetInstance().GetString(itemData.Name) : $"ID:{itemId}";
-        int current = (itemData != null && _storage != null) ? _storage.GetItemCount(itemData) : 0;
+        int current = ShelterManager.GetInstance().GetCombinedItemCount(_player, _storage, itemId);
         countText.text = $"{current} / {required}";
     }
 
     public void OnClickUpgrade()
     {
-        if (!ShelterManager.GetInstance().TryUpgrade(_storage)) return;
+        if (!ShelterManager.GetInstance().TryUpgrade(_player, _storage)) return;
+
+        if (_storage != null)
+            SaveManager.GetInstance().SaveInventory("storage", _storage);
+
         Refresh();
     }
 }

@@ -29,6 +29,10 @@ help                  명령 목록
 give <itemId> [amount]  아이템 지급
 clear                 인벤토리 비우기
 items [limit]         아이템 ID 목록
+shelter               쉘터 레벨/재료 확인
+shelter level <n>     쉘터 레벨 설정
+shelter upgrade       재료 없이 1레벨 업
+shelter need          다음 업그레이드 재료 지급
 ```
 
 ### 예시
