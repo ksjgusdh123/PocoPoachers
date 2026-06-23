@@ -13,8 +13,6 @@ public class PlayerEnhancement : MonoBehaviour
 
     [Header("Config")]
     [SerializeField] private int _maxLevel = 10;
-    [SerializeField] private int _baseCost = 2;
-    [SerializeField] private int _costIncreasePerLevel = 2;
     [SerializeField] private float _maxHpIncreasePerLevel = 10f;
     [SerializeField] private float _maxBatteryIncreasePerLevel = 10f;
     [SerializeField] private float _maxStaminaIncreasePerLevel = 10f;
@@ -61,24 +59,18 @@ public class PlayerEnhancement : MonoBehaviour
         return IsMaxLevel(statType) ? 0f : GetIncreasePerLevel(statType);
     }
 
-    public int GetCostAmount(EnhancementStatType statType)
-    {
-        if (IsMaxLevel(statType)) return 0;
-        return _baseCost + GetLevel(statType) * _costIncreasePerLevel;
-    }
-
     public string GetCostText(EnhancementStatType statType)
     {
         if (IsMaxLevel(statType)) return "MAX";
 
         var costData = GetCostData(statType);
-        if (costData == null) return $"Parts x{GetCostAmount(statType)}";
+        if (costData == null) return "-";
 
         var sb = new StringBuilder();
         AppendCostText(sb, costData.NeedItem1Id, costData.NeedItem1Count);
         AppendCostText(sb, costData.NeedItem2Id, costData.NeedItem2Count);
 
-        return sb.Length > 0 ? sb.ToString() : $"Parts x{GetCostAmount(statType)}";
+        return sb.Length > 0 ? sb.ToString() : "-";
     }
 
     private void AppendCostText(StringBuilder sb, int itemId, int amount)
@@ -147,7 +139,7 @@ public class PlayerEnhancement : MonoBehaviour
     private bool CanConsumeCost(EnhancementStatType statType)
     {
         var costData = GetCostData(statType);
-        if (costData == null) return true;
+        if (costData == null) return false;
         if (_inventory == null) return false;
 
         return HasItem(costData.NeedItem1Id, costData.NeedItem1Count)
