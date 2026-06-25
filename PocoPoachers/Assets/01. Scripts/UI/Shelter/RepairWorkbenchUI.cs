@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -9,6 +11,8 @@ public class RepairWorkbenchUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _costText;
     [SerializeField] private Button _repairButton;
 
+    private Inventory _player;
+
     private void Awake()
     {
         _repairSlot.OnItemSet += OnItemSet;
@@ -18,6 +22,8 @@ public class RepairWorkbenchUI : MonoBehaviour
 
     public void Open(PlayerController player)
     {
+        _player = player.PlayerInventory;
+        _repairSlot.BindInventoryUI(player.PlayerBagInventoryUI);
         Refresh();
     }
 
@@ -46,7 +52,31 @@ public class RepairWorkbenchUI : MonoBehaviour
 
         // TODO: ItemSlot 내구도 시스템 구현 후 실제 값으로 교체
         _durabilityText.text = "? / ?";
-        _costText.text = "?";
+        _costText.text = BuildCostText(_repairSlot.DroppedItemData);
+    }
+
+    private string BuildCostText(ItemData itemData)
+    {
+        var cost = RepairCostTable.Instance.All.FirstOrDefault(d => d.ItemId == itemData.Id);
+        if (cost == null) return "-";
+
+        var sb = new StringBuilder();
+        AppendItemRow(sb, cost.NeedItem1Id, cost.NeedItem1Count);
+        AppendItemRow(sb, cost.NeedItem2Id, cost.NeedItem2Count);
+
+        return sb.Length > 0 ? sb.ToString() : "-";
+    }
+
+    private void AppendItemRow(StringBuilder sb, int itemId, int required)
+    {
+        if (itemId == 0 || required <= 0) return;
+
+        var itemData = ItemTable.Instance.Get(itemId);
+        string name = itemData != null ? LocalizationManager.GetInstance().GetString(itemData.Name) : $"ID:{itemId}";
+        int current = _player != null ? _player.GetItemCount(itemData) : 0;
+
+        if (sb.Length > 0) sb.Append('\n');
+        sb.Append($"{name} {current} / {required}");
     }
 
     private void OnClickRepair()

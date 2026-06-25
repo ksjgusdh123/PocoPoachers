@@ -13,6 +13,8 @@ public abstract class ItemHolderDropHandler : BaseDropHandler, IPointerClickHand
     public ItemType ItemType => _itemType;
     public bool IsSetted => _isSetted;
 
+    public void BindInventoryUI(InventoryUI inventoryUI) => _inventoryUI = inventoryUI;
+
     public ItemData DroppedItemData { get; protected set; }
     public int DroppedAmount { get; protected set; }
     protected bool _isSetted;

@@ -21,6 +21,7 @@
 | `3001 ~ 3999` | Mineral (광물 오브젝트) | ⚠️ TODO: 현재 1,2,3 → 3001,3002,3003 으로 변경 필요 |
 | `4001 ~ 4999` | Shelter | |
 | `5001 ~ 5999` | EnhancementCost (PlayerEnhancement 강화 재료) | stat(EnhancementStatType 이름) + level 조합당 1행 |
+| `6001 ~ 6999` | RepairCost (수리 재료) | item_id(수리 대상 무기/헬멧/갑옷 ID)당 1행, 고정 비용 |
 
 ---
 

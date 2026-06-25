@@ -28,8 +28,10 @@ public class PlayerController : MonoBehaviour
     public GameObject GetEnhancementTableUI => EnhancementTableUI;
     public GameObject GetGunEnhancementTableUI => GunEnhancementTableUI;
     public GameObject GetRepairWorkbenchUI => RepairWorkbenchUI;
+    public InventoryUI PlayerBagInventoryUI => _playerBagInventoryUI;
 
     private Inventory _inventory;
+    private InventoryUI _playerBagInventoryUI;
     private PlayerStat _playerStat;
     private SaveManager _saveManager;
     private PlayerInputHandler _inputHander;
@@ -96,17 +98,17 @@ public class PlayerController : MonoBehaviour
     private void BindPlayerInventoryUI()
     {
         if (PlayerBagUI == null || _inventory == null) return;
-        PlayerBagUI.GetComponentInChildren<InventoryUI>(true)?.Bind(_inventory);
+        _playerBagInventoryUI = PlayerBagUI.GetComponentInChildren<InventoryUI>(true);
+        _playerBagInventoryUI?.Bind(_inventory);
     }
 
     private void InitQuickSlots()
     {
         var quickSlotInventory = GetComponent<QuickSlotInventory>();
-        var inventoryUI = PlayerBagUI.GetComponentInChildren<InventoryUI>(true);
 
         int count = Mathf.Min(_quickSlots.Length, quickSlotInventory.SlotCount);
         for (int i = 0; i < count; i++)
-            _quickSlots[i].Init(inventoryUI, quickSlotInventory, quickSlotInventory.StartIndex + i);
+            _quickSlots[i].Init(_playerBagInventoryUI, quickSlotInventory, quickSlotInventory.StartIndex + i);
     }
 
     private void InitEquipSlots()
