@@ -23,6 +23,7 @@ public class Bullet : MonoBehaviour
     private TrailRenderer _trail;
     private GameObject _attacker;
     private int _attackerLayer = -1;
+    private Color _color;
 
     private void Awake()
     {
@@ -31,7 +32,7 @@ public class Bullet : MonoBehaviour
         _applyDamage = RoomManager.IsHost;
     }
 
-    public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease, GameObject attacker = null)
+    public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease, GameObject attacker = null, Color color = default)
     {
         _speed = speed;
         _damage = damage;
@@ -42,6 +43,7 @@ public class Bullet : MonoBehaviour
         _attackerLayer = attacker != null ? attacker.layer : -1;
         _traveledDistance = 0f;
         _isReleased = false;
+        _color = color == default ? Color.white : color;
         // 로컬 플레이어가 쏜 총알에만 히트마커 표시 (AI/원격 플레이어 총알은 attacker가 null이거나 PlayerController가 없음)
         _showHitMarker = attacker != null && attacker.TryGetComponent<PlayerController>(out _);
     }
@@ -80,7 +82,7 @@ public class Bullet : MonoBehaviour
                 CrosshairUI.Instance?.ShowHitMarker();
 
             if (IsWallHit(hit.collider))
-                BulletDecalPool.Instance?.Spawn(hit);
+                BulletDecalPool.Instance?.Spawn(hit, _color);
 
             Release();
             return;

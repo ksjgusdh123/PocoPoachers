@@ -24,7 +24,7 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
     private ObjectPool<VisualEffect> _vfxPool;
     private GameObject _runtimeDefaultPrefab;
 
-    public void Spawn(RaycastHit hit)
+    public void Spawn(RaycastHit hit, Color color = default)
     {
         if (hit.collider == null) return;
 
@@ -36,7 +36,7 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
         Quaternion decalRotation = Quaternion.LookRotation(hit.normal) * Quaternion.Euler(0f, 0f, Random.Range(0f, 360f));
         Quaternion vfxRotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
 
-        PlayVfx(position, vfxRotation, hit.collider.transform);
+        PlayVfx(position, vfxRotation, hit.collider.transform, color);
 
         decal.Place(
             position,
@@ -47,7 +47,8 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
             _popDuration,
             _popScale,
             _fadeDuration,
-            () => _pool.Release(decal));
+            () => _pool.Release(decal),
+            color);
         _activeDecals.Enqueue(decal);
     }
 
@@ -80,7 +81,7 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
         return decal;
     }
 
-    private void PlayVfx(Vector3 position, Quaternion rotation, Transform parent)
+    private void PlayVfx(Vector3 position, Quaternion rotation, Transform parent, Color color)
     {
         if (_decalVfxAsset == null) return;
 
@@ -94,6 +95,8 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
         visualEffectTransform.localScale = new Vector3(_particleSize / ls.x, _particleSize / ls.y, _particleSize / ls.z);
 
         visualEffect.Reinit();
+        if (color != default && visualEffect.HasVector4("Color"))
+            visualEffect.SetVector4("Color", color);
         visualEffect.SendEvent("OnPlay");
         StartCoroutine(ReleaseVfxAfterDelay(visualEffect));
     }

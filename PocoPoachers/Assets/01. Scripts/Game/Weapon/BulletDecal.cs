@@ -5,11 +5,15 @@ public class BulletDecal : MonoBehaviour
 {
     private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
     private static readonly int ColorId = Shader.PropertyToID("_Color");
+    private static readonly int EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
     private Renderer _renderer;
     private MaterialPropertyBlock _propertyBlock;
     private Vector3 _baseScale;
+    private Color _cachedBaseColor = Color.white;
+    private Color _cachedEmissionColor = Color.black;
     private Color _baseColor = Color.white;
+    private Color _emissionColor = Color.black;
     private float _lifeTimer;
     private float _lifetime;
     private float _popDuration;
@@ -35,7 +39,8 @@ public class BulletDecal : MonoBehaviour
         float popDuration,
         float popScale,
         float fadeDuration,
-        Action onRelease)
+        Action onRelease,
+        Color color = default)
     {
         transform.SetParent(parent, true);
         transform.SetPositionAndRotation(position, rotation);
@@ -49,6 +54,18 @@ public class BulletDecal : MonoBehaviour
         _fadeDuration = fadeDuration;
         _onRelease = onRelease;
         IsSpawned = true;
+
+        if (color != default)
+        {
+            _baseColor = new Color(color.r, color.g, color.b, _cachedBaseColor.a);
+            float intensity = Mathf.Max(_cachedEmissionColor.r, _cachedEmissionColor.g, _cachedEmissionColor.b, 1f);
+            _emissionColor = new Color(color.r * intensity, color.g * intensity, color.b * intensity, _cachedEmissionColor.a);
+        }
+        else
+        {
+            _baseColor = _cachedBaseColor;
+            _emissionColor = _cachedEmissionColor;
+        }
 
         ApplyScale();
         ApplyAlpha(1f);
@@ -96,12 +113,18 @@ public class BulletDecal : MonoBehaviour
 
         Color color = _baseColor;
         color.a *= alpha;
+        Color emission = _emissionColor * alpha;
 
         _renderer.GetPropertyBlock(_propertyBlock);
-        if (_renderer.sharedMaterial != null && _renderer.sharedMaterial.HasProperty(BaseColorId))
-            _propertyBlock.SetColor(BaseColorId, color);
-        if (_renderer.sharedMaterial != null && _renderer.sharedMaterial.HasProperty(ColorId))
-            _propertyBlock.SetColor(ColorId, color);
+        if (_renderer.sharedMaterial != null)
+        {
+            if (_renderer.sharedMaterial.HasProperty(BaseColorId))
+                _propertyBlock.SetColor(BaseColorId, color);
+            if (_renderer.sharedMaterial.HasProperty(ColorId))
+                _propertyBlock.SetColor(ColorId, color);
+            if (_renderer.sharedMaterial.HasProperty(EmissionColorId))
+                _propertyBlock.SetColor(EmissionColorId, emission);
+        }
         _renderer.SetPropertyBlock(_propertyBlock);
     }
 
@@ -111,9 +134,15 @@ public class BulletDecal : MonoBehaviour
 
         Material material = _renderer.sharedMaterial;
         if (material.HasProperty(BaseColorId))
-            _baseColor = material.GetColor(BaseColorId);
+            _cachedBaseColor = material.GetColor(BaseColorId);
         else if (material.HasProperty(ColorId))
-            _baseColor = material.GetColor(ColorId);
+            _cachedBaseColor = material.GetColor(ColorId);
+
+        if (material.HasProperty(EmissionColorId))
+            _cachedEmissionColor = material.GetColor(EmissionColorId);
+
+        _baseColor = _cachedBaseColor;
+        _emissionColor = _cachedEmissionColor;
     }
 
     public void Release()

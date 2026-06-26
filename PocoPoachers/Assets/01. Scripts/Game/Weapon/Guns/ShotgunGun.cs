@@ -15,7 +15,8 @@ public class ShotgunGun : GunBase
                 _stat.BulletRange,
                 fireDir,
                 () => BulletPool.GetInstance().Release(_bulletPrefab, bullet),
-                Owner
+                Owner,
+                _stat.MuzzleColor
             );
 
             RoomSync.Shoot(_muzzle.position, fireDir, _stat);
