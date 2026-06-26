@@ -24,16 +24,18 @@ public class MuzzleFlash : MonoBehaviour
         _visualEffect?.Stop();
     }
 
-    public void Play()
+    public void Play(UnityEngine.Color color)
     {
         if (_visualEffect == null) return;
 
         _visualEffect.Stop();
         _visualEffect.Reinit();
+        _visualEffect.SetVector4("Color", color);
         _visualEffect.SendEvent("OnPlay");
 
         if (_flashLight == null) return;
 
+        _flashLight.color = color;
         if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
         _flashCoroutine = StartCoroutine(FlashRoutine());
     }

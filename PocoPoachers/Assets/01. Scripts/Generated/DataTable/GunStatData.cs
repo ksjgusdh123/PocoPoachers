@@ -30,6 +30,9 @@ public partial class GunStatData
     public float aim_time;
     public float move_speed_multiplier;
     public float aim_move_speed_multiplier;
+    public float muzzle_color_r;
+    public float muzzle_color_g;
+    public float muzzle_color_b;
 
     public int Id { get => id; set => id = value; }
 
@@ -82,5 +85,11 @@ public partial class GunStatData
     public float MoveSpeedMultiplier { get => move_speed_multiplier; set => move_speed_multiplier = value; }
 
     public float AimMoveSpeedMultiplier { get => aim_move_speed_multiplier; set => aim_move_speed_multiplier = value; }
+
+    public float MuzzleColorR { get => muzzle_color_r; set => muzzle_color_r = value; }
+
+    public float MuzzleColorG { get => muzzle_color_g; set => muzzle_color_g = value; }
+
+    public float MuzzleColorB { get => muzzle_color_b; set => muzzle_color_b = value; }
 
 }

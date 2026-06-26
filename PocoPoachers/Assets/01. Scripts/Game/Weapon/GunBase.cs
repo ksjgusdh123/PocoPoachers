@@ -96,7 +96,7 @@ public abstract class GunBase : MonoBehaviour
         }
 
         Shoot();
-        _muzzleFlash?.Play();
+        _muzzleFlash?.Play(_stat.MuzzleColor);
         ShellCasingPool.Instance?.Eject(_shellEjectPort);
         _soundGizmoPosition = _muzzle.position;
         _soundGizmoRange = _stat.SoundRange;
