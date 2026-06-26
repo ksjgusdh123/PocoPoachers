@@ -89,10 +89,9 @@ public class BulletDecalPool : Singleton<BulletDecalPool>
 
         VisualEffect visualEffect = _vfxPool.Get();
         Transform visualEffectTransform = visualEffect.transform;
-        visualEffectTransform.SetParent(parent, true);
+        visualEffectTransform.SetParent(null, false);
         visualEffectTransform.SetPositionAndRotation(position, rotation);
-        Vector3 ls = parent != null ? parent.lossyScale : Vector3.one;
-        visualEffectTransform.localScale = new Vector3(_particleSize / ls.x, _particleSize / ls.y, _particleSize / ls.z);
+        visualEffectTransform.localScale = Vector3.one * _particleSize;
 
         visualEffect.Reinit();
         if (color != default && visualEffect.HasVector4("Color"))
