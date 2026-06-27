@@ -46,7 +46,13 @@ public class ArmorController : EquipableController
 
     private void OnDamaged(float damage, Vector3 _, GameObject __)
     {
-        _mount.GetArmor()?.DecreaseDurability(damage);
+        var armor = _mount.GetArmor();
+        if (armor == null) return;
+
+        // 로컬 즉시 반영(낙관적) + 호스트에 통보해서 권위 있는 값으로 동기화
+        float delta = -(damage / 10f);
+        armor.DecreaseDurability(damage);
+        RoomSync.Durability(armor.Uid, armor.ItemId, delta, armor.MaxDurability);
     }
 
     public override void UnequipAll()

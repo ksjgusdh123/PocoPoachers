@@ -57,6 +57,25 @@ public static class RoomSync
                 G_Equip.Pack, PacketType.G_Equip);
     }
 
+    // 장비 내구도 변화(발사/피격 등) — 호스트가 실제 값을 계산해서 결과를 브로드캐스트
+    public static void Durability(int itemUid, int itemId, float amount, float defaultMaxDurability)
+    {
+        if (itemUid == 0) return; // uid가 없는(추적되지 않는) 아이템은 동기화하지 않음
+
+        if (RoomManager.IsHost)
+        {
+            var (current, max) = WorldEquipmentManager.ApplyChange(itemUid, itemId, amount, defaultMaxDurability);
+            if (RoomManager.HasGuests)
+                PacketBuilder.BroadcastToGuests(new H_DurabilityT { ItemUid = itemUid, Current = current, Max = max },
+                    H_Durability.Pack, PacketType.H_Durability);
+        }
+        else
+        {
+            PacketBuilder.SendToHost(new G_DurabilityT { ItemUid = itemUid, ItemId = itemId, Amount = amount },
+                G_Durability.Pack, PacketType.G_Durability);
+        }
+    }
+
     public static void ItemGain(bool isPlayerGained, int boxUid, int itemTypeId, int itemUid, int amount, int addedSlotIndex, int removedSlotIndex)
     {
         if (IsSolo) return;

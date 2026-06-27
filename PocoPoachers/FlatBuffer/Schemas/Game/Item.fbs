@@ -86,3 +86,18 @@ table H_ConsumeItemResult
     player_id: int;
     item_id:   int;
 }
+
+// 장비 내구도 변화 요청 (발사/피격 등) — 호스트가 실제 값을 계산해서 H_Durability로 결과를 알려줌
+table G_Durability
+{
+    item_uid: int;
+    item_id:  int;   // 호스트가 해당 uid를 처음 보는 경우 기본 내구도 산정에 사용
+    amount:   float; // 변화량 (양수면 회복, 음수면 감소)
+}
+
+table H_Durability
+{
+    item_uid: int;
+    current:  float;
+    max:      float;
+}
