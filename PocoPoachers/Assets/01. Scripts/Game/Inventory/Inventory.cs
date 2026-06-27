@@ -46,7 +46,8 @@ public class Inventory : MonoBehaviour
     }
 
     // 지정 인덱스 슬롯에 추가, 빈 슬롯이거나 같은 아이템이면 스택 추가
-    public bool AddItemAtSlot(int slotIndex, ItemData itemData, int amount = 1)
+    // uid는 빈 슬롯에 새로 놓일 때만 의미가 있음(스택 합산 시에는 기존 슬롯의 uid가 유지됨)
+    public bool AddItemAtSlot(int slotIndex, ItemData itemData, int amount = 1, int uid = 0)
     {
         if (slotIndex < 0 || slotIndex >= _currentCapacity) return false;
 
@@ -54,7 +55,7 @@ public class Inventory : MonoBehaviour
 
         if (slot.IsEmpty)
         {
-            slot.Set(itemData, Mathf.Min(amount, itemData.MaxStack));
+            slot.Set(itemData, Mathf.Min(amount, itemData.MaxStack), uid);
             OnItemAdded?.Invoke(itemData);
             return true;
         }
@@ -102,7 +103,7 @@ public class Inventory : MonoBehaviour
             for (int j = 0; j < newCapacity; j++)
             {
                 if (!_slots[j].IsEmpty) continue;
-                _slots[j].Set(_slots[i].ItemData, _slots[i].Amount);
+                _slots[j].Set(_slots[i].ItemData, _slots[i].Amount, _slots[i].Uid);
                 _slots[i].Clear();
                 break;
             }
@@ -210,14 +211,16 @@ public class Inventory : MonoBehaviour
 
         ItemData dataA = _slots[indexA].ItemData;
         int amountA = _slots[indexA].Amount;
+        int uidA = _slots[indexA].Uid;
         ItemData dataB = _slots[indexB].ItemData;
         int amountB = _slots[indexB].Amount;
+        int uidB = _slots[indexB].Uid;
 
         _slots[indexA].Clear();
         _slots[indexB].Clear();
 
-        if (dataB != null) _slots[indexA].Set(dataB, amountB);
-        if (dataA != null) _slots[indexB].Set(dataA, amountA);
+        if (dataB != null) _slots[indexA].Set(dataB, amountB, uidB);
+        if (dataA != null) _slots[indexB].Set(dataA, amountA, uidA);
     }
 
     // 아이템 타입 → 이름 순으로 정렬

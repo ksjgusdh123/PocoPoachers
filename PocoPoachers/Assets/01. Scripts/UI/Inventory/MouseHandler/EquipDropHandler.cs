@@ -38,9 +38,9 @@ public class EquipDropHandler : ItemHolderDropHandler
     }
 
 
-    protected override bool OnItemDropped(ItemData data, int amount)
+    protected override bool OnItemDropped(ItemData data, int amount, int uid)
     {
-        if (!base.OnItemDropped(data, amount)) return false;
+        if (!base.OnItemDropped(data, amount, uid)) return false;
 
         if (_controller == null)
         {
@@ -48,12 +48,14 @@ public class EquipDropHandler : ItemHolderDropHandler
             return false;
         }
 
-        _controller.Equip(data, _slotIndex);
+        _controller.Equip(data, _slotIndex, uid);
 
         if (_itemVisual != null)
             _itemVisual.SetActive(true);
         return true;
     }
+
+    protected override int GetUnequipUid() => _controller?.GetEquippedUid(_slotIndex) ?? 0;
 
     public override void Unequip()
     {

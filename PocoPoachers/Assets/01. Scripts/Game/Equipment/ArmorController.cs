@@ -13,7 +13,7 @@ public class ArmorController : EquipableController
         _stat = GetComponent<StatBase>();
     }
 
-    public override void Equip(ItemData data, int slotIndex)
+    public override void Equip(ItemData data, int slotIndex, int uid)
     {
         ArmorBase current = _mount.GetArmor();
         if (current != null)
@@ -22,13 +22,13 @@ public class ArmorController : EquipableController
             _stat.OnDamaged -= OnDamaged;
         }
 
-        ArmorBase armor = _mount.ApplyEquip(data.id);
+        ArmorBase armor = _mount.ApplyEquip(data.id, uid);
         if (armor == null) return;
 
         _stat.ApplyArmorStat(armor.Stat);
         _stat.OnDamaged += OnDamaged;
         _equippedSlotIndex = slotIndex;
-        OnEquipped(slotIndex, data);
+        OnEquipped(slotIndex, data, uid);
     }
 
     public override void Unequip(int slotIndex)
@@ -56,7 +56,8 @@ public class ArmorController : EquipableController
     }
 
     public override int GetEquippedId(int slotIndex) => _mount.GetEquippedItemId();
+    public override int GetEquippedUid(int slotIndex) => _mount.GetArmor()?.Uid ?? 0;
 
-    protected virtual void OnEquipped(int slotIndex, ItemData data) { }
+    protected virtual void OnEquipped(int slotIndex, ItemData data, int uid) { }
     protected virtual void OnUnequipped(int slotIndex) { }
 }

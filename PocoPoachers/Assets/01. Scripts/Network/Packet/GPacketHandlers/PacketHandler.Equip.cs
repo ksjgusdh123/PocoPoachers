@@ -6,11 +6,12 @@ public static partial class PacketHandlers
 
         int playerId  = pkt.PlayerId;
         int itemId    = pkt.ItemId;
+        int itemUid   = pkt.ItemUid;
         int slotIndex = pkt.SlotIndex;
 
         if (!ObjectManager.Instance.TryGet(ObjectKind.Player, playerId, out var worldObj)) return;
 
-        ApplyRemoteEquip(worldObj, itemId, slotIndex);
+        ApplyRemoteEquip(worldObj, itemId, itemUid, slotIndex);
 
         if (RoomManager.IsHost)
         {
@@ -19,6 +20,7 @@ public static partial class PacketHandlers
                 {
                     PlayerId  = playerId,
                     ItemId    = itemId,
+                    ItemUid   = itemUid,
                     SlotIndex = slotIndex,
                 },
                 H_Equip.Pack, PacketType.H_Equip);

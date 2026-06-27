@@ -50,7 +50,7 @@ public class ItemBox : MonoBehaviour, IInteractable
         if (_isPlayerNearby && !HasBeenOpened) ShowPulse();
     }
 
-    public void Initialize(int[] itemIds, int[] itemCounts = null, HashSet<int> noRevealIds = null)
+    public void Initialize(int[] itemIds, int[] itemCounts = null, int[] itemUids = null, HashSet<int> noRevealIds = null)
     {
         ItemIds = itemIds;
 
@@ -62,9 +62,10 @@ public class ItemBox : MonoBehaviour, IInteractable
             ItemData data = ItemTable.Instance.Get(itemIds[i]);
             if (data == null) continue;
             int count = (itemCounts != null && i < itemCounts.Length) ? itemCounts[i] : 1;
+            int uid = (itemUids != null && i < itemUids.Length) ? itemUids[i] : 0;
             int slotIndex = inven.CanAddItem(data, count);
             if (slotIndex < 0) continue;
-            inven.AddItemAtSlot(slotIndex, data, count);
+            inven.AddItemAtSlot(slotIndex, data, count, uid);
             if (noRevealIds != null && noRevealIds.Contains(itemIds[i]) && inven.Slots[slotIndex] is BoxItemSlot boxSlot)
                 boxSlot.skipReveal = true;
         }

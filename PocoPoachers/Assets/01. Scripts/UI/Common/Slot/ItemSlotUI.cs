@@ -5,6 +5,7 @@ public class ItemSlotUI : ItemSlotUIBase
     public bool IsSettedItem { get; private set; }
     public ItemData SlotItemData => _settedSlot?.ItemData;
     public int SavedAmountItem => _settedSlot?.Amount ?? 0;
+    public int SlotUid => _settedSlot?.Uid ?? 0;
 
     private ItemSlot _settedSlot;
 
@@ -44,9 +45,9 @@ public class ItemSlotUI : ItemSlotUIBase
 
     public void ClearSlot() => _settedSlot?.Clear();
 
-    public void EquipItem(ItemData prevData, int amount)
+    public void EquipItem(ItemData prevData, int amount, int uid = 0)
     {
-        _settedSlot.ChangeByDragDrop(prevData, amount);
+        _settedSlot.ChangeByDragDrop(prevData, amount, uid);
     }
 
     public void SetSlotData(ItemData data, int amount)

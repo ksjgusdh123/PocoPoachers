@@ -36,6 +36,14 @@ public struct H_ItemSpawn : IFlatbufferObject
   public ArraySegment<byte>? GetItemCountBytes() { return __p.__vector_as_arraysegment(14); }
 #endif
   public int[] GetItemCountArray() { return __p.__vector_as_array<int>(14); }
+  public int ItemUids(int j) { int o = __p.__offset(16); return o != 0 ? __p.bb.GetInt(__p.__vector(o) + j * 4) : (int)0; }
+  public int ItemUidsLength { get { int o = __p.__offset(16); return o != 0 ? __p.__vector_len(o) : 0; } }
+#if ENABLE_SPAN_T
+  public Span<int> GetItemUidsBytes() { return __p.__vector_as_span<int>(16, 4); }
+#else
+  public ArraySegment<byte>? GetItemUidsBytes() { return __p.__vector_as_arraysegment(16); }
+#endif
+  public int[] GetItemUidsArray() { return __p.__vector_as_array<int>(16); }
 
   public static Offset<H_ItemSpawn> CreateH_ItemSpawn(FlatBufferBuilder builder,
       int uid = 0,
@@ -43,8 +51,10 @@ public struct H_ItemSpawn : IFlatbufferObject
       Vec3T pos = null,
       float rotation = 0.0f,
       VectorOffset item_idsOffset = default(VectorOffset),
-      VectorOffset item_countOffset = default(VectorOffset)) {
-    builder.StartTable(6);
+      VectorOffset item_countOffset = default(VectorOffset),
+      VectorOffset item_uidsOffset = default(VectorOffset)) {
+    builder.StartTable(7);
+    H_ItemSpawn.AddItemUids(builder, item_uidsOffset);
     H_ItemSpawn.AddItemCount(builder, item_countOffset);
     H_ItemSpawn.AddItemIds(builder, item_idsOffset);
     H_ItemSpawn.AddRotation(builder, rotation);
@@ -54,7 +64,7 @@ public struct H_ItemSpawn : IFlatbufferObject
     return H_ItemSpawn.EndH_ItemSpawn(builder);
   }
 
-  public static void StartH_ItemSpawn(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartH_ItemSpawn(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddUid(FlatBufferBuilder builder, int uid) { builder.AddInt(0, uid, 0); }
   public static void AddTypeId(FlatBufferBuilder builder, int typeId) { builder.AddInt(1, typeId, 0); }
   public static void AddPos(FlatBufferBuilder builder, Offset<Vec3> posOffset) { builder.AddStruct(2, posOffset.Value, 0); }
@@ -71,6 +81,12 @@ public struct H_ItemSpawn : IFlatbufferObject
   public static VectorOffset CreateItemCountVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateItemCountVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartItemCountVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddItemUids(FlatBufferBuilder builder, VectorOffset itemUidsOffset) { builder.AddOffset(6, itemUidsOffset.Value, 0); }
+  public static VectorOffset CreateItemUidsVector(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddInt(data[i]); return builder.EndVector(); }
+  public static VectorOffset CreateItemUidsVectorBlock(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateItemUidsVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateItemUidsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartItemUidsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<H_ItemSpawn> EndH_ItemSpawn(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_ItemSpawn>(o);
@@ -89,6 +105,8 @@ public struct H_ItemSpawn : IFlatbufferObject
     for (var _j = 0; _j < this.ItemIdsLength; ++_j) {_o.ItemIds.Add(this.ItemIds(_j));}
     _o.ItemCount = new List<int>();
     for (var _j = 0; _j < this.ItemCountLength; ++_j) {_o.ItemCount.Add(this.ItemCount(_j));}
+    _o.ItemUids = new List<int>();
+    for (var _j = 0; _j < this.ItemUidsLength; ++_j) {_o.ItemUids.Add(this.ItemUids(_j));}
   }
   public static Offset<H_ItemSpawn> Pack(FlatBufferBuilder builder, H_ItemSpawnT _o) {
     if (_o == null) return default(Offset<H_ItemSpawn>);
@@ -102,6 +120,11 @@ public struct H_ItemSpawn : IFlatbufferObject
       var __item_count = _o.ItemCount.ToArray();
       _item_count = CreateItemCountVector(builder, __item_count);
     }
+    var _item_uids = default(VectorOffset);
+    if (_o.ItemUids != null) {
+      var __item_uids = _o.ItemUids.ToArray();
+      _item_uids = CreateItemUidsVector(builder, __item_uids);
+    }
     return CreateH_ItemSpawn(
       builder,
       _o.Uid,
@@ -109,7 +132,8 @@ public struct H_ItemSpawn : IFlatbufferObject
       _o.Pos,
       _o.Rotation,
       _item_ids,
-      _item_count);
+      _item_count,
+      _item_uids);
   }
 }
 
@@ -121,6 +145,7 @@ public class H_ItemSpawnT
   public float Rotation { get; set; }
   public List<int> ItemIds { get; set; }
   public List<int> ItemCount { get; set; }
+  public List<int> ItemUids { get; set; }
 
   public H_ItemSpawnT() {
     this.Uid = 0;
@@ -129,6 +154,7 @@ public class H_ItemSpawnT
     this.Rotation = 0.0f;
     this.ItemIds = null;
     this.ItemCount = null;
+    this.ItemUids = null;
   }
 }
 
@@ -144,6 +170,7 @@ static public class H_ItemSpawnVerify
       && verifier.VerifyField(tablePos, 10 /*Rotation*/, 4 /*float*/, 4, false)
       && verifier.VerifyVectorOfData(tablePos, 12 /*ItemIds*/, 4 /*int*/, false)
       && verifier.VerifyVectorOfData(tablePos, 14 /*ItemCount*/, 4 /*int*/, false)
+      && verifier.VerifyVectorOfData(tablePos, 16 /*ItemUids*/, 4 /*int*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

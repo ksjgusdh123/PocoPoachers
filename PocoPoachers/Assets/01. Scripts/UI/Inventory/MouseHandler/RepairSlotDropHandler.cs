@@ -7,7 +7,9 @@ public class RepairSlotDropHandler : ItemHolderDropHandler
     public event Action<ItemData> OnItemSet;
     public event Action OnItemCleared;
 
-    protected override bool OnItemDropped(ItemData data, int amount)
+    private int _droppedUid;
+
+    protected override bool OnItemDropped(ItemData data, int amount, int uid)
     {
         if (data.ItemType != ItemType.Weapon &&
             data.ItemType != ItemType.Helmet &&
@@ -15,9 +17,12 @@ public class RepairSlotDropHandler : ItemHolderDropHandler
             return false;
 
         SetDisplay(data, amount);
+        _droppedUid = uid;
         OnItemSet?.Invoke(data);
         return true;
     }
+
+    protected override int GetUnequipUid() => _droppedUid;
 
     public override void Unequip()
     {

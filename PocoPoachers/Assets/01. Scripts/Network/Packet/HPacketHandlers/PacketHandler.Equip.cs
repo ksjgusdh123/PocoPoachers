@@ -5,12 +5,12 @@ public static partial class PacketHandlers
         var pkt = root.TypeAsH_Equip();
         if (!ObjectManager.Instance.TryGet(ObjectKind.Player, pkt.PlayerId, out var worldObj)) return;
 
-        ApplyRemoteEquip(worldObj, pkt.ItemId, pkt.SlotIndex);
+        ApplyRemoteEquip(worldObj, pkt.ItemId, pkt.ItemUid, pkt.SlotIndex);
     }
 
     // 원격 플레이어의 장착 상태 적용 (UI EquipDropHandler의 _slotIndex 규칙과 동일)
     // 슬롯 0~1: 무기, 2~4: 방어구, 5: 가방
-    static void ApplyRemoteEquip(WorldObject worldObj, int itemId, int slotIndex)
+    static void ApplyRemoteEquip(WorldObject worldObj, int itemId, int itemUid, int slotIndex)
     {
         if (slotIndex == 4)
         {
@@ -20,7 +20,7 @@ public static partial class PacketHandlers
             if (itemId == 0)
                 bagMount.ApplyUnequip();
             else
-                bagMount.ApplyEquip(itemId);
+                bagMount.ApplyEquip(itemId, itemUid);
             return;
         }
 
@@ -34,7 +34,7 @@ public static partial class PacketHandlers
             if (itemId == 0)
                 armorMount.ApplyUnequip();
             else
-                armorMount.ApplyEquip(itemId);
+                armorMount.ApplyEquip(itemId, itemUid);
             return;
         }
 
@@ -44,6 +44,6 @@ public static partial class PacketHandlers
         if (itemId == 0)
             mount.ApplyUnequip(slotIndex);
         else
-            mount.ApplyEquip(itemId, slotIndex);
+            mount.ApplyEquip(itemId, slotIndex, itemUid);
     }
 }

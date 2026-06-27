@@ -144,7 +144,7 @@ public class EnemyNetSync : MonoBehaviour
         {
             var itemData = ItemTable.Instance.Get(helmetId);
             if (itemData != null)
-                e._armorController?.Equip(itemData, 0);
+                e._armorController?.Equip(itemData, 0, 0);
         }
     }
 

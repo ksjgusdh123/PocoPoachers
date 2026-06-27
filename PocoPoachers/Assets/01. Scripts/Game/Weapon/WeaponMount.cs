@@ -13,11 +13,12 @@ public class WeaponMount : MonoBehaviour
     public int GetEquippedItemId(int slotIndex) =>
         (uint)slotIndex < (uint)_equippedItemIds.Length ? _equippedItemIds[slotIndex] : 0;
 
-    public GunBase ApplyEquip(int itemId, int slotIndex)
+    public GunBase ApplyEquip(int itemId, int slotIndex, int uid = 0)
     {
         GunBase gun = SpawnGun(itemId, slotIndex);
         if (gun == null) return null;
 
+        gun.SetUid(uid);
         _equippedItemIds[slotIndex] = itemId;
         gun.gameObject.SetActive(true);
         return gun;

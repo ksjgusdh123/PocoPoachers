@@ -46,26 +46,30 @@ public class EnemyItemBoxDropper : MonoBehaviour
 
         var itemIds = new List<int>();
         var itemCounts = new List<int>();
+        var itemUids = new List<int>();
         var noRevealIds = new HashSet<int>();
 
-        CollectEquippedItems(itemIds, itemCounts, noRevealIds);
-        CollectRandomItems(itemIds, itemCounts);
-        SpawnBox(omgr, uid, spawnPos, spawnRot, itemIds, itemCounts, noRevealIds);
+        CollectEquippedItems(itemIds, itemCounts, itemUids, noRevealIds);
+        CollectRandomItems(itemIds, itemCounts, itemUids);
+        SpawnBox(omgr, uid, spawnPos, spawnRot, itemIds, itemCounts, itemUids, noRevealIds);
     }
 
-    private void CollectEquippedItems(List<int> itemIds, List<int> itemCounts, HashSet<int> noRevealIds)
+    private void CollectEquippedItems(List<int> itemIds, List<int> itemCounts, List<int> itemUids, HashSet<int> noRevealIds)
     {
         var gun = _weaponController?.Gun;
         if (gun != null)
         {
             itemIds.Add(gun.ItemId);
             itemCounts.Add(1);
+            // 장착 중이던 개체라 기존 uid가 있으면 그대로, 없으면 새로 발급
+            itemUids.Add(gun.Uid != 0 ? gun.Uid : ItemSpawner.AssignItemUid(gun.ItemId));
             noRevealIds.Add(gun.ItemId);
 
             if (gun.Stat.AmmoItemId > 0)
             {
                 itemIds.Add(gun.Stat.AmmoItemId);
                 itemCounts.Add(Random.Range(_minAmmoCount, _maxAmmoCount + 1));
+                itemUids.Add(0);
                 noRevealIds.Add(gun.Stat.AmmoItemId);
             }
         }
@@ -76,25 +80,32 @@ public class EnemyItemBoxDropper : MonoBehaviour
             int helmetId = armorMount.GetEquippedItemId();
             if (helmetId > 0)
             {
+                var armor = armorMount.GetArmor();
                 itemIds.Add(helmetId);
                 itemCounts.Add(1);
+                itemUids.Add(armor != null && armor.Uid != 0 ? armor.Uid : ItemSpawner.AssignItemUid(helmetId));
                 noRevealIds.Add(helmetId);
             }
         }
     }
 
-    private void CollectRandomItems(List<int> itemIds, List<int> itemCounts)
+    private void CollectRandomItems(List<int> itemIds, List<int> itemCounts, List<int> itemUids)
     {
         int itemCount = Random.Range(_minItemCount, _maxItemCount + 1);
         var rolledIds = ItemSpawner.Roll(itemCount);
-        foreach (var id in rolledIds) { itemIds.Add(id); itemCounts.Add(1); }
+        foreach (var id in rolledIds)
+        {
+            itemIds.Add(id);
+            itemCounts.Add(1);
+            itemUids.Add(ItemSpawner.AssignItemUid(id));
+        }
     }
 
     private void SpawnBox(ObjectManager omgr, int uid, Vector3 spawnPos, float spawnRot,
-        List<int> itemIds, List<int> itemCounts, HashSet<int> noRevealIds)
+        List<int> itemIds, List<int> itemCounts, List<int> itemUids, HashSet<int> noRevealIds)
     {
         omgr.SpawnItemBox(uid, BOX_TYPE_ID, spawnPos, spawnRot)
-            ?.Initialize(itemIds.ToArray(), itemCounts.ToArray(), noRevealIds);
+            ?.Initialize(itemIds.ToArray(), itemCounts.ToArray(), itemUids.ToArray(), noRevealIds);
 
         var spawnData = new H_ItemSpawnT
         {
@@ -104,8 +115,9 @@ public class EnemyItemBoxDropper : MonoBehaviour
             Rotation = spawnRot,
             ItemIds = itemIds,
             ItemCount = itemCounts,
+            ItemUids = itemUids,
         };
         omgr.RegisterSpawnedBox(spawnData);
-        RoomSync.ItemSpawn(spawnData.Uid, spawnData.TypeId, spawnPos, spawnRot, itemIds);
+        RoomSync.ItemSpawn(spawnData.Uid, spawnData.TypeId, spawnPos, spawnRot, itemIds, itemCounts, itemUids);
     }
 }

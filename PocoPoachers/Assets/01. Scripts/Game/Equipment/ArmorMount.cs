@@ -11,11 +11,12 @@ public class ArmorMount : MonoBehaviour
     public ArmorBase GetArmor() => _helmet;
     public int GetEquippedItemId() => _equippedItemId;
 
-    public ArmorBase ApplyEquip(int itemId)
+    public ArmorBase ApplyEquip(int itemId, int uid = 0)
     {
         ArmorBase armor = SpawnArmor(itemId);
         if (armor == null) return null;
 
+        armor.SetUid(uid);
         _equippedItemId = itemId;
         return armor;
     }

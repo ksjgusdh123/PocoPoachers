@@ -6,24 +6,39 @@ public class ItemSlot
 {
     [SerializeField] protected ItemData _itemData;
     [SerializeField] protected int _amount;
+    [SerializeField] protected int _uid; // 0 = 미배정 (스택형 소모품 등은 사용 안 함)
 
     public event Action OnChanged;
 
     public ItemData ItemData => _itemData;
     public int Amount => _amount;
+    public int Uid => _uid;
     public bool IsEmpty => _itemData == null;
 
-    public void Set(ItemData newItemData, int newAmount)
+    public void SetUid(int uid)
     {
+        if (uid != _uid)
+            Debug.Log($"[ItemSlot] uid 변경: {_uid} -> {uid} (item={_itemData?.id ?? 0})");
+        _uid = uid;
+    }
+
+    // uid를 생략하면 0(미배정)으로 설정됨 — 같은 아이템의 uid를 유지하려면 호출부에서 명시적으로 넘겨야 함
+    public void Set(ItemData newItemData, int newAmount, int uid = 0)
+    {
+        Debug.Log($"[ItemSlot] Set: item={newItemData?.id ?? 0}, amount={newAmount}, uid={_uid} -> {uid}");
         _itemData = newItemData;
         _amount = newAmount;
+        _uid = uid;
         OnChanged?.Invoke();
     }
 
     public void Clear()
     {
+        if (_itemData != null)
+            Debug.Log($"[ItemSlot] Clear: item={_itemData.id}, uid={_uid} -> 0");
         _itemData = null;
         _amount = 0;
+        _uid = 0;
         OnChanged?.Invoke();
     }
 
@@ -32,6 +47,7 @@ public class ItemSlot
     {
         _itemData = null;
         _amount = 0;
+        _uid = 0;
     }
 
     // amount만큼 추가, 최대 스택 초과분 반환
@@ -56,11 +72,11 @@ public class ItemSlot
         return removed;
     }
 
-    public void ChangeByDragDrop(ItemData changedData, int amount)
+    public void ChangeByDragDrop(ItemData changedData, int amount, int uid = 0)
     {
         if (changedData == null)
             RemoveAmount(amount);
         else
-            Set(changedData, amount);
+            Set(changedData, amount, uid);
     }
 }

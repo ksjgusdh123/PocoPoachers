@@ -19,6 +19,9 @@ public abstract class EquippableItemBase : MonoBehaviour
 
     public event Action<float, float> OnDurabilityChanged; // (현재, 최대)
 
+    // durability는 그대로 둔 채 uid만 갱신 (인벤토리 슬롯에서 가져온 기존 uid를 적용할 때 사용)
+    public void SetUid(int uid) => _uid = uid;
+
     // 월드 오브젝트의 uid를 그대로 받아 아이템 인스턴스를 초기화한다
     public virtual void Initialize(int uid, int itemId, float maxDurability)
     {
