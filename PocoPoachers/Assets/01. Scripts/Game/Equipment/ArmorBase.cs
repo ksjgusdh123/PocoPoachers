@@ -1,24 +1,11 @@
-using System;
-using UnityEngine;
-
-public class ArmorBase : MonoBehaviour
+public class ArmorBase : EquippableItemBase
 {
-    [SerializeField] private int _itemId;
+    private const float DefaultMaxDurability = 100f;
 
-    private const float MaxDurability = 100f;
-    private float _currentDurability = MaxDurability;
-
-    public int ItemId => _itemId;
     public ArmorStatData Stat => DataManager.GetArmorStat(_itemId);
-    public float CurrentDurability => _currentDurability;
 
-    public event Action<float, float> OnDurabilityChanged; // (현재, 최대)
+    // uid가 아직 없는 임시 스폰(예: 구버전 호출부) 호환용
+    public void SetItemId(int itemId) => Initialize(_uid, itemId, _maxDurability > 0f ? _maxDurability : DefaultMaxDurability);
 
-    public void SetItemId(int itemId) => _itemId = itemId;
-
-    public void DecreaseDurability(float damage)
-    {
-        _currentDurability = Mathf.Max(0f, _currentDurability - damage / 10f);
-        OnDurabilityChanged?.Invoke(_currentDurability, MaxDurability);
-    }
+    public void DecreaseDurability(float damage) => SetDurability(_currentDurability - damage / 10f);
 }
