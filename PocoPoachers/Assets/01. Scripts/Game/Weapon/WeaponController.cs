@@ -92,6 +92,14 @@ public class WeaponController : EquipableController
         GunBase gun = _mount.ApplyEquip(data.id, slotIndex, uid);
         if (gun == null) return;
 
+        // 호스트(싱글플레이 포함) 본인이 장착하는 경우, 기존 내구도를 바로 조회해서 복원
+        if (RoomManager.IsHost && uid != 0)
+        {
+            var (current, _) = WorldEquipmentManager.GetOrCreate(uid, data.id, gun.MaxDurability);
+            gun.SetDurability(current);
+        }
+        Debug.Log($"[WeaponController] 장착: itemId={data.id}, uid={uid}, durability={gun.CurrentDurability}/{gun.MaxDurability}");
+
         gun.Owner = gameObject;
         gun.gameObject.SetActive(false);
         OnWeaponChanged?.Invoke(slotIndex, data);

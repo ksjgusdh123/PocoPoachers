@@ -25,6 +25,14 @@ public class ArmorController : EquipableController
         ArmorBase armor = _mount.ApplyEquip(data.id, uid);
         if (armor == null) return;
 
+        // 호스트(싱글플레이 포함) 본인이 장착하는 경우, 기존 내구도를 바로 조회해서 복원
+        if (RoomManager.IsHost && uid != 0)
+        {
+            var (restoredCurrent, _) = WorldEquipmentManager.GetOrCreate(uid, data.id, armor.MaxDurability);
+            armor.SetDurability(restoredCurrent);
+        }
+        Debug.Log($"[ArmorController] 장착: itemId={data.id}, uid={uid}, durability={armor.CurrentDurability}/{armor.MaxDurability}");
+
         _stat.ApplyArmorStat(armor.Stat);
         _stat.OnDamaged += OnDamaged;
         _equippedSlotIndex = slotIndex;
