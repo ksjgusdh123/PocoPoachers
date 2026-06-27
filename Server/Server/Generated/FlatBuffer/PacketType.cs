@@ -30,14 +30,16 @@ public enum PacketType : byte
   H_Equip = 23,
   G_ConsumeItem = 24,
   H_ConsumeItemResult = 25,
-  G_StatSync = 26,
-  H_StatSync = 27,
-  H_EnemySpawn = 28,
-  H_EnemyMove = 29,
-  H_EnemyHit = 30,
-  H_EnemyDie = 31,
-  G_Leave = 32,
-  H_Leave = 33,
+  G_Durability = 26,
+  H_Durability = 27,
+  G_StatSync = 28,
+  H_StatSync = 29,
+  H_EnemySpawn = 30,
+  H_EnemyMove = 31,
+  H_EnemyHit = 32,
+  H_EnemyDie = 33,
+  G_Leave = 34,
+  H_Leave = 35,
 };
 
 public class PacketTypeUnion {
@@ -100,6 +102,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_ConsumeItem(G_ConsumeItemT _g_consumeitem) { return new PacketTypeUnion{ Type = PacketType.G_ConsumeItem, Value = _g_consumeitem }; }
   public H_ConsumeItemResultT AsH_ConsumeItemResult() { return this.As<H_ConsumeItemResultT>(); }
   public static PacketTypeUnion FromH_ConsumeItemResult(H_ConsumeItemResultT _h_consumeitemresult) { return new PacketTypeUnion{ Type = PacketType.H_ConsumeItemResult, Value = _h_consumeitemresult }; }
+  public G_DurabilityT AsG_Durability() { return this.As<G_DurabilityT>(); }
+  public static PacketTypeUnion FromG_Durability(G_DurabilityT _g_durability) { return new PacketTypeUnion{ Type = PacketType.G_Durability, Value = _g_durability }; }
+  public H_DurabilityT AsH_Durability() { return this.As<H_DurabilityT>(); }
+  public static PacketTypeUnion FromH_Durability(H_DurabilityT _h_durability) { return new PacketTypeUnion{ Type = PacketType.H_Durability, Value = _h_durability }; }
   public G_StatSyncT AsG_StatSync() { return this.As<G_StatSyncT>(); }
   public static PacketTypeUnion FromG_StatSync(G_StatSyncT _g_statsync) { return new PacketTypeUnion{ Type = PacketType.G_StatSync, Value = _g_statsync }; }
   public H_StatSyncT AsH_StatSync() { return this.As<H_StatSyncT>(); }
@@ -145,6 +151,8 @@ public class PacketTypeUnion {
       case PacketType.H_Equip: return H_Equip.Pack(builder, _o.AsH_Equip()).Value;
       case PacketType.G_ConsumeItem: return G_ConsumeItem.Pack(builder, _o.AsG_ConsumeItem()).Value;
       case PacketType.H_ConsumeItemResult: return H_ConsumeItemResult.Pack(builder, _o.AsH_ConsumeItemResult()).Value;
+      case PacketType.G_Durability: return G_Durability.Pack(builder, _o.AsG_Durability()).Value;
+      case PacketType.H_Durability: return H_Durability.Pack(builder, _o.AsH_Durability()).Value;
       case PacketType.G_StatSync: return G_StatSync.Pack(builder, _o.AsG_StatSync()).Value;
       case PacketType.H_StatSync: return H_StatSync.Pack(builder, _o.AsH_StatSync()).Value;
       case PacketType.H_EnemySpawn: return H_EnemySpawn.Pack(builder, _o.AsH_EnemySpawn()).Value;
@@ -240,6 +248,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_ConsumeItemResult:
         result = H_ConsumeItemResultVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_Durability:
+        result = G_DurabilityVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_Durability:
+        result = H_DurabilityVerify.Verify(verifier, tablePos);
         break;
       case PacketType.G_StatSync:
         result = G_StatSyncVerify.Verify(verifier, tablePos);

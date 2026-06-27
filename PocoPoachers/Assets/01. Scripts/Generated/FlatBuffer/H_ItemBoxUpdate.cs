@@ -18,27 +18,31 @@ public struct H_ItemBoxUpdate : IFlatbufferObject
 
   public int BoxUid { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int ItemTypeId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int Amount { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int SlotIndex { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int ItemUid { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int Amount { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int SlotIndex { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<H_ItemBoxUpdate> CreateH_ItemBoxUpdate(FlatBufferBuilder builder,
       int box_uid = 0,
       int item_type_id = 0,
+      int item_uid = 0,
       int amount = 0,
       int slot_index = 0) {
-    builder.StartTable(4);
+    builder.StartTable(5);
     H_ItemBoxUpdate.AddSlotIndex(builder, slot_index);
     H_ItemBoxUpdate.AddAmount(builder, amount);
+    H_ItemBoxUpdate.AddItemUid(builder, item_uid);
     H_ItemBoxUpdate.AddItemTypeId(builder, item_type_id);
     H_ItemBoxUpdate.AddBoxUid(builder, box_uid);
     return H_ItemBoxUpdate.EndH_ItemBoxUpdate(builder);
   }
 
-  public static void StartH_ItemBoxUpdate(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartH_ItemBoxUpdate(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(0, boxUid, 0); }
   public static void AddItemTypeId(FlatBufferBuilder builder, int itemTypeId) { builder.AddInt(1, itemTypeId, 0); }
-  public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(2, amount, 0); }
-  public static void AddSlotIndex(FlatBufferBuilder builder, int slotIndex) { builder.AddInt(3, slotIndex, 0); }
+  public static void AddItemUid(FlatBufferBuilder builder, int itemUid) { builder.AddInt(2, itemUid, 0); }
+  public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(3, amount, 0); }
+  public static void AddSlotIndex(FlatBufferBuilder builder, int slotIndex) { builder.AddInt(4, slotIndex, 0); }
   public static Offset<H_ItemBoxUpdate> EndH_ItemBoxUpdate(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_ItemBoxUpdate>(o);
@@ -51,6 +55,7 @@ public struct H_ItemBoxUpdate : IFlatbufferObject
   public void UnPackTo(H_ItemBoxUpdateT _o) {
     _o.BoxUid = this.BoxUid;
     _o.ItemTypeId = this.ItemTypeId;
+    _o.ItemUid = this.ItemUid;
     _o.Amount = this.Amount;
     _o.SlotIndex = this.SlotIndex;
   }
@@ -60,6 +65,7 @@ public struct H_ItemBoxUpdate : IFlatbufferObject
       builder,
       _o.BoxUid,
       _o.ItemTypeId,
+      _o.ItemUid,
       _o.Amount,
       _o.SlotIndex);
   }
@@ -69,12 +75,14 @@ public class H_ItemBoxUpdateT
 {
   public int BoxUid { get; set; }
   public int ItemTypeId { get; set; }
+  public int ItemUid { get; set; }
   public int Amount { get; set; }
   public int SlotIndex { get; set; }
 
   public H_ItemBoxUpdateT() {
     this.BoxUid = 0;
     this.ItemTypeId = 0;
+    this.ItemUid = 0;
     this.Amount = 0;
     this.SlotIndex = 0;
   }
@@ -88,8 +96,9 @@ static public class H_ItemBoxUpdateVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*BoxUid*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*ItemTypeId*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Amount*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 10 /*SlotIndex*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*ItemUid*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*Amount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*SlotIndex*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

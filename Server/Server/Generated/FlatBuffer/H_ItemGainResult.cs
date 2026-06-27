@@ -19,34 +19,38 @@ public struct H_ItemGainResult : IFlatbufferObject
   public bool Success { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public int BoxUid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int ItemTypeId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int Amount { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int PlayerSlotIndex { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)-1; } }
-  public int BoxSlotIndex { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)-1; } }
+  public int ItemUid { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int Amount { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int PlayerSlotIndex { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)-1; } }
+  public int BoxSlotIndex { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)-1; } }
 
   public static Offset<H_ItemGainResult> CreateH_ItemGainResult(FlatBufferBuilder builder,
       bool success = false,
       int box_uid = 0,
       int item_type_id = 0,
+      int item_uid = 0,
       int amount = 0,
       int player_slot_index = -1,
       int box_slot_index = -1) {
-    builder.StartTable(6);
+    builder.StartTable(7);
     H_ItemGainResult.AddBoxSlotIndex(builder, box_slot_index);
     H_ItemGainResult.AddPlayerSlotIndex(builder, player_slot_index);
     H_ItemGainResult.AddAmount(builder, amount);
+    H_ItemGainResult.AddItemUid(builder, item_uid);
     H_ItemGainResult.AddItemTypeId(builder, item_type_id);
     H_ItemGainResult.AddBoxUid(builder, box_uid);
     H_ItemGainResult.AddSuccess(builder, success);
     return H_ItemGainResult.EndH_ItemGainResult(builder);
   }
 
-  public static void StartH_ItemGainResult(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartH_ItemGainResult(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddSuccess(FlatBufferBuilder builder, bool success) { builder.AddBool(0, success, false); }
   public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(1, boxUid, 0); }
   public static void AddItemTypeId(FlatBufferBuilder builder, int itemTypeId) { builder.AddInt(2, itemTypeId, 0); }
-  public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(3, amount, 0); }
-  public static void AddPlayerSlotIndex(FlatBufferBuilder builder, int playerSlotIndex) { builder.AddInt(4, playerSlotIndex, -1); }
-  public static void AddBoxSlotIndex(FlatBufferBuilder builder, int boxSlotIndex) { builder.AddInt(5, boxSlotIndex, -1); }
+  public static void AddItemUid(FlatBufferBuilder builder, int itemUid) { builder.AddInt(3, itemUid, 0); }
+  public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(4, amount, 0); }
+  public static void AddPlayerSlotIndex(FlatBufferBuilder builder, int playerSlotIndex) { builder.AddInt(5, playerSlotIndex, -1); }
+  public static void AddBoxSlotIndex(FlatBufferBuilder builder, int boxSlotIndex) { builder.AddInt(6, boxSlotIndex, -1); }
   public static Offset<H_ItemGainResult> EndH_ItemGainResult(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_ItemGainResult>(o);
@@ -60,6 +64,7 @@ public struct H_ItemGainResult : IFlatbufferObject
     _o.Success = this.Success;
     _o.BoxUid = this.BoxUid;
     _o.ItemTypeId = this.ItemTypeId;
+    _o.ItemUid = this.ItemUid;
     _o.Amount = this.Amount;
     _o.PlayerSlotIndex = this.PlayerSlotIndex;
     _o.BoxSlotIndex = this.BoxSlotIndex;
@@ -71,6 +76,7 @@ public struct H_ItemGainResult : IFlatbufferObject
       _o.Success,
       _o.BoxUid,
       _o.ItemTypeId,
+      _o.ItemUid,
       _o.Amount,
       _o.PlayerSlotIndex,
       _o.BoxSlotIndex);
@@ -82,6 +88,7 @@ public class H_ItemGainResultT
   public bool Success { get; set; }
   public int BoxUid { get; set; }
   public int ItemTypeId { get; set; }
+  public int ItemUid { get; set; }
   public int Amount { get; set; }
   public int PlayerSlotIndex { get; set; }
   public int BoxSlotIndex { get; set; }
@@ -90,6 +97,7 @@ public class H_ItemGainResultT
     this.Success = false;
     this.BoxUid = 0;
     this.ItemTypeId = 0;
+    this.ItemUid = 0;
     this.Amount = 0;
     this.PlayerSlotIndex = -1;
     this.BoxSlotIndex = -1;
@@ -105,9 +113,10 @@ static public class H_ItemGainResultVerify
       && verifier.VerifyField(tablePos, 4 /*Success*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 6 /*BoxUid*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*ItemTypeId*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 10 /*Amount*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 12 /*PlayerSlotIndex*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 14 /*BoxSlotIndex*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*ItemUid*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*Amount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*PlayerSlotIndex*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 16 /*BoxSlotIndex*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -41,7 +41,7 @@ public static class RoomSync
                 G_Shoot.Pack, PacketType.G_Shoot);
     }
 
-    public static void Equip(int itemId, int slotIndex)
+    public static void Equip(int itemId, int slotIndex, int itemUid = 0)
     {
         if (IsSolo) return;
 
@@ -49,15 +49,34 @@ public static class RoomSync
 
         if (RoomManager.IsHost)
             PacketBuilder.BroadcastToGuests(
-                new H_EquipT { PlayerId = id, ItemId = itemId, SlotIndex = slotIndex },
+                new H_EquipT { PlayerId = id, ItemId = itemId, ItemUid = itemUid, SlotIndex = slotIndex },
                 H_Equip.Pack, PacketType.H_Equip);
         else
             PacketBuilder.SendToHost(
-                new G_EquipT { PlayerId = id, ItemId = itemId, SlotIndex = slotIndex },
+                new G_EquipT { PlayerId = id, ItemId = itemId, ItemUid = itemUid, SlotIndex = slotIndex },
                 G_Equip.Pack, PacketType.G_Equip);
     }
 
-    public static void ItemGain(bool isPlayerGained, int boxUid, int itemTypeId, int amount, int addedSlotIndex, int removedSlotIndex)
+    // 장비 내구도 변화(발사/피격 등) — 호스트가 실제 값을 계산해서 결과를 브로드캐스트
+    public static void Durability(int itemUid, int itemId, float amount, float defaultMaxDurability)
+    {
+        if (itemUid == 0) return; // uid가 없는(추적되지 않는) 아이템은 동기화하지 않음
+
+        if (RoomManager.IsHost)
+        {
+            var (current, max) = WorldEquipmentManager.ApplyChange(itemUid, itemId, amount, defaultMaxDurability);
+            if (RoomManager.HasGuests)
+                PacketBuilder.BroadcastToGuests(new H_DurabilityT { ItemUid = itemUid, Current = current, Max = max },
+                    H_Durability.Pack, PacketType.H_Durability);
+        }
+        else
+        {
+            PacketBuilder.SendToHost(new G_DurabilityT { ItemUid = itemUid, ItemId = itemId, Amount = amount },
+                G_Durability.Pack, PacketType.G_Durability);
+        }
+    }
+
+    public static void ItemGain(bool isPlayerGained, int boxUid, int itemTypeId, int itemUid, int amount, int addedSlotIndex, int removedSlotIndex)
     {
         if (IsSolo) return;
         PacketBuilder.SendToHost(new G_ItemGainT
@@ -65,6 +84,7 @@ public static class RoomSync
             IsPlayerGained   = isPlayerGained,
             BoxUid           = boxUid,
             ItemTypeId       = itemTypeId,
+            ItemUid          = itemUid,
             Amount           = amount,
             AddedSlotIndex   = addedSlotIndex,
             RemovedSlotIndex = removedSlotIndex,
@@ -86,13 +106,14 @@ public static class RoomSync
         }, G_ItemExchange.Pack, PacketType.G_ItemExchange);
     }
 
-    public static void ItemBoxUpdate(int boxUid, int itemTypeId, int amount, int slotIndex)
+    public static void ItemBoxUpdate(int boxUid, int itemTypeId, int amount, int slotIndex, int itemUid = 0)
     {
         if (!RoomManager.HasGuests) return;
         PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
         {
             BoxUid     = boxUid,
             ItemTypeId = itemTypeId,
+            ItemUid    = itemUid,
             Amount     = amount,
             SlotIndex  = slotIndex,
         }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
@@ -183,7 +204,7 @@ public static class RoomSync
         }, H_EnemyDie.Pack, PacketType.H_EnemyDie);
     }
 
-    public static void ItemSpawn(int uid, int typeId, Vector3 pos, float rotation, List<int> itemIds)
+    public static void ItemSpawn(int uid, int typeId, Vector3 pos, float rotation, List<int> itemIds, List<int> itemCounts = null, List<int> itemUids = null)
     {
         if (!RoomManager.HasGuests) return;
         PacketBuilder.BroadcastToGuests(new H_ItemSpawnT
@@ -193,6 +214,8 @@ public static class RoomSync
             Pos     = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
             Rotation = rotation,
             ItemIds = itemIds,
+            ItemCount = itemCounts,
+            ItemUids = itemUids,
         }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
     }
 }

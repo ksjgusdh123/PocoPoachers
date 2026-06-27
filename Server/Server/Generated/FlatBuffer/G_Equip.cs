@@ -18,23 +18,27 @@ public struct G_Equip : IFlatbufferObject
 
   public int PlayerId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int ItemId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int SlotIndex { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int ItemUid { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int SlotIndex { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<G_Equip> CreateG_Equip(FlatBufferBuilder builder,
       int player_id = 0,
       int item_id = 0,
+      int item_uid = 0,
       int slot_index = 0) {
-    builder.StartTable(3);
+    builder.StartTable(4);
     G_Equip.AddSlotIndex(builder, slot_index);
+    G_Equip.AddItemUid(builder, item_uid);
     G_Equip.AddItemId(builder, item_id);
     G_Equip.AddPlayerId(builder, player_id);
     return G_Equip.EndG_Equip(builder);
   }
 
-  public static void StartG_Equip(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartG_Equip(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddItemId(FlatBufferBuilder builder, int itemId) { builder.AddInt(1, itemId, 0); }
-  public static void AddSlotIndex(FlatBufferBuilder builder, int slotIndex) { builder.AddInt(2, slotIndex, 0); }
+  public static void AddItemUid(FlatBufferBuilder builder, int itemUid) { builder.AddInt(2, itemUid, 0); }
+  public static void AddSlotIndex(FlatBufferBuilder builder, int slotIndex) { builder.AddInt(3, slotIndex, 0); }
   public static Offset<G_Equip> EndG_Equip(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<G_Equip>(o);
@@ -47,6 +51,7 @@ public struct G_Equip : IFlatbufferObject
   public void UnPackTo(G_EquipT _o) {
     _o.PlayerId = this.PlayerId;
     _o.ItemId = this.ItemId;
+    _o.ItemUid = this.ItemUid;
     _o.SlotIndex = this.SlotIndex;
   }
   public static Offset<G_Equip> Pack(FlatBufferBuilder builder, G_EquipT _o) {
@@ -55,6 +60,7 @@ public struct G_Equip : IFlatbufferObject
       builder,
       _o.PlayerId,
       _o.ItemId,
+      _o.ItemUid,
       _o.SlotIndex);
   }
 }
@@ -63,11 +69,13 @@ public class G_EquipT
 {
   public int PlayerId { get; set; }
   public int ItemId { get; set; }
+  public int ItemUid { get; set; }
   public int SlotIndex { get; set; }
 
   public G_EquipT() {
     this.PlayerId = 0;
     this.ItemId = 0;
+    this.ItemUid = 0;
     this.SlotIndex = 0;
   }
 }
@@ -80,7 +88,8 @@ static public class G_EquipVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*PlayerId*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*ItemId*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*SlotIndex*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*ItemUid*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*SlotIndex*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

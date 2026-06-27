@@ -27,7 +27,7 @@ public static partial class PacketHandlers
                 else
                 {
                     // 플레이어 → 박스: 클라이언트가 미리 확정한 슬롯에 추가
-                    success = boxInv.AddItemAtSlot(pkt.AddedSlotIndex, itemData, pkt.Amount);
+                    success = boxInv.AddItemAtSlot(pkt.AddedSlotIndex, itemData, pkt.Amount, pkt.ItemUid);
                 }
             }
         }
@@ -40,6 +40,7 @@ public static partial class PacketHandlers
             Success         = success,
             BoxUid          = pkt.BoxUid,
             ItemTypeId      = pkt.ItemTypeId,
+            ItemUid         = pkt.ItemUid,
             Amount          = pkt.IsPlayerGained ? pkt.Amount : -pkt.Amount,
             PlayerSlotIndex = playerSlotIndex,
             BoxSlotIndex    = boxSlotIndex,
@@ -52,6 +53,7 @@ public static partial class PacketHandlers
             {
                 BoxUid     = pkt.BoxUid,
                 ItemTypeId = pkt.ItemTypeId,
+                ItemUid    = pkt.ItemUid,
                 Amount     = updateAmount,
                 SlotIndex  = boxSlotIndex,
             }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);

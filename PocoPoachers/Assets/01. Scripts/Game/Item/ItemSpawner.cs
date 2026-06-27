@@ -33,7 +33,16 @@ public class ItemSpawner : MonoBehaviour
     private Dictionary<ItemType, (int min, int max)> _quantityMap = new Dictionary<ItemType, (int, int)>();
 
     int _nextUid = 1000;
+    static int _nextItemUid = 1;
     const int BOX_TYPE_ID = 301;
+
+    // 스택 불가 아이템(무기/방어구 등)에만 고유 uid 발급, 소모품류는 0
+    // 모든 스포너(필드 박스/적 드롭 등)가 공유하는 카운터라 호스트 전역에서 충돌 없음
+    public static int AssignItemUid(int itemId)
+    {
+        var data = ItemTable.Instance.Get(itemId);
+        return data != null && data.MaxStack <= 1 ? _nextItemUid++ : 0;
+    }
 
     public List<int> GetIds(ItemType type)
     {
@@ -99,6 +108,7 @@ public class ItemSpawner : MonoBehaviour
             int itemCount = Random.Range(_minItemPerBox, _maxItemPerBox + 1);
             List<int> randomItems = new List<int>();
             List<int> randomCounts = new List<int>();
+            List<int> randomUids = new List<int>();
             for (int j = 0; j < itemCount; j++)
             {
                 var (pickedId, pickedType) = GetRandomItemId();
@@ -106,13 +116,16 @@ public class ItemSpawner : MonoBehaviour
                 var (min, max) = GetQuantityRange(pickedType);
                 randomItems.Add(pickedId);
                 randomCounts.Add(Random.Range(min, max + 1));
+                randomUids.Add(AssignItemUid(pickedId));
             }
 
             // temp 601 - bullet 700 : bag
             randomItems.Add(601);
             randomCounts.Add(30);
+            randomUids.Add(AssignItemUid(601));
             randomItems.Add(700);
             randomCounts.Add(1);
+            randomUids.Add(AssignItemUid(700));
 
             var data = new H_ItemSpawnT
             {
@@ -122,11 +135,12 @@ public class ItemSpawner : MonoBehaviour
                 Rotation = randomRot,
                 ItemIds = randomItems,
                 ItemCount = randomCounts,
+                ItemUids = randomUids,
             };
 
             omgr?.RegisterSpawnedBox(data);
             omgr?.SpawnItemBox(uid, BOX_TYPE_ID, randomPos, randomRot)
-                ?.Initialize(randomItems.ToArray(), randomCounts.ToArray());
+                ?.Initialize(randomItems.ToArray(), randomCounts.ToArray(), randomUids.ToArray());
         }
 
         // temp
@@ -157,7 +171,11 @@ public class ItemSpawner : MonoBehaviour
         return consumables.Count > 0 ? (consumables[Random.Range(0, consumables.Count)], ItemType.Consumable) : (-1, ItemType.None);
     }
 
-    public void ResetSpawnState() => _nextUid = 1000;
+    public void ResetSpawnState()
+    {
+        _nextUid = 1000;
+        _nextItemUid = 1;
+    }
 
     static List<int> _dropIds;
 

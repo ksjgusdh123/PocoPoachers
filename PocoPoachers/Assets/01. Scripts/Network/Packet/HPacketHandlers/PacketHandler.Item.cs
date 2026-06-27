@@ -14,11 +14,12 @@ public static partial class PacketHandlers
         float rotation = pkt.Rotation;
         int[] item_ids = pkt.GetItemIdsArray();
         int[] item_counts = pkt.GetItemCountArray();
+        int[] item_uids = pkt.GetItemUidsArray();
 
         MainThreadDispatcher.Enqueue(() =>
         {
             var box = ObjectManager.Instance?.SpawnItemBox(uid, typeId, pos, rotation);
-            box?.Initialize(item_ids, item_counts);
+            box?.Initialize(item_ids, item_counts, item_uids);
         });
     }
 
@@ -52,13 +53,13 @@ public static partial class PacketHandlers
         {
             // 플레이어가 가져간 것 롤백: 플레이어에서 제거, 박스로 반환
             playerInv?.RemoveItemAtSlot(pkt.PlayerSlotIndex, itemData, pkt.Amount);
-            boxInv?.AddItemAtSlot(pkt.BoxSlotIndex, itemData, pkt.Amount);
+            boxInv?.AddItemAtSlot(pkt.BoxSlotIndex, itemData, pkt.Amount, pkt.ItemUid);
         }
         else
         {
             // 플레이어가 넣은 것 롤백: 박스에서 제거, 플레이어로 반환
             boxInv?.RemoveItemAtSlot(pkt.BoxSlotIndex, itemData, -pkt.Amount);
-            playerInv?.AddItemAtSlot(pkt.PlayerSlotIndex, itemData, -pkt.Amount);
+            playerInv?.AddItemAtSlot(pkt.PlayerSlotIndex, itemData, -pkt.Amount, pkt.ItemUid);
         }
     }
 
@@ -76,7 +77,7 @@ public static partial class PacketHandlers
         if (pkt.Amount > 0)
         {
             int slotIndex = pkt.SlotIndex >= 0 ? pkt.SlotIndex : boxInv.CanAddItem(itemData, pkt.Amount);
-            if (slotIndex >= 0) boxInv.AddItemAtSlot(slotIndex, itemData, pkt.Amount);
+            if (slotIndex >= 0) boxInv.AddItemAtSlot(slotIndex, itemData, pkt.Amount, pkt.ItemUid);
         }
         else
         {

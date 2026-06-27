@@ -87,15 +87,23 @@ public class WeaponController : EquipableController
         HandleAimInput();
     }
 
-    public override void Equip(ItemData data, int slotIndex)
+    public override void Equip(ItemData data, int slotIndex, int uid)
     {
-        GunBase gun = _mount.ApplyEquip(data.id, slotIndex);    
+        GunBase gun = _mount.ApplyEquip(data.id, slotIndex, uid);
         if (gun == null) return;
+
+        // 호스트(싱글플레이 포함) 본인이 장착하는 경우, 기존 내구도를 바로 조회해서 복원
+        if (RoomManager.IsHost && uid != 0)
+        {
+            var (current, _) = WorldEquipmentManager.GetOrCreate(uid, data.id, gun.MaxDurability);
+            gun.SetDurability(current);
+        }
+        Debug.Log($"[WeaponController] 장착: itemId={data.id}, uid={uid}, durability={gun.CurrentDurability}/{gun.MaxDurability}");
 
         gun.Owner = gameObject;
         gun.gameObject.SetActive(false);
         OnWeaponChanged?.Invoke(slotIndex, data);
-        RoomSync.Equip(data.id, slotIndex);
+        RoomSync.Equip(data.id, slotIndex, uid);
 
         if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
         SwitchWeapon(slotIndex);
@@ -108,7 +116,7 @@ public class WeaponController : EquipableController
         if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
         OnWeaponChanged?.Invoke(slotIndex, null);
         RaiseUnequipped(slotIndex);
-        RoomSync.Equip(0, slotIndex);
+        RoomSync.Equip(0, slotIndex, 0);
     }
 
     public override void UnequipAll()
@@ -121,6 +129,7 @@ public class WeaponController : EquipableController
     public int GetEquippedItemId(int slotIndex) => _mount.GetEquippedItemId(slotIndex);
 
     public override int GetEquippedId(int slotIndex) => _mount.GetEquippedItemId(slotIndex);
+    public override int GetEquippedUid(int slotIndex) => _mount.GetGun(slotIndex)?.Uid ?? 0;
 
 
     private void SwitchWeapon(int index)

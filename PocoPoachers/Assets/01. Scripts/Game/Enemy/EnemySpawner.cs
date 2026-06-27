@@ -110,7 +110,7 @@ public class EnemySpawner : MonoBehaviour
 
         var itemData = ItemTable.Instance.Get(pool[Random.Range(0, pool.Length)]);
         if (itemData != null)
-            armorCtrl.Equip(itemData, 0);
+            armorCtrl.Equip(itemData, 0, ItemSpawner.AssignItemUid(itemData.id));
     }
 
     private Vector3 GetRandomNavMeshPosition(Vector3 origin, float radius)

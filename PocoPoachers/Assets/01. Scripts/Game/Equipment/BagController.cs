@@ -20,9 +20,9 @@ public class BagController : EquipableController
     }
 
     // slotIndex는 가방 UI의 EquipDropHandler._slotIndex (무기 0~1, 방어구 2~3에 이어서 4 사용)
-    public override void Equip(ItemData data, int slotIndex)
+    public override void Equip(ItemData data, int slotIndex, int uid)
     {
-        if (!_mount.ApplyEquip(data.id)) return;
+        if (!_mount.ApplyEquip(data.id, uid)) return;
 
         // 기존 가방의 용량 보너스 제거 후 새 가방 적용
         if (_appliedCapacity > 0)
@@ -33,7 +33,7 @@ public class BagController : EquipableController
 
         _equippedSlotIndex = slotIndex;
         OnBagChanged?.Invoke(slotIndex, data);
-        RoomSync.Equip(data.id, slotIndex);
+        RoomSync.Equip(data.id, slotIndex, uid);
     }
 
     // 벗으면 줄어들 용량에 현재 아이템 + 반환될 가방(1칸)이 다 들어갈 때만 해제 허용
@@ -56,7 +56,7 @@ public class BagController : EquipableController
 
         OnBagChanged?.Invoke(slotIndex, null);
         RaiseUnequipped(slotIndex);
-        RoomSync.Equip(0, slotIndex);
+        RoomSync.Equip(0, slotIndex, 0);
     }
 
     public override void UnequipAll()
@@ -66,4 +66,5 @@ public class BagController : EquipableController
     }
 
     public override int GetEquippedId(int slotIndex) => _mount.GetEquippedItemId();
+    public override int GetEquippedUid(int slotIndex) => _mount.GetEquippedUid();
 }

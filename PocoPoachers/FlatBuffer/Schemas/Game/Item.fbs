@@ -8,6 +8,7 @@ table H_ItemSpawn
     rotation: float;
     item_ids: [int];
     item_count: [int];
+    item_uids: [int]; // item_ids와 같은 순서, 무기/방어구 등 인스턴스 식별용 (소모품은 0)
 }
 
 table H_ItemDespawn
@@ -20,6 +21,7 @@ table G_ItemGain
     is_player_gained: bool;
     box_uid:      int;
     item_type_id: int;
+    item_uid:     int; // 스택 불가 아이템(무기/방어구)의 인스턴스 uid, 없으면 0
     amount:       int;
     added_slot_index: int;
     removed_slot_index:   int;
@@ -30,6 +32,7 @@ table H_ItemGainResult
     success:            bool;
     box_uid:            int;
     item_type_id:       int;
+    item_uid:           int;
     amount:             int;
     player_slot_index:  int = -1;
     box_slot_index:     int = -1;
@@ -39,6 +42,7 @@ table H_ItemBoxUpdate
 {
     box_uid: int;
     item_type_id: int;
+    item_uid: int;
     amount: int;
     slot_index: int;
 }
@@ -59,6 +63,7 @@ table G_Equip
 {
     player_id:  int;
     item_id:    int;
+    item_uid:   int; // 장착하는 아이템 인스턴스의 uid (없으면 0, 호스트가 신규 발급)
     slot_index: int;
 }
 
@@ -66,6 +71,7 @@ table H_Equip
 {
     player_id:  int;
     item_id:    int;
+    item_uid:   int;
     slot_index: int;
 }
 
@@ -79,4 +85,19 @@ table H_ConsumeItemResult
 {
     player_id: int;
     item_id:   int;
+}
+
+// 장비 내구도 변화 요청 (발사/피격 등) — 호스트가 실제 값을 계산해서 H_Durability로 결과를 알려줌
+table G_Durability
+{
+    item_uid: int;
+    item_id:  int;   // 호스트가 해당 uid를 처음 보는 경우 기본 내구도 산정에 사용
+    amount:   float; // 변화량 (양수면 회복, 음수면 감소)
+}
+
+table H_Durability
+{
+    item_uid: int;
+    current:  float;
+    max:      float;
 }

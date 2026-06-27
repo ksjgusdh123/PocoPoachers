@@ -7,13 +7,18 @@ public class GunEnhancementDropHandler : ItemHolderDropHandler
     public event Action<ItemData> OnGunSet;
     public event Action OnGunCleared;
 
-    protected override bool OnItemDropped(ItemData data, int amount)
-    {
-        if (!base.OnItemDropped(data, amount)) return false;
+    private int _droppedUid;
 
+    protected override bool OnItemDropped(ItemData data, int amount, int uid)
+    {
+        if (!base.OnItemDropped(data, amount, uid)) return false;
+
+        _droppedUid = uid;
         OnGunSet?.Invoke(data);
         return true;
     }
+
+    protected override int GetUnequipUid() => _droppedUid;
 
     public override void Unequip()
     {

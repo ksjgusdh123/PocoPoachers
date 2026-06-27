@@ -66,22 +66,23 @@ public class InventoryUI : MonoBehaviour
 
         Inventory boxInventory = _inventory.TryGetComponent<WorldObject>(out _) ? _inventory : target;
         bool isNetworked = boxInventory.TryGetComponent<WorldObject>(out var boxWo);
+        int itemUid = _inventory.Slots[targetSlot.SlotIndex].Uid;
 
         if (isNetworked && !(RoomManager.IsHost))
         {
             // 낙관적 업데이트: 즉시 로컬 적용 후 호스트에 요청
             bool playerGains = boxInventory == _inventory;
-            target.AddItemAtSlot(addedSlotIndex, itemData, amount);
+            target.AddItemAtSlot(addedSlotIndex, itemData, amount, itemUid);
             _inventory.RemoveItemAtSlot(targetSlot.SlotIndex, itemData, amount);
-            RoomSync.ItemGain(playerGains, boxWo.Id, itemData.id, amount, addedSlotIndex, targetSlot.SlotIndex);
+            RoomSync.ItemGain(playerGains, boxWo.Id, itemData.id, itemUid, amount, addedSlotIndex, targetSlot.SlotIndex);
         }
         else
         {
             // 호스트 또는 싱글플레이: 로컬에서 바로 적용
-            target.AddItemAtSlot(addedSlotIndex, itemData, amount);
+            target.AddItemAtSlot(addedSlotIndex, itemData, amount, itemUid);
             _inventory.RemoveItemAtSlot(targetSlot.SlotIndex, itemData, amount);
             if (isNetworked)
-                RoomSync.ItemBoxUpdate(boxWo.Id, itemData.id, boxInventory != _inventory ? amount : -amount, boxInventory != _inventory ? -1 : targetSlot.SlotIndex);
+                RoomSync.ItemBoxUpdate(boxWo.Id, itemData.id, boxInventory != _inventory ? amount : -amount, boxInventory != _inventory ? -1 : targetSlot.SlotIndex, itemUid);
         }
     }
 

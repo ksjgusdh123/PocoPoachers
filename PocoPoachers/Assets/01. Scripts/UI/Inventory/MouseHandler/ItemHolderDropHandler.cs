@@ -23,22 +23,26 @@ public abstract class ItemHolderDropHandler : BaseDropHandler, IPointerClickHand
     {
         ItemData prev = DroppedItemData;
         int prevAmount = DroppedAmount;
-        if (!OnItemDropped(manager.DraggedSlot.SlotItemData, manager.DragAmount))
+        int prevUid = GetUnequipUid(); // 덮어쓰여지기 전, 기존에 장착돼 있던 아이템의 uid
+        if (!OnItemDropped(manager.DraggedSlot.SlotItemData, manager.DragAmount, manager.DraggedSlot.SlotUid))
             return false;
         if (prev == null)
             manager.DraggedSlot.ClearSlot();
         else
-            manager.DraggedSlot.EquipItem(prev, prevAmount);
+            manager.DraggedSlot.EquipItem(prev, prevAmount, prevUid);
         return true;
     }
 
-    protected virtual bool OnItemDropped(ItemData data, int amount)
+    protected virtual bool OnItemDropped(ItemData data, int amount, int uid)
     {
         if (data.ItemType != _itemType) return false;
 
         SetDisplay(data, amount);
         return true;
     }
+
+    // 현재 이 슬롯에 장착된 아이템 인스턴스의 uid (없으면 0) — 장비 컨트롤러를 아는 하위 클래스가 override
+    protected virtual int GetUnequipUid() => 0;
 
     public virtual void OnPointerClick(PointerEventData eventData)
     {
@@ -54,7 +58,7 @@ public abstract class ItemHolderDropHandler : BaseDropHandler, IPointerClickHand
         {
             int slot = _inventoryUI.Inventory.CanAddItem(DroppedItemData, DroppedAmount);
             if (slot < 0) return;
-            _inventoryUI.Inventory.AddItemAtSlot(slot, DroppedItemData, DroppedAmount);
+            _inventoryUI.Inventory.AddItemAtSlot(slot, DroppedItemData, DroppedAmount, GetUnequipUid());
         }
 
         ClearDisplay();

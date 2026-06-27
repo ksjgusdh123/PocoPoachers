@@ -2,9 +2,8 @@ using System;
 using System.Collections;
 using UnityEngine;
 
-public abstract class GunBase : MonoBehaviour
+public abstract class GunBase : EquippableItemBase
 {
-    [SerializeField] protected int _itemId;
     [SerializeField] protected Transform _muzzle;
     [SerializeField] private MuzzleFlash _muzzleFlash;
     [SerializeField] private Transform _shellEjectPort;
@@ -12,7 +11,6 @@ public abstract class GunBase : MonoBehaviour
     protected GunStatData _stat;
     protected GameObject _bulletPrefab;
 
-    public int ItemId => _itemId;
     public GunStatData Stat => _stat;
     public Transform Muzzle => _muzzle;
     public int CurrentAmmo => _currentAmmo;
@@ -35,7 +33,6 @@ public abstract class GunBase : MonoBehaviour
     public event Action OnReloadRequested;
     public event Action<int> OnReloadComplete;
     public event Action<int, int> OnAmmoChanged; // (현재 탄약, 최대 탄약)
-    public event Action<float> OnDurabilityChanged; // (현재 내구도 0~1)
 
     [SerializeField] private float _durabilityDecreasePerShot = 0.01f;
 
@@ -45,9 +42,6 @@ public abstract class GunBase : MonoBehaviour
     private bool _isReloading;
     private float _nextFireTime;
     private Coroutine _reloadCoroutine;
-    private float _currentDurability;
-
-    public float CurrentDurability => _currentDurability;
 
     private Vector3 _originLocalPos;
     private float _recoilDist;
@@ -61,7 +55,7 @@ public abstract class GunBase : MonoBehaviour
         _stat = DataManager.GetGunStat(_itemId);
         _bulletPrefab = Resources.Load<GameObject>(_stat.BulletPrefabPath);
         _currentAmmo = _stat.MaxMagazine;
-        _currentDurability = 1f;
+        if (_maxDurability <= 0f) Initialize(_uid, _itemId, 1f);
         _originLocalPos = transform.localPosition;
     }
 
@@ -88,7 +82,7 @@ public abstract class GunBase : MonoBehaviour
     public void TryShoot()
     {
         if (_isReloading || Time.time < _nextFireTime) return;
-        if (_currentDurability <= 0) return;
+        if (_currentDurability <= 0f) return;
         if (_currentAmmo <= 0)
         {
             OnReloadRequested?.Invoke();
@@ -103,8 +97,9 @@ public abstract class GunBase : MonoBehaviour
         _soundGizmoTimer = 1f;
         _currentAmmo--;
         OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
-        _currentDurability = Mathf.Max(0f, _currentDurability - _durabilityDecreasePerShot);
-        OnDurabilityChanged?.Invoke(_currentDurability);
+        // 로컬 즉시 반영(낙관적) + 호스트에 통보해서 권위 있는 값으로 동기화
+        SetDurability(_currentDurability - _durabilityDecreasePerShot);
+        RoomSync.Durability(Uid, ItemId, -_durabilityDecreasePerShot, MaxDurability);
         _nextFireTime = Time.time + 60f / _stat.Rpm;
         _recoilDist = _stat.RecoilForce;
         Vector2 muzzleScreen = Camera.main.WorldToScreenPoint(_muzzle.position);

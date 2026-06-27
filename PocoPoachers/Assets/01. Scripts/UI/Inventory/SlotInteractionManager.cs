@@ -90,8 +90,9 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     // 플레이어 → 플레이어 빈 슬롯: 로컬 이동만
     public void InvokeLocalMove(ItemSlotUI from, ItemSlotUI to, ItemData data, int amount)
     {
+        int itemUid = from.InventoryUI.Inventory.Slots[from.SlotIndex].Uid;
         from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
-        to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
+        to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount, itemUid);
     }
 
     // 플레이어 ↔ 박스 빈 슬롯: 로컬 + 네트워크 패킷
@@ -103,18 +104,19 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         bool playerGains = fromIsBox;
 
         int playerSlotIndex = fromIsBox ? to.SlotIndex : from.SlotIndex;
+        int itemUid = from.InventoryUI.Inventory.Slots[from.SlotIndex].Uid;
 
         from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
-        to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
+        to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount, itemUid);
 
         if (!RoomManager.IsHost)
         {
             // 낙관적 업데이트: 즉시 로컬 적용 후 호스트에 요청
-            RoomSync.ItemGain(playerGains, boxUid, data.id, amount, playerGains ? playerSlotIndex : boxSlotIndex, playerGains ? boxSlotIndex : playerSlotIndex);
+            RoomSync.ItemGain(playerGains, boxUid, data.id, itemUid, amount, playerGains ? playerSlotIndex : boxSlotIndex, playerGains ? boxSlotIndex : playerSlotIndex);
         }
         else
         {
-            RoomSync.ItemBoxUpdate(boxUid, data.id, playerGains ? -amount : amount, boxSlotIndex);
+            RoomSync.ItemBoxUpdate(boxUid, data.id, playerGains ? -amount : amount, boxSlotIndex, itemUid);
         }
     }
 
@@ -122,12 +124,13 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     public void InvokeBoxMove(ItemSlotUI from, ItemSlotUI to, ItemData data, int amount)
     {
         int boxUid = from.InventoryUI.Box.Id;
+        int itemUid = from.InventoryUI.Inventory.Slots[from.SlotIndex].Uid;
 
         from.InventoryUI.Inventory.RemoveItemAtSlot(from.SlotIndex, data, amount);
-        to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount);
+        to.InventoryUI.Inventory.AddItemAtSlot(to.SlotIndex, data, amount, itemUid);
 
         RoomSync.ItemBoxUpdate(boxUid, data.id, -amount, from.SlotIndex);
-        RoomSync.ItemBoxUpdate(boxUid, data.id, amount,  to.SlotIndex);
+        RoomSync.ItemBoxUpdate(boxUid, data.id, amount,  to.SlotIndex, itemUid);
     }
 
     // 박스 ↔ 박스: 로컬 교환 + 박스 업데이트 브로드캐스트
