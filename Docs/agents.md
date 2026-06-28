@@ -31,3 +31,14 @@
 ## Documentation
 
 Task-based doc index: [README.md](README.md). If docs and code disagree, **code wins**.
+
+### Token efficiency rules
+
+Follow these when creating or editing any doc:
+
+- **Entry point is short** — `README.md` contains only the index table; detail lives in linked files.
+- **One fact, one place** — never repeat information across documents; link instead.
+- **Tables and code blocks over prose** — structured data reads faster and with fewer tokens.
+- **One document per task** — if a file mixes topics, the AI must read all of it for any single task.
+- **Why and Where, not What** — code tells *what* it does; docs tell *why* it exists and *where* to look.
+- **Scope line at top** — each doc starts with one sentence stating what it covers and what it does *not* cover, so the AI can skip it confidently when irrelevant.

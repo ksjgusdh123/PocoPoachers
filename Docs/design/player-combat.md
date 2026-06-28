@@ -1,5 +1,7 @@
 # 플레이어 & 전투
 
+플레이어 컴포넌트, 이동·전투 로직, 장비 장착 슬롯, Vital 스탯. 인벤·드래그&드롭은 [inventory-exchange.md](inventory-exchange.md).
+
 ## 플레이어 컴포넌트
 
 | 클래스 | 역할 |

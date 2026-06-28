@@ -1,5 +1,7 @@
 # 세이브 시스템
 
+저장 위치, 저장 항목 구조, 로드 흐름. 미구현 저장 항목(강화·장착·Vital)은 [todo.md](todo.md).
+
 ## 저장 위치
 
 `Application.persistentDataPath/save_{slotIndex}.json`

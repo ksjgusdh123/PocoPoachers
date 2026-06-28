@@ -1,5 +1,7 @@
 # UI 시스템
 
+UIManager 패널 스택 구조, 씬별 UI 목록. UI별 세부 로직은 관련 씬 설계 문서 참조.
+
 ## UIManager
 
 패널 스택 기반 Show / Hide / Toggle.

@@ -1,5 +1,7 @@
 # DataTable 연동
 
+CSV→FlatBuffer→C# 파이프라인, 테이블 클래스 사용법. ID 범위 규칙은 [datatable/id-ranges.md](../datatable/id-ranges.md).
+
 ## 파이프라인
 
 ```

@@ -27,24 +27,6 @@ CSV 원본: `PocoPoachers/DataTable/`
 
 ---
 
-## TODO
-
-Enemy·Mineral ID 마이그레이션 등 미완 작업은 [design/todo.md](../design/todo.md)에서 통합 관리합니다.
-
-### Enemy ID 변경 (→ 2001 범위)
-
-- `PocoPoachers/DataTable/enemy.csv` id: 1→2001, 2→2002, 3→2003
-- `enemy.json` 동일하게 수정 (또는 테이블 제너레이터 재실행)
-- 씬 내 **Enemy 프리팹**의 `EnemyStat._enemyId` 인스펙터 값 동일하게 수정 필요
-
-### Mineral ID 변경 (→ 3001 범위)
-
-- `PocoPoachers/DataTable/mineral.csv` id: 1→3001, 2→3002, 3→3003
-- `mineral.json` 동일하게 수정 (또는 테이블 제너레이터 재실행)
-- 씬 내 **BaseOre** 오브젝트의 `_id` 인스펙터 값 동일하게 수정 필요
-
----
-
 ## 씬 이름 컨벤션
 
 | 테이블 | 규칙 | 예시 |

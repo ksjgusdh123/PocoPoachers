@@ -1,5 +1,7 @@
 # 멀티플레이
 
+P2P 아키텍처 개요, 입장 흐름, 동기화 현황. 패킷 구조는 [network-packets.md](../development/network-packets.md).
+
 ## 아키텍처
 
 ```
