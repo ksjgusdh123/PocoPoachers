@@ -10,11 +10,14 @@ public enum AIState
 	Reload,
 	Attack,
 	Retreat,
+	Rolling
 }
 
 [BlackboardEnum]
 public enum AIAnimState
 {
 	Idle,
-	Walk
+	Walk,
+	Rolling
+
 }

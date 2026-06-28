@@ -87,8 +87,9 @@ GameObject:
   - component: {fileID: 4082276859572084947}
   - component: {fileID: -2921427929991376190}
   - component: {fileID: -7253146039122799985}
+  - component: {fileID: 6780348202308722647}
   m_Layer: 11
-  m_Name: TestAI
+  m_Name: TestRetreatAI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -203,7 +204,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0038c16c34866b4f9e25c9c0dc0f7e6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Behavior::Unity.Behavior.BehaviorGraphAgent
-  m_Graph: {fileID: 4654008035634704781, guid: bccafd8495c963d498ff7b074fe6bd0e, type: 2}
+  m_Graph: {fileID: 4654008035634704781, guid: 894f8ab5cffa76441a92401721a3ce24, type: 2}
   m_BlackboardVariableOverridesList:
   - rid: 8932840606265246670
   - rid: 8932840606265246671
@@ -424,6 +425,19 @@ MonoBehaviour:
   - {fileID: 2820215744700688298}
   - {fileID: 6091269842797980000}
   _syncInterval: 0.1
+--- !u!114 &6780348202308722647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6112331380076343035}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1883b26f3e1b84d49b8c8fd90ced11e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AIDodgeState
+  _cooldown: 10
 --- !u!1001 &3358080835097842442
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -491,7 +505,7 @@ PrefabInstance:
     - target: {fileID: -6649697836553743001, guid: f9f65d468731bcf4fba794d064637f84, type: 3}
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
-      objectReference: {fileID: 2100000, guid: 86233cda5f45e034b8d782a0dd1287fa, type: 2}
+      objectReference: {fileID: 2100000, guid: c4c0783b1679586408a1e00fcc359798, type: 2}
     - target: {fileID: 919132149155446097, guid: f9f65d468731bcf4fba794d064637f84, type: 3}
       propertyPath: m_Name
       value: party_character
