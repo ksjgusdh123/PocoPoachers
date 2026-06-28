@@ -1,6 +1,10 @@
 # Cheat Console (개발용 치트 콘솔)
 
-게임 테스트용 **개발 빌드 전용** 치트 콘솔입니다.
+게임 테스트용 **개발 빌드 전용** 치트 콘솔.
+
+소스: `PocoPoachers/Assets/01. Scripts/Cheats/CheatConsole.cs`
+
+아이템 ID 참고: [datatable/id-ranges.md](../datatable/id-ranges.md)
 
 ## 활성화 조건
 

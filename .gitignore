@@ -56,3 +56,11 @@ appsettings.*.local.json
 .env
 .env.*
 *.slnx
+
+# AI tooling (local)
+.claude/
+
+# Cursor — rules만 공유, 나머지 로컬 설정은 제외
+.cursor/*
+!.cursor/rules/
+!.cursor/rules/**
