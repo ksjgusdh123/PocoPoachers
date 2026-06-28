@@ -13,7 +13,6 @@ public class NetworkManager : Singleton<NetworkManager>
 
     public Session Session { get; private set; }
 
-    [SerializeField] string userName = "Player"; //TODO: UI로 입력받기
     public int MyPlayerId { get; private set; }
     public bool IsLoggedIn { get; private set; }
 
@@ -77,7 +76,7 @@ public class NetworkManager : Singleton<NetworkManager>
     public void OnSessionConnected()
     {
         Debug.Log("[NetworkManager] Connected");
-        PacketBuilder.SendToMaster(new C_LoginT { Username = userName ?? string.Empty }, C_Login.Pack, PacketType.C_Login);
+        PacketBuilder.SendToMaster(new C_LoginT(), C_Login.Pack, PacketType.C_Login);
         OnConnected?.Invoke();
     }
 

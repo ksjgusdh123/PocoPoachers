@@ -28,7 +28,14 @@ public class RoomManager : Singleton<RoomManager>
     public event Action<int>     OnRoomJoined;
     public event Action<string>  OnRoomJoinFailed;
     public static event Action<int> OnGuestLeft;
-    public static event Action   OnHostLeft;
+    public static event Action      OnHostLeft;
+    public static event Action<int> OnPlayerCountChanged;
+
+    private int _memberCount = 1;
+    public static int MemberCount =>
+        Instance == null      ? 1 :
+        Instance._isHost      ? Instance._guests.Count + 1 :
+                                Instance._memberCount;
 
     public void NotifyGameStarted()          => OnGameStarted?.Invoke();
     public void NotifySessionCodeReceived(string code) => OnSessionCodeReceived?.Invoke(code);
@@ -67,6 +74,7 @@ public class RoomManager : Singleton<RoomManager>
     private void CreateOrJoinRoom(bool isHost, string code)
     {
         _isHost = isHost;
+        _memberCount = 1;
         _guests.Clear();
         _punchers.Clear();
         _guestLastSeen.Clear();
@@ -118,6 +126,7 @@ public class RoomManager : Singleton<RoomManager>
             MainThreadDispatcher.Enqueue(() => {
                 if (_isHost)
                 {
+                    OnPlayerCountChanged?.Invoke(_guests.Count + 1);
                     OnRoomJoined?.Invoke(id);
                     SyncToGuest(id);
                 }
@@ -193,8 +202,27 @@ public class RoomManager : Singleton<RoomManager>
         _guests[playerId] = _lastGuestEp;
         if (_punchers.TryRemove(playerId, out var puncher))
             puncher.Stop();
+        OnPlayerCountChanged?.Invoke(_guests.Count + 1);
         OnRoomJoined?.Invoke(playerId);
         SyncToGuest(playerId);
+    }
+
+    public void SetMemberCount(int count)
+    {
+        _memberCount = count;
+        OnPlayerCountChanged?.Invoke(_memberCount);
+    }
+
+    public void AddMember()
+    {
+        _memberCount++;
+        OnPlayerCountChanged?.Invoke(_memberCount);
+    }
+
+    public void RemoveMember()
+    {
+        if (_memberCount > 1) _memberCount--;
+        OnPlayerCountChanged?.Invoke(_memberCount);
     }
 
     private IPEndPoint SelectEndPoint(NetInfoT info)
@@ -325,6 +353,7 @@ public class RoomManager : Singleton<RoomManager>
         _guestLastSeen.TryRemove(guestId, out _);
 
         ObjectManager.Instance?.Despawn(ObjectKind.Player, guestId);
+        OnPlayerCountChanged?.Invoke(_guests.Count + 1);
         OnGuestLeft?.Invoke(guestId);
 
         PacketBuilder.BroadcastToGuests(

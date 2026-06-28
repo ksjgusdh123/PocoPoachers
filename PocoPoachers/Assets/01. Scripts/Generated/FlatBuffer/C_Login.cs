@@ -16,23 +16,8 @@ public struct C_Login : IFlatbufferObject
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
   public C_Login __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
-  public string Username { get { int o = __p.__offset(4); return o != 0 ? __p.__string(o + __p.bb_pos) : null; } }
-#if ENABLE_SPAN_T
-  public Span<byte> GetUsernameBytes() { return __p.__vector_as_span<byte>(4, 1); }
-#else
-  public ArraySegment<byte>? GetUsernameBytes() { return __p.__vector_as_arraysegment(4); }
-#endif
-  public byte[] GetUsernameArray() { return __p.__vector_as_array<byte>(4); }
 
-  public static Offset<C_Login> CreateC_Login(FlatBufferBuilder builder,
-      StringOffset usernameOffset = default(StringOffset)) {
-    builder.StartTable(1);
-    C_Login.AddUsername(builder, usernameOffset);
-    return C_Login.EndC_Login(builder);
-  }
-
-  public static void StartC_Login(FlatBufferBuilder builder) { builder.StartTable(1); }
-  public static void AddUsername(FlatBufferBuilder builder, StringOffset usernameOffset) { builder.AddOffset(0, usernameOffset.Value, 0); }
+  public static void StartC_Login(FlatBufferBuilder builder) { builder.StartTable(0); }
   public static Offset<C_Login> EndC_Login(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<C_Login>(o);
@@ -43,23 +28,18 @@ public struct C_Login : IFlatbufferObject
     return _o;
   }
   public void UnPackTo(C_LoginT _o) {
-    _o.Username = this.Username;
   }
   public static Offset<C_Login> Pack(FlatBufferBuilder builder, C_LoginT _o) {
     if (_o == null) return default(Offset<C_Login>);
-    var _username = _o.Username == null ? default(StringOffset) : builder.CreateString(_o.Username);
-    return CreateC_Login(
-      builder,
-      _username);
+    StartC_Login(builder);
+    return EndC_Login(builder);
   }
 }
 
 public class C_LoginT
 {
-  public string Username { get; set; }
 
   public C_LoginT() {
-    this.Username = null;
   }
 }
 
@@ -69,7 +49,6 @@ static public class C_LoginVerify
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {
     return verifier.VerifyTableStart(tablePos)
-      && verifier.VerifyString(tablePos, 4 /*Username*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

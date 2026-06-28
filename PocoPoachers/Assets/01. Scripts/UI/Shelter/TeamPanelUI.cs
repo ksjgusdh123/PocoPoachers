@@ -5,13 +5,14 @@ using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
 //  TeamPanel [TeamPanelUI]
-//  ├── PlayerEntry_0          [GameObject]
-//  ├── PlayerEntry_1          [GameObject]
-//  ├── PlayerEntry_2          [GameObject]
-//  ├── PlayerEntry_3          [GameObject]
-//  ├── Btn_Invite             [Button]           — 호스트만 표시
-//  ├── Txt_Code               [TextMeshProUGUI]  — 코드 생성 후 표시
-//  └── Btn_Copy               [Button]           — 코드 생성 후 표시
+//  ├── UsersGroup
+//  │   ├── Host           [GameObject]  — _playerSlots[0]
+//  │   ├── Guest1         [GameObject]  — _playerSlots[1]
+//  │   ├── Guest2         [GameObject]  — _playerSlots[2]
+//  │   └── Guest3         [GameObject]  — _playerSlots[3]
+//  ├── btnInvite          [Button]
+//  ├── txtCode            [TextMeshProUGUI]
+//  └── btnCopy            [Button]
 // ────────────────────────────────────────────────────────────────────────
 
 public class TeamPanelUI : MonoBehaviour
@@ -26,6 +27,8 @@ public class TeamPanelUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _txtCode;
     [SerializeField] private Button          _btnCopy;
 
+    private TextMeshProUGUI[] _slotLabels;
+
     private void Awake()
     {
         _btnInvite.onClick.AddListener(OnClickInvite);
@@ -35,15 +38,51 @@ public class TeamPanelUI : MonoBehaviour
         _txtCode.gameObject.SetActive(false);
         _btnCopy.gameObject.SetActive(false);
 
+        _slotLabels = new TextMeshProUGUI[_playerSlots.Length];
+        for (int i = 0; i < _playerSlots.Length; i++)
+            _slotLabels[i] = _playerSlots[i].GetComponentInChildren<TextMeshProUGUI>();
+
         RoomManager.Instance.OnSessionCodeReceived += OnCodeReceived;
         RoomManager.Instance.OnRoomJoinFailed      += OnRoomJoinFailed;
+        RoomManager.OnPlayerCountChanged           += RefreshTeamList;
+    }
+
+    private void OnEnable()
+    {
+        RefreshSlotNames();
+        LocalizationManager.GetInstance().OnLanguageChanged += RefreshSlotNames;
+    }
+
+    private void OnDisable()
+    {
+        var lm = LocalizationManager.GetInstance();
+        if (lm != null) lm.OnLanguageChanged -= RefreshSlotNames;
+    }
+
+    private void Start()
+    {
+        RefreshTeamList(RoomManager.MemberCount);
     }
 
     private void OnDestroy()
     {
-        if (RoomManager.Instance == null) return;
-        RoomManager.Instance.OnSessionCodeReceived -= OnCodeReceived;
-        RoomManager.Instance.OnRoomJoinFailed      -= OnRoomJoinFailed;
+        if (RoomManager.Instance != null)
+        {
+            RoomManager.Instance.OnSessionCodeReceived -= OnCodeReceived;
+            RoomManager.Instance.OnRoomJoinFailed      -= OnRoomJoinFailed;
+        }
+        RoomManager.OnPlayerCountChanged -= RefreshTeamList;
+    }
+
+    private void RefreshSlotNames()
+    {
+        var lm = LocalizationManager.GetInstance();
+        if (_slotLabels == null || lm == null) return;
+
+        if (_slotLabels[0] != null) _slotLabels[0].text = lm.GetString("team.host");
+        for (int i = 1; i < _slotLabels.Length; i++)
+            if (_slotLabels[i] != null)
+                _slotLabels[i].text = string.Format(lm.GetString("team.guest"), i);
     }
 
     // ── Team List ──────────────────────────────────────────────────────
