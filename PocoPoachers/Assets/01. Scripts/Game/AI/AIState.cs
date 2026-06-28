@@ -8,7 +8,8 @@ public enum AIState
 	Patrol,
 	Chase,
 	Reload,
-	Attack
+	Attack,
+	Retreat,
 }
 
 [BlackboardEnum]

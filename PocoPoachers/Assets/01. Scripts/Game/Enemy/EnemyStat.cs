@@ -7,6 +7,11 @@ public class EnemyStat : StatBase
 
     public int EnemyId => _enemyId;
 
+    // 평생 1회만 허용되는 후퇴 여부
+    public bool HasRetreated { get; private set; }
+
+    public void MarkRetreated() => HasRetreated = true;
+
     private TargetDetector _targetDetector;
 
     protected override void Awake()

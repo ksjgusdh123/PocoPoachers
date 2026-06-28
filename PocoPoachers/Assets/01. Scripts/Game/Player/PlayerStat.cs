@@ -116,15 +116,6 @@ public class PlayerStat : StatBase
             Die();  // 배터리 방전 = 사망
     }
 
-    public void Heal(float amount)
-    {
-        if (CurrentHp <= 0f) return;
-
-        CurrentHp = Mathf.Min(MaxHp, CurrentHp + amount);
-        RaiseHpChanged();
-        OnLocalHpChanged(CurrentHp, MaxHp);
-    }
-
     public void ChargeBattery(float amount)
     {
         CurrentBattery = Mathf.Min(MaxBattery, CurrentBattery + amount);

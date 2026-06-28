@@ -57,6 +57,15 @@ public abstract class StatBase : MonoBehaviour, IDamageable
         OnDie?.Invoke();
     }
 
+    public void Heal(float amount)
+    {
+        if (CurrentHp <= 0f) return;
+
+        CurrentHp = Mathf.Min(MaxHp, CurrentHp + amount);
+        RaiseHpChanged();
+        OnLocalHpChanged(CurrentHp, MaxHp);
+    }
+
     // 로컬 HP 변화 시 추가 처리가 필요한 서브클래스에서 오버라이드
     protected virtual void OnLocalHpChanged(float hp, float maxHp) { }
 
