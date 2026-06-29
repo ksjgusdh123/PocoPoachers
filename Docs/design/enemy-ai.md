@@ -31,7 +31,7 @@ Unity **Behavior Graph** 기반. 호스트만 AI를 실행하고, 게스트는 `
 |------|------|
 | `SkillManager` | AI마다 1개. 보유 스킬 + 쿨다운 관리. `_skillIds`로 `skill.csv` 행 참조 (AI별 차등) |
 | `ISkill` / `SkillFactory` | 스킬 인터페이스 + `skill` 문자열 → 스킬 클래스 생성 |
-| `DodgeRollSkill` / `RetreatSkill` | 구르기 / 후퇴 구현 |
+| `DodgeRollSkill` / `RetreatSkill` / `HealSkill` | 구르기 / 후퇴 / 지연 회복 구현 |
 | `SkillContext` | 스킬이 쓰는 참조 묶음 (Agent, Stat, Rotator, Animator, Target, Attacker) |
 | `UseSkill` / `CanUseSkill` | BT 브리지 노드 (`SkillId` 지정) |
 | `AIDodgeState` | 피격 시 구르기 신호(`WantsToDodge`) 발생 — 반응형 트리거 (쿨다운은 SkillManager 위임) |

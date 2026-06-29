@@ -1,8 +1,7 @@
 using System;
 using UnityEngine;
 
-// SkillData(한 행) → 알맞은 ISkill 인스턴스 생성.
-// 행의 skill 문자열을 SkillId로 파싱해 동작 종류를 결정한다.
+// SkillData의 skill 문자열을 SkillId로 파싱해 알맞은 ISkill을 생성한다.
 public static class SkillFactory
 {
     public static ISkill Create(SkillData data)
@@ -22,6 +21,8 @@ public static class SkillFactory
                 return new DodgeRollSkill(data);
             case SkillId.Retreat:
                 return new RetreatSkill(data);
+            case SkillId.Heal:
+                return new HealSkill(data);
             default:
                 Debug.LogWarning($"[SkillFactory] 미구현 skill: {id} (id={data.id})");
                 return null;

@@ -10,6 +10,7 @@ public partial class SkillData
     public int speed;
     public int distance;
     public int duration;
+    public int power;
     public string clip_name = "";
 
     public int Id { get => id; set => id = value; }
@@ -23,6 +24,8 @@ public partial class SkillData
     public int Distance { get => distance; set => distance = value; }
 
     public int Duration { get => duration; set => duration = value; }
+
+    public int Power { get => power; set => power = value; }
 
     public string ClipName { get => clip_name; set => clip_name = value; }
 
