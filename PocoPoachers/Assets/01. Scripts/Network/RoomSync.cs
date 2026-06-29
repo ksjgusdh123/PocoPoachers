@@ -157,6 +157,20 @@ public static class RoomSync
                 G_Leave.Pack, PacketType.G_Leave);
     }
 
+    public static void ShelterLevel(int level)
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastToGuests(
+                new H_ShelterLevelT { Level = level },
+                H_ShelterLevel.Pack, PacketType.H_ShelterLevel);
+        else
+            PacketBuilder.SendToHost(
+                new G_ShelterLevelT { Level = level },
+                G_ShelterLevel.Pack, PacketType.G_ShelterLevel);
+    }
+
     public static void EnemySpawnToGuest(int guestPlayerId, int enemyTypeId, int enemyId, Vector3 pos, float rotation, float hp, float maxHp, int weaponId, int helmetId)
     {
         PacketBuilder.SendToGuest(guestPlayerId, new H_EnemySpawnT

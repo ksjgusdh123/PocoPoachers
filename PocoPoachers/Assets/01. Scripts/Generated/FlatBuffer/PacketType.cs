@@ -40,6 +40,8 @@ public enum PacketType : byte
   H_EnemyDie = 33,
   G_Leave = 34,
   H_Leave = 35,
+  G_ShelterLevel = 36,
+  H_ShelterLevel = 37,
 };
 
 public class PacketTypeUnion {
@@ -122,6 +124,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_Leave(G_LeaveT _g_leave) { return new PacketTypeUnion{ Type = PacketType.G_Leave, Value = _g_leave }; }
   public H_LeaveT AsH_Leave() { return this.As<H_LeaveT>(); }
   public static PacketTypeUnion FromH_Leave(H_LeaveT _h_leave) { return new PacketTypeUnion{ Type = PacketType.H_Leave, Value = _h_leave }; }
+  public G_ShelterLevelT AsG_ShelterLevel() { return this.As<G_ShelterLevelT>(); }
+  public static PacketTypeUnion FromG_ShelterLevel(G_ShelterLevelT _g_shelterlevel) { return new PacketTypeUnion{ Type = PacketType.G_ShelterLevel, Value = _g_shelterlevel }; }
+  public H_ShelterLevelT AsH_ShelterLevel() { return this.As<H_ShelterLevelT>(); }
+  public static PacketTypeUnion FromH_ShelterLevel(H_ShelterLevelT _h_shelterlevel) { return new PacketTypeUnion{ Type = PacketType.H_ShelterLevel, Value = _h_shelterlevel }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -161,6 +167,8 @@ public class PacketTypeUnion {
       case PacketType.H_EnemyDie: return H_EnemyDie.Pack(builder, _o.AsH_EnemyDie()).Value;
       case PacketType.G_Leave: return G_Leave.Pack(builder, _o.AsG_Leave()).Value;
       case PacketType.H_Leave: return H_Leave.Pack(builder, _o.AsH_Leave()).Value;
+      case PacketType.G_ShelterLevel: return G_ShelterLevel.Pack(builder, _o.AsG_ShelterLevel()).Value;
+      case PacketType.H_ShelterLevel: return H_ShelterLevel.Pack(builder, _o.AsH_ShelterLevel()).Value;
     }
   }
 }
@@ -278,6 +286,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_Leave:
         result = H_LeaveVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_ShelterLevel:
+        result = G_ShelterLevelVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_ShelterLevel:
+        result = H_ShelterLevelVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

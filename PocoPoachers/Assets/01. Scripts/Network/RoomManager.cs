@@ -286,6 +286,12 @@ public class RoomManager : Singleton<RoomManager>
 
         SyncLocalEquipToGuest(newGuestId);
 
+        var shelterMgr = ShelterManager.GetInstance();
+        if (shelterMgr != null)
+            PacketBuilder.SendToGuest(newGuestId,
+                new H_ShelterLevelT { Level = shelterMgr.CurrentLevel },
+                H_ShelterLevel.Pack, PacketType.H_ShelterLevel);
+
         EnemyNetSync.SendAllToGuest(newGuestId);
 
         foreach (var original in om.SpawnedBoxes)

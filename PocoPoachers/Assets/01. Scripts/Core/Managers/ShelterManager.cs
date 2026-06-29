@@ -24,6 +24,7 @@ public class ShelterManager : Singleton<ShelterManager>
 
         ConsumeItems(player, storage, nextData);
         ApplyLevel(nextData.ShelterLevel);
+        RoomSync.ShelterLevel(nextData.ShelterLevel);
         return true;
     }
 
@@ -33,6 +34,7 @@ public class ShelterManager : Singleton<ShelterManager>
         if (nextData == null) return false;
 
         ApplyLevel(nextData.ShelterLevel);
+        RoomSync.ShelterLevel(nextData.ShelterLevel);
         return true;
     }
 

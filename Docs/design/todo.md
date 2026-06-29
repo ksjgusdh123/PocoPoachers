@@ -81,6 +81,24 @@ ID 범위 규칙과 실제 데이터 불일치. 상세: [datatable/id-ranges.md]
 
 ## P1 — 멀티플레이
 
+### 기능 버그
+
+- [ ] **게스트 입장 시 장비 내구도 미전달** (`RoomManager.cs:314 SyncLocalEquipToGuest`) — 실제 ItemUid 포함 + 내구도값 즉시 전송
+- [ ] **게스트 입장 시 아이템 박스 ItemUid 누락** (`RoomManager.cs:303 SyncToGuest`) — H_ItemSpawnT의 ItemUids 필드 채워서 전송
+- [ ] **게스트 입장 시 방어구/가방 장착 상태 누락** (`RoomManager.cs:314`) — ArmorMount·BagMount 슬롯 H_Equip 추가
+- [ ] **게스트 입장 시 호스트 HP/스탯 초기값 누락** (`RoomManager.cs:260`) — SyncToGuest에서 H_StatSyncT 즉시 전송
+- [ ] **장비 능력치 미동기화** — MaxHp 보너스·이동속도 배수 원격 미적용
+- [ ] **Sandbag 파괴 미동기화** (`Sandbag.cs:16 HandleDie`) — H_SandbagDestroy 신규 패킷 브로드캐스트
+- [ ] **쉘터 업그레이드 미동기화** (`ShelterManager.cs:44 ApplyLevel`) — H_ShelterLevel 신규 패킷 브로드캐스트
+- [ ] **H_ConsumeItemResult 핸들러 비어있음** (`PacketHandler.Item.cs:89`) — 원격 플레이어 소비 연출 재생
+
+### 비주얼
+
+- [ ] **총기 발사 사운드 미동기화** (`PacketHandler.Combat.cs OnH_Shoot`) — H_ShootT에 SoundId 추가 후 3D 재생
+- [ ] 발자국 사운드 미전달
+
+### UX
+
 - [ ] 게스트 이탈 시 **호스트 재입장 대기** 처리 (`IngameMenuUI.cs:100`)
 - [ ] 플레이어 이름 UI 입력 (`NetworkManager.cs` — 현재 `"Player"` 고정)
 

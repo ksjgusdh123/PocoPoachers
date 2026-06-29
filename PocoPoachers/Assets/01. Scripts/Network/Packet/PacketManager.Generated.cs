@@ -36,5 +36,7 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.H_EnemyDie         , PacketHandlers.OnH_EnemyDie);
         _onRecv.Add(PacketType.G_Leave            , PacketHandlers.OnG_Leave);
         _onRecv.Add(PacketType.H_Leave            , PacketHandlers.OnH_Leave);
+        _onRecv.Add(PacketType.G_ShelterLevel     , PacketHandlers.OnG_ShelterLevel);
+        _onRecv.Add(PacketType.H_ShelterLevel     , PacketHandlers.OnH_ShelterLevel);
     }
 }

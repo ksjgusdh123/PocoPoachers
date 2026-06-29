@@ -38,4 +38,10 @@ public static partial class PacketHandlers
             RoomManager.Instance?.RemoveMember();
         }
     }
+
+    public static void OnH_ShelterLevel(FlatPacket root)
+    {
+        var pkt = root.TypeAsH_ShelterLevel();
+        ShelterManager.GetInstance()?.SetLevel(pkt.Level);
+    }
 }
