@@ -12,6 +12,9 @@ public class TargetDetector : MonoBehaviour
     private BehaviorGraphAgent _behaviorAgent;
     private GameObject _currentTarget;
 
+    // 현재 타겟 (없으면 null) — 스킬 등 외부에서 조회
+    public GameObject CurrentTarget => _currentTarget;
+
 
     private void Awake()
     {
