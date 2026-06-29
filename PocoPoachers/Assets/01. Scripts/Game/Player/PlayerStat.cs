@@ -36,10 +36,6 @@ public class PlayerStat : StatBase
     public float MaxBattery => _maxBattery + _enhancementMaxBatteryBonus;
     public float CurrentBattery { get; private set; }
 
-    // 무적 상태 (구르기 등에서 켜고 끔) — 켜져 있으면 데미지를 받지 않음
-    public bool IsInvincible { get; private set; }
-    public void SetInvincible(bool value) => IsInvincible = value;
-
     public event Action<float, float> OnStaminaChanged;
     public event Action<float, float> OnBatteryChanged;
 
@@ -65,12 +61,6 @@ public class PlayerStat : StatBase
     protected override void OnLocalHpChanged(float hp, float maxHp)
     {
         RoomSync.StatSync(hp, maxHp, CurrentStamina, CurrentBattery, DefenseRate);
-    }
-
-    public override bool TakeDamage(float damage, GameObject attacker = null)
-    {
-        if (IsInvincible) return false;  // 구르기 등 무적 중이면 무시
-        return base.TakeDamage(damage, attacker);
     }
 
     private void Start()
@@ -114,15 +104,6 @@ public class PlayerStat : StatBase
 
         if (CurrentBattery <= 0f)
             Die();  // 배터리 방전 = 사망
-    }
-
-    public void Heal(float amount)
-    {
-        if (CurrentHp <= 0f) return;
-
-        CurrentHp = Mathf.Min(MaxHp, CurrentHp + amount);
-        RaiseHpChanged();
-        OnLocalHpChanged(CurrentHp, MaxHp);
     }
 
     public void ChargeBattery(float amount)

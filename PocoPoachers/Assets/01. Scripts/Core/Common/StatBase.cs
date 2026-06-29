@@ -13,6 +13,10 @@ public abstract class StatBase : MonoBehaviour, IDamageable
 
     public bool IsDead { get; private set; }
 
+    // 무적 상태 (구르기 등에서 켜고 끔) — 켜져 있으면 데미지를 받지 않음
+    public bool IsInvincible { get; private set; }
+    public void SetInvincible(bool value) => IsInvincible = value;
+
     protected float _totalDefenseRate;
 
     protected virtual void Awake()
@@ -35,6 +39,7 @@ public abstract class StatBase : MonoBehaviour, IDamageable
 
     public virtual bool TakeDamage(float damage, GameObject attacker = null)
     {
+        if (IsInvincible) return false;
         if (CurrentHp <= 0f) return false;
 
         float actualDamage = damage * (1f - Mathf.Clamp01(DefenseRate));
@@ -55,6 +60,15 @@ public abstract class StatBase : MonoBehaviour, IDamageable
         if (IsDead) return;
         IsDead = true;
         OnDie?.Invoke();
+    }
+
+    public void Heal(float amount)
+    {
+        if (CurrentHp <= 0f) return;
+
+        CurrentHp = Mathf.Min(MaxHp, CurrentHp + amount);
+        RaiseHpChanged();
+        OnLocalHpChanged(CurrentHp, MaxHp);
     }
 
     // 로컬 HP 변화 시 추가 처리가 필요한 서브클래스에서 오버라이드

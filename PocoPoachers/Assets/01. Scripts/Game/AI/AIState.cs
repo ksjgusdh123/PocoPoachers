@@ -8,12 +8,16 @@ public enum AIState
 	Patrol,
 	Chase,
 	Reload,
-	Attack
+	Attack,
+	Retreat,
+	Rolling
 }
 
 [BlackboardEnum]
 public enum AIAnimState
 {
 	Idle,
-	Walk
+	Walk,
+	Rolling
+
 }

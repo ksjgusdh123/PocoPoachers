@@ -18,6 +18,9 @@ public partial class ChangeAiStateAction : Action
 
     protected override Status OnStart()
     {
+        if (AIState != null && State != null && !AIStateTransitionRules.CanTransition(AIState.Value, State.Value))
+            return Status.Failure;
+
         if (animator?.Value != null && AnimState != null)
         {
             animator.Value.SetInteger(AnimStateHash, (int)AnimState.Value);
