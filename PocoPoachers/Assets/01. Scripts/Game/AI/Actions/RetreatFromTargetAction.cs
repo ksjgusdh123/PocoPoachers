@@ -15,8 +15,8 @@ public partial class RetreatFromTargetAction : Action
 
     private NavMeshAgent _agent;
     private AIRotator _rotator;
-    private float _repathTimer;
-    private const float RepathInterval = 0.5f;
+    // 후퇴 시작 시점의 (자기 위치 - 타겟 위치) 방향을 한 번만 계산해 고정 — 이후엔 타겟이 움직여도 이 방향으로 후퇴
+    private Vector3 _awayDir;
 
     protected override Status OnStart()
     {
@@ -34,7 +34,13 @@ public partial class RetreatFromTargetAction : Action
 
         Self.Value.GetComponent<EnemyStat>()?.MarkRetreated();
 
-        _repathTimer = 0f;
+        // 시작 시점의 위치 차이로 후퇴 방향을 한 번만 고정
+        _awayDir = (Self.Value.transform.position - Target.Value.transform.position);
+        _awayDir.y = 0f;
+        if (_awayDir.sqrMagnitude < 0.0001f)
+            _awayDir = -Self.Value.transform.forward;
+        _awayDir.Normalize();
+
         SetRetreatDestination();
         return Status.Running;
     }
@@ -54,10 +60,6 @@ public partial class RetreatFromTargetAction : Action
             return Status.Success;
         }
 
-        _repathTimer -= Time.deltaTime;
-        if (_repathTimer <= 0f)
-            SetRetreatDestination();
-
         return Status.Running;
     }
 
@@ -74,11 +76,9 @@ public partial class RetreatFromTargetAction : Action
 
     private void SetRetreatDestination()
     {
-        _repathTimer = RepathInterval;
-
         Vector3 selfPos = Self.Value.transform.position;
-        Vector3 awayDir = (selfPos - Target.Value.transform.position).normalized;
-        Vector3 desiredPos = selfPos + awayDir * RetreatDistance.Value;
+        // 시작 시점에 고정한 방향으로 후퇴 (타겟의 현재 위치를 매번 다시 참조하지 않음)
+        Vector3 desiredPos = selfPos + _awayDir * RetreatDistance.Value;
 
         if (NavMesh.SamplePosition(desiredPos, out NavMeshHit hit, RetreatDistance.Value, NavMesh.AllAreas))
             _agent.SetDestination(hit.position);
