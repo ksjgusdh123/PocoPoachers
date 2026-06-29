@@ -55,9 +55,8 @@ public class CraftingTableUI : MonoBehaviour
         _selectedRecipe = null;
         _detailPanel?.SetActive(false);
 
-        // 레시피가 있는 카테고리만 버튼 표시
         for (int i = 0; i < _categoryButtons.Length; i++)
-            _categoryButtons[i].gameObject.SetActive(HasRecipesOfType(_categoryTypes[i]));
+            _categoryButtons[i].gameObject.SetActive(true);
 
         // 첫 번째 유효한 카테고리 자동 선택
         for (int i = 0; i < _categoryButtons.Length; i++)

@@ -24,8 +24,10 @@ public class CraftingRecipeEntryUI : MonoBehaviour
         var item = ItemTable.Instance.Get(recipe.ResultItemId);
         if (item == null) return;
 
-        _icon.sprite = ResourceManager.Instance.LoadSprite(item.icon);
-        _nameText.text = LocalizationManager.GetInstance().GetString(item.name);
+        if (_icon != null)
+            _icon.sprite = ResourceManager.Instance.LoadSprite(item.icon);
+        if (_nameText != null)
+            _nameText.text = LocalizationManager.GetInstance().GetString(item.name);
     }
 
     private void OnClick() => _onSelected?.Invoke(_recipe);

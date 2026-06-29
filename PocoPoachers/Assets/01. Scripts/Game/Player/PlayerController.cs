@@ -90,6 +90,7 @@ public class PlayerController : MonoBehaviour
         ui.Register(UIType.EnhancementTable, EnhancementTableUI);
         ui.Register(UIType.GunEnhancementTable, GunEnhancementTableUI);
         ui.Register(UIType.RepairWorkbench, RepairWorkbenchUI);
+        ui.Register(UIType.CraftingTable, CraftingTableUI);
         ui.Register(UIType.ItemBoxReveal, boxUI);
         ui.OnPanelOpened += OnPanelOpened;
         ui.OnPanelClosed += OnPanelClosed;
