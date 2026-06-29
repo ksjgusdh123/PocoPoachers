@@ -1,0 +1,23 @@
+using UnityEngine;
+
+public class CraftingTable : MonoBehaviour, IInteractable
+{
+    public void OnInteract(PlayerController player)
+    {
+        player.SetInventoryOpen(true);
+        UIManager.GetInstance().Show(UIType.CraftingTable);
+
+        var ui = player.GetCraftingTableUI;
+        ui?.SendMessage("Open", player, SendMessageOptions.DontRequireReceiver);
+
+        player.SwitchInputMap(PlayerInputMapType.ItemBox);
+    }
+
+    public void OnInteractExit(PlayerController player)
+    {
+        UIManager.GetInstance().Hide(UIType.CraftingTable);
+        player.SetInventoryOpen(false);
+        player.SwitchInputMap(PlayerInputMapType.Game);
+        UIManager.GetInstance().ChangeMouseCursor(true);
+    }
+}

@@ -19,6 +19,7 @@ public enum UIType
     Options,
     PlanetSelect,
     ShelterUpgrade,
+    CraftingTable,
 }
 
 public class UIManager : Singleton<UIManager>

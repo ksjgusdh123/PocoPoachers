@@ -18,6 +18,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject EnhancementTableUI;
     [SerializeField] private GameObject GunEnhancementTableUI;
     [SerializeField] private GameObject RepairWorkbenchUI;
+    [SerializeField] private GameObject CraftingTableUI;
     [SerializeField] private CameraController _cameraController;
     [SerializeField] private float _useItemDuration = 1.5f;
 
@@ -28,6 +29,7 @@ public class PlayerController : MonoBehaviour
     public GameObject GetEnhancementTableUI => EnhancementTableUI;
     public GameObject GetGunEnhancementTableUI => GunEnhancementTableUI;
     public GameObject GetRepairWorkbenchUI => RepairWorkbenchUI;
+    public GameObject GetCraftingTableUI => CraftingTableUI;
     public InventoryUI PlayerBagInventoryUI => _playerBagInventoryUI;
 
     private Inventory _inventory;
