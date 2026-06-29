@@ -13,6 +13,7 @@ public class EnemyStat : StatBase
     public void MarkRetreated() => HasRetreated = true;
 
     private TargetDetector _targetDetector;
+    private AIDodgeState _dodgeState;
 
     protected override void Awake()
     {
@@ -31,6 +32,7 @@ public class EnemyStat : StatBase
         }
 
         _targetDetector = GetComponent<TargetDetector>();
+        _dodgeState = GetComponent<AIDodgeState>();
         OnDamaged += OnHit;
         OnDie += () => StartCoroutine(DeactivateNextFrame());
     }
@@ -43,6 +45,14 @@ public class EnemyStat : StatBase
     public override bool TakeDamage(float damage, GameObject attacker = null)
     {
         if (!RoomManager.IsHost) return false;
+
+        // 회피(구르기)로 막을 수 있으면 데미지 없이 구르기 발동 — false 반환 시 총알은 관통 처리됨
+        if (_dodgeState != null && _dodgeState.TryEvade(attacker))
+        {
+            if (attacker != null) _targetDetector?.ForceSetTarget(attacker);
+            return false;
+        }
+
         return base.TakeDamage(damage, attacker);
     }
 

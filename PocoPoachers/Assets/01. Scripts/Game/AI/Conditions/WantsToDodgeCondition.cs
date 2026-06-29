@@ -10,9 +10,18 @@ public partial class WantsToDodgeCondition : Condition
 
     public override bool IsTrue()
     {
-        if (Self?.Value == null) return false;
+        if (Self?.Value == null)
+        {
+            Debug.Log("[WantsToDodge] Self가 null");
+            return false;
+        }
 
         var dodgeState = Self.Value.GetComponent<AIDodgeState>();
-        return dodgeState != null && dodgeState.WantsToDodge;
+        var stat = Self.Value.GetComponent<EnemyStat>();
+        float ratio = (stat != null && stat.MaxHp > 0f) ? stat.CurrentHp / stat.MaxHp : -1f;
+
+        bool result = dodgeState != null && dodgeState.WantsToDodge;
+        Debug.Log($"[WantsToDodge] result={result}, dodgeState null={dodgeState == null}, WantsToDodge={dodgeState?.WantsToDodge}, hpRatio={ratio:F2}");
+        return result;
     }
 }
