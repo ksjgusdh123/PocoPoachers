@@ -24,6 +24,7 @@ CSV 원본: `PocoPoachers/DataTable/`
 | `4001 ~ 4999` | Shelter | |
 | `5001 ~ 5999` | EnhancementCost (PlayerEnhancement 강화 재료) | stat(EnhancementStatType 이름) + level 조합당 1행 |
 | `6001 ~ 6999` | RepairCost (수리 재료) | item_id(수리 대상 무기/헬멧/갑옷 ID)당 1행, 고정 비용 |
+| Item ID 공유 | CraftingRecipe (제작 레시피) | id = result_item_id (1:1), `CraftingRecipeTable.Get(itemId)`로 조회 |
 
 ---
 
@@ -39,3 +40,6 @@ CSV 원본: `PocoPoachers/DataTable/`
 
 `GunStatData`와 `ArmorStatData`는 대응하는 `ItemData`와 ID를 공유한다.
 코드에서 `ItemTable.Get(id)`로 아이템 정보, `GunStatTable.Get(id)`로 스탯을 동시에 조회하는 구조.
+
+`CraftingRecipeData`도 동일 패턴을 따른다. id = 제작 결과 아이템의 Item ID.
+`CraftingRecipeTable.Get(itemId)`로 해당 아이템의 레시피를 조회. 레시피가 없으면 null.
