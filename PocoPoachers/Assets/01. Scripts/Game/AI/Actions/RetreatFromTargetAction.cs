@@ -14,6 +14,7 @@ public partial class RetreatFromTargetAction : Action
     [SerializeReference] public BlackboardVariable<float> RetreatDistance;
 
     private NavMeshAgent _agent;
+    private AIRotator _rotator;
     private float _repathTimer;
     private const float RepathInterval = 0.5f;
 
@@ -21,10 +22,15 @@ public partial class RetreatFromTargetAction : Action
     {
         if (_agent == null)
             _agent = Self.Value.GetComponent<NavMeshAgent>();
+        if (_rotator == null)
+            _rotator = Self.Value.GetComponent<AIRotator>();
 
-        // 이전 액션(예: RotateToTarget)이 AIRotator로 회전을 가져간 상태일 수 있으므로
-        // 후퇴 중에는 에이전트가 이동(후퇴) 방향을 직접 보도록 되돌림
-        _agent.updateRotation = true;
+        // 후퇴 중에는 이동 방향을 바라보게 함 — 병렬 브랜치의 RotateToTarget이 타겟을 물고 있어도
+        // AIRotator의 이동 방향 우선 모드가 조준을 덮어씀. AIRotator가 없으면 NavMeshAgent 회전으로 폴백
+        if (_rotator != null)
+            _rotator.BeginFaceMovement();
+        else
+            _agent.updateRotation = true;
 
         Self.Value.GetComponent<EnemyStat>()?.MarkRetreated();
 
@@ -57,6 +63,9 @@ public partial class RetreatFromTargetAction : Action
 
     protected override void OnEnd()
     {
+        // 이동 방향 우선 모드 해제 → 다시 RotateToTarget(조준)이 회전을 가져갈 수 있게 함
+        _rotator?.EndFaceMovement();
+
         if (_agent == null) return;
         _agent.updateRotation = false;
         if (_agent.hasPath)
