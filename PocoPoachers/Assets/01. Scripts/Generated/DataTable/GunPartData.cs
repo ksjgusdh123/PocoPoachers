@@ -12,7 +12,6 @@ public partial class GunPartData
     public float reload_time_multiplier;
     public float recoil_multiplier;
     public int max_magazine_bonus;
-    public float muzzle_flash_multiplier;
     public float sound_range_multiplier;
 
     public int Id { get => id; set => id = value; }
@@ -30,8 +29,6 @@ public partial class GunPartData
     public float RecoilMultiplier { get => recoil_multiplier; set => recoil_multiplier = value; }
 
     public int MaxMagazineBonus { get => max_magazine_bonus; set => max_magazine_bonus = value; }
-
-    public float MuzzleFlashMultiplier { get => muzzle_flash_multiplier; set => muzzle_flash_multiplier = value; }
 
     public float SoundRangeMultiplier { get => sound_range_multiplier; set => sound_range_multiplier = value; }
 

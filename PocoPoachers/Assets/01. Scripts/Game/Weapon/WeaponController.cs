@@ -9,6 +9,7 @@ public class WeaponController : EquipableController
 
     public bool IsAiming    => _currentGun != null && _currentGun.IsAiming;
     public bool IsReloading => _currentGun != null && _currentGun.IsReloading;
+    public GunBase CurrentGun => _currentGun;
 
     public float MoveSpeedMultiplier
     {
