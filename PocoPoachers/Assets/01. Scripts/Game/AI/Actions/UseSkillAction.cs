@@ -26,11 +26,11 @@ public partial class UseSkillAction : Action
 
     protected override Status OnUpdate()
     {
-        return _manager.Tick() ? Status.Running : Status.Success;
+        return _manager.Tick(Skill.Value) ? Status.Running : Status.Success;
     }
 
     protected override void OnEnd()
     {
-        _manager?.End();
+        _manager?.End(Skill.Value);
     }
 }

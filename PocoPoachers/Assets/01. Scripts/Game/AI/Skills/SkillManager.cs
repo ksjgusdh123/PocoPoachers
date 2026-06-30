@@ -10,7 +10,8 @@ public class SkillManager : MonoBehaviour
     private SkillContext _context;
     private readonly Dictionary<SkillId, ISkill> _skills = new();
     private readonly Dictionary<SkillId, float> _lastUsedTime = new();
-    private ISkill _active;
+    // 동시에 여러 스킬이 진행될 수 있으므로 활성 스킬을 집합으로 관리
+    private readonly HashSet<SkillId> _active = new();
 
     private void Awake()
     {
@@ -57,34 +58,36 @@ public class SkillManager : MonoBehaviour
 
     public bool TryBegin(SkillId id)
     {
+        if (_active.Contains(id)) // 이미 진행 중인 스킬은 중복 발동 금지
+            return false;
         if (!CanUse(id))
             return false;
 
-        _active = _skills[id];
         _lastUsedTime[id] = Time.time;
-        _active.Begin(_context);
+        _active.Add(id);
+        _skills[id].Begin(_context);
         return true;
     }
 
-    public bool Tick()
+    // 해당 스킬 진행 — true면 계속 진행 중, false면 종료(자동 정리)
+    public bool Tick(SkillId id)
     {
-        if (_active == null)
+        if (!_active.Contains(id))
             return false;
 
-        if (_active.Tick(_context))
+        if (_skills[id].Tick(_context))
             return true;
 
-        End();
+        End(id);
         return false;
     }
 
-    public void End()
+    public void End(SkillId id)
     {
-        if (_active == null)
+        if (!_active.Remove(id))
             return;
 
-        _active.End(_context);
-        _active = null;
+        _skills[id].End(_context);
     }
 
     public void SetAttacker(GameObject attacker) => _context.Attacker = attacker;

@@ -13,25 +13,41 @@ public class RetreatSkill : SkillBase
     private RetreatPointSet _pointSet;
     private bool _pointSetSearched;
 
+    // 진행 중인 후퇴 목적지 — 구르기 등으로 끊겼다 재진입할 때 이 지점으로 이어감.
+    // 스킬 인스턴스는 재사용되므로 End→Begin 사이에도 값이 유지된다.
+    private Vector3 _destination;
+    private bool _hasDestination;
+
     public RetreatSkill(SkillData data) : base(data) { }
 
     public override void Begin(SkillContext ctx)
     {
         ctx.Stat?.MarkRetreated();
+        ctx.SetBlackboard(BlackboardKeys.IsRetreating, true);
         StartFacingMovement(ctx);
 
-        if (!TryRetreatToRandomPoint(ctx))
+        if (_hasDestination)
+            ctx.Agent.SetDestination(_destination);   // 끊겼다 재진입 → 같은 목적지로 이어감
+        else if (!TryRetreatToRandomPoint(ctx))
             RetreatAwayFromTarget(ctx);
     }
 
-    // 두 모드 모두 설정한 목적지 도착으로 종료 (타겟과의 거리와 무관)
+    // 설정한 목적지에 도착하면 완료 (타겟과의 거리와 무관)
     public override bool Tick(SkillContext ctx)
     {
-        return !HasReachedDestination(ctx);
+        if (!HasReachedDestination(ctx))
+            return true;
+
+        // 진짜 도착 → 후퇴 완료. 이어갈 목적지 없애고 깃발 끔
+        _hasDestination = false;
+        ctx.SetBlackboard(BlackboardKeys.IsRetreating, false);
+        return false;
     }
 
     public override void End(SkillContext ctx)
     {
+        // 여기선 IsRetreating을 끄지 않는다 — 구르기 등으로 잠시 끊긴 것일 수 있으므로.
+        // 진짜 완료는 Tick에서 끄고, 재진입 시 이어간다.
         if (ctx.Rotator != null)
             ctx.Rotator.EndFaceMovement();
 
@@ -83,13 +99,14 @@ public class RetreatSkill : SkillBase
         return !agent.pathPending && agent.remainingDistance <= agent.stoppingDistance + ArriveThreshold;
     }
 
-    // 목적지를 NavMesh 위로 보정해 설정 (실패 시 원래 위치)
+    // 목적지를 NavMesh 위로 보정해 설정·저장 (실패 시 원래 위치)
     private void SetDestinationOnNavMesh(NavMeshAgent agent, Vector3 desiredPos, float sampleRange)
     {
-        Vector3 dest = NavMesh.SamplePosition(desiredPos, out NavMeshHit hit, sampleRange, NavMesh.AllAreas)
+        _destination = NavMesh.SamplePosition(desiredPos, out NavMeshHit hit, sampleRange, NavMesh.AllAreas)
             ? hit.position
             : desiredPos;
-        agent.SetDestination(dest);
+        _hasDestination = true;
+        agent.SetDestination(_destination);
     }
 
     private GameObject PickRandomRetreatPoint()

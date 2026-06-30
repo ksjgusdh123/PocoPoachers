@@ -15,11 +15,8 @@ public class DodgeRollSkill : SkillBase
     public override void Begin(SkillContext ctx)
     {
         Transform self = ctx.Self.transform;
-        GameObject attacker = ctx.Attacker;
 
-        _direction = attacker != null
-            ? attacker.transform.position - self.position
-            : self.forward;
+        _direction = ComputeDirection(ctx, self);
         _direction.y = 0f;
         if (_direction.sqrMagnitude < 0.01f)
             _direction = self.forward;
@@ -56,6 +53,19 @@ public class DodgeRollSkill : SkillBase
         ctx.Stat?.SetInvincible(false);
         if (ctx.Agent != null)
             ctx.Agent.isStopped = false;
+    }
+
+    // 후퇴 중이면 진행 방향(타겟 반대)으로, 평소엔 공격자 쪽으로 구른다
+    private Vector3 ComputeDirection(SkillContext ctx, Transform self)
+    {
+        if (ctx.TryGetBlackboard(BlackboardKeys.IsRetreating, out bool retreating)
+            && retreating && ctx.Target != null)
+            return self.position - ctx.Target.transform.position;
+
+        GameObject attacker = ctx.Attacker;
+        return attacker != null
+            ? attacker.transform.position - self.position
+            : self.forward;
     }
 
     private float GetRollClipLength(Animator anim)
