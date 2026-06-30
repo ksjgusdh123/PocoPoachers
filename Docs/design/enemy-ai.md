@@ -23,6 +23,22 @@ Unity **Behavior Graph** 기반. 호스트만 AI를 실행하고, 게스트는 `
 | `AISpeech` / `SoundDetector` | 대사·소리 감지 |
 | `AIState` / `ChangeAiStateAction` | 상태 전환 |
 
+## AI 스킬 (SkillManager)
+
+스킬은 "언제"는 BT, "어떻게"는 코드, "관리"는 `SkillManager`로 분리한다.
+
+| 요소 | 역할 |
+|------|------|
+| `SkillManager` | AI마다 1개. 보유 스킬 + 쿨다운 관리. `_skillIds`로 `skill.csv` 행 참조 (AI별 차등) |
+| `ISkill` / `SkillFactory` | 스킬 인터페이스 + `skill` 문자열 → 스킬 클래스 생성 |
+| `DodgeRollSkill` / `RetreatSkill` / `HealSkill` | 구르기 / 후퇴 / 지연 회복 구현 |
+| `SkillContext` | 스킬이 쓰는 참조 묶음 (Agent, Stat, Rotator, Animator, Target, Attacker) |
+| `UseSkill` / `CanUseSkill` | BT 브리지 노드 (`SkillId` 지정) |
+| `AIDodgeState` | 피격 시 구르기 신호(`WantsToDodge`) 발생 — 반응형 트리거 (쿨다운은 SkillManager 위임) |
+| `RetreatPointSet` | 씬 배치 후퇴 지점 모음. 없으면 타겟 반대 방향 후퇴 |
+
+수치 데이터는 `skill.csv` (범용 컬럼 speed/distance/duration/clip_name). [data-tables.md](data-tables.md) 참고.
+
 ## Behavior Actions (일부)
 
 | Action | 설명 |
