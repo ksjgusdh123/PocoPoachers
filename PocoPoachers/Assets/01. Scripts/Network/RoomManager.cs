@@ -296,41 +296,111 @@ public class RoomManager : Singleton<RoomManager>
 
         foreach (var original in om.SpawnedBoxes)
         {
-            var currentItemIds = new List<int>();
+            var currentItemIds   = new List<int>();
+            var currentItemCounts = new List<int>();
+            var currentItemUids  = new List<int>();
             if (om.TryGet(ObjectKind.ItemBox, original.Uid, out var boxObj))
             {
                 var inv = boxObj.GetComponent<Inventory>();
                 if (inv != null)
                     foreach (var slot in inv.Slots)
                         if (!slot.IsEmpty)
-                            for (int i = 0; i < slot.Amount; i++)
-                                currentItemIds.Add(slot.ItemData.Id);
+                        {
+                            currentItemIds.Add(slot.ItemData.Id);
+                            currentItemCounts.Add(slot.Amount);
+                            currentItemUids.Add(slot.Uid);
+                        }
             }
             PacketBuilder.SendToGuest(newGuestId, new H_ItemSpawnT
             {
-                Uid      = original.Uid,
-                TypeId   = original.TypeId,
-                Pos      = original.Pos,
-                Rotation = original.Rotation,
-                ItemIds  = currentItemIds,
+                Uid       = original.Uid,
+                TypeId    = original.TypeId,
+                Pos       = original.Pos,
+                Rotation  = original.Rotation,
+                ItemIds   = currentItemIds,
+                ItemCount = currentItemCounts,
+                ItemUids  = currentItemUids,
             }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
+
+        var playerStat = FindFirstObjectByType<PlayerStat>();
+        if (playerStat != null)
+            PacketBuilder.SendToGuest(newGuestId, new H_StatSyncT
+            {
+                PlayerId = NetworkManager.Instance.MyPlayerId,
+                Hp       = playerStat.CurrentHp,
+                MaxHp    = playerStat.MaxHp,
+                Stamina  = playerStat.CurrentStamina,
+                Battery  = playerStat.CurrentBattery,
+            }, H_StatSync.Pack, PacketType.H_StatSync);
     }
 
     private void SyncLocalEquipToGuest(int guestId)
     {
-        var mount = FindFirstObjectByType<WeaponMount>();
-        if (mount == null) return;
-
         int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
-        for (int slot = 0; slot < 2; slot++)
-        {
-            int itemId = mount.GetEquippedItemId(slot);
-            if (itemId == 0) continue;
 
-            PacketBuilder.SendToGuest(guestId,
-                new H_EquipT { PlayerId = myId, ItemId = itemId, SlotIndex = slot },
-                H_Equip.Pack, PacketType.H_Equip);
+        // 무기 (슬롯 0, 1)
+        var weaponMount = FindFirstObjectByType<WeaponMount>();
+        if (weaponMount != null)
+        {
+            for (int slot = 0; slot < 2; slot++)
+            {
+                int itemId = weaponMount.GetEquippedItemId(slot);
+                if (itemId == 0) continue;
+
+                var gun = weaponMount.GetGun(slot);
+                int uid = gun?.Uid ?? 0;
+
+                PacketBuilder.SendToGuest(guestId,
+                    new H_EquipT { PlayerId = myId, ItemId = itemId, ItemUid = uid, SlotIndex = slot },
+                    H_Equip.Pack, PacketType.H_Equip);
+
+                if (uid != 0 && gun != null)
+                {
+                    var (cur, max) = WorldEquipmentManager.GetOrCreate(uid, itemId, gun.MaxDurability);
+                    PacketBuilder.SendToGuest(guestId,
+                        new H_DurabilityT { ItemUid = uid, Current = cur, Max = max },
+                        H_Durability.Pack, PacketType.H_Durability);
+                }
+            }
+        }
+
+        // 방어구 (슬롯 2)
+        var armorMount = FindFirstObjectByType<ArmorMount>();
+        if (armorMount != null)
+        {
+            int itemId = armorMount.GetEquippedItemId();
+            if (itemId != 0)
+            {
+                var armor = armorMount.GetArmor();
+                int uid = armor?.Uid ?? 0;
+
+                PacketBuilder.SendToGuest(guestId,
+                    new H_EquipT { PlayerId = myId, ItemId = itemId, ItemUid = uid, SlotIndex = 2 },
+                    H_Equip.Pack, PacketType.H_Equip);
+
+                if (uid != 0 && armor != null)
+                {
+                    var (cur, max) = WorldEquipmentManager.GetOrCreate(uid, itemId, armor.MaxDurability);
+                    PacketBuilder.SendToGuest(guestId,
+                        new H_DurabilityT { ItemUid = uid, Current = cur, Max = max },
+                        H_Durability.Pack, PacketType.H_Durability);
+                }
+            }
+        }
+
+        // 가방 (슬롯 4)
+        var bagMount = FindFirstObjectByType<BagMount>();
+        if (bagMount != null)
+        {
+            int itemId = bagMount.GetEquippedItemId();
+            if (itemId != 0)
+            {
+                int uid = bagMount.GetEquippedUid();
+                PacketBuilder.SendToGuest(guestId,
+                    new H_EquipT { PlayerId = myId, ItemId = itemId, ItemUid = uid, SlotIndex = 4 },
+                    H_Equip.Pack, PacketType.H_Equip);
+            }
         }
     }
 

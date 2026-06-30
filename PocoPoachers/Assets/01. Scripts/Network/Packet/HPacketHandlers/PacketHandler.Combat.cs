@@ -24,4 +24,15 @@ public static partial class PacketHandlers
         var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(direction));
         bullet.Initialize(pkt.BulletSpeed, pkt.Damage, pkt.MaxRange, direction, () => pool.Release(prefab, bullet), attacker);
     }
+
+    public static void OnH_SandbagDestroy(FlatPacket root)
+    {
+        var pkt = root.TypeAsH_SandbagDestroy();
+        int id = pkt.SandbagId;
+
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            Sandbag.Find(id)?.DestroyFromNetwork();
+        });
+    }
 }

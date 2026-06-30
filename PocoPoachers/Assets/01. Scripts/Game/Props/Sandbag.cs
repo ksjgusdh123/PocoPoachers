@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VFX;
 
@@ -11,6 +12,30 @@ public class Sandbag : MonoBehaviour, IDamageable
     [SerializeField] private VisualEffect _vfx;
 
     private int _hitCount;
+    private int _networkId;
+
+    private static int _nextNetworkId = 1;
+    private static readonly Dictionary<int, Sandbag> _registry = new();
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    static void ResetStatics()
+    {
+        _nextNetworkId = 1;
+        _registry.Clear();
+    }
+
+    public static Sandbag Find(int networkId) => _registry.TryGetValue(networkId, out var s) ? s : null;
+
+    private void Awake()
+    {
+        _networkId = _nextNetworkId++;
+        _registry[_networkId] = this;
+    }
+
+    private void OnDestroy()
+    {
+        _registry.Remove(_networkId);
+    }
 
     public bool TakeDamage(float damage, GameObject attacker = null)
     {
@@ -21,6 +46,24 @@ public class Sandbag : MonoBehaviour, IDamageable
     }
 
     private void HandleDie()
+    {
+        PlayDestroyEffects();
+
+        if (RoomManager.IsHost && RoomManager.HasGuests)
+            PacketBuilder.BroadcastToGuests(
+                new H_SandbagDestroyT { SandbagId = _networkId },
+                H_SandbagDestroy.Pack, PacketType.H_SandbagDestroy);
+
+        StartCoroutine(DestroyAfterDelay());
+    }
+
+    public void DestroyFromNetwork()
+    {
+        PlayDestroyEffects();
+        StartCoroutine(DestroyAfterDelay());
+    }
+
+    private void PlayDestroyEffects()
     {
         foreach (var r in GetComponentsInChildren<Renderer>())
             r.enabled = false;
@@ -41,8 +84,6 @@ public class Sandbag : MonoBehaviour, IDamageable
             _vfx.gameObject.SetActive(true);
             _vfx.SendEvent("OnPlay");
         }
-
-        StartCoroutine(DestroyAfterDelay());
     }
 
     private IEnumerator DestroyAfterDelay()

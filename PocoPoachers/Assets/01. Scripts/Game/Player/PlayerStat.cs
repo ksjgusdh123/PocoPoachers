@@ -155,6 +155,7 @@ public class PlayerStat : StatBase
         MaxHp = GetCalculatedMaxHp();
         CurrentHp = Mathf.Min(CurrentHp + data.MaxHpBonus, MaxHp);
         RaiseHpChanged();
+        OnLocalHpChanged(CurrentHp, MaxHp);
     }
 
     public override void RemoveArmorStat(ArmorStatData data)
@@ -168,6 +169,7 @@ public class PlayerStat : StatBase
         MaxHp = GetCalculatedMaxHp();
         CurrentHp = Mathf.Min(CurrentHp, MaxHp);
         RaiseHpChanged();
+        OnLocalHpChanged(CurrentHp, MaxHp);
     }
 
     public void ApplyEnhancementStats(float maxHpBonus, float maxBatteryBonus, float maxStaminaBonus, float moveSpeedBonus)
