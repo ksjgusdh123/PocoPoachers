@@ -57,6 +57,7 @@ public struct FlatPacket : IFlatbufferObject
   public G_ShelterLevel TypeAsG_ShelterLevel() { return Type<G_ShelterLevel>().Value; }
   public H_ShelterLevel TypeAsH_ShelterLevel() { return Type<H_ShelterLevel>().Value; }
   public H_SandbagDestroy TypeAsH_SandbagDestroy() { return Type<H_SandbagDestroy>().Value; }
+  public H_LoadScene TypeAsH_LoadScene() { return Type<H_LoadScene>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -199,6 +200,9 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_SandbagDestroy:
         _o.Type.Value = this.Type<H_SandbagDestroy>().HasValue ? this.Type<H_SandbagDestroy>().Value.UnPack() : null;
+        break;
+      case PacketType.H_LoadScene:
+        _o.Type.Value = this.Type<H_LoadScene>().HasValue ? this.Type<H_LoadScene>().Value.UnPack() : null;
         break;
     }
   }

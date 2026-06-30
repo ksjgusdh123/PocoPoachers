@@ -40,7 +40,16 @@ public class PlanetSlotUI : MonoBehaviour
 
     private void OnClick()
     {
-        GameManager.Instance.SetSelectedPlanet(_data.Id);
-        SceneLoader.Instance.LoadPlanetScene(_data.Id);
+        int planetId = _data.Id;
+        GameManager.Instance.SetSelectedPlanet(planetId);
+
+        if (RoomManager.IsHost && RoomManager.HasGuests)
+        {
+            PacketBuilder.BroadcastToGuests(
+                new H_LoadSceneT { SceneName = $"SC_Raid_{planetId}" },
+                H_LoadScene.Pack, PacketType.H_LoadScene);
+        }
+
+        SceneLoader.Instance.LoadPlanetScene(planetId);
     }
 }

@@ -58,18 +58,27 @@ public class Bullet : MonoBehaviour
 
         if (TryGetHit(origin, step, out RaycastHit hit))
         {
-            if (_applyDamage && hit.collider.TryGetComponent<IDamageable>(out var damageable))
-            {
-                // 무적 등으로 데미지가 무효면 관통 — 충돌을 무시하고 정상 전진
-                if (!damageable.TakeDamage(_damage, _attacker))
-                {
-                    transform.position = origin + _direction * step;
-                    _traveledDistance += step;
-                    if (_traveledDistance >= _range)
-                        Release();
-                    return;
-                }
+            bool showVFX = false;
 
+            if (hit.collider.TryGetComponent<IDamageable>(out var damageable))
+            {
+                if (_applyDamage)
+                {
+                    // 무적 등으로 데미지가 무효면 관통 — 충돌을 무시하고 정상 전진
+                    if (!damageable.TakeDamage(_damage, _attacker))
+                    {
+                        transform.position = origin + _direction * step;
+                        _traveledDistance += step;
+                        if (_traveledDistance >= _range)
+                            Release();
+                        return;
+                    }
+                }
+                showVFX = true;
+            }
+
+            if (showVFX)
+            {
                 if (hit.collider.TryGetComponent<Sandbag>(out _))
                     SandVFXPool.Instance?.Spawn(hit);
                 else

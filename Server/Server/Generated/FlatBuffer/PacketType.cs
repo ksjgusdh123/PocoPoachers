@@ -42,6 +42,8 @@ public enum PacketType : byte
   H_Leave = 35,
   G_ShelterLevel = 36,
   H_ShelterLevel = 37,
+  H_SandbagDestroy = 38,
+  H_LoadScene = 39,
 };
 
 public class PacketTypeUnion {
@@ -128,6 +130,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_ShelterLevel(G_ShelterLevelT _g_shelterlevel) { return new PacketTypeUnion{ Type = PacketType.G_ShelterLevel, Value = _g_shelterlevel }; }
   public H_ShelterLevelT AsH_ShelterLevel() { return this.As<H_ShelterLevelT>(); }
   public static PacketTypeUnion FromH_ShelterLevel(H_ShelterLevelT _h_shelterlevel) { return new PacketTypeUnion{ Type = PacketType.H_ShelterLevel, Value = _h_shelterlevel }; }
+  public H_SandbagDestroyT AsH_SandbagDestroy() { return this.As<H_SandbagDestroyT>(); }
+  public static PacketTypeUnion FromH_SandbagDestroy(H_SandbagDestroyT _h_sandbagdestroy) { return new PacketTypeUnion{ Type = PacketType.H_SandbagDestroy, Value = _h_sandbagdestroy }; }
+  public H_LoadSceneT AsH_LoadScene() { return this.As<H_LoadSceneT>(); }
+  public static PacketTypeUnion FromH_LoadScene(H_LoadSceneT _h_loadscene) { return new PacketTypeUnion{ Type = PacketType.H_LoadScene, Value = _h_loadscene }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -169,6 +175,8 @@ public class PacketTypeUnion {
       case PacketType.H_Leave: return H_Leave.Pack(builder, _o.AsH_Leave()).Value;
       case PacketType.G_ShelterLevel: return G_ShelterLevel.Pack(builder, _o.AsG_ShelterLevel()).Value;
       case PacketType.H_ShelterLevel: return H_ShelterLevel.Pack(builder, _o.AsH_ShelterLevel()).Value;
+      case PacketType.H_SandbagDestroy: return H_SandbagDestroy.Pack(builder, _o.AsH_SandbagDestroy()).Value;
+      case PacketType.H_LoadScene: return H_LoadScene.Pack(builder, _o.AsH_LoadScene()).Value;
     }
   }
 }
@@ -292,6 +300,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_ShelterLevel:
         result = H_ShelterLevelVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_SandbagDestroy:
+        result = H_SandbagDestroyVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_LoadScene:
+        result = H_LoadSceneVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

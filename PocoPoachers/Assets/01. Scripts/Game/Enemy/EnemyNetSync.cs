@@ -19,11 +19,15 @@ public class EnemyNetSync : MonoBehaviour
     AIWeaponController _weaponController;
     ArmorController _armorController;
     ArmorMount _armorMount;
+    Animator _animator;
     float _timer;
 
     Vector3 _targetPos;
     float   _targetYaw;
     bool    _hasTarget;
+
+    static readonly int AnimStateHash = Animator.StringToHash("currentState");
+    const float WalkThreshold = 0.05f;
 
     void Awake()
     {
@@ -33,6 +37,7 @@ public class EnemyNetSync : MonoBehaviour
         _weaponController = GetComponent<AIWeaponController>();
         _armorController = GetComponent<ArmorController>();
         _armorMount = GetComponent<ArmorMount>();
+        _animator = GetComponentInChildren<Animator>();
     }
 
     void Start()
@@ -91,9 +96,17 @@ public class EnemyNetSync : MonoBehaviour
     {
         if (!_hasTarget) return;
         float t = 1f - Mathf.Exp(-14f * Time.deltaTime);
+
+        float distToTarget = Vector3.Distance(transform.position, _targetPos);
         transform.position = Vector3.Lerp(transform.position, _targetPos, t);
         float y = Mathf.LerpAngle(transform.eulerAngles.y, _targetYaw, t);
         transform.rotation = Quaternion.Euler(0f, y, 0f);
+
+        if (_animator != null)
+        {
+            int animState = distToTarget > WalkThreshold ? (int)AIAnimState.Walk : (int)AIAnimState.Idle;
+            _animator.SetInteger(AnimStateHash, animState);
+        }
     }
 
     void OnHostDamaged(float damage, Vector3 pos, GameObject attacker)

@@ -44,4 +44,26 @@ public static partial class PacketHandlers
         var pkt = root.TypeAsH_ShelterLevel();
         ShelterManager.GetInstance()?.SetLevel(pkt.Level);
     }
+
+    public static void OnH_LoadScene(FlatPacket root)
+    {
+        var pkt = root.TypeAsH_LoadScene();
+        string sceneName = pkt.SceneName;
+        if (string.IsNullOrEmpty(sceneName)) return;
+
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            SceneLoader loader = SceneLoader.Instance;
+            if (loader == null) return;
+
+            if (sceneName == SceneName.Shelter)
+                loader.LoadShelterScene();
+            else if (sceneName.StartsWith("SC_Raid_") &&
+                     int.TryParse(sceneName.Substring("SC_Raid_".Length), out int planetId))
+            {
+                GameManager.Instance?.SetSelectedPlanet(planetId);
+                loader.LoadPlanetScene(planetId);
+            }
+        });
+    }
 }

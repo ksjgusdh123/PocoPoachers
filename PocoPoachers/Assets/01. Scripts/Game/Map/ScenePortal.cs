@@ -12,10 +12,28 @@ public class ScenePortal : MonoBehaviour, IInteractable
         SoundManager.GetInstance().PlaySfx("sfx_portal");
 
         GameManager.Instance.SetSpawnId(_spawnId);
+        BroadcastSceneIfHost();
         LoadTargetScene();
     }
 
     public void OnInteractExit(PlayerController player) { }
+
+    private void BroadcastSceneIfHost()
+    {
+        if (!RoomManager.IsHost || !RoomManager.HasGuests) return;
+
+        string sceneName = _targetScene switch
+        {
+            TargetScene.Shelter  => SceneName.Shelter,
+            TargetScene.RaidTest => SceneName.RaidTest,
+            _                    => null,
+        };
+        if (sceneName == null) return;
+
+        PacketBuilder.BroadcastToGuests(
+            new H_LoadSceneT { SceneName = sceneName },
+            H_LoadScene.Pack, PacketType.H_LoadScene);
+    }
 
     private void LoadTargetScene()
     {
