@@ -19,22 +19,26 @@ public struct H_EnemyMove : IFlatbufferObject
   public int EnemyId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public Vec3? Pos { get { int o = __p.__offset(6); return o != 0 ? (Vec3?)(new Vec3()).__assign(o + __p.bb_pos, __p.bb) : null; } }
   public float Rotation { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public int AnimState { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<H_EnemyMove> CreateH_EnemyMove(FlatBufferBuilder builder,
       int enemy_id = 0,
       Vec3T pos = null,
-      float rotation = 0.0f) {
-    builder.StartTable(3);
+      float rotation = 0.0f,
+      int anim_state = 0) {
+    builder.StartTable(4);
+    H_EnemyMove.AddAnimState(builder, anim_state);
     H_EnemyMove.AddRotation(builder, rotation);
     H_EnemyMove.AddPos(builder, Vec3.Pack(builder, pos));
     H_EnemyMove.AddEnemyId(builder, enemy_id);
     return H_EnemyMove.EndH_EnemyMove(builder);
   }
 
-  public static void StartH_EnemyMove(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartH_EnemyMove(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddEnemyId(FlatBufferBuilder builder, int enemyId) { builder.AddInt(0, enemyId, 0); }
   public static void AddPos(FlatBufferBuilder builder, Offset<Vec3> posOffset) { builder.AddStruct(1, posOffset.Value, 0); }
   public static void AddRotation(FlatBufferBuilder builder, float rotation) { builder.AddFloat(2, rotation, 0.0f); }
+  public static void AddAnimState(FlatBufferBuilder builder, int animState) { builder.AddInt(3, animState, 0); }
   public static Offset<H_EnemyMove> EndH_EnemyMove(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_EnemyMove>(o);
@@ -48,6 +52,7 @@ public struct H_EnemyMove : IFlatbufferObject
     _o.EnemyId = this.EnemyId;
     _o.Pos = this.Pos.HasValue ? this.Pos.Value.UnPack() : null;
     _o.Rotation = this.Rotation;
+    _o.AnimState = this.AnimState;
   }
   public static Offset<H_EnemyMove> Pack(FlatBufferBuilder builder, H_EnemyMoveT _o) {
     if (_o == null) return default(Offset<H_EnemyMove>);
@@ -55,7 +60,8 @@ public struct H_EnemyMove : IFlatbufferObject
       builder,
       _o.EnemyId,
       _o.Pos,
-      _o.Rotation);
+      _o.Rotation,
+      _o.AnimState);
   }
 }
 
@@ -64,11 +70,13 @@ public class H_EnemyMoveT
   public int EnemyId { get; set; }
   public Vec3T Pos { get; set; }
   public float Rotation { get; set; }
+  public int AnimState { get; set; }
 
   public H_EnemyMoveT() {
     this.EnemyId = 0;
     this.Pos = new Vec3T();
     this.Rotation = 0.0f;
+    this.AnimState = 0;
   }
 }
 
@@ -81,6 +89,7 @@ static public class H_EnemyMoveVerify
       && verifier.VerifyField(tablePos, 4 /*EnemyId*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*Pos*/, 12 /*Vec3*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Rotation*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*AnimState*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -186,14 +186,15 @@ public static class RoomSync
         }, H_EnemySpawn.Pack, PacketType.H_EnemySpawn);
     }
 
-    public static void EnemyMove(int enemyId, Vector3 pos, float rotation)
+    public static void EnemyMove(int enemyId, Vector3 pos, float rotation, int animState)
     {
         if (!RoomManager.HasGuests) return;
         PacketBuilder.BroadcastToGuests(new H_EnemyMoveT
         {
-            EnemyId  = enemyId,
-            Pos      = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
-            Rotation = rotation,
+            EnemyId   = enemyId,
+            Pos       = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+            Rotation  = rotation,
+            AnimState = animState,
         }, H_EnemyMove.Pack, PacketType.H_EnemyMove);
     }
 

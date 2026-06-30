@@ -25,6 +25,7 @@ public class EnemyNetSync : MonoBehaviour
     Vector3 _targetPos;
     float   _targetYaw;
     bool    _hasTarget;
+    int     _netAnimState = -1;
 
     static readonly int AnimStateHash = Animator.StringToHash("currentState");
     const float WalkThreshold = 0.05f;
@@ -89,7 +90,8 @@ public class EnemyNetSync : MonoBehaviour
         _timer -= Time.deltaTime;
         if (_timer > 0f) return;
         _timer = _syncInterval;
-        RoomSync.EnemyMove(EnemyId, transform.position, transform.eulerAngles.y);
+        int animState = _animator != null ? _animator.GetInteger(AnimStateHash) : 0;
+        RoomSync.EnemyMove(EnemyId, transform.position, transform.eulerAngles.y, animState);
     }
 
     void UpdateGuest()
@@ -104,7 +106,9 @@ public class EnemyNetSync : MonoBehaviour
 
         if (_animator != null)
         {
-            int animState = distToTarget > WalkThreshold ? (int)AIAnimState.Walk : (int)AIAnimState.Idle;
+            int animState = _netAnimState >= 0
+                ? _netAnimState
+                : (distToTarget > WalkThreshold ? (int)AIAnimState.Walk : (int)AIAnimState.Idle);
             _animator.SetInteger(AnimStateHash, animState);
         }
     }
@@ -176,12 +180,13 @@ public class EnemyNetSync : MonoBehaviour
         return sync;
     }
 
-    public static void OnNetMove(int id, Vector3 pos, float rotation)
+    public static void OnNetMove(int id, Vector3 pos, float rotation, int animState)
     {
         if (!_registry.TryGetValue(id, out var e) || e == null) return;
-        e._targetPos = pos;
-        e._targetYaw = rotation;
-        e._hasTarget = true;
+        e._targetPos    = pos;
+        e._targetYaw    = rotation;
+        e._hasTarget    = true;
+        e._netAnimState = animState;
     }
 
     public static void OnNetHit(int id, float hp, float maxHp, float damage)

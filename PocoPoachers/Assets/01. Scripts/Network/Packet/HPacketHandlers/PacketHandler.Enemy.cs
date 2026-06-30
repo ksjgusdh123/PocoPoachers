@@ -15,7 +15,7 @@ public static partial class PacketHandlers
         var pkt = root.TypeAsH_EnemyMove();
         Vec3? posRaw = pkt.Pos;
         var pos = posRaw.HasValue ? new Vector3(posRaw.Value.X, posRaw.Value.Y, posRaw.Value.Z) : Vector3.zero;
-        EnemyNetSync.OnNetMove(pkt.EnemyId, pos, pkt.Rotation);
+        EnemyNetSync.OnNetMove(pkt.EnemyId, pos, pkt.Rotation, pkt.AnimState);
     }
 
     public static void OnH_EnemyHit(FlatPacket root)
