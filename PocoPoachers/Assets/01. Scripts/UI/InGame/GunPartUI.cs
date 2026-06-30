@@ -7,14 +7,16 @@ using UnityEngine;
 public class GunPartUI : MonoBehaviour
 {
     private GunPartDropHandler[] _slots;
+    private GunBase _gun;   // 현재 패널이 다루는 총 (uid=_gun.Uid, 데이터=_gun.Stat)
 
     private void Awake() => CacheSlots();
 
-    // 해당 총으로 패널을 연다. 그 총이 지원하는 슬롯만 켜고 SetGun.
+    // 해당 총으로 패널을 연다. 지원 슬롯만 켜고, 각 슬롯에 총+장착 파츠를 Bind.
     public void Open(GunBase gun)
     {
         if (gun == null) return;
 
+        _gun = gun;
         gameObject.SetActive(true);
         CacheSlots();
 
@@ -24,7 +26,7 @@ public class GunPartUI : MonoBehaviour
             bool ok = supported.Contains(slot.SlotType);
             slot.gameObject.SetActive(ok);
             if (ok)
-                slot.SetGun(gun);
+                slot.Bind(gun);   // 총 지정 + 이미 장착된 파츠 표시
         }
     }
 

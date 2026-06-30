@@ -11,6 +11,18 @@ public class GunPartDropHandler : ItemHolderDropHandler
     public SlotType SlotType => _slotType;
     public void SetGun(GunBase gun) => _gun = gun;
 
+    // 총 지정 + 현재 이 슬롯에 장착된 파츠를 아이콘으로 표시 (없으면 비움)
+    public void Bind(GunBase gun)
+    {
+        SetGun(gun);
+
+        GunPartData equipped = gun != null ? gun.GetPart(_slotType) : null;
+        if (equipped != null)
+            SetDisplay(ItemTable.Instance.Get(equipped.id), 1);
+        else
+            ClearDisplay();
+    }
+
     protected override bool OnItemDropped(ItemData data, int amount, int uid)
     {
         // 표시(SetDisplay) 부작용 전에 먼저 검증 — 슬롯/호환이 안 맞으면 거부
