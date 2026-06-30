@@ -18,6 +18,7 @@ CSV 원본: `PocoPoachers/DataTable/`
 | `600 ~ 699` | Item — 탄약 | |
 | `700 ~ 799` | Item — 가방 | |
 | `800 ~ 899` | Item — 재료 아이템 (채굴 드롭) | |
+| `900 ~ 999` | Item — 총기 파츠 / GunPart | GunPart ID = Item ID (1:1 연결) |
 | `1001 ~ 1999` | Planet | 씬 이름 컨벤션: `SC_Raid_{id}` |
 | `2001 ~ 2999` | Enemy | ⚠️ TODO: 현재 1,2,3 → 2001,2002,2003 으로 변경 필요 |
 | `3001 ~ 3999` | Mineral (광물 오브젝트) | ⚠️ TODO: 현재 1,2,3 → 3001,3002,3003 으로 변경 필요 |
@@ -43,3 +44,6 @@ CSV 원본: `PocoPoachers/DataTable/`
 
 `CraftingRecipeData`도 동일 패턴을 따른다. id = 제작 결과 아이템의 Item ID.
 `CraftingRecipeTable.Get(itemId)`로 해당 아이템의 레시피를 조회. 레시피가 없으면 null.
+
+`GunPartData`도 동일 패턴을 따른다. id = 파츠 아이템의 Item ID.
+`GunPartTable.Get(itemId)`로 해당 파츠의 슬롯/호환/스탯 정보를 조회.
