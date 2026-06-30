@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject GunEnhancementTableUI;
     [SerializeField] private GameObject RepairWorkbenchUI;
     [SerializeField] private GameObject CraftingTableUI;
+    [SerializeField] private GunPartUI _gunPartPanel;   // 비활성으로 둬도 됨 (이벤트로 열림)
     [SerializeField] private CameraController _cameraController;
     [SerializeField] private float _useItemDuration = 1.5f;
 
@@ -38,6 +39,7 @@ public class PlayerController : MonoBehaviour
     private SaveManager _saveManager;
     private PlayerInputHandler _inputHander;
     private QuickSlotDropHandler[] _quickSlots;
+    private GunPartDropHandler[] _gunPartSlots;
     private readonly List<GameObject> _interactObjects = new();
     private IInteractable _currentInteractable;
     private Coroutine _useCoroutine;
@@ -71,6 +73,7 @@ public class PlayerController : MonoBehaviour
             .OrderBy(s => s.gameObject.name).ToArray();
 
         InitQuickSlots();
+        InitGunPartSlots();
 
         _inputHander = GetComponent<PlayerInputHandler>();
         _inputHander.GoInventory += ShowInventory;
@@ -95,6 +98,8 @@ public class PlayerController : MonoBehaviour
         ui.OnPanelOpened += OnPanelOpened;
         ui.OnPanelClosed += OnPanelClosed;
 
+        SlotInteractionManager.GetInstance().OnGunPartRequest += OnGunPartRequested;
+
         InitEquipSlots();
     }
 
@@ -112,6 +117,21 @@ public class PlayerController : MonoBehaviour
         int count = Mathf.Min(_quickSlots.Length, quickSlotInventory.SlotCount);
         for (int i = 0; i < count; i++)
             _quickSlots[i].Init(_playerBagInventoryUI, quickSlotInventory, quickSlotInventory.StartIndex + i);
+    }
+
+    // 총기 파츠 슬롯에 로컬 플레이어 인벤 UI 연결 (해제 시 인벤토리 반납용). 대상 총은 패널이 SetGun으로 주입.
+    private void InitGunPartSlots()
+    {
+        _gunPartSlots = FindObjectsByType<GunPartDropHandler>(FindObjectsInactive.Include);
+        foreach (var handler in _gunPartSlots)
+            handler.BindInventoryUI(_playerBagInventoryUI);
+    }
+
+    // 무기 우클릭 "파츠 장착" → 해당 총으로 파츠 패널 열기 (패널은 비활성으로 둬도 됨)
+    private void OnGunPartRequested(GunBase gun)
+    {
+        if (_gunPartPanel != null)
+            _gunPartPanel.Open(gun);
     }
 
     private void InitEquipSlots()
@@ -153,6 +173,10 @@ public class PlayerController : MonoBehaviour
             _inputHander.StartInteraction -= Interaction;
             _inputHander.CancelItemUse -= CancelConsuming;
         }
+
+        var slotManager = SlotInteractionManager.GetInstance();
+        if (slotManager != null)
+            slotManager.OnGunPartRequest -= OnGunPartRequested;
 
         var ui = UIManager.GetInstance();
         if (ui == null) return;

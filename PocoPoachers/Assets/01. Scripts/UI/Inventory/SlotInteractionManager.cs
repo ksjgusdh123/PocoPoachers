@@ -19,6 +19,9 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     // 장비 슬롯 우클릭 상태
     public event Action<ItemHolderDropHandler> OnEquipRightClick;
 
+    // 무기 슬롯에서 파츠 패널을 요청 (파츠 패널이 구독해 해당 총으로 열림)
+    public event Action<GunBase> OnGunPartRequest;
+
     // 슬롯 간 드래그로 아이템이 배치(스왑/이동/장착) 완료됨
     public event Action OnItemPlaced;
 
@@ -212,6 +215,11 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     public void InvokeEquipRightClick(ItemHolderDropHandler handler)
     {
         OnEquipRightClick?.Invoke(handler);
+    }
+
+    public void InvokeGunPartRequest(GunBase gun)
+    {
+        OnGunPartRequest?.Invoke(gun);
     }
 
     public void InvokeItemPlaced()
