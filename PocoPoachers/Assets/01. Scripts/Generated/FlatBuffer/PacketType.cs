@@ -18,32 +18,34 @@ public enum PacketType : byte
   H_Move = 11,
   G_Shoot = 12,
   H_Shoot = 13,
-  H_ItemSpawn = 14,
-  H_ItemDespawn = 15,
-  G_ItemGain = 16,
-  H_ItemGainResult = 17,
-  H_ItemBoxUpdate = 18,
-  G_ItemExchange = 19,
-  S_GuestJoined = 20,
-  H_GuestJoined = 21,
-  G_Equip = 22,
-  H_Equip = 23,
-  G_ConsumeItem = 24,
-  H_ConsumeItemResult = 25,
-  G_Durability = 26,
-  H_Durability = 27,
-  G_StatSync = 28,
-  H_StatSync = 29,
-  H_EnemySpawn = 30,
-  H_EnemyMove = 31,
-  H_EnemyHit = 32,
-  H_EnemyDie = 33,
-  G_Leave = 34,
-  H_Leave = 35,
-  G_ShelterLevel = 36,
-  H_ShelterLevel = 37,
-  H_SandbagDestroy = 38,
-  H_LoadScene = 39,
+  H_ShootRejected = 14,
+  H_ItemSpawn = 15,
+  H_ItemDespawn = 16,
+  G_ItemGain = 17,
+  H_ItemGainResult = 18,
+  H_ItemBoxUpdate = 19,
+  G_ItemExchange = 20,
+  H_ItemExchangeResult = 21,
+  S_GuestJoined = 22,
+  H_GuestJoined = 23,
+  G_Equip = 24,
+  H_Equip = 25,
+  G_ConsumeItem = 26,
+  H_ConsumeItemResult = 27,
+  G_Durability = 28,
+  H_Durability = 29,
+  G_StatSync = 30,
+  H_StatSync = 31,
+  H_EnemySpawn = 32,
+  H_EnemyMove = 33,
+  H_EnemyHit = 34,
+  H_EnemyDie = 35,
+  G_Leave = 36,
+  H_Leave = 37,
+  G_ShelterLevel = 38,
+  H_ShelterLevel = 39,
+  H_SandbagDestroy = 40,
+  H_LoadScene = 41,
 };
 
 public class PacketTypeUnion {
@@ -82,6 +84,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_Shoot(G_ShootT _g_shoot) { return new PacketTypeUnion{ Type = PacketType.G_Shoot, Value = _g_shoot }; }
   public H_ShootT AsH_Shoot() { return this.As<H_ShootT>(); }
   public static PacketTypeUnion FromH_Shoot(H_ShootT _h_shoot) { return new PacketTypeUnion{ Type = PacketType.H_Shoot, Value = _h_shoot }; }
+  public H_ShootRejectedT AsH_ShootRejected() { return this.As<H_ShootRejectedT>(); }
+  public static PacketTypeUnion FromH_ShootRejected(H_ShootRejectedT _h_shootrejected) { return new PacketTypeUnion{ Type = PacketType.H_ShootRejected, Value = _h_shootrejected }; }
   public H_ItemSpawnT AsH_ItemSpawn() { return this.As<H_ItemSpawnT>(); }
   public static PacketTypeUnion FromH_ItemSpawn(H_ItemSpawnT _h_itemspawn) { return new PacketTypeUnion{ Type = PacketType.H_ItemSpawn, Value = _h_itemspawn }; }
   public H_ItemDespawnT AsH_ItemDespawn() { return this.As<H_ItemDespawnT>(); }
@@ -94,6 +98,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_ItemBoxUpdate(H_ItemBoxUpdateT _h_itemboxupdate) { return new PacketTypeUnion{ Type = PacketType.H_ItemBoxUpdate, Value = _h_itemboxupdate }; }
   public G_ItemExchangeT AsG_ItemExchange() { return this.As<G_ItemExchangeT>(); }
   public static PacketTypeUnion FromG_ItemExchange(G_ItemExchangeT _g_itemexchange) { return new PacketTypeUnion{ Type = PacketType.G_ItemExchange, Value = _g_itemexchange }; }
+  public H_ItemExchangeResultT AsH_ItemExchangeResult() { return this.As<H_ItemExchangeResultT>(); }
+  public static PacketTypeUnion FromH_ItemExchangeResult(H_ItemExchangeResultT _h_itemexchangeresult) { return new PacketTypeUnion{ Type = PacketType.H_ItemExchangeResult, Value = _h_itemexchangeresult }; }
   public S_GuestJoinedT AsS_GuestJoined() { return this.As<S_GuestJoinedT>(); }
   public static PacketTypeUnion FromS_GuestJoined(S_GuestJoinedT _s_guestjoined) { return new PacketTypeUnion{ Type = PacketType.S_GuestJoined, Value = _s_guestjoined }; }
   public H_GuestJoinedT AsH_GuestJoined() { return this.As<H_GuestJoinedT>(); }
@@ -151,12 +157,14 @@ public class PacketTypeUnion {
       case PacketType.H_Move: return H_Move.Pack(builder, _o.AsH_Move()).Value;
       case PacketType.G_Shoot: return G_Shoot.Pack(builder, _o.AsG_Shoot()).Value;
       case PacketType.H_Shoot: return H_Shoot.Pack(builder, _o.AsH_Shoot()).Value;
+      case PacketType.H_ShootRejected: return H_ShootRejected.Pack(builder, _o.AsH_ShootRejected()).Value;
       case PacketType.H_ItemSpawn: return H_ItemSpawn.Pack(builder, _o.AsH_ItemSpawn()).Value;
       case PacketType.H_ItemDespawn: return H_ItemDespawn.Pack(builder, _o.AsH_ItemDespawn()).Value;
       case PacketType.G_ItemGain: return G_ItemGain.Pack(builder, _o.AsG_ItemGain()).Value;
       case PacketType.H_ItemGainResult: return H_ItemGainResult.Pack(builder, _o.AsH_ItemGainResult()).Value;
       case PacketType.H_ItemBoxUpdate: return H_ItemBoxUpdate.Pack(builder, _o.AsH_ItemBoxUpdate()).Value;
       case PacketType.G_ItemExchange: return G_ItemExchange.Pack(builder, _o.AsG_ItemExchange()).Value;
+      case PacketType.H_ItemExchangeResult: return H_ItemExchangeResult.Pack(builder, _o.AsH_ItemExchangeResult()).Value;
       case PacketType.S_GuestJoined: return S_GuestJoined.Pack(builder, _o.AsS_GuestJoined()).Value;
       case PacketType.H_GuestJoined: return H_GuestJoined.Pack(builder, _o.AsH_GuestJoined()).Value;
       case PacketType.G_Equip: return G_Equip.Pack(builder, _o.AsG_Equip()).Value;
@@ -229,6 +237,9 @@ static public class PacketTypeVerify
       case PacketType.H_Shoot:
         result = H_ShootVerify.Verify(verifier, tablePos);
         break;
+      case PacketType.H_ShootRejected:
+        result = H_ShootRejectedVerify.Verify(verifier, tablePos);
+        break;
       case PacketType.H_ItemSpawn:
         result = H_ItemSpawnVerify.Verify(verifier, tablePos);
         break;
@@ -246,6 +257,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.G_ItemExchange:
         result = G_ItemExchangeVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_ItemExchangeResult:
+        result = H_ItemExchangeResultVerify.Verify(verifier, tablePos);
         break;
       case PacketType.S_GuestJoined:
         result = S_GuestJoinedVerify.Verify(verifier, tablePos);

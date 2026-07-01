@@ -32,12 +32,14 @@ public struct FlatPacket : IFlatbufferObject
   public H_Move TypeAsH_Move() { return Type<H_Move>().Value; }
   public G_Shoot TypeAsG_Shoot() { return Type<G_Shoot>().Value; }
   public H_Shoot TypeAsH_Shoot() { return Type<H_Shoot>().Value; }
+  public H_ShootRejected TypeAsH_ShootRejected() { return Type<H_ShootRejected>().Value; }
   public H_ItemSpawn TypeAsH_ItemSpawn() { return Type<H_ItemSpawn>().Value; }
   public H_ItemDespawn TypeAsH_ItemDespawn() { return Type<H_ItemDespawn>().Value; }
   public G_ItemGain TypeAsG_ItemGain() { return Type<G_ItemGain>().Value; }
   public H_ItemGainResult TypeAsH_ItemGainResult() { return Type<H_ItemGainResult>().Value; }
   public H_ItemBoxUpdate TypeAsH_ItemBoxUpdate() { return Type<H_ItemBoxUpdate>().Value; }
   public G_ItemExchange TypeAsG_ItemExchange() { return Type<G_ItemExchange>().Value; }
+  public H_ItemExchangeResult TypeAsH_ItemExchangeResult() { return Type<H_ItemExchangeResult>().Value; }
   public S_GuestJoined TypeAsS_GuestJoined() { return Type<S_GuestJoined>().Value; }
   public H_GuestJoined TypeAsH_GuestJoined() { return Type<H_GuestJoined>().Value; }
   public G_Equip TypeAsG_Equip() { return Type<G_Equip>().Value; }
@@ -126,6 +128,9 @@ public struct FlatPacket : IFlatbufferObject
       case PacketType.H_Shoot:
         _o.Type.Value = this.Type<H_Shoot>().HasValue ? this.Type<H_Shoot>().Value.UnPack() : null;
         break;
+      case PacketType.H_ShootRejected:
+        _o.Type.Value = this.Type<H_ShootRejected>().HasValue ? this.Type<H_ShootRejected>().Value.UnPack() : null;
+        break;
       case PacketType.H_ItemSpawn:
         _o.Type.Value = this.Type<H_ItemSpawn>().HasValue ? this.Type<H_ItemSpawn>().Value.UnPack() : null;
         break;
@@ -143,6 +148,9 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.G_ItemExchange:
         _o.Type.Value = this.Type<G_ItemExchange>().HasValue ? this.Type<G_ItemExchange>().Value.UnPack() : null;
+        break;
+      case PacketType.H_ItemExchangeResult:
+        _o.Type.Value = this.Type<H_ItemExchangeResult>().HasValue ? this.Type<H_ItemExchangeResult>().Value.UnPack() : null;
         break;
       case PacketType.S_GuestJoined:
         _o.Type.Value = this.Type<S_GuestJoined>().HasValue ? this.Type<S_GuestJoined>().Value.UnPack() : null;
