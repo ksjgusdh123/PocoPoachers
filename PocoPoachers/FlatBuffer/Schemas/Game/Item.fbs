@@ -52,9 +52,11 @@ table G_ItemExchange
     box_uid:            int;
     player_item_id:     int;
     player_item_amount: int;
+    player_item_uid:    int; // 박스에 넣는 플레이어 아이템의 인스턴스 uid, 없으면 0
     player_slot_index:  int;
     box_item_id:        int;
     box_item_amount:    int;
+    box_item_uid:       int; // 박스에서 꺼내는 아이템의 인스턴스 uid, 없으면 0 (요청 시점 로컬 박스 상태 기준)
     box_slot_index:     int;
 }
 
@@ -64,9 +66,11 @@ table H_ItemExchangeResult
     box_uid:            int;
     player_item_id:     int;
     player_item_amount: int;
+    player_item_uid:    int;
     player_slot_index:  int;
     box_item_id:        int;
     box_item_amount:    int;
+    box_item_uid:       int;
     box_slot_index:     int;
 }
 
