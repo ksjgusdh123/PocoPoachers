@@ -63,6 +63,24 @@ public static partial class PacketHandlers
         }
     }
 
+    public static void OnH_ItemExchangeResult(FlatPacket root)
+    {
+        var packet = root.TypeAsH_ItemExchangeResult();
+        if (packet.Success) return;
+
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            SlotInteractionManager.GetInstance()?.RollbackExchange(
+                packet.BoxUid,
+                packet.PlayerSlotIndex,
+                packet.PlayerItemId,
+                packet.PlayerItemAmount,
+                packet.BoxSlotIndex,
+                packet.BoxItemId,
+                packet.BoxItemAmount);
+        });
+    }
+
     public static void OnH_ItemBoxUpdate(FlatPacket root)
     {
         var packet = root.TypeAsH_ItemBoxUpdate();

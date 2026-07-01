@@ -58,6 +58,8 @@ public static partial class PacketHandlers
 
         if (success)
         {
+            GuestInventoryTracker.ApplyGain(guestId, takeFromBoxResult, playerSlot, packet.ItemTypeId, packet.Amount, packet.ItemUid);
+
             int boxDelta = takeFromBoxResult ? -packet.Amount : packet.Amount;
             PacketBuilder.BroadcastToGuests(new H_ItemBoxUpdateT
             {
@@ -74,34 +76,63 @@ public static partial class PacketHandlers
     {
         var packet = root.TypeAsG_ItemExchange();
         if (!RoomManager.IsHost) return;
-        if (!RoomManager.TryGetGuestIdFromPacket(0, autoRegister: false, out _))
+        if (!RoomManager.TryGetGuestIdFromPacket(0, autoRegister: false, out int guestId))
             return;
 
+        bool success = false;
         var objectManager = ObjectManager.Instance;
-        if (objectManager != null && objectManager.TryGet(ObjectKind.ItemBox, packet.BoxUid, out var boxObj))
+        var boxItemData = ItemTable.Instance.Get(packet.BoxItemId);
+        var playerItemData = ItemTable.Instance.Get(packet.PlayerItemId);
+
+        if (packet.PlayerItemAmount <= 0 || GuestInventoryTracker.HasInSlot(guestId, packet.PlayerSlotIndex, packet.PlayerItemId, packet.PlayerItemAmount))
         {
-            var boxInventory = boxObj.GetComponent<Inventory>();
-            var boxItemData = ItemTable.Instance.Get(packet.BoxItemId);
-
-            if (boxInventory != null && boxItemData != null
-                && packet.BoxSlotIndex >= 0 && packet.BoxSlotIndex < boxInventory.Slots.Count)
+            if (objectManager != null && objectManager.TryGet(ObjectKind.ItemBox, packet.BoxUid, out var boxObj))
             {
-                var boxSlot = boxInventory.Slots[packet.BoxSlotIndex];
-                if (!boxSlot.IsEmpty
-                    && boxSlot.ItemData?.Id == packet.BoxItemId
-                    && boxSlot.Amount >= packet.BoxItemAmount)
+                var boxInventory = boxObj.GetComponent<Inventory>();
+                if (boxInventory != null
+                    && packet.BoxSlotIndex >= 0 && packet.BoxSlotIndex < boxInventory.Slots.Count
+                    && boxItemData != null)
                 {
-                    boxInventory.RemoveItemAtSlot(packet.BoxSlotIndex, boxItemData, packet.BoxItemAmount);
+                    var boxSlot = boxInventory.Slots[packet.BoxSlotIndex];
+                    bool boxOk = packet.BoxItemAmount <= 0
+                        || (!boxSlot.IsEmpty
+                            && boxSlot.ItemData?.Id == packet.BoxItemId
+                            && boxSlot.Amount >= packet.BoxItemAmount);
 
-                    var playerItemData = ItemTable.Instance.Get(packet.PlayerItemId);
-                    if (playerItemData != null && packet.PlayerItemAmount > 0)
-                        boxInventory.AddItemAtSlot(packet.BoxSlotIndex, playerItemData, packet.PlayerItemAmount);
+                    if (boxOk)
+                    {
+                        if (packet.BoxItemAmount > 0)
+                            boxInventory.RemoveItemAtSlot(packet.BoxSlotIndex, boxItemData, packet.BoxItemAmount);
 
-                    RoomSync.ItemBoxUpdate(packet.BoxUid, packet.BoxItemId,    -packet.BoxItemAmount,    packet.BoxSlotIndex);
-                    RoomSync.ItemBoxUpdate(packet.BoxUid, packet.PlayerItemId,  packet.PlayerItemAmount,  packet.BoxSlotIndex);
+                        if (playerItemData != null && packet.PlayerItemAmount > 0)
+                            boxInventory.AddItemAtSlot(packet.BoxSlotIndex, playerItemData, packet.PlayerItemAmount);
+
+                        success = true;
+                    }
                 }
             }
         }
+
+        PacketBuilder.SendReliableToGuest(guestId, new H_ItemExchangeResultT
+        {
+            Success            = success,
+            BoxUid             = packet.BoxUid,
+            PlayerItemId       = packet.PlayerItemId,
+            PlayerItemAmount   = packet.PlayerItemAmount,
+            PlayerSlotIndex    = packet.PlayerSlotIndex,
+            BoxItemId          = packet.BoxItemId,
+            BoxItemAmount      = packet.BoxItemAmount,
+            BoxSlotIndex       = packet.BoxSlotIndex,
+        }, H_ItemExchangeResult.Pack, PacketType.H_ItemExchangeResult);
+
+        if (!success) return;
+
+        GuestInventoryTracker.SetSlot(guestId, packet.PlayerSlotIndex, packet.BoxItemId, packet.BoxItemAmount);
+
+        if (packet.BoxItemAmount > 0)
+            RoomSync.ItemBoxUpdate(packet.BoxUid, packet.BoxItemId, -packet.BoxItemAmount, packet.BoxSlotIndex);
+        if (packet.PlayerItemAmount > 0)
+            RoomSync.ItemBoxUpdate(packet.BoxUid, packet.PlayerItemId, packet.PlayerItemAmount, packet.BoxSlotIndex);
     }
 
     public static void OnG_ConsumeItem(FlatPacket root)

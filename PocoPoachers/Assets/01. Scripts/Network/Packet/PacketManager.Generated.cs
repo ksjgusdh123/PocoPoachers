@@ -14,12 +14,14 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.H_Move             , PacketHandlers.OnH_Move);
         _onRecv.Add(PacketType.G_Shoot            , PacketHandlers.OnG_Shoot);
         _onRecv.Add(PacketType.H_Shoot            , PacketHandlers.OnH_Shoot);
+        _onRecv.Add(PacketType.H_ShootRejected    , PacketHandlers.OnH_ShootRejected);
         _onRecv.Add(PacketType.H_ItemSpawn        , PacketHandlers.OnH_ItemSpawn);
         _onRecv.Add(PacketType.H_ItemDespawn      , PacketHandlers.OnH_ItemDespawn);
         _onRecv.Add(PacketType.G_ItemGain         , PacketHandlers.OnG_ItemGain);
         _onRecv.Add(PacketType.H_ItemGainResult   , PacketHandlers.OnH_ItemGainResult);
         _onRecv.Add(PacketType.H_ItemBoxUpdate    , PacketHandlers.OnH_ItemBoxUpdate);
         _onRecv.Add(PacketType.G_ItemExchange     , PacketHandlers.OnG_ItemExchange);
+        _onRecv.Add(PacketType.H_ItemExchangeResult, PacketHandlers.OnH_ItemExchangeResult);
         _onRecv.Add(PacketType.S_GuestJoined      , PacketHandlers.OnS_GuestJoined);
         _onRecv.Add(PacketType.H_GuestJoined      , PacketHandlers.OnH_GuestJoined);
         _onRecv.Add(PacketType.G_Equip            , PacketHandlers.OnG_Equip);

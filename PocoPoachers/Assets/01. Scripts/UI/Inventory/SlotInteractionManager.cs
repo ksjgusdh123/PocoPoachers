@@ -90,6 +90,36 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         }
     }
 
+    // 호스트가 G_ItemExchange를 거부했을 때 게스트 낙관적 교환을 되돌림
+    public void RollbackExchange(int boxUid, int playerSlot, int playerItemId, int playerAmount, int boxSlot, int boxItemId, int boxAmount)
+    {
+        var playerItem = ItemTable.Instance.Get(playerItemId);
+        var boxItem = ItemTable.Instance.Get(boxItemId);
+
+        var om = ObjectManager.Instance;
+        Inventory boxInv = null;
+        if (om != null && om.TryGet(ObjectKind.ItemBox, boxUid, out var boxObj))
+            boxInv = boxObj.GetComponent<Inventory>();
+
+        var playerInv = Object.FindAnyObjectByType<PlayerController>()?.GetComponent<Inventory>();
+
+        if (boxInv != null)
+        {
+            if (playerItem != null && playerAmount > 0)
+                boxInv.RemoveItemAtSlot(boxSlot, playerItem, playerAmount);
+            if (boxItem != null && boxAmount > 0)
+                boxInv.AddItemAtSlot(boxSlot, boxItem, boxAmount);
+        }
+
+        if (playerInv != null)
+        {
+            if (boxItem != null && boxAmount > 0)
+                playerInv.RemoveItemAtSlot(playerSlot, boxItem, boxAmount);
+            if (playerItem != null && playerAmount > 0)
+                playerInv.AddItemAtSlot(playerSlot, playerItem, playerAmount);
+        }
+    }
+
     // 플레이어 → 플레이어 빈 슬롯: 로컬 이동만
     public void InvokeLocalMove(ItemSlotUI from, ItemSlotUI to, ItemData data, int amount)
     {
