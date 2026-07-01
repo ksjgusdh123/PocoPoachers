@@ -172,6 +172,7 @@ public class WeaponController : EquipableController
 
         _currentGunIndex = index;
         _currentGun = _mount.GetGun(index);
+        _mount.SetActiveSlot(index);
         _currentGun?.gameObject.SetActive(true);
         ApplyCurrentGunVisibility();
         _wasFirePressed = false;

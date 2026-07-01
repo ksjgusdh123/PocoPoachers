@@ -6,9 +6,35 @@ public class WeaponMount : MonoBehaviour
 
     private readonly GunBase[] _guns = new GunBase[2];
     private readonly int[] _equippedItemIds = new int[2];
+    private int _activeSlot = -1;
 
     public GunBase GetGun(int slotIndex) =>
         (uint)slotIndex < (uint)_guns.Length ? _guns[slotIndex] : null;
+
+    public GunBase GetActiveGun()
+    {
+        if (_activeSlot >= 0)
+        {
+            var active = GetGun(_activeSlot);
+            if (active != null) return active;
+        }
+
+        for (int i = 0; i < _guns.Length; i++)
+        {
+            var gun = GetGun(i);
+            if (gun != null && gun.gameObject.activeSelf) return gun;
+        }
+
+        for (int i = 0; i < _guns.Length; i++)
+        {
+            var gun = GetGun(i);
+            if (gun != null) return gun;
+        }
+
+        return null;
+    }
+
+    public void SetActiveSlot(int slotIndex) => _activeSlot = slotIndex;
 
     public int GetEquippedItemId(int slotIndex) =>
         (uint)slotIndex < (uint)_equippedItemIds.Length ? _equippedItemIds[slotIndex] : 0;
@@ -20,7 +46,12 @@ public class WeaponMount : MonoBehaviour
 
         gun.SetUid(uid);
         _equippedItemIds[slotIndex] = itemId;
-        gun.gameObject.SetActive(true);
+        _activeSlot = slotIndex;
+        for (int i = 0; i < _guns.Length; i++)
+        {
+            if (_guns[i] != null)
+                _guns[i].gameObject.SetActive(i == slotIndex);
+        }
         return gun;
     }
 
@@ -30,6 +61,7 @@ public class WeaponMount : MonoBehaviour
         Destroy(_guns[slotIndex].gameObject);
         _guns[slotIndex] = null;
         _equippedItemIds[slotIndex] = 0;
+        if (_activeSlot == slotIndex) _activeSlot = -1;
     }
 
     private GunBase SpawnGun(int itemId, int slotIndex)

@@ -14,9 +14,10 @@ public class RemotePlayerStat : StatBase
     public float ArmorMoveSpeedMultiplier => _armorMoveSpeedMultiplier;
     public float ArmorDefenseRate => _armorDefenseRate;
 
-    public void SetFromNetwork(float hp, float maxHp, float stamina, float battery, float defense)
+    public void ApplyNetworkStats(float hp, float maxHp, float stamina, float battery, float defense)
     {
         _armorMaxHpBonus = 0f;
+        _armorMoveSpeedMultiplier = 1f;
         SetHpFromNetwork(hp, maxHp, 0);
         SetVitalsFromNetwork(stamina, battery);
         SetArmorDefenseRate(defense);

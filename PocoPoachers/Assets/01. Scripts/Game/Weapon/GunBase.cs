@@ -102,9 +102,10 @@ public abstract class GunBase : EquippableItemBase
         _soundGizmoTimer = 1f;
         _currentAmmo--;
         OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
-        // 로컬 즉시 반영(낙관적) + 호스트에 통보해서 권위 있는 값으로 동기화
+        // 로컬 낙관적 반영. 호스트만 권위 있는 내구도를 계산해 브로드캐스트한다.
         SetDurability(_currentDurability - _durabilityDecreasePerShot);
-        RoomSync.Durability(Uid, ItemId, -_durabilityDecreasePerShot, MaxDurability);
+        if (RoomManager.IsHost)
+            RoomSync.Durability(Uid, ItemId, -_durabilityDecreasePerShot, MaxDurability);
         _nextFireTime = Time.time + 60f / _stat.Rpm;
         _recoilDist = _stat.RecoilForce;
         Vector2 muzzleScreen = Camera.main.WorldToScreenPoint(_muzzle.position);
