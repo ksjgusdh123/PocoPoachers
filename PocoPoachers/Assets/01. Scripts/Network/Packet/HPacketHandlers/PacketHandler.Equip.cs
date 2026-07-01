@@ -2,14 +2,14 @@ public static partial class PacketHandlers
 {
     public static void OnH_Equip(FlatPacket root)
     {
-        var pkt = root.TypeAsH_Equip();
-        if (!ObjectManager.Instance.TryGet(ObjectKind.Player, pkt.PlayerId, out var worldObj)) return;
+        var packet = root.TypeAsH_Equip();
+        if (!ObjectManager.Instance.TryGet(ObjectKind.Player, packet.PlayerId, out var worldObj)) return;
 
-        SyncRemoteArmorStats(worldObj, pkt.PlayerId, pkt.ItemId, pkt.SlotIndex, broadcast: false);
-        ApplyRemoteEquip(worldObj, pkt.ItemId, pkt.ItemUid, pkt.SlotIndex);
+        ApplyRemoteArmorStats(worldObj, packet.PlayerId, packet.ItemId, packet.SlotIndex, sendToOthers: false);
+        ApplyRemoteEquipVisual(worldObj, packet.ItemId, packet.ItemUid, packet.SlotIndex);
     }
 
-    static EquippableItemBase ApplyRemoteEquip(WorldObject worldObj, int itemId, int itemUid, int slotIndex)
+    static EquippableItemBase ApplyRemoteEquipVisual(WorldObject worldObj, int itemId, int itemUid, int slotIndex)
     {
         if (slotIndex == 4)
         {
@@ -47,7 +47,7 @@ public static partial class PacketHandlers
         return mount.ApplyEquip(itemId, slotIndex, itemUid);
     }
 
-    static void SyncRemoteArmorStats(WorldObject worldObj, int playerId, int newItemId, int slotIndex, bool broadcast)
+    static void ApplyRemoteArmorStats(WorldObject worldObj, int playerId, int newItemId, int slotIndex, bool sendToOthers)
     {
         if (slotIndex < 2 || slotIndex == 4) return;
         if (worldObj.GetComponent<RemotePlayerStat>() is not RemotePlayerStat remote) return;
@@ -67,7 +67,7 @@ public static partial class PacketHandlers
             if (newData != null) remote.ApplyArmorStat(newData);
         }
 
-        if (!broadcast || !RoomManager.IsHost) return;
+        if (!sendToOthers || !RoomManager.IsHost) return;
 
         PacketBuilder.BroadcastToGuests(new H_StatSyncT
         {

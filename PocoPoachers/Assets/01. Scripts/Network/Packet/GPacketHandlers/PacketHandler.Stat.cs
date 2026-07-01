@@ -5,41 +5,41 @@ public static partial class PacketHandlers
     public static void OnG_StatSync(FlatPacket root)
     {
         if (!RoomManager.IsHost) return;
-        if (!RoomManager.TryResolveGuestSender(0, allowAutoRegister: false, out int senderId))
+        if (!RoomManager.TryGetGuestIdFromPacket(0, autoRegister: false, out int guestId))
             return;
 
-        var pkt = root.TypeAsG_StatSync();
-        float maxHp = Mathf.Max(pkt.MaxHp, 1f);
+        var packet = root.TypeAsG_StatSync();
+        float maxHp = Mathf.Max(packet.MaxHp, 1f);
 
-        var om = ObjectManager.Instance;
+        var objectManager = ObjectManager.Instance;
         StatBase stat = null;
-        if (om != null && om.TryGet(ObjectKind.Player, senderId, out var worldObj))
+        if (objectManager != null && objectManager.TryGet(ObjectKind.Player, guestId, out var worldObj))
         {
             stat = worldObj.GetComponent<StatBase>();
             if (stat == null)
                 stat = worldObj.gameObject.AddComponent<RemotePlayerStat>();
         }
 
-        float hp = NetworkPlayerAuthority.SanitizeGuestHp(stat, pkt.Hp, maxHp);
-        float stamina = Mathf.Clamp(pkt.Stamina, 0f, 200f);
-        float battery = Mathf.Clamp(pkt.Battery, 0f, 200f);
+        float hp = GuestValidator.ClampGuestHp(stat, packet.Hp, maxHp);
+        float stamina = Mathf.Clamp(packet.Stamina, 0f, 200f);
+        float battery = Mathf.Clamp(packet.Battery, 0f, 200f);
 
         if (stat != null)
         {
             if (stat is RemotePlayerStat remote)
-                remote.SetFromNetwork(hp, maxHp, stamina, battery, pkt.Defense);
+                remote.ApplyNetworkStats(hp, maxHp, stamina, battery, packet.Defense);
             else
                 stat.SetHpFromNetwork(hp, maxHp, 0);
         }
 
-        PacketBuilder.BroadcastToGuests(senderId, new H_StatSyncT
+        PacketBuilder.BroadcastToGuests(guestId, new H_StatSyncT
         {
-            PlayerId = senderId,
+            PlayerId = guestId,
             Hp       = hp,
             MaxHp    = maxHp,
             Stamina  = stamina,
             Battery  = battery,
-            Defense  = pkt.Defense,
+            Defense  = packet.Defense,
         }, H_StatSync.Pack, PacketType.H_StatSync);
     }
 }

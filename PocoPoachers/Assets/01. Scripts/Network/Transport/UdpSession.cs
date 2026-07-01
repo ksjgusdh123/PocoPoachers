@@ -121,9 +121,9 @@ public class UdpSession
                 if (len > ReliableHeaderSize && buffer[0] == ReliableSignal)
                 {
                     uint seq = BitConverter.ToUInt32(buffer, 1);
-                    byte[] copy = new byte[len - ReliableHeaderSize];
-                    Buffer.BlockCopy(buffer, ReliableHeaderSize, copy, 0, copy.Length);
-                    OnReliableReceived?.Invoke(seq, new ArraySegment<byte>(copy), ep);
+                    byte[] reliablePayload = new byte[len - ReliableHeaderSize];
+                    Buffer.BlockCopy(buffer, ReliableHeaderSize, reliablePayload, 0, reliablePayload.Length);
+                    OnReliableReceived?.Invoke(seq, new ArraySegment<byte>(reliablePayload), ep);
                     continue;
                 }
 

@@ -4,29 +4,29 @@ public static partial class PacketHandlers
 {
     public static void OnH_EnemySpawn(FlatPacket root)
     {
-        var pkt = root.TypeAsH_EnemySpawn();
-        Vec3? posRaw = pkt.Pos;
+        var packet = root.TypeAsH_EnemySpawn();
+        Vec3? posRaw = packet.Pos;
         var pos = posRaw.HasValue ? new Vector3(posRaw.Value.X, posRaw.Value.Y, posRaw.Value.Z) : Vector3.zero;
-        EnemyNetSync.OnNetSpawn(pkt.EnemyId, pkt.EnemyTypeId, pos, pkt.Rotation, pkt.Hp, pkt.MaxHp, pkt.WeaponId, pkt.HelmetId);
+        EnemyNetSync.OnNetSpawn(packet.EnemyId, packet.EnemyTypeId, pos, packet.Rotation, packet.Hp, packet.MaxHp, packet.WeaponId, packet.HelmetId);
     }
 
     public static void OnH_EnemyMove(FlatPacket root)
     {
-        var pkt = root.TypeAsH_EnemyMove();
-        Vec3? posRaw = pkt.Pos;
+        var packet = root.TypeAsH_EnemyMove();
+        Vec3? posRaw = packet.Pos;
         var pos = posRaw.HasValue ? new Vector3(posRaw.Value.X, posRaw.Value.Y, posRaw.Value.Z) : Vector3.zero;
-        EnemyNetSync.OnNetMove(pkt.EnemyId, pos, pkt.Rotation, pkt.AnimState);
+        EnemyNetSync.OnNetMove(packet.EnemyId, pos, packet.Rotation, packet.AnimState);
     }
 
     public static void OnH_EnemyHit(FlatPacket root)
     {
-        var pkt = root.TypeAsH_EnemyHit();
-        EnemyNetSync.OnNetHit(pkt.EnemyId, pkt.Hp, pkt.MaxHp, pkt.Damage);
+        var packet = root.TypeAsH_EnemyHit();
+        EnemyNetSync.OnNetHit(packet.EnemyId, packet.Hp, packet.MaxHp, packet.Damage);
     }
 
     public static void OnH_EnemyDie(FlatPacket root)
     {
-        var pkt = root.TypeAsH_EnemyDie();
-        EnemyNetSync.OnNetDie(pkt.EnemyId);
+        var packet = root.TypeAsH_EnemyDie();
+        EnemyNetSync.OnNetDie(packet.EnemyId);
     }
 }

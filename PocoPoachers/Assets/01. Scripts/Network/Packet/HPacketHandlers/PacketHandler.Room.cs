@@ -4,22 +4,26 @@ public static partial class PacketHandlers
 {
     public static void OnH_GuestJoined(FlatPacket root)
     {
-        var pkt = root.TypeAsH_GuestJoined();
+        var packet = root.TypeAsH_GuestJoined();
 
         var rm = RoomManager.Instance;
         if (rm != null)
         {
-            if (pkt.InfoLength == 1)
+            if (packet.InfoLength == 1)
                 rm.AddMember();
             else if (RoomManager.MemberCount <= 1)
-                rm.SetMemberCount(pkt.InfoLength + 1);
+                rm.SetMemberCount(packet.InfoLength + 1);
         }
 
-        for (int i = 0; i < pkt.InfoLength; i++)
+        for (int i = 0; i < packet.InfoLength; i++)
         {
-            if (!pkt.Info(i).HasValue) continue;
-            var info = pkt.Info(i).Value;
+            if (!packet.Info(i).HasValue) continue;
+            var info = packet.Info(i).Value;
             var p = info.Pos;
+
+            // 위치 없는 합류 알림은 멤버 수만 갱신. 스폰은 이후 H_Move에서 처리한다.
+            if (packet.InfoLength == 1 && p.X == 0f && p.Y == 0f && p.Z == 0f)
+                continue;
 
             ObjectManager.Instance?.QueueMove(
                 ObjectKind.Player, info.PlayerId,
@@ -29,26 +33,26 @@ public static partial class PacketHandlers
 
     public static void OnH_Leave(FlatPacket root)
     {
-        var pkt = root.TypeAsH_Leave();
-        if (pkt.IsHost)
+        var packet = root.TypeAsH_Leave();
+        if (packet.IsHost)
             RoomManager.Instance?.HandleHostLeft();
         else
         {
-            ObjectManager.Instance?.Despawn(ObjectKind.Player, pkt.PlayerId);
+            ObjectManager.Instance?.Despawn(ObjectKind.Player, packet.PlayerId);
             RoomManager.Instance?.RemoveMember();
         }
     }
 
     public static void OnH_ShelterLevel(FlatPacket root)
     {
-        var pkt = root.TypeAsH_ShelterLevel();
-        ShelterManager.GetInstance()?.SetLevel(pkt.Level);
+        var packet = root.TypeAsH_ShelterLevel();
+        ShelterManager.GetInstance()?.SetLevel(packet.Level);
     }
 
     public static void OnH_LoadScene(FlatPacket root)
     {
-        var pkt = root.TypeAsH_LoadScene();
-        string sceneName = pkt.SceneName;
+        var packet = root.TypeAsH_LoadScene();
+        string sceneName = packet.SceneName;
         if (string.IsNullOrEmpty(sceneName)) return;
 
         MainThreadDispatcher.Enqueue(() =>
@@ -56,8 +60,8 @@ public static partial class PacketHandlers
             SceneLoader loader = SceneLoader.Instance;
             if (loader == null) return;
 
-            if (pkt.SpawnId != 0)
-                GameManager.Instance?.SetSpawnId((SpawnId)pkt.SpawnId);
+            if (packet.SpawnId != 0)
+                GameManager.Instance?.SetSpawnId((SpawnId)packet.SpawnId);
 
             if (sceneName == SceneName.Shelter)
                 loader.LoadShelterScene();

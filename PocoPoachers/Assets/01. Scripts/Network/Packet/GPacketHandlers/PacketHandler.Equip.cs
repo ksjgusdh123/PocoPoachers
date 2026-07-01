@@ -2,18 +2,18 @@ public static partial class PacketHandlers
 {
     public static void OnG_Equip(FlatPacket root)
     {
-        var pkt = root.TypeAsG_Equip();
-        if (!RoomManager.TryResolveGuestSender(pkt.PlayerId, allowAutoRegister: false, out int guestId))
+        var packet = root.TypeAsG_Equip();
+        if (!RoomManager.TryGetGuestIdFromPacket(packet.PlayerId, autoRegister: false, out int guestId))
             return;
 
-        int itemId    = pkt.ItemId;
-        int itemUid   = pkt.ItemUid;
-        int slotIndex = pkt.SlotIndex;
+        int itemId    = packet.ItemId;
+        int itemUid   = packet.ItemUid;
+        int slotIndex = packet.SlotIndex;
 
         if (!ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var worldObj)) return;
 
-        SyncRemoteArmorStats(worldObj, guestId, itemId, slotIndex, broadcast: true);
-        var spawned = ApplyRemoteEquip(worldObj, itemId, itemUid, slotIndex);
+        ApplyRemoteArmorStats(worldObj, guestId, itemId, slotIndex, sendToOthers: true);
+        var spawned = ApplyRemoteEquipVisual(worldObj, itemId, itemUid, slotIndex);
 
         if (RoomManager.IsHost)
         {

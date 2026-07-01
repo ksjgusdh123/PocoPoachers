@@ -2,8 +2,8 @@ public static partial class PacketHandlers
 {
     public static void OnG_Leave(FlatPacket root)
     {
-        var pkt = root.TypeAsG_Leave();
-        if (!RoomManager.TryResolveGuestSender(pkt.PlayerId, allowAutoRegister: false, out int guestId))
+        var packet = root.TypeAsG_Leave();
+        if (!RoomManager.TryGetGuestIdFromPacket(packet.PlayerId, autoRegister: false, out int guestId))
             return;
 
         RoomManager.Instance?.RemoveGuest(guestId);

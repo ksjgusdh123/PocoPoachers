@@ -5,50 +5,50 @@ public static class PacketBuilder
 {
     static readonly FlatBufferBuilder _builder = new FlatBufferBuilder(1024);
 
-    public static void SendToMaster<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public static void SendToMaster<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
     {
         var session = NetworkManager.Instance?.Session;
         if (session == null) return;
 
         _builder.Clear();
-        var innerOffset = packFunc(_builder, data);
+        var innerOffset = pack(_builder, data);
         session.Send(Build(_builder, type, innerOffset.Value));
     }
 
-    public static void SendToHost<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public static void SendToHost<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
-        => RoomManager.Instance?.UdpSendToHost(data, packFunc, type);
+        => RoomManager.Instance?.UdpSendToHost(data, pack, type);
 
-    public static void BroadcastToGuests<TTable, TObj>(int excludeId , TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public static void BroadcastToGuests<TTable, TObj>(int skipPlayerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
-        => RoomManager.Instance?.UdpBroadcastToGuests(data, packFunc, type, excludeId);
+        => RoomManager.Instance?.UdpBroadcastToGuests(data, pack, type, skipPlayerId);
 
-    public static void BroadcastToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public static void BroadcastToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
-        => RoomManager.Instance?.UdpBroadcastToGuests(data, packFunc, type);
+        => RoomManager.Instance?.UdpBroadcastToGuests(data, pack, type);
 
-    public static void SendToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public static void SendToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
-        => RoomManager.Instance?.UdpSendToGuest(playerId, data, packFunc, type);
+        => RoomManager.Instance?.UdpSendToGuest(playerId, data, pack, type);
 
-    public static void SendReliableToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public static void SendReliableToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
-        => RoomManager.Instance?.UdpSendReliableToGuest(playerId, data, packFunc, type);
+        => RoomManager.Instance?.UdpSendReliableToGuest(playerId, data, pack, type);
 
-    public static void BroadcastReliableToGuests<TTable, TObj>(int excludeId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public static void BroadcastReliableToGuests<TTable, TObj>(int skipPlayerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
-        => RoomManager.Instance?.UdpBroadcastReliableToGuests(data, packFunc, type, excludeId);
+        => RoomManager.Instance?.UdpBroadcastReliableToGuests(data, pack, type, skipPlayerId);
 
-    public static void BroadcastReliableToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public static void BroadcastReliableToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
-        => RoomManager.Instance?.UdpBroadcastReliableToGuests(data, packFunc, type);
+        => RoomManager.Instance?.UdpBroadcastReliableToGuests(data, pack, type);
 
-    public static ArraySegment<byte> BuildSegment<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public static ArraySegment<byte> BuildSegment<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
     {
         _builder.Clear();
-        var innerOffset = packFunc(_builder, data);
+        var innerOffset = pack(_builder, data);
         return Build(_builder, type, innerOffset.Value);
     }
 
@@ -68,4 +68,3 @@ public static class PacketBuilder
         return new ArraySegment<byte>(sendBuffer);
     }
 }
-

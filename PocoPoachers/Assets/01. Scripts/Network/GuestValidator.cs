@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public static class NetworkPlayerAuthority
+public static class GuestValidator
 {
-    public static bool TryGetGuestGun(int guestId, out GunBase gun)
+    public static bool TryGetGuestWeapon(int guestId, out GunBase gun)
     {
         gun = null;
         if (!ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var worldObj))
@@ -11,20 +11,35 @@ public static class NetworkPlayerAuthority
         var mount = worldObj.GetComponent<WeaponMount>();
         if (mount == null) return false;
 
-        for (int i = 0; i < 2; i++)
+        gun = mount.GetActiveGun();
+        return gun != null;
+    }
+
+    public static float GetGuestItemMaxDurability(int guestId, int itemUid, int itemId)
+    {
+        if (itemUid == 0) return 1f;
+        if (!ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var worldObj))
+            return 1f;
+
+        var mount = worldObj.GetComponent<WeaponMount>();
+        if (mount != null)
         {
-            var g = mount.GetGun(i);
-            if (g != null)
+            for (int i = 0; i < 2; i++)
             {
-                gun = g;
-                return true;
+                var gun = mount.GetGun(i);
+                if (gun != null && gun.Uid == itemUid)
+                    return gun.MaxDurability;
             }
         }
 
-        return false;
+        var armor = worldObj.GetComponent<ArmorMount>()?.GetArmor();
+        if (armor != null && armor.Uid == itemUid)
+            return armor.MaxDurability;
+
+        return 1f;
     }
 
-    public static bool GuestOwnsItemUid(int guestId, int itemUid)
+    public static bool GuestHasItem(int guestId, int itemUid)
     {
         if (itemUid == 0) return false;
         if (!ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var worldObj))
@@ -46,7 +61,7 @@ public static class NetworkPlayerAuthority
         return false;
     }
 
-    public static float SanitizeGuestHp(StatBase stat, float hp, float maxHp)
+    public static float ClampGuestHp(StatBase stat, float hp, float maxHp)
     {
         maxHp = Mathf.Max(maxHp, 1f);
         hp = Mathf.Clamp(hp, 0f, maxHp);

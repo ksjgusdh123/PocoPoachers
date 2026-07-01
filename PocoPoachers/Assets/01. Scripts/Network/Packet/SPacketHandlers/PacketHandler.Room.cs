@@ -1,10 +1,10 @@
-﻿public static partial class PacketHandlers
+public static partial class PacketHandlers
 {
     public static void OnS_CreateRoom(FlatPacket root)
     {
-        var pkt = root.TypeAsS_CreateRoom();
-        string code = pkt.SessionCode ?? string.Empty;
-        bool success = pkt.Success;
+        var packet = root.TypeAsS_CreateRoom();
+        string code = packet.SessionCode ?? string.Empty;
+        bool success = packet.Success;
 
         MainThreadDispatcher.Enqueue(() => {
             if (success)
@@ -15,24 +15,24 @@
             }
             else
             {
-                RoomManager.Instance?.HandleFailure("방 생성에 실패했습니다.");
+                RoomManager.Instance?.HandleFailure("\ubc29 \uc0dd\uc131\uc5d0 \uc2e4\ud328\ud588\uc2b5\ub2c8\ub2e4.");
             }
         });
     }
 
     public static void OnS_JoinRoom(FlatPacket root)
     {
-        var pkt = root.TypeAsS_JoinRoom();
-        bool success = pkt.Success;
-        NetInfoT hostInfo = pkt.HostInfo.HasValue ? pkt.HostInfo.Value.UnPack() : null;
+        var packet = root.TypeAsS_JoinRoom();
+        bool success = packet.Success;
+        NetInfoT hostInfo = packet.HostInfo.HasValue ? packet.HostInfo.Value.UnPack() : null;
 
         MainThreadDispatcher.Enqueue(() =>
         {
             JoinCodeUI.Instance?.HandleJoinRoom(success);
             if (!success || hostInfo == null)
-                RoomManager.Instance?.HandleFailure("입장 실패");
+                RoomManager.Instance?.HandleFailure("\uc785\uc7a5 \uc2e4\ud328");
             else
-                RoomManager.Instance?.ConnectToGuest(hostInfo);
+                RoomManager.Instance?.StartUdpPunch(hostInfo);
         });
     }
 
@@ -40,13 +40,13 @@
     {
         if (!RoomManager.IsHost) return;
 
-        var pkt = root.TypeAsS_GuestJoined();
-        NetInfoT guestInfo = pkt.Info.HasValue ? pkt.Info.Value.UnPack() : null;
+        var packet = root.TypeAsS_GuestJoined();
+        NetInfoT guestInfo = packet.Info.HasValue ? packet.Info.Value.UnPack() : null;
 
         MainThreadDispatcher.Enqueue(() =>
         {
             if (guestInfo != null)
-                RoomManager.Instance?.ConnectToGuest(guestInfo);
+                RoomManager.Instance?.StartUdpPunch(guestInfo);
         });
     }
 }

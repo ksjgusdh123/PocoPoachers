@@ -4,17 +4,17 @@ public static partial class PacketHandlers
 {
     public static void OnH_ItemSpawn(FlatPacket root)
     {
-        var pkt = root.TypeAsH_ItemSpawn();
-        int uid = pkt.Uid;
-        int typeId = pkt.TypeId;
-        float x = pkt.Pos?.X ?? 0f;
-        float y = pkt.Pos?.Y ?? 0f;
-        float z = pkt.Pos?.Z ?? 0f;
+        var packet = root.TypeAsH_ItemSpawn();
+        int uid = packet.Uid;
+        int typeId = packet.TypeId;
+        float x = packet.Pos?.X ?? 0f;
+        float y = packet.Pos?.Y ?? 0f;
+        float z = packet.Pos?.Z ?? 0f;
         Vector3 pos = new Vector3(x, y, z);
-        float rotation = pkt.Rotation;
-        int[] item_ids = pkt.GetItemIdsArray();
-        int[] item_counts = pkt.GetItemCountArray();
-        int[] item_uids = pkt.GetItemUidsArray();
+        float rotation = packet.Rotation;
+        int[] item_ids = packet.GetItemIdsArray();
+        int[] item_counts = packet.GetItemCountArray();
+        int[] item_uids = packet.GetItemUidsArray();
 
         MainThreadDispatcher.Enqueue(() =>
         {
@@ -25,8 +25,8 @@ public static partial class PacketHandlers
 
     public static void OnH_ItemDespawn(FlatPacket root)
     {
-        var pkt = root.TypeAsH_ItemDespawn();
-        int uid = pkt.Uid;
+        var packet = root.TypeAsH_ItemDespawn();
+        int uid = packet.Uid;
 
         MainThreadDispatcher.Enqueue(() =>
         {
@@ -34,70 +34,70 @@ public static partial class PacketHandlers
         });
     }
 
-    // 낙관적 업데이트 적용 후 결과 수신 — 실패 시만 롤백
+    // H_ItemGainResult failure: roll back optimistic local apply
     public static void OnH_ItemGainResult(FlatPacket root)
     {
-        var pkt = root.TypeAsH_ItemGainResult();
-        if (pkt.Success) return; // 이미 로컬에 적용됨
+        var packet = root.TypeAsH_ItemGainResult();
+        if (packet.Success) return; // already applied locally
 
-        var itemData = ItemTable.Instance.Get(pkt.ItemTypeId);
+        var itemData = ItemTable.Instance.Get(packet.ItemTypeId);
         if (itemData == null) return;
 
         var playerInv = FindLocalInventory();
-        var om = ObjectManager.Instance;
-        Inventory boxInv = null;
-        if (om != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
-            boxInv = boxObj.GetComponent<Inventory>();
+        var objectManager = ObjectManager.Instance;
+        Inventory boxInventory = null;
+        if (objectManager != null && objectManager.TryGet(ObjectKind.ItemBox, packet.BoxUid, out var boxObj))
+            boxInventory = boxObj.GetComponent<Inventory>();
 
-        if (pkt.Amount > 0)
+        if (packet.Amount > 0)
         {
-            // 플레이어가 가져간 것 롤백: 플레이어에서 제거, 박스로 반환
-            playerInv?.RemoveItemAtSlot(pkt.PlayerSlotIndex, itemData, pkt.Amount);
-            boxInv?.AddItemAtSlot(pkt.BoxSlotIndex, itemData, pkt.Amount, pkt.ItemUid);
+            // rollback take: remove from player, return to box
+            playerInv?.RemoveItemAtSlot(packet.PlayerSlotIndex, itemData, packet.Amount);
+            boxInventory?.AddItemAtSlot(packet.BoxSlotIndex, itemData, packet.Amount, packet.ItemUid);
         }
         else
         {
-            // 플레이어가 넣은 것 롤백: 박스에서 제거, 플레이어로 반환
-            boxInv?.RemoveItemAtSlot(pkt.BoxSlotIndex, itemData, -pkt.Amount);
-            playerInv?.AddItemAtSlot(pkt.PlayerSlotIndex, itemData, -pkt.Amount, pkt.ItemUid);
+            // rollback place: remove from box, return to player
+            boxInventory?.RemoveItemAtSlot(packet.BoxSlotIndex, itemData, -packet.Amount);
+            playerInv?.AddItemAtSlot(packet.PlayerSlotIndex, itemData, -packet.Amount, packet.ItemUid);
         }
     }
 
     public static void OnH_ItemBoxUpdate(FlatPacket root)
     {
-        var pkt = root.TypeAsH_ItemBoxUpdate();
+        var packet = root.TypeAsH_ItemBoxUpdate();
 
-        var om = ObjectManager.Instance;
-        if (om == null || !om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj)) return;
+        var objectManager = ObjectManager.Instance;
+        if (objectManager == null || !objectManager.TryGet(ObjectKind.ItemBox, packet.BoxUid, out var boxObj)) return;
 
-        var boxInv = boxObj.GetComponent<Inventory>();
-        var itemData = ItemTable.Instance.Get(pkt.ItemTypeId);
-        if (boxInv == null || itemData == null) return;
+        var boxInventory = boxObj.GetComponent<Inventory>();
+        var itemData = ItemTable.Instance.Get(packet.ItemTypeId);
+        if (boxInventory == null || itemData == null) return;
 
-        if (pkt.Amount > 0)
+        if (packet.Amount > 0)
         {
-            int slotIndex = pkt.SlotIndex >= 0 ? pkt.SlotIndex : boxInv.CanAddItem(itemData, pkt.Amount);
-            if (slotIndex >= 0) boxInv.AddItemAtSlot(slotIndex, itemData, pkt.Amount, pkt.ItemUid);
+            int slotIndex = packet.SlotIndex >= 0 ? packet.SlotIndex : boxInventory.CanAddItem(itemData, packet.Amount);
+            if (slotIndex >= 0) boxInventory.AddItemAtSlot(slotIndex, itemData, packet.Amount, packet.ItemUid);
         }
         else
         {
-            int slotIndex = pkt.SlotIndex >= 0 ? pkt.SlotIndex : boxInv.FindItemSlotIndex(itemData);
-            if (slotIndex >= 0) boxInv.RemoveItemAtSlot(slotIndex, itemData, -pkt.Amount);
+            int slotIndex = packet.SlotIndex >= 0 ? packet.SlotIndex : boxInventory.FindItemSlotIndex(itemData);
+            if (slotIndex >= 0) boxInventory.RemoveItemAtSlot(slotIndex, itemData, -packet.Amount);
         }
     }
 
     public static void OnH_ConsumeItemResult(FlatPacket root)
     {
-        var pkt = root.TypeAsH_ConsumeItemResult();
+        var packet = root.TypeAsH_ConsumeItemResult();
         int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
-        if (pkt.PlayerId == myId) return;
+        if (packet.PlayerId == myId) return;
 
-        var itemData = ItemTable.Instance.Get(pkt.ItemId);
+        var itemData = ItemTable.Instance.Get(packet.ItemId);
         if (itemData == null) return;
 
         MainThreadDispatcher.Enqueue(() =>
         {
-            if (!ObjectManager.Instance.TryGet(ObjectKind.Player, pkt.PlayerId, out var worldObj)) return;
+            if (!ObjectManager.Instance.TryGet(ObjectKind.Player, packet.PlayerId, out var worldObj)) return;
             if (worldObj.GetComponent<RemotePlayerStat>() is not RemotePlayerStat remote) return;
             remote.ApplyConsumableEffect(itemData);
         });

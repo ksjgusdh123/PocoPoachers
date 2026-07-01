@@ -4,12 +4,12 @@ public static partial class PacketHandlers
 {
     public static void OnH_StatSync(FlatPacket root)
     {
-        var pkt = root.TypeAsH_StatSync();
+        var packet = root.TypeAsH_StatSync();
 
-        var om = ObjectManager.Instance;
-        if (om == null) return;
+        var objectManager = ObjectManager.Instance;
+        if (objectManager == null) return;
 
-        if (!om.TryGet(ObjectKind.Player, pkt.PlayerId, out var worldObj)) return;
+        if (!objectManager.TryGet(ObjectKind.Player, packet.PlayerId, out var worldObj)) return;
 
         var stat = worldObj.GetComponent<StatBase>();
         if (stat == null)
@@ -17,10 +17,10 @@ public static partial class PacketHandlers
 
         if (stat is RemotePlayerStat remote)
         {
-            remote.SetFromNetwork(pkt.Hp, pkt.MaxHp, pkt.Stamina, pkt.Battery, pkt.Defense);
+            remote.ApplyNetworkStats(packet.Hp, packet.MaxHp, packet.Stamina, packet.Battery, packet.Defense);
             return;
         }
 
-        stat.SetHpFromNetwork(pkt.Hp, pkt.MaxHp, 0);
+        stat.SetHpFromNetwork(packet.Hp, packet.MaxHp, 0);
     }
 }

@@ -1,18 +1,18 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public static partial class PacketHandlers
 {
     public static void OnG_Shoot(FlatPacket root)
     {
-        var pkt = root.TypeAsG_Shoot();
-        if (!RoomManager.TryResolveGuestSender(pkt.PlayerId, allowAutoRegister: false, out int guestId))
+        var packet = root.TypeAsG_Shoot();
+        if (!RoomManager.TryGetGuestIdFromPacket(packet.PlayerId, autoRegister: false, out int guestId))
             return;
 
-        if (!NetworkPlayerAuthority.TryGetGuestGun(guestId, out var gun) || !gun.TryAuthorizeHostShot())
+        if (!GuestValidator.TryGetGuestWeapon(guestId, out var gun) || !gun.TryAuthorizeHostShot())
             return;
 
-        Vec3? originRaw = pkt.Origin;
-        Vec3? dirRaw    = pkt.Direction;
+        Vec3? originRaw = packet.Origin;
+        Vec3? dirRaw    = packet.Direction;
 
         Vector3 origin    = originRaw.HasValue ? new Vector3(originRaw.Value.X, originRaw.Value.Y, originRaw.Value.Z) : Vector3.zero;
         Vector3 direction = dirRaw.HasValue    ? new Vector3(dirRaw.Value.X,    dirRaw.Value.Y,    dirRaw.Value.Z)    : Vector3.forward;
