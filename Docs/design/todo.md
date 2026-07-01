@@ -83,14 +83,14 @@ ID 범위 규칙과 실제 데이터 불일치. 상세: [datatable/id-ranges.md]
 
 ### 기능 버그
 
-- [ ] **게스트 입장 시 장비 내구도 미전달** (`RoomManager.cs:314 SyncLocalEquipToGuest`) — 실제 ItemUid 포함 + 내구도값 즉시 전송
-- [ ] **게스트 입장 시 아이템 박스 ItemUid 누락** (`RoomManager.cs:303 SyncToGuest`) — H_ItemSpawnT의 ItemUids 필드 채워서 전송
-- [ ] **게스트 입장 시 방어구/가방 장착 상태 누락** (`RoomManager.cs:314`) — ArmorMount·BagMount 슬롯 H_Equip 추가
-- [ ] **게스트 입장 시 호스트 HP/스탯 초기값 누락** (`RoomManager.cs:260`) — SyncToGuest에서 H_StatSyncT 즉시 전송
-- [ ] **장비 능력치 미동기화** — MaxHp 보너스·이동속도 배수 원격 미적용
-- [ ] **Sandbag 파괴 미동기화** (`Sandbag.cs:16 HandleDie`) — H_SandbagDestroy 신규 패킷 브로드캐스트
-- [ ] **쉘터 업그레이드 미동기화** (`ShelterManager.cs:44 ApplyLevel`) — H_ShelterLevel 신규 패킷 브로드캐스트
-- [ ] **H_ConsumeItemResult 핸들러 비어있음** (`PacketHandler.Item.cs:89`) — 원격 플레이어 소비 연출 재생
+- [x] **게스트 입장 시 장비 내구도 미전달** (`RoomManager.SendHostEquipToGuest`) — ItemUid + H_Durability 전송
+- [x] **게스트 입장 시 아이템 박스 ItemUid 누락** (`RoomManager.SendWorldStateToGuest`) — H_ItemSpawnT.ItemUids 전송
+- [x] **게스트 입장 시 방어구/가방 장착 상태 누락** (`SendHostEquipToGuest`) — ArmorMount·BagMount H_Equip 포함
+- [x] **게스트 입장 시 호스트 HP/스탯 초기값 누락** (`SendAllPlayerStatsToGuest`) — late join 시 H_StatSync 즉시 전송
+- [x] **장비 능력치 미동기화** — `ApplyRemoteArmorStats`, `ApplyNetworkStats`로 MaxHp·방어력 반영
+- [x] **Sandbag 파괴 미동기화** (`Sandbag.HandleDie`) — H_SandbagDestroy 브로드캐스트
+- [x] **쉘터 업그레이드 미동기화** (`RoomSync.ShelterLevel`) — H_ShelterLevel 브로드캐스트
+- [x] **H_ConsumeItemResult 핸들러 비어있음** (`OnH_ConsumeItemResult`) — `ApplyConsumableEffect` 연동
 
 ### 비주얼
 

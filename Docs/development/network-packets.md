@@ -68,7 +68,8 @@ flowchart TB
 | `SendToMaster` | `NetworkManager.Session` (TCP) |
 | `SendToHost` | `RoomManager.UdpSendToHost` |
 | `SendToGuest` | `RoomManager.UdpSendToGuest` |
-| `BroadcastToGuests` | 모든 게스트 UDP |
+| `SendReliableToGuest` | `RoomManager.UdpSendReliableToGuest` (재전송·ACK) |
+| `BroadcastToGuests` | 모든 게스트 UDP (`skipPlayerId`로 특정 게스트 제외 가능) |
 
 게임 패킷 송신 진입점: `RoomSync` (이동·사격·장착·아이템·스탯·적)
 
@@ -88,13 +89,15 @@ Connector → Session.OnReceived → PacketManager.HandlePacket
 
 ```
 UdpSession (백그라운드 스레드)
-  → RoomManager.OnUdpReceived
+  → RoomManager.OnUdpReceived / HandleReliablePacket
   → MainThreadDispatcher.Enqueue
   → PacketManager.HandlePacket
 ```
 
 UDP 수신은 **반드시 메인 스레드**에서 핸들러 실행.  
-`OnUdpReceived`에서 `_lastGuestId` / `_lastGuestEp`를 잠시 설정해 `G_*` 핸들러가 요청 게스트를 식별.
+`OnUdpReceived` / `HandleReliablePacket`에서 `CurrentUdpSenderId` / `CurrentSenderEndPoint`를 잠시 설정하고, `G_*` 호스트 핸들러는 `TryGetGuestIdFromPacket`으로 게스트 ID를 확인한다.
+
+신뢰 전송: `UdpReliable` (시그널 `0x03`/`0x04`). `H_ItemGainResult`, `H_LoadScene` 등 중요 패킷에 사용.
 
 ### 디스패치 (`PacketManager`)
 
@@ -116,14 +119,14 @@ UDP 수신은 **반드시 메인 스레드**에서 핸들러 실행.
 1. `RoomManager.StartAsHost()` → STUN으로 공인 IP/포트 획득
 2. TCP `C_CreateRoom` + `NetInfo`
 3. `S_CreateRoom` — 세션 코드(6자리) 수신
-4. 게스트 참가 시 `S_GuestJoined` → UDP 홀펀칭 (`UdpHolePuncher`)
+4. 게스트 참가 시 `S_GuestJoined` → `StartUdpPunch` (`UdpHolePuncher`)
 5. `H_GuestJoined` 브로드캐스트
 
 ### 게스트
 
 1. `RoomManager.StartAsGuest(code)`
 2. TCP `C_JoinRoom`
-3. 호스트 NetInfo 수신 → UDP 펀칭 → `OnGameStarted`
+3. 호스트 NetInfo 수신 → `StartUdpPunch` → `OnGameStarted`
 
 ### 로컬 폴백
 
@@ -200,7 +203,8 @@ UDP 수신은 **반드시 메인 스레드**에서 핸들러 실행.
 
 - `PacketManager`가 `H_Move`/`G_Move` 외 수신 시 로그 출력
 - UDP 핸들러에서 `UnityEngine.Object` 접근 전 `MainThreadDispatcher` 사용
-- `G_*` 핸들러: `if (!RoomManager.IsHost) return;` 패턴 확인
+- `G_*` 핸들러: `if (!RoomManager.IsHost) return;` 및 `TryGetGuestIdFromPacket` 패턴 확인
+- 게스트 검증: `GuestValidator` (`ClampGuestHp`, `GuestHasItem`, `TryGetGuestWeapon`)
 - 싱글 테스트: `StartLocalHost()` 후 패킷 없이 동작하는지 확인
 
 관련: [multiplayer.md](../design/multiplayer.md) · [code-generators.md](code-generators.md)

@@ -18,10 +18,12 @@ P2P 아키텍처 개요, 입장 흐름, 동기화 현황. 패킷 구조는 [netw
 | 클래스 | 역할 |
 |--------|------|
 | `NetworkManager` | TCP 연결, 로그인, RTT, DontDestroyOnLoad |
-| `RoomManager` | 호스트/게스트, 세션 코드, 게스트 동기화, 타임아웃 30초 |
+| `RoomManager` | 호스트/게스트, 세션 코드, late join 동기화 (`SendWorldStateToGuest`), 타임아웃 30초 |
 | `RoomSync` | 이동·사격·장착·내구도·스탯·적·아이템 패킷 전송 |
 | `ObjectManager` | 원격 플레이어·아이템 박스 스폰/디스폰 |
-| `RemotePlayerStat` | 원격 플레이어 HP 동기화 |
+| `RemotePlayerStat` | 원격 플레이어 HP·스탯 동기화 (`ApplyNetworkStats`) |
+| `GuestValidator` | 호스트 측 게스트 패킷 검증 (HP·장비 소유·무기) |
+| `UdpReliable` | UDP 신뢰 전송 (seq·ACK·재전송) |
 
 ## 싱글플레이
 
@@ -40,7 +42,7 @@ P2P 아키텍처 개요, 입장 흐름, 동기화 현황. 패킷 구조는 [netw
 
 1. TCP 로그인
 2. `JoinCodeUI`에서 6자리 코드 입력 → 방 참가
-3. UDP 홀펀칭 후 게임 세션 시작
+3. UDP 홀펀칭 (`StartUdpPunch`) 후 게임 세션 시작
 
 ## 동기화 패킷 (FlatBuffer)
 
@@ -81,21 +83,31 @@ P2P 아키텍처 개요, 입장 흐름, 동기화 현황. 패킷 구조는 [netw
 
 | 항목 | 위치 | 설명 |
 |------|------|------|
-| 게스트 입장 시 장비 내구도 미전달 | `RoomManager.cs:314` | ItemUid=0 전달 → H_Durability 적용 안됨 |
-| 게스트 입장 시 아이템 박스 ItemUid 누락 | `RoomManager.cs:303` | H_ItemSpawnT의 ItemUids 필드 미전송 |
-| 게스트 입장 시 방어구/가방 장착 상태 누락 | `RoomManager.cs:314` | WeaponMount 2슬롯만 전송, ArmorMount·BagMount 누락 |
-| 게스트 입장 시 호스트 HP/스탯 초기값 누락 | `RoomManager.cs:260` | 2초 주기 StatSync 전까지 기본값 표시 |
-| 장비 능력치 미동기화 | — | MaxHp 보너스·이동속도 배수 로컬만 적용 (defense 제외) |
-| Sandbag 파괴 미동기화 | `Game/Props/Sandbag.cs:16` | 게스트 화면에서 Sandbag 파괴 안됨 |
-| 쉘터 업그레이드 미동기화 | `ShelterManager.cs:44` | 행성 잠금 해제 조건이 양측에서 다름 |
-| H_ConsumeItemResult 핸들러 비어있음 | `PacketHandler.Item.cs:89` | 소비 아이템 VFX/사운드/애니메이션 원격 미재생 |
+| 총기 발사 사운드 미동기화 | `PacketHandler.Combat.cs` | OnH_Shoot에서 SFX 재생 없음 |
 
 ### 비주얼/피드백
 
 | 항목 | 위치 | 설명 |
 |------|------|------|
-| 총기 발사 사운드 미동기화 | `PacketHandler.Combat.cs` | OnH_Shoot에서 SFX 재생 없음 |
 | 발자국 사운드 미전달 | — | — |
+
+### UX
+
+| 항목 | 위치 | 설명 |
+|------|------|------|
+| 게스트 이탈 시 호스트 재입장 대기 | `IngameMenuUI` | 미처리 |
+| 플레이어 이름 UI 입력 | `NetworkManager` | 현재 `"Player"` 고정 |
+
+### late join 동기화 (구현됨)
+
+게스트 입장 시 `SendWorldStateToGuest`가 다음을 전송한다.
+
+- `H_GuestJoined`, `SendHostEquipToGuest` (무기·방어구·가방 + 내구도)
+- `H_ItemSpawn` (`ItemUids` 포함), `SendAllPlayerStatsToGuest`
+- `H_ShelterLevel`, `EnemyNetSync.SendAllToGuest`
+
+원격 방어구 스탯은 `ApplyRemoteArmorStats` + `ApplyNetworkStats`로 동기화.  
+Sandbag 파괴는 `H_SandbagDestroy`, 쉘터 업그레이드는 `RoomSync.ShelterLevel`로 브로드캐스트.
 
 ## 제한 사항
 

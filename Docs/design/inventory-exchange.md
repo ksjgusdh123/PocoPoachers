@@ -166,7 +166,7 @@ sequenceDiagram
 ## 주의사항 (버그 예방)
 
 1. **플레이어 ↔ 박스**에 `InvokeLocalSwap` 사용 금지 — 반드시 `InvokeNetwork*`
-2. `G_ItemGain` 호스트 핸들러는 `RoomManager.LastGuestId`로 요청자 식별
+2. `G_ItemGain` 호스트 핸들러는 `RoomManager.TryGetGuestIdFromPacket`으로 요청 게스트를 식별 (`CurrentUdpSenderId` / `CurrentSenderEndPoint` 사용)
 3. `itemUid == 0`인 아이템은 내구도 동기화 대상 아님 (`RoomSync.Durability`)
 4. 창고 드래그는 `IsBox == false` 양쪽이므로 항상 로컬 — 세이브 타이밍(`OnInteractExit`) 확인
 
