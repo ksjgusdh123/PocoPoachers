@@ -15,6 +15,7 @@ public abstract class GunBase : EquippableItemBase
     protected GameObject _bulletPrefab;
 
     public GunStatData Stat => _stat;
+    public float DurabilityPerShot => _durabilityDecreasePerShot;
     public Transform Muzzle => _muzzle;
     public int CurrentAmmo => _currentAmmo;
     public bool IsReloading => _isReloading;
@@ -216,6 +217,17 @@ public abstract class GunBase : EquippableItemBase
         OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
         if (_isLocalPlayerOwner) OnReloadEnded?.Invoke();
         OnReloadComplete?.Invoke(actual);
+    }
+
+    public bool TryAuthorizeHostShot()
+    {
+        if (_isReloading || Time.time < _nextFireTime) return false;
+        if (_currentDurability <= 0f || _currentAmmo <= 0) return false;
+
+        _currentAmmo--;
+        OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
+        _nextFireTime = Time.time + 60f / _stat.Rpm;
+        return true;
     }
 
     private void OnDrawGizmos()

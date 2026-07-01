@@ -8,6 +8,9 @@ public static partial class PacketHandlers
         if (!RoomManager.TryResolveGuestSender(pkt.PlayerId, allowAutoRegister: false, out int guestId))
             return;
 
+        if (!NetworkPlayerAuthority.TryGetGuestGun(guestId, out var gun) || !gun.TryAuthorizeHostShot())
+            return;
+
         Vec3? originRaw = pkt.Origin;
         Vec3? dirRaw    = pkt.Direction;
 
@@ -15,17 +18,17 @@ public static partial class PacketHandlers
         Vector3 direction = dirRaw.HasValue    ? new Vector3(dirRaw.Value.X,    dirRaw.Value.Y,    dirRaw.Value.Z)    : Vector3.forward;
         if (direction == Vector3.zero) direction = Vector3.forward;
 
-        float bulletSpeed = pkt.BulletSpeed;
-        float damage      = pkt.Damage;
-        float maxRange    = pkt.MaxRange;
-        float soundRange  = pkt.SoundRange;
+        float bulletSpeed = gun.Stat.BulletSpeed;
+        float damage      = gun.Stat.Damage;
+        float maxRange    = gun.Stat.BulletRange;
+        float soundRange  = gun.Stat.SoundRange;
 
-        if (NetworkPlayerAuthority.TryGetGuestGun(guestId, out var gun) && gun.Stat != null)
+        if (gun.Uid != 0)
         {
-            bulletSpeed = gun.Stat.BulletSpeed;
-            damage      = gun.Stat.Damage;
-            maxRange    = gun.Stat.BulletRange;
-            soundRange  = gun.Stat.SoundRange;
+            var (current, max) = WorldEquipmentManager.ApplyChange(gun.Uid, gun.ItemId, -gun.DurabilityPerShot, gun.MaxDurability);
+            gun.SetDurability(current);
+            PacketBuilder.BroadcastToGuests(new H_DurabilityT { ItemUid = gun.Uid, Current = current, Max = max },
+                H_Durability.Pack, PacketType.H_Durability);
         }
 
         var pool = BulletPool.Instance;

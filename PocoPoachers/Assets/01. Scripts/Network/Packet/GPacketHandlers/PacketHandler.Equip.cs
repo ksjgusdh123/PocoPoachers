@@ -13,6 +13,7 @@ public static partial class PacketHandlers
         if (!ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var worldObj)) return;
 
         var spawned = ApplyRemoteEquip(worldObj, itemId, itemUid, slotIndex);
+        SyncRemoteArmorDefense(worldObj, guestId, itemId, slotIndex, broadcast: true);
 
         if (RoomManager.IsHost)
         {

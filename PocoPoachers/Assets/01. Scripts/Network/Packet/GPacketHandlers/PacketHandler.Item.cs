@@ -17,12 +17,21 @@ public static partial class PacketHandlers
         if (om != null && itemData != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
         {
             var boxInv = boxObj.GetComponent<Inventory>();
-            if (boxInv != null)
+            if (boxInv != null && pkt.Amount > 0)
             {
                 if (pkt.IsPlayerGained)
                 {
-                    boxInv.RemoveItemAtSlot(pkt.RemovedSlotIndex, itemData, pkt.Amount);
-                    success = true;
+                    if (pkt.RemovedSlotIndex >= 0 && pkt.RemovedSlotIndex < boxInv.Slots.Count)
+                    {
+                        var slot = boxInv.Slots[pkt.RemovedSlotIndex];
+                        if (!slot.IsEmpty
+                            && slot.ItemData?.Id == pkt.ItemTypeId
+                            && slot.Amount >= pkt.Amount)
+                        {
+                            boxInv.RemoveItemAtSlot(pkt.RemovedSlotIndex, itemData, pkt.Amount);
+                            success = true;
+                        }
+                    }
                 }
                 else
                 {

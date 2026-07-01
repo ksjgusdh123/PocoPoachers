@@ -456,6 +456,7 @@ public class RoomManager : Singleton<RoomManager>
                 Defense  = defense,
             }, H_StatSync.Pack, PacketType.H_StatSync);
         }
+    }
 
     private void SyncLocalEquipToGuest(int guestId)
     {
