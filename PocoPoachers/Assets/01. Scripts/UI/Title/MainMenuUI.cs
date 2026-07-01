@@ -35,7 +35,6 @@ public class MainMenuUI : MonoBehaviour
     {
         SoundManager.GetInstance().PlayBgm("bgm_main");
 
-        RoomManager.Instance.OnGameStarted    += OnGameStarted;
         RoomManager.Instance.OnRoomJoinFailed += OnRoomJoinFailed;
         SaveSlotButtonUI.OnSlotSelected       += OnSaveSlotSelected;
 
@@ -53,17 +52,8 @@ public class MainMenuUI : MonoBehaviour
     void OnDestroy()
     {
         if (RoomManager.Instance != null)
-        {
-            RoomManager.Instance.OnGameStarted    -= OnGameStarted;
             RoomManager.Instance.OnRoomJoinFailed -= OnRoomJoinFailed;
-        }
         SaveSlotButtonUI.OnSlotSelected -= OnSaveSlotSelected;
-    }
-
-    void OnGameStarted()
-    {
-        GameManager.Instance.SetSpawnId(SpawnId.FromTitle);
-        SceneLoader.Instance.LoadShelterScene();
     }
 
     void OnClickNewGame()

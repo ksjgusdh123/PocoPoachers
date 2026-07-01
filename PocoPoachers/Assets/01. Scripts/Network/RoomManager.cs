@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class RoomManager : Singleton<RoomManager>
 {
@@ -15,12 +16,11 @@ public class RoomManager : Singleton<RoomManager>
 
     public static bool IsHost => Instance != null && Instance._isHost;
     public static bool HasGuests => Instance != null && Instance._hasGuests;
-    public static int PacketSenderId => Instance != null ? Instance._packetSenderId : 0;
-    public static int LastGuestId => PacketSenderId;
+    public static int CurrentUdpSenderId => Instance != null ? Instance._udpSenderId : 0;
 
     public bool _hasGuests => _guests.Count > 0;
     private bool _isHost = true;
-    int _packetSenderId;
+    int _udpSenderId;
 
     public string SessionCode { get; set; }
 
@@ -49,7 +49,7 @@ public class RoomManager : Singleton<RoomManager>
     readonly ConcurrentDictionary<int, IPEndPoint>     _guests        = new();
     readonly ConcurrentDictionary<int, UdpHolePuncher> _punchers      = new();
     readonly ConcurrentDictionary<int, long>           _guestLastSeen = new();
-    readonly ConcurrentDictionary<int, NetInfoT>       _pendingGuests = new();
+    readonly ConcurrentDictionary<int, NetInfoT>       _waitingGuests = new();
     long _hostLastSeen;
 
     const long TIMEOUT_MS = 30_000L;
@@ -60,6 +60,15 @@ public class RoomManager : Singleton<RoomManager>
     {
         base.Awake();
         DontDestroyOnLoad(gameObject);
+        OnGameStarted += LoadShelterIfOnTitle;
+    }
+
+    void LoadShelterIfOnTitle()
+    {
+        if (SceneManager.GetActiveScene().name != SceneName.Title) return;
+
+        GameManager.Instance?.SetSpawnId(SpawnId.FromTitle);
+        SceneLoader.Instance?.LoadShelterScene();
     }
 
     public void StartAsHost() => CreateOrJoinRoom(true, null);
@@ -72,20 +81,20 @@ public class RoomManager : Singleton<RoomManager>
         _guests.Clear();
         _punchers.Clear();
         _guestLastSeen.Clear();
-        _pendingGuests.Clear();
+        _waitingGuests.Clear();
         _hostLastSeen = 0;
         NotifyGameStarted();
     }
 
     private void CreateOrJoinRoom(bool isHost, string code)
     {
-        TearDownUdpSession();
+        CloseUdpSession();
 
         _isHost = isHost;
         _memberCount = 1;
         _guests.Clear();
         _guestLastSeen.Clear();
-        _pendingGuests.Clear();
+        _waitingGuests.Clear();
         _hostLastSeen = 0;
         _hostEp = null;
 
@@ -116,13 +125,19 @@ public class RoomManager : Singleton<RoomManager>
         });
     }
 
-    public void ConnectToGuest(NetInfoT target)
+    public void StartUdpPunch(NetInfoT target)
     {
+        if (_udpSession == null)
+        {
+            HandleFailure("네트워크 초기화가 끝나지 않았습니다.");
+            return;
+        }
+
         int id = target.PlayerId;
         IPEndPoint ep = SelectEndPoint(target);
 
         if (_isHost)
-            RegisterPendingGuest(target);
+            RegisterWaitingGuest(target);
 
         if (!_isHost)
         {
@@ -137,13 +152,13 @@ public class RoomManager : Singleton<RoomManager>
             _guests[id] = ep;
             _guestLastSeen[id] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             _punchers.TryRemove(id, out UdpHolePuncher _);
-            _pendingGuests.TryRemove(id, out NetInfoT _);
+            _waitingGuests.TryRemove(id, out NetInfoT _);
             MainThreadDispatcher.Enqueue(() => {
                 if (_isHost)
                 {
                     OnPlayerCountChanged?.Invoke(_guests.Count + 1);
                     OnRoomJoined?.Invoke(id);
-                    SyncToGuest(id);
+                    SendWorldStateToGuest(id);
                 }
                 else
                     OnGameStarted?.Invoke();
@@ -151,80 +166,87 @@ public class RoomManager : Singleton<RoomManager>
         };
         puncher.OnFailed += (_, reason) => {
             _punchers.TryRemove(id, out _);
-            // 펀칭 타임아웃은 치명적 실패가 아님 — G_Move 수신 시 자동 등록으로 처리됨
-            Debug.LogWarning($"[RoomManager] Punch failed for {id}: {reason}");
+            if (_isHost)
+            {
+                // 호스트: 펀칭 타임아웃은 치명적 실패가 아님. G_Move 수신 시 자동 등록.
+                Debug.LogWarning($"[RoomManager] Punch failed for {id}: {reason}");
+                return;
+            }
+
+            MainThreadDispatcher.Enqueue(() =>
+                HandleFailure("호스트와 UDP 연결에 실패했습니다. 코드와 네트워크를 확인하세요."));
         };
         puncher.Start(ep);
     }
 
-    public void UdpSendToHost<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public void UdpSendToHost<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
     {
         if (_udpSession == null || _hostEp == null) return;
-        _udpSession.Send(PacketBuilder.BuildSegment(data, packFunc, type), _hostEp);
+        _udpSession.Send(PacketBuilder.BuildSegment(data, pack, type), _hostEp);
     }
 
-    public void UdpBroadcastToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type, int excludeId = -1)
+    public void UdpBroadcastToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type, int skipPlayerId = -1)
         where TTable : struct where TObj : class
     {
         if (_guests.IsEmpty || _udpSession == null) return;
-        var segment = PacketBuilder.BuildSegment(data, packFunc, type);
+        var segment = PacketBuilder.BuildSegment(data, pack, type);
         foreach (var kv in _guests)
         {
-            if (kv.Key == excludeId) continue;
+            if (kv.Key == skipPlayerId) continue;
             _udpSession.Send(segment, kv.Value);
         }
     }
 
-    public void UdpSendToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public void UdpSendToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
     {
         if (_udpSession == null || !_guests.TryGetValue(playerId, out var ep)) return;
-        _udpSession.Send(PacketBuilder.BuildSegment(data, packFunc, type), ep);
+        _udpSession.Send(PacketBuilder.BuildSegment(data, pack, type), ep);
     }
 
-    public void UdpSendReliableToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+    public void UdpSendReliableToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
     {
         if (_reliable == null || !_guests.TryGetValue(playerId, out var ep)) return;
         long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        _reliable.Send(PacketBuilder.BuildSegment(data, packFunc, type), ep, now);
+        _reliable.Send(PacketBuilder.BuildSegment(data, pack, type), ep, now);
     }
 
-    public void UdpBroadcastReliableToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type, int excludeId = -1)
+    public void UdpBroadcastReliableToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type, int skipPlayerId = -1)
         where TTable : struct where TObj : class
     {
         if (_guests.IsEmpty || _reliable == null) return;
-        var segment = PacketBuilder.BuildSegment(data, packFunc, type);
+        var segment = PacketBuilder.BuildSegment(data, pack, type);
         long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         foreach (var kv in _guests)
         {
-            if (kv.Key == excludeId) continue;
+            if (kv.Key == skipPlayerId) continue;
             _reliable.Send(segment, kv.Value, now);
         }
     }
 
-    public void DispatchReliablePacket(ArraySegment<byte> data, IPEndPoint sender)
+    public void HandleReliablePacket(ArraySegment<byte> data, IPEndPoint sender)
     {
-        int senderId = 0;
+        int guestId = 0;
         foreach (var kv in _guests)
-            if (kv.Value.Equals(sender)) { senderId = kv.Key; break; }
+            if (kv.Value.Equals(sender)) { guestId = kv.Key; break; }
 
         long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        if (_isHost && senderId != 0)
-            _guestLastSeen[senderId] = now;
-        else if (!_isHost)
+        if (_isHost && guestId != 0)
+            _guestLastSeen[guestId] = now;
+        else if (!_isHost && _hostEp != null && sender.Equals(_hostEp))
             _hostLastSeen = now;
 
-        int captured = senderId;
+        int capturedGuestId = guestId;
         IPEndPoint capturedEp = sender;
         MainThreadDispatcher.Enqueue(() =>
         {
-            _packetSenderId = captured;
-            _lastGuestEp = capturedEp;
+            _udpSenderId = capturedGuestId;
+            _currentSenderEndPoint = capturedEp;
             PacketManager.HandlePacket(data);
-            _packetSenderId = 0;
-            _lastGuestEp = null;
+            _udpSenderId = 0;
+            _currentSenderEndPoint = null;
         });
     }
 
@@ -248,75 +270,76 @@ public class RoomManager : Singleton<RoomManager>
 
     private void OnUdpReceived(ArraySegment<byte> data, IPEndPoint sender)
     {
-        int senderId = 0;
+        int guestId = 0;
         foreach (var kv in _guests)
-            if (kv.Value.Equals(sender)) { senderId = kv.Key; break; }
+            if (kv.Value.Equals(sender)) { guestId = kv.Key; break; }
 
         long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        if (_isHost && senderId != 0)
-            _guestLastSeen[senderId] = now;
-        else if (!_isHost)
+        if (_isHost && guestId != 0)
+            _guestLastSeen[guestId] = now;
+        else if (!_isHost && _hostEp != null && sender.Equals(_hostEp))
             _hostLastSeen = now;
 
-        int captured = senderId;
+        int capturedGuestId = guestId;
         IPEndPoint capturedEp = sender;
         MainThreadDispatcher.Enqueue(() =>
         {
-            _packetSenderId = captured;
-            _lastGuestEp = capturedEp;
+            _udpSenderId = capturedGuestId;
+            _currentSenderEndPoint = capturedEp;
             PacketManager.HandlePacket(data);
-            _packetSenderId = 0;
-            _lastGuestEp = null;
+            _udpSenderId = 0;
+            _currentSenderEndPoint = null;
         });
     }
 
-    public static bool TryResolveGuestSender(int claimedPlayerId, bool allowAutoRegister, out int guestId)
+    public static bool TryGetGuestIdFromPacket(int playerIdInPacket, bool autoRegister, out int guestId)
     {
         guestId = 0;
         if (!IsHost || Instance == null) return false;
 
-        int sender = PacketSenderId;
+        int sender = CurrentUdpSenderId;
         if (sender > 0)
         {
-            if (claimedPlayerId > 0 && claimedPlayerId != sender)
+            if (playerIdInPacket > 0 && playerIdInPacket != sender)
                 return false;
             guestId = sender;
             return true;
         }
 
-        if (!allowAutoRegister || claimedPlayerId <= 0)
+        if (!autoRegister || playerIdInPacket <= 0)
             return false;
 
-        if (!Instance.TryAutoRegisterGuest(claimedPlayerId))
+        if (!Instance.TryRegisterLateGuest(playerIdInPacket))
             return false;
 
-        guestId = claimedPlayerId;
+        guestId = playerIdInPacket;
         return true;
     }
 
-    IPEndPoint _lastGuestEp;
-    public static IPEndPoint LastGuestEp => Instance?._lastGuestEp;
+    IPEndPoint _currentSenderEndPoint;
+    public static IPEndPoint CurrentSenderEndPoint => Instance?._currentSenderEndPoint;
 
-    public void RegisterPendingGuest(NetInfoT info)
+    public void RegisterWaitingGuest(NetInfoT info)
     {
         if (info == null || info.PlayerId == 0) return;
-        _pendingGuests[info.PlayerId] = info;
+        _waitingGuests[info.PlayerId] = info;
     }
 
     // 펀칭 타이밍 미스로 _guests에 없는 게스트가 게임 패킷을 보낼 때 자동 등록
-    public bool TryAutoRegisterGuest(int playerId)
+    public bool TryRegisterLateGuest(int playerId)
     {
-        if (!_isHost || _guests.ContainsKey(playerId) || _lastGuestEp == null) return false;
-        if (!_pendingGuests.TryGetValue(playerId, out var expected) || !MatchesNetInfo(expected, _lastGuestEp))
+        if (!_isHost || _guests.ContainsKey(playerId) || _currentSenderEndPoint == null) return false;
+        if (!_waitingGuests.TryGetValue(playerId, out var expected) || !MatchesNetInfo(expected, _currentSenderEndPoint))
             return false;
 
-        _guests[playerId] = _lastGuestEp;
-        _pendingGuests.TryRemove(playerId, out NetInfoT _);
+        _guests[playerId] = _currentSenderEndPoint;
+        _guestLastSeen[playerId] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _waitingGuests.TryRemove(playerId, out NetInfoT _);
         if (_punchers.TryRemove(playerId, out UdpHolePuncher puncher))
             puncher.Stop();
         OnPlayerCountChanged?.Invoke(_guests.Count + 1);
         OnRoomJoined?.Invoke(playerId);
-        SyncToGuest(playerId);
+        SendWorldStateToGuest(playerId);
         return true;
     }
 
@@ -390,12 +413,12 @@ public class RoomManager : Singleton<RoomManager>
         PrivatePort = (ushort)_udpSession.LocalEndPoint.Port,
     };
 
-    private void SyncToGuest(int newGuestId)
+    private void SendWorldStateToGuest(int newGuestId)
     {
-        var om = ObjectManager.Instance;
-        if (om == null) return;
+        var objectManager = ObjectManager.Instance;
+        if (objectManager == null) return;
 
-        var infos = om?.GetAllPlayerInfos(newGuestId) ?? new List<PlayerInfoT>();
+        var infos = objectManager?.GetAllPlayerInfos(newGuestId) ?? new List<PlayerInfoT>();
 
         var localT = PlayerMovement.LocalTransform;
         if (localT != null)
@@ -417,7 +440,7 @@ public class RoomManager : Singleton<RoomManager>
             Info = new List<PlayerInfoT> { new PlayerInfoT { PlayerId = newGuestId } }
         }, H_GuestJoined.Pack, PacketType.H_GuestJoined);
 
-        SyncLocalEquipToGuest(newGuestId);
+        SendHostEquipToGuest(newGuestId);
 
         var shelterMgr = ShelterManager.GetInstance();
         if (shelterMgr != null)
@@ -427,12 +450,12 @@ public class RoomManager : Singleton<RoomManager>
 
         EnemyNetSync.SendAllToGuest(newGuestId);
 
-        foreach (var original in om.SpawnedBoxes)
+        foreach (var original in objectManager.SpawnedBoxes)
         {
             var currentItemIds   = new List<int>();
             var currentItemCounts = new List<int>();
             var currentItemUids  = new List<int>();
-            if (om.TryGet(ObjectKind.ItemBox, original.Uid, out var boxObj))
+            if (objectManager.TryGet(ObjectKind.ItemBox, original.Uid, out var boxObj))
             {
                 var inv = boxObj.GetComponent<Inventory>();
                 if (inv != null)
@@ -456,13 +479,13 @@ public class RoomManager : Singleton<RoomManager>
             }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
 
-        SyncAllPlayerStatsToGuest(newGuestId);
+        SendAllPlayerStatsToGuest(newGuestId);
     }
 
-    void SyncAllPlayerStatsToGuest(int guestId)
+    void SendAllPlayerStatsToGuest(int guestId)
     {
-        var om = ObjectManager.Instance;
-        if (om == null) return;
+        var objectManager = ObjectManager.Instance;
+        if (objectManager == null) return;
 
         var hostStat = FindFirstObjectByType<PlayerStat>();
         if (hostStat != null)
@@ -477,9 +500,9 @@ public class RoomManager : Singleton<RoomManager>
             }, H_StatSync.Pack, PacketType.H_StatSync);
         }
 
-        foreach (var kv in om.GetAllPlayerInfos(guestId))
+        foreach (var kv in objectManager.GetAllPlayerInfos(guestId))
         {
-            if (!om.TryGet(ObjectKind.Player, kv.PlayerId, out var worldObj)) continue;
+            if (!objectManager.TryGet(ObjectKind.Player, kv.PlayerId, out var worldObj)) continue;
             var stat = worldObj.GetComponent<StatBase>();
             if (stat == null) continue;
 
@@ -505,7 +528,7 @@ public class RoomManager : Singleton<RoomManager>
         }
     }
 
-    private void SyncLocalEquipToGuest(int guestId)
+    private void SendHostEquipToGuest(int guestId)
     {
         int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
 
@@ -617,7 +640,7 @@ public class RoomManager : Singleton<RoomManager>
     {
         if (!_guests.TryRemove(guestId, out IPEndPoint _)) return;
         _guestLastSeen.TryRemove(guestId, out long _);
-        _pendingGuests.TryRemove(guestId, out NetInfoT _);
+        _waitingGuests.TryRemove(guestId, out NetInfoT _);
 
         ObjectManager.Instance?.Despawn(ObjectKind.Player, guestId);
         OnPlayerCountChanged?.Invoke(_guests.Count + 1);
@@ -640,20 +663,20 @@ public class RoomManager : Singleton<RoomManager>
     public void LeaveRoom()
     {
         RoomSync.Leave();
-        TearDownUdpSession();
+        CloseUdpSession();
 
         _guests.Clear();
         _guestLastSeen.Clear();
         _hostLastSeen = 0;
         _hostEp = null;
         _isHost = false;
-        _pendingGuests.Clear();
+        _waitingGuests.Clear();
 
         ObjectManager.Instance?.Clear();
         WorldEquipmentManager.Clear();
     }
 
-    void TearDownUdpSession()
+    void CloseUdpSession()
     {
         foreach (var p in _punchers.Values)
             p.Stop();
@@ -679,7 +702,8 @@ public class RoomManager : Singleton<RoomManager>
 
     protected override void OnDestroy()
     {
-        TearDownUdpSession();
+        OnGameStarted -= LoadShelterIfOnTitle;
+        CloseUdpSession();
         base.OnDestroy();
     }
 }

@@ -108,6 +108,10 @@ public class JoinCodeUI : UIBase
                 LocalizationManager.GetInstance().GetString("network.join_failed_message"));
     }
 
-    void HandleFailed(string reason) => UIManager.GetInstance().ShowNotice(
-        LocalizationManager.GetInstance().GetString("network.connect_failed_title"), reason);
+    void HandleFailed(string reason)
+    {
+        _btnJoin.interactable = _inputCode.text.Length == 6;
+        UIManager.GetInstance().ShowNotice(
+            LocalizationManager.GetInstance().GetString("network.connect_failed_title"), reason);
+    }
 }
