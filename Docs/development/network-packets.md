@@ -97,7 +97,7 @@ UdpSession (백그라운드 스레드)
 UDP 수신은 **반드시 메인 스레드**에서 핸들러 실행.  
 `OnUdpReceived` / `HandleReliablePacket`에서 `CurrentUdpSenderId` / `CurrentSenderEndPoint`를 잠시 설정하고, `G_*` 호스트 핸들러는 `TryGetGuestIdFromPacket`으로 게스트 ID를 확인한다.
 
-신뢰 전송: `UdpReliable` (시그널 `0x03`/`0x04`). `H_ItemGainResult`, `H_LoadScene` 등 중요 패킷에 사용.
+신뢰 전송: `UdpReliable` (시그널 `0x03`/`0x04`). `H_ItemGainResult`, `H_ItemExchangeResult`, `H_ShootRejected`, `H_LoadScene` 등 중요 패킷에 사용.
 
 ### 디스패치 (`PacketManager`)
 
@@ -143,6 +143,7 @@ UDP 수신은 **반드시 메인 스레드**에서 핸들러 실행.
 |------|------|------|
 | `G/H_Move` | 양방향 | 위치·회전·이동 상태 |
 | `G/H_Shoot` | 양방향 | 발사 (원점·방향·스탯) |
+| `H_ShootRejected` | H→G (신뢰) | 발사 거부 시 탄약·내구도 동기화 |
 | `G/H_Equip` | 양방향 | 장비 변경 |
 | `G/H_Durability` | G→H 요청, H→G 결과 | 무기 내구도 |
 | `G/H_StatSync` | 양방향 | HP 등 스탯 |
@@ -157,6 +158,7 @@ UDP 수신은 **반드시 메인 스레드**에서 핸들러 실행.
 | `G_ItemGain` | G→H | 빈 슬롯 이동 요청 |
 | `H_ItemGainResult` | H→G | 성공/실패 (실패 시 롤백) |
 | `G_ItemExchange` | G→H | 스왑 요청 |
+| `H_ItemExchangeResult` | H→G (신뢰) | 성공/실패 (실패 시 롤백) |
 | `H_ItemBoxUpdate` | H→G | 박스 슬롯 델타 |
 
 상세 교환 규칙: [inventory-exchange.md](../design/inventory-exchange.md)

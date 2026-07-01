@@ -158,6 +158,7 @@ public class RoomManager : Singleton<RoomManager>
                 {
                     OnPlayerCountChanged?.Invoke(_guests.Count + 1);
                     OnRoomJoined?.Invoke(id);
+                    SpawnGuestPlayer(id);
                     SendWorldStateToGuest(id);
                 }
                 else
@@ -339,8 +340,22 @@ public class RoomManager : Singleton<RoomManager>
             puncher.Stop();
         OnPlayerCountChanged?.Invoke(_guests.Count + 1);
         OnRoomJoined?.Invoke(playerId);
+        SpawnGuestPlayer(playerId);
         SendWorldStateToGuest(playerId);
         return true;
+    }
+
+    void SpawnGuestPlayer(int guestId)
+    {
+        if (!_isHost) return;
+
+        var objectManager = ObjectManager.Instance;
+        if (objectManager == null || objectManager.TryGet(ObjectKind.Player, guestId, out _)) return;
+
+        var localT = PlayerMovement.LocalTransform;
+        Vector3 pos = localT != null ? localT.position : Vector3.zero;
+        float yaw = localT != null ? localT.eulerAngles.y : 0f;
+        objectManager.QueueMove(ObjectKind.Player, guestId, pos, yaw);
     }
 
     public void SetMemberCount(int count)
@@ -641,6 +656,7 @@ public class RoomManager : Singleton<RoomManager>
         if (!_guests.TryRemove(guestId, out IPEndPoint _)) return;
         _guestLastSeen.TryRemove(guestId, out long _);
         _waitingGuests.TryRemove(guestId, out NetInfoT _);
+        GuestInventoryTracker.ClearGuest(guestId);
 
         ObjectManager.Instance?.Despawn(ObjectKind.Player, guestId);
         OnPlayerCountChanged?.Invoke(_guests.Count + 1);
