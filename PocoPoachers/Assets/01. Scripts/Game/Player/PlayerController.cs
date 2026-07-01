@@ -214,6 +214,10 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+        // 인벤토리를 닫으면 열려 있던 파츠 패널도 함께 닫는다
+        if (type == UIType.Inventory)
+            _gunPartPanel?.Close();
+
         if (type != UIType.Inventory && type != UIType.IngameMenu && type != UIType.EnhancementTable) return;
         if (UIManager.GetInstance().IsAnyPanelOpen) return;
 
