@@ -91,7 +91,7 @@ public static class RoomSync
         }, G_ItemGain.Pack, PacketType.G_ItemGain);
     }
 
-    public static void ItemExchange(int boxUid, int playerItemId, int playerItemAmount, int playerSlotIndex, int boxItemId, int boxItemAmount, int boxSlotIndex)
+    public static void ItemExchange(int boxUid, int playerItemId, int playerItemAmount, int playerItemUid, int playerSlotIndex, int boxItemId, int boxItemAmount, int boxItemUid, int boxSlotIndex)
     {
         if (IsSolo) return;
         PacketBuilder.SendToHost(new G_ItemExchangeT
@@ -99,9 +99,11 @@ public static class RoomSync
             BoxUid           = boxUid,
             PlayerItemId     = playerItemId,
             PlayerItemAmount = playerItemAmount,
+            PlayerItemUid    = playerItemUid,
             PlayerSlotIndex  = playerSlotIndex,
             BoxItemId        = boxItemId,
             BoxItemAmount    = boxItemAmount,
+            BoxItemUid       = boxItemUid,
             BoxSlotIndex     = boxSlotIndex,
         }, G_ItemExchange.Pack, PacketType.G_ItemExchange);
     }

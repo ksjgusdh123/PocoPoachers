@@ -75,9 +75,11 @@ public static partial class PacketHandlers
                 packet.PlayerSlotIndex,
                 packet.PlayerItemId,
                 packet.PlayerItemAmount,
+                packet.PlayerItemUid,
                 packet.BoxSlotIndex,
                 packet.BoxItemId,
-                packet.BoxItemAmount);
+                packet.BoxItemAmount,
+                packet.BoxItemUid);
         });
     }
 
