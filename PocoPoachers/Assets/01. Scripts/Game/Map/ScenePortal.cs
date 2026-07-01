@@ -30,7 +30,7 @@ public class ScenePortal : MonoBehaviour, IInteractable
         };
         if (sceneName == null) return;
 
-        PacketBuilder.BroadcastToGuests(
+        PacketBuilder.BroadcastReliableToGuests(
             new H_LoadSceneT { SceneName = sceneName, SpawnId = (int)_spawnId },
             H_LoadScene.Pack, PacketType.H_LoadScene);
     }

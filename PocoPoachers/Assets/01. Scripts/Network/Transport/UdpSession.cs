@@ -15,11 +15,17 @@ public class UdpSession
 
     public const byte PunchSignal = 0x01;
     public const byte KeepaliveSignal = 0x02;
+    public const byte ReliableSignal = 0x03;
+    public const byte AckSignal = 0x04;
+    public const int ReliableHeaderSize = 5;
 
     static readonly byte[] KeepalivePayload = { KeepaliveSignal };
 
     Socket _socket;
     Thread _recvThread;
+
+    public event Action<uint, ArraySegment<byte>, IPEndPoint> OnReliableReceived;
+    public event Action<uint, IPEndPoint> OnReliableAckReceived;
 
     public bool Bind()
     {
@@ -60,6 +66,24 @@ public class UdpSession
 
     public void SendKeepalive(IPEndPoint ep) => Send(new ArraySegment<byte>(KeepalivePayload), ep);
 
+    public void SendReliable(uint seq, ArraySegment<byte> payload, IPEndPoint ep)
+    {
+        if (_socket == null || payload.Count == 0) return;
+        byte[] buffer = new byte[ReliableHeaderSize + payload.Count];
+        buffer[0] = ReliableSignal;
+        BitConverter.GetBytes(seq).CopyTo(buffer, 1);
+        Buffer.BlockCopy(payload.Array, payload.Offset, buffer, ReliableHeaderSize, payload.Count);
+        Send(new ArraySegment<byte>(buffer), ep);
+    }
+
+    public void SendAck(uint seq, IPEndPoint ep)
+    {
+        byte[] buffer = new byte[ReliableHeaderSize];
+        buffer[0] = AckSignal;
+        BitConverter.GetBytes(seq).CopyTo(buffer, 1);
+        Send(new ArraySegment<byte>(buffer), ep);
+    }
+
     public void Close()
     {
         _socket?.Close();
@@ -87,6 +111,19 @@ public class UdpSession
                 if (len == 1 && buffer[0] == KeepaliveSignal)
                 {
                     OnKeepaliveReceived?.Invoke(ep);
+                    continue;
+                }
+                if (len == ReliableHeaderSize && buffer[0] == AckSignal)
+                {
+                    OnReliableAckReceived?.Invoke(BitConverter.ToUInt32(buffer, 1), ep);
+                    continue;
+                }
+                if (len > ReliableHeaderSize && buffer[0] == ReliableSignal)
+                {
+                    uint seq = BitConverter.ToUInt32(buffer, 1);
+                    byte[] copy = new byte[len - ReliableHeaderSize];
+                    Buffer.BlockCopy(buffer, ReliableHeaderSize, copy, 0, copy.Length);
+                    OnReliableReceived?.Invoke(seq, new ArraySegment<byte>(copy), ep);
                     continue;
                 }
 

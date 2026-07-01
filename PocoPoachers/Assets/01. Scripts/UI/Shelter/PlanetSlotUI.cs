@@ -46,7 +46,7 @@ public class PlanetSlotUI : MonoBehaviour
 
         if (RoomManager.IsHost && RoomManager.HasGuests)
         {
-            PacketBuilder.BroadcastToGuests(
+            PacketBuilder.BroadcastReliableToGuests(
                 new H_LoadSceneT { SceneName = $"SC_Raid_{planetId}", SpawnId = (int)SpawnId.FromShelter },
                 H_LoadScene.Pack, PacketType.H_LoadScene);
         }

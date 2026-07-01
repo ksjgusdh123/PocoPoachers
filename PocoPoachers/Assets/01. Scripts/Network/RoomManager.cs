@@ -42,6 +42,7 @@ public class RoomManager : Singleton<RoomManager>
     public void NotifySessionCodeReceived(string code) => OnSessionCodeReceived?.Invoke(code);
 
     UdpSession _udpSession;
+    UdpReliable _reliable;
     IPEndPoint _myPublicEp;
     IPEndPoint _hostEp;
 
@@ -104,6 +105,7 @@ public class RoomManager : Singleton<RoomManager>
                 return;
             }
             _udpSession.StartReceive();
+            _reliable = new UdpReliable(_udpSession);
             var myInfo = GetMySessionInfo();
             MainThreadDispatcher.Enqueue(() => {
                 if (_isHost)
@@ -134,8 +136,8 @@ public class RoomManager : Singleton<RoomManager>
         puncher.OnSuccess += _ => {
             _guests[id] = ep;
             _guestLastSeen[id] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            _punchers.TryRemove(id, out _);
-            _pendingGuests.TryRemove(id, out _);
+            _punchers.TryRemove(id, out UdpHolePuncher _);
+            _pendingGuests.TryRemove(id, out NetInfoT _);
             MainThreadDispatcher.Enqueue(() => {
                 if (_isHost)
                 {
@@ -179,6 +181,51 @@ public class RoomManager : Singleton<RoomManager>
     {
         if (_udpSession == null || !_guests.TryGetValue(playerId, out var ep)) return;
         _udpSession.Send(PacketBuilder.BuildSegment(data, packFunc, type), ep);
+    }
+
+    public void UdpSendReliableToGuest<TTable, TObj>(int playerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type)
+        where TTable : struct where TObj : class
+    {
+        if (_reliable == null || !_guests.TryGetValue(playerId, out var ep)) return;
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _reliable.Send(PacketBuilder.BuildSegment(data, packFunc, type), ep, now);
+    }
+
+    public void UdpBroadcastReliableToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> packFunc, PacketType type, int excludeId = -1)
+        where TTable : struct where TObj : class
+    {
+        if (_guests.IsEmpty || _reliable == null) return;
+        var segment = PacketBuilder.BuildSegment(data, packFunc, type);
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        foreach (var kv in _guests)
+        {
+            if (kv.Key == excludeId) continue;
+            _reliable.Send(segment, kv.Value, now);
+        }
+    }
+
+    public void DispatchReliablePacket(ArraySegment<byte> data, IPEndPoint sender)
+    {
+        int senderId = 0;
+        foreach (var kv in _guests)
+            if (kv.Value.Equals(sender)) { senderId = kv.Key; break; }
+
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (_isHost && senderId != 0)
+            _guestLastSeen[senderId] = now;
+        else if (!_isHost)
+            _hostLastSeen = now;
+
+        int captured = senderId;
+        IPEndPoint capturedEp = sender;
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            _packetSenderId = captured;
+            _lastGuestEp = capturedEp;
+            PacketManager.HandlePacket(data);
+            _packetSenderId = 0;
+            _lastGuestEp = null;
+        });
     }
 
     void OnUdpKeepaliveReceived(IPEndPoint sender)
@@ -264,8 +311,8 @@ public class RoomManager : Singleton<RoomManager>
             return false;
 
         _guests[playerId] = _lastGuestEp;
-        _pendingGuests.TryRemove(playerId, out _);
-        if (_punchers.TryRemove(playerId, out var puncher))
+        _pendingGuests.TryRemove(playerId, out NetInfoT _);
+        if (_punchers.TryRemove(playerId, out UdpHolePuncher puncher))
             puncher.Stop();
         OnPlayerCountChanged?.Invoke(_guests.Count + 1);
         OnRoomJoined?.Invoke(playerId);
@@ -546,6 +593,7 @@ public class RoomManager : Singleton<RoomManager>
         }
 
         SendKeepalivesIfDue(now);
+        _reliable?.Tick(now);
     }
 
     void SendKeepalivesIfDue(long now)
@@ -567,9 +615,9 @@ public class RoomManager : Singleton<RoomManager>
 
     public void RemoveGuest(int guestId)
     {
-        if (!_guests.TryRemove(guestId, out _)) return;
-        _guestLastSeen.TryRemove(guestId, out _);
-        _pendingGuests.TryRemove(guestId, out _);
+        if (!_guests.TryRemove(guestId, out IPEndPoint _)) return;
+        _guestLastSeen.TryRemove(guestId, out long _);
+        _pendingGuests.TryRemove(guestId, out NetInfoT _);
 
         ObjectManager.Instance?.Despawn(ObjectKind.Player, guestId);
         OnPlayerCountChanged?.Invoke(_guests.Count + 1);
@@ -612,6 +660,10 @@ public class RoomManager : Singleton<RoomManager>
         _punchers.Clear();
 
         if (_udpSession == null) return;
+
+        _reliable?.Unsubscribe();
+        _reliable?.Clear();
+        _reliable = null;
 
         _udpSession.OnReceived -= OnUdpReceived;
         _udpSession.OnKeepaliveReceived -= OnUdpKeepaliveReceived;

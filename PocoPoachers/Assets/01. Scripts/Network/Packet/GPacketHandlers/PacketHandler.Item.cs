@@ -43,7 +43,7 @@ public static partial class PacketHandlers
         int playerSlotIndex = pkt.IsPlayerGained ? pkt.AddedSlotIndex : pkt.RemovedSlotIndex;
         int boxSlotIndex    = pkt.IsPlayerGained ? pkt.RemovedSlotIndex : pkt.AddedSlotIndex;
 
-        PacketBuilder.SendToGuest(requesterId, new H_ItemGainResultT
+        PacketBuilder.SendReliableToGuest(requesterId, new H_ItemGainResultT
         {
             Success         = success,
             BoxUid          = pkt.BoxUid,
