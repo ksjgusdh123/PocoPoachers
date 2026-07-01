@@ -52,6 +52,8 @@ public class RoomManager : Singleton<RoomManager>
     long _hostLastSeen;
 
     const long TIMEOUT_MS = 30_000L;
+    const long KEEPALIVE_INTERVAL_MS = 5_000L;
+    long _lastKeepaliveSent;
 
     protected override void Awake()
     {
@@ -89,6 +91,7 @@ public class RoomManager : Singleton<RoomManager>
         ThreadPool.QueueUserWorkItem(_ => {
             _udpSession = new UdpSession();
             _udpSession.OnReceived += OnUdpReceived;
+            _udpSession.OnKeepaliveReceived += OnUdpKeepaliveReceived;
 
             if (!_udpSession.Bind())
             {
@@ -178,6 +181,24 @@ public class RoomManager : Singleton<RoomManager>
         _udpSession.Send(PacketBuilder.BuildSegment(data, packFunc, type), ep);
     }
 
+    void OnUdpKeepaliveReceived(IPEndPoint sender)
+    {
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        if (_isHost)
+        {
+            foreach (var kv in _guests)
+            {
+                if (!kv.Value.Equals(sender)) continue;
+                _guestLastSeen[kv.Key] = now;
+                return;
+            }
+        }
+        else if (_hostEp != null && _hostEp.Equals(sender))
+        {
+            _hostLastSeen = now;
+        }
+    }
+
     private void OnUdpReceived(ArraySegment<byte> data, IPEndPoint sender)
     {
         int senderId = 0;
@@ -202,10 +223,6 @@ public class RoomManager : Singleton<RoomManager>
         });
     }
 
-    /// <summary>
-    /// G_* 패킷의 권위 있는 게스트 ID. 등록된 엔드포인트 기준이며 claimedPlayerId와 불일치 시 거부.
-    /// allowAutoRegister: 홀펀ching 미완료 시 G_Move 등으로 1회 등록 허용.
-    /// </summary>
     public static bool TryResolveGuestSender(int claimedPlayerId, bool allowAutoRegister, out int guestId)
     {
         guestId = 0;
@@ -490,6 +507,25 @@ public class RoomManager : Singleton<RoomManager>
         {
             HandleHostLeft();
         }
+
+        SendKeepalivesIfDue(now);
+    }
+
+    void SendKeepalivesIfDue(long now)
+    {
+        if (_udpSession == null) return;
+        if (now - _lastKeepaliveSent < KEEPALIVE_INTERVAL_MS) return;
+        _lastKeepaliveSent = now;
+
+        if (_isHost)
+        {
+            foreach (var kv in _guests)
+                _udpSession.SendKeepalive(kv.Value);
+        }
+        else if (_hostEp != null)
+        {
+            _udpSession.SendKeepalive(_hostEp);
+        }
     }
 
     public void RemoveGuest(int guestId)
@@ -540,8 +576,10 @@ public class RoomManager : Singleton<RoomManager>
         if (_udpSession == null) return;
 
         _udpSession.OnReceived -= OnUdpReceived;
+        _udpSession.OnKeepaliveReceived -= OnUdpKeepaliveReceived;
         _udpSession.Close();
         _udpSession = null;
+        _lastKeepaliveSent = 0;
     }
 
     public void HandleFailure(string msg)

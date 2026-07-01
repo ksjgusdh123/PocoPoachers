@@ -159,16 +159,11 @@ public static class RoomSync
 
     public static void ShelterLevel(int level)
     {
-        if (IsSolo) return;
+        if (IsSolo || !RoomManager.IsHost) return;
 
-        if (RoomManager.IsHost)
-            PacketBuilder.BroadcastToGuests(
-                new H_ShelterLevelT { Level = level },
-                H_ShelterLevel.Pack, PacketType.H_ShelterLevel);
-        else
-            PacketBuilder.SendToHost(
-                new G_ShelterLevelT { Level = level },
-                G_ShelterLevel.Pack, PacketType.G_ShelterLevel);
+        PacketBuilder.BroadcastToGuests(
+            new H_ShelterLevelT { Level = level },
+            H_ShelterLevel.Pack, PacketType.H_ShelterLevel);
     }
 
     public static void EnemySpawnToGuest(int guestPlayerId, int enemyTypeId, int enemyId, Vector3 pos, float rotation, float hp, float maxHp, int weaponId, int helmetId)

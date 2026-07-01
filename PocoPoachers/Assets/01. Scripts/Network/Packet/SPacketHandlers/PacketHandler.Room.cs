@@ -32,10 +32,7 @@
             if (!success || hostInfo == null)
                 RoomManager.Instance?.HandleFailure("입장 실패");
             else
-            {
-                // P2P 홀펀칭 완료 후 RoomManager.ConnectToGuest → OnGameStarted
                 RoomManager.Instance?.ConnectToGuest(hostInfo);
-            }
         });
     }
 

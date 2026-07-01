@@ -11,6 +11,12 @@ public class UdpSession
 
     public event Action<ArraySegment<byte>, IPEndPoint> OnReceived;
     public event Action<IPEndPoint> OnPunchReceived;
+    public event Action<IPEndPoint> OnKeepaliveReceived;
+
+    public const byte PunchSignal = 0x01;
+    public const byte KeepaliveSignal = 0x02;
+
+    static readonly byte[] KeepalivePayload = { KeepaliveSignal };
 
     Socket _socket;
     Thread _recvThread;
@@ -52,6 +58,8 @@ public class UdpSession
         catch (Exception e) { Debug.LogWarning($"[UdpSession] Send to {ep} failed: {e.Message}"); }
     }
 
+    public void SendKeepalive(IPEndPoint ep) => Send(new ArraySegment<byte>(KeepalivePayload), ep);
+
     public void Close()
     {
         _socket?.Close();
@@ -71,9 +79,14 @@ public class UdpSession
                 if (len <= 0) continue;
 
                 var ep = (IPEndPoint)remote;
-                if (len == 1 && buffer[0] == 0x01)
+                if (len == 1 && buffer[0] == PunchSignal)
                 {
                     OnPunchReceived?.Invoke(ep);
+                    continue;
+                }
+                if (len == 1 && buffer[0] == KeepaliveSignal)
+                {
+                    OnKeepaliveReceived?.Invoke(ep);
                     continue;
                 }
 
