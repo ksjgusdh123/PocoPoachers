@@ -26,12 +26,10 @@ public static partial class PacketHandlers
 
         if (stat != null)
         {
-            stat.SetHpFromNetwork(hp, maxHp, 0);
             if (stat is RemotePlayerStat remote)
-            {
-                remote.SetVitalsFromNetwork(stamina, battery);
-                remote.SetArmorDefenseRate(pkt.Defense);
-            }
+                remote.SetFromNetwork(hp, maxHp, stamina, battery, pkt.Defense);
+            else
+                stat.SetHpFromNetwork(hp, maxHp, 0);
         }
 
         PacketBuilder.BroadcastToGuests(senderId, new H_StatSyncT

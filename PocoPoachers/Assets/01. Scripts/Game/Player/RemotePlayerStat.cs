@@ -6,7 +6,21 @@ public class RemotePlayerStat : StatBase
     public float Battery { get; private set; }
 
     float _armorDefenseRate;
+    float _armorMaxHpBonus;
+    float _armorMoveSpeedMultiplier = 1f;
+
     protected override float DefenseRate => _armorDefenseRate;
+
+    public float ArmorMoveSpeedMultiplier => _armorMoveSpeedMultiplier;
+    public float ArmorDefenseRate => _armorDefenseRate;
+
+    public void SetFromNetwork(float hp, float maxHp, float stamina, float battery, float defense)
+    {
+        _armorMaxHpBonus = 0f;
+        SetHpFromNetwork(hp, maxHp, 0);
+        SetVitalsFromNetwork(stamina, battery);
+        SetArmorDefenseRate(defense);
+    }
 
     public void SetVitalsFromNetwork(float stamina, float battery)
     {
@@ -15,7 +29,32 @@ public class RemotePlayerStat : StatBase
     }
 
     public void SetArmorDefenseRate(float defenseRate) => _armorDefenseRate = defenseRate;
-    public float ArmorDefenseRate => _armorDefenseRate;
+
+    public override void ApplyArmorStat(ArmorStatData data)
+    {
+        base.ApplyArmorStat(data);
+        _armorDefenseRate = _totalDefenseRate;
+        _armorMaxHpBonus += data.MaxHpBonus;
+        if (data.MoveSpeedMultiplier > 0f)
+            _armorMoveSpeedMultiplier *= data.MoveSpeedMultiplier;
+
+        MaxHp += data.MaxHpBonus;
+        CurrentHp = Mathf.Min(CurrentHp + data.MaxHpBonus, MaxHp);
+        RaiseHpChanged();
+    }
+
+    public override void RemoveArmorStat(ArmorStatData data)
+    {
+        base.RemoveArmorStat(data);
+        _armorDefenseRate = _totalDefenseRate;
+        _armorMaxHpBonus = Mathf.Max(0f, _armorMaxHpBonus - data.MaxHpBonus);
+        if (data.MoveSpeedMultiplier > 0f)
+            _armorMoveSpeedMultiplier /= data.MoveSpeedMultiplier;
+
+        MaxHp = Mathf.Max(1f, MaxHp - data.MaxHpBonus);
+        CurrentHp = Mathf.Min(CurrentHp, MaxHp);
+        RaiseHpChanged();
+    }
 
     public void ApplyConsumableEffect(ItemData data)
     {

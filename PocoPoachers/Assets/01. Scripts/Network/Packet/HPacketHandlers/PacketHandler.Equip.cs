@@ -5,8 +5,8 @@ public static partial class PacketHandlers
         var pkt = root.TypeAsH_Equip();
         if (!ObjectManager.Instance.TryGet(ObjectKind.Player, pkt.PlayerId, out var worldObj)) return;
 
+        SyncRemoteArmorStats(worldObj, pkt.PlayerId, pkt.ItemId, pkt.SlotIndex, broadcast: false);
         ApplyRemoteEquip(worldObj, pkt.ItemId, pkt.ItemUid, pkt.SlotIndex);
-        SyncRemoteArmorDefense(worldObj, pkt.PlayerId, pkt.ItemId, pkt.SlotIndex, broadcast: false);
     }
 
     static EquippableItemBase ApplyRemoteEquip(WorldObject worldObj, int itemId, int itemUid, int slotIndex)
@@ -47,19 +47,25 @@ public static partial class PacketHandlers
         return mount.ApplyEquip(itemId, slotIndex, itemUid);
     }
 
-    static void SyncRemoteArmorDefense(WorldObject worldObj, int playerId, int itemId, int slotIndex, bool broadcast)
+    static void SyncRemoteArmorStats(WorldObject worldObj, int playerId, int newItemId, int slotIndex, bool broadcast)
     {
-        if (slotIndex < 2) return;
+        if (slotIndex < 2 || slotIndex == 4) return;
         if (worldObj.GetComponent<RemotePlayerStat>() is not RemotePlayerStat remote) return;
 
-        float defense = 0f;
-        if (itemId != 0)
+        var mount = worldObj.GetComponent<ArmorMount>();
+        int currentId = mount?.GetEquippedItemId() ?? 0;
+
+        if (currentId != 0 && currentId != newItemId)
         {
-            var armorStat = DataManager.GetArmorStat(itemId);
-            if (armorStat != null) defense = armorStat.DefenseRate;
+            var oldData = DataManager.GetArmorStat(currentId);
+            if (oldData != null) remote.RemoveArmorStat(oldData);
         }
 
-        remote.SetArmorDefenseRate(defense);
+        if (newItemId != 0 && newItemId != currentId)
+        {
+            var newData = DataManager.GetArmorStat(newItemId);
+            if (newData != null) remote.ApplyArmorStat(newData);
+        }
 
         if (!broadcast || !RoomManager.IsHost) return;
 
@@ -70,7 +76,7 @@ public static partial class PacketHandlers
             MaxHp    = remote.MaxHp,
             Stamina  = remote.Stamina,
             Battery  = remote.Battery,
-            Defense  = defense,
+            Defense  = remote.ArmorDefenseRate,
         }, H_StatSync.Pack, PacketType.H_StatSync);
     }
 }
