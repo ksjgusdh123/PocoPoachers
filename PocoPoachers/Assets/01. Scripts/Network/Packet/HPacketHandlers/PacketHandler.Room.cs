@@ -9,10 +9,10 @@ public static partial class PacketHandlers
         var rm = RoomManager.Instance;
         if (rm != null)
         {
-            if (RoomManager.MemberCount == 1)
-                rm.SetMemberCount(pkt.InfoLength + 1); // 최초 입장: 기존 인원 + 자신
-            else
-                rm.AddMember();                        // 이후 게스트 추가 알림
+            if (pkt.InfoLength == 1)
+                rm.AddMember();
+            else if (RoomManager.MemberCount <= 1)
+                rm.SetMemberCount(pkt.InfoLength + 1);
         }
 
         for (int i = 0; i < pkt.InfoLength; i++)

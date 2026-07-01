@@ -16,13 +16,20 @@ public static partial class PacketHandlers
         var prefab = pool?.NetworkBulletPrefab;
         if (prefab == null) return;
 
-        // 발사자 오브젝트를 찾아 전달 — 같은 태그(아군) 충돌 무시 판정에 사용
         GameObject attacker = null;
+        float soundRange = 0f;
         if (ObjectManager.Instance != null && ObjectManager.Instance.TryGet(ObjectKind.Player, pkt.PlayerId, out var shooterObj))
+        {
             attacker = shooterObj.gameObject;
+            if (NetworkPlayerAuthority.TryGetGuestGun(pkt.PlayerId, out var gun) && gun.Stat != null)
+                soundRange = gun.Stat.SoundRange;
+        }
 
         var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(direction));
         bullet.Initialize(pkt.BulletSpeed, pkt.Damage, pkt.MaxRange, direction, () => pool.Release(prefab, bullet), attacker);
+
+        if (soundRange > 0f)
+            SoundEvent.Emit(origin, soundRange, attacker);
     }
 
     public static void OnH_SandbagDestroy(FlatPacket root)

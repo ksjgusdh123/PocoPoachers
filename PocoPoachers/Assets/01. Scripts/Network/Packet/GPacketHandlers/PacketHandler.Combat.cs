@@ -15,6 +15,19 @@ public static partial class PacketHandlers
         Vector3 direction = dirRaw.HasValue    ? new Vector3(dirRaw.Value.X,    dirRaw.Value.Y,    dirRaw.Value.Z)    : Vector3.forward;
         if (direction == Vector3.zero) direction = Vector3.forward;
 
+        float bulletSpeed = pkt.BulletSpeed;
+        float damage      = pkt.Damage;
+        float maxRange    = pkt.MaxRange;
+        float soundRange  = pkt.SoundRange;
+
+        if (NetworkPlayerAuthority.TryGetGuestGun(guestId, out var gun) && gun.Stat != null)
+        {
+            bulletSpeed = gun.Stat.BulletSpeed;
+            damage      = gun.Stat.Damage;
+            maxRange    = gun.Stat.BulletRange;
+            soundRange  = gun.Stat.SoundRange;
+        }
+
         var pool = BulletPool.Instance;
         var prefab = pool?.NetworkBulletPrefab;
         if (prefab == null) return;
@@ -24,12 +37,12 @@ public static partial class PacketHandlers
             attacker = shooterObj.gameObject;
 
         var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(direction));
-        bullet.Initialize(pkt.BulletSpeed, pkt.Damage, pkt.MaxRange, direction, () => pool.Release(prefab, bullet), attacker);
+        bullet.Initialize(bulletSpeed, damage, maxRange, direction, () => pool.Release(prefab, bullet), attacker);
 
         if (RoomManager.IsHost)
         {
-            if (pkt.SoundRange > 0f)
-                SoundEvent.Emit(origin, pkt.SoundRange, null);
+            if (soundRange > 0f)
+                SoundEvent.Emit(origin, soundRange, attacker);
 
             PacketBuilder.BroadcastToGuests(guestId,
                 new H_ShootT
@@ -37,9 +50,9 @@ public static partial class PacketHandlers
                     PlayerId    = guestId,
                     Origin      = originRaw.HasValue ? originRaw.Value.UnPack() : new Vec3T(),
                     Direction   = dirRaw.HasValue    ? dirRaw.Value.UnPack()    : new Vec3T(),
-                    BulletSpeed = pkt.BulletSpeed,
-                    Damage      = pkt.Damage,
-                    MaxRange    = pkt.MaxRange,
+                    BulletSpeed = bulletSpeed,
+                    Damage      = damage,
+                    MaxRange    = maxRange,
                 },
                 H_Shoot.Pack, PacketType.H_Shoot);
         }

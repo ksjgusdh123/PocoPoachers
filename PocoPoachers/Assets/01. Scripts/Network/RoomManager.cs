@@ -409,17 +409,53 @@ public class RoomManager : Singleton<RoomManager>
             }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
 
-        var playerStat = FindFirstObjectByType<PlayerStat>();
-        if (playerStat != null)
-            PacketBuilder.SendToGuest(newGuestId, new H_StatSyncT
+        SyncAllPlayerStatsToGuest(newGuestId);
+    }
+
+    void SyncAllPlayerStatsToGuest(int guestId)
+    {
+        var om = ObjectManager.Instance;
+        if (om == null) return;
+
+        var hostStat = FindFirstObjectByType<PlayerStat>();
+        if (hostStat != null)
+        {
+            PacketBuilder.SendToGuest(guestId, new H_StatSyncT
             {
                 PlayerId = NetworkManager.Instance.MyPlayerId,
-                Hp       = playerStat.CurrentHp,
-                MaxHp    = playerStat.MaxHp,
-                Stamina  = playerStat.CurrentStamina,
-                Battery  = playerStat.CurrentBattery,
+                Hp       = hostStat.CurrentHp,
+                MaxHp    = hostStat.MaxHp,
+                Stamina  = hostStat.CurrentStamina,
+                Battery  = hostStat.CurrentBattery,
             }, H_StatSync.Pack, PacketType.H_StatSync);
-    }
+        }
+
+        foreach (var kv in om.GetAllPlayerInfos(guestId))
+        {
+            if (!om.TryGet(ObjectKind.Player, kv.PlayerId, out var worldObj)) continue;
+            var stat = worldObj.GetComponent<StatBase>();
+            if (stat == null) continue;
+
+            float stamina = 0f;
+            float battery = 0f;
+            float defense = 0f;
+            if (stat is RemotePlayerStat remote)
+            {
+                stamina = remote.Stamina;
+                battery = remote.Battery;
+                defense = remote.ArmorDefenseRate;
+            }
+
+            PacketBuilder.SendToGuest(guestId, new H_StatSyncT
+            {
+                PlayerId = kv.PlayerId,
+                Hp       = stat.CurrentHp,
+                MaxHp    = stat.MaxHp,
+                Stamina  = stamina,
+                Battery  = battery,
+                Defense  = defense,
+            }, H_StatSync.Pack, PacketType.H_StatSync);
+        }
 
     private void SyncLocalEquipToGuest(int guestId)
     {
@@ -565,6 +601,7 @@ public class RoomManager : Singleton<RoomManager>
         _pendingGuests.Clear();
 
         ObjectManager.Instance?.Clear();
+        WorldEquipmentManager.Clear();
     }
 
     void TearDownUdpSession()

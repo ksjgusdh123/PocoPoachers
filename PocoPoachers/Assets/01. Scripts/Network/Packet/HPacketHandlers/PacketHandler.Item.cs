@@ -86,7 +86,22 @@ public static partial class PacketHandlers
         }
     }
 
-    public static void OnH_ConsumeItemResult(FlatPacket root) { }
+    public static void OnH_ConsumeItemResult(FlatPacket root)
+    {
+        var pkt = root.TypeAsH_ConsumeItemResult();
+        int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
+        if (pkt.PlayerId == myId) return;
+
+        var itemData = ItemTable.Instance.Get(pkt.ItemId);
+        if (itemData == null) return;
+
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            if (!ObjectManager.Instance.TryGet(ObjectKind.Player, pkt.PlayerId, out var worldObj)) return;
+            if (worldObj.GetComponent<RemotePlayerStat>() is not RemotePlayerStat remote) return;
+            remote.ApplyConsumableEffect(itemData);
+        });
+    }
 
     private static Inventory FindLocalInventory()
     {

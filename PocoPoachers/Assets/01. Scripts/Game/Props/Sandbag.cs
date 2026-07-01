@@ -8,6 +8,7 @@ public class Sandbag : MonoBehaviour, IDamageable
     [SerializeField] private int _maxHits = 10;
     [SerializeField] private GameObject _rubblePrefab;
     [SerializeField] private float _destroyDelay = 2f;
+    [SerializeField] private int _presetNetworkId;
 
     [SerializeField] private VisualEffect _vfx;
 
@@ -28,8 +29,22 @@ public class Sandbag : MonoBehaviour, IDamageable
 
     private void Awake()
     {
-        _networkId = _nextNetworkId++;
+        _networkId = _presetNetworkId > 0 ? _presetNetworkId : StableIdFromPosition(transform.position);
+        if (_registry.ContainsKey(_networkId))
+            _networkId = _nextNetworkId++;
+
         _registry[_networkId] = this;
+    }
+
+    static int StableIdFromPosition(Vector3 position)
+    {
+        unchecked
+        {
+            int x = Mathf.RoundToInt(position.x * 100f);
+            int y = Mathf.RoundToInt(position.y * 100f);
+            int z = Mathf.RoundToInt(position.z * 100f);
+            return (x * 73856093) ^ (y * 19349663) ^ (z * 83492791);
+        }
     }
 
     private void OnDestroy()
