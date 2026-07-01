@@ -144,12 +144,16 @@ public class TeamPanelUI : MonoBehaviour
         ShowCode(code);
     }
 
-    private void OnRoomJoinFailed(string _)
+    private void OnRoomJoinFailed(string messageKey)
     {
         _btnInvite.interactable = true;
+        if (string.IsNullOrEmpty(messageKey)) return;
+
+        var loc = LocalizationManager.GetInstance();
+        string titleKey = RoomManager.GetNetworkFailureTitleKey(messageKey);
         UIManager.GetInstance().ShowNotice(
-            LocalizationManager.GetInstance().GetString("network.invite_failed_title"),
-            LocalizationManager.GetInstance().GetString("network.invite_failed_message"));
+            loc.GetString(titleKey),
+            loc.GetString(messageKey));
     }
 
     private void ShowCode(string code)

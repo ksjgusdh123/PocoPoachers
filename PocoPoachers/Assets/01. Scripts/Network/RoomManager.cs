@@ -105,12 +105,12 @@ public class RoomManager : Singleton<RoomManager>
 
             if (!_udpSession.Bind())
             {
-                HandleFailure("네트워크 초기화 오류");
+                HandleFailure("network.init_failed_message");
                 return;
             }
             if (!StunClient.TryGetPublicEndPoint(stunHost, stunPort, _udpSession.Socket, out _myPublicEp))
             {
-                HandleFailure("인터넷 연결 오류");
+                HandleFailure("network.internet_failed_message");
                 return;
             }
             _udpSession.StartReceive();
@@ -129,7 +129,7 @@ public class RoomManager : Singleton<RoomManager>
     {
         if (_udpSession == null)
         {
-            HandleFailure("네트워크 초기화가 끝나지 않았습니다.");
+            HandleFailure("network.init_not_ready_message");
             return;
         }
 
@@ -175,7 +175,7 @@ public class RoomManager : Singleton<RoomManager>
             }
 
             MainThreadDispatcher.Enqueue(() =>
-                HandleFailure("호스트와 UDP 연결에 실패했습니다. 코드와 네트워크를 확인하세요."));
+                HandleFailure("network.udp_punch_failed_message"));
         };
         puncher.Start(ep);
     }
@@ -355,7 +355,7 @@ public class RoomManager : Singleton<RoomManager>
         var localT = PlayerMovement.LocalTransform;
         Vector3 pos = localT != null ? localT.position : Vector3.zero;
         float yaw = localT != null ? localT.eulerAngles.y : 0f;
-        objectManager.QueueMove(ObjectKind.Player, guestId, pos, yaw);
+        objectManager.QueueMove(ObjectKind.Player, guestId, pos, yaw, 0);
     }
 
     public void SetMemberCount(int count)
@@ -711,9 +711,20 @@ public class RoomManager : Singleton<RoomManager>
         _lastKeepaliveSent = 0;
     }
 
-    public void HandleFailure(string msg)
+    public void HandleFailure(string messageKey)
     {
-        MainThreadDispatcher.Enqueue(() => OnRoomJoinFailed?.Invoke(msg));
+        MainThreadDispatcher.Enqueue(() => OnRoomJoinFailed?.Invoke(messageKey));
+    }
+
+    public static string GetNetworkFailureTitleKey(string messageKey)
+    {
+        if (string.IsNullOrEmpty(messageKey)) return null;
+        return messageKey switch
+        {
+            "network.invite_failed_message" => "network.invite_failed_title",
+            "network.join_failed_message"   => "network.join_failed_title",
+            _                               => "network.connect_failed_title",
+        };
     }
 
     protected override void OnDestroy()

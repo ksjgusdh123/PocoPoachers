@@ -15,7 +15,7 @@ public static partial class PacketHandlers
             }
             else
             {
-                RoomManager.Instance?.HandleFailure("\ubc29 \uc0dd\uc131\uc5d0 \uc2e4\ud328\ud588\uc2b5\ub2c8\ub2e4.");
+                RoomManager.Instance?.HandleFailure("network.invite_failed_message");
             }
         });
     }
@@ -29,8 +29,10 @@ public static partial class PacketHandlers
         MainThreadDispatcher.Enqueue(() =>
         {
             JoinCodeUI.Instance?.HandleJoinRoom(success);
-            if (!success || hostInfo == null)
-                RoomManager.Instance?.HandleFailure("\uc785\uc7a5 \uc2e4\ud328");
+            if (!success)
+                RoomManager.Instance?.HandleFailure(null);
+            else if (hostInfo == null)
+                RoomManager.Instance?.HandleFailure("network.join_failed_message");
             else
                 RoomManager.Instance?.StartUdpPunch(hostInfo);
         });

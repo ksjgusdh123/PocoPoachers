@@ -101,7 +101,7 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         if (om != null && om.TryGet(ObjectKind.ItemBox, boxUid, out var boxObj))
             boxInv = boxObj.GetComponent<Inventory>();
 
-        var playerInv = Object.FindAnyObjectByType<PlayerController>()?.GetComponent<Inventory>();
+        var playerInv = UnityEngine.Object.FindAnyObjectByType<PlayerController>()?.GetComponent<Inventory>();
 
         if (boxInv != null)
         {

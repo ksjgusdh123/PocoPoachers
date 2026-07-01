@@ -41,7 +41,7 @@ public static partial class PacketHandlers
             GunBase gun = EquippableItemBase.FindByUid(packet.ItemUid) as GunBase;
             if (gun == null)
             {
-                var weapon = Object.FindAnyObjectByType<WeaponController>();
+                var weapon = UnityEngine.Object.FindAnyObjectByType<WeaponController>();
                 gun = weapon?.CurrentGun;
             }
             if (gun == null) return;

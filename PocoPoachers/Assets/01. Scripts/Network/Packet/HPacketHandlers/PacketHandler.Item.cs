@@ -123,6 +123,6 @@ public static partial class PacketHandlers
 
     private static Inventory FindLocalInventory()
     {
-        return Object.FindAnyObjectByType<PlayerController>()?.GetComponent<Inventory>();
+        return UnityEngine.Object.FindAnyObjectByType<PlayerController>()?.GetComponent<Inventory>();
     }
 }
