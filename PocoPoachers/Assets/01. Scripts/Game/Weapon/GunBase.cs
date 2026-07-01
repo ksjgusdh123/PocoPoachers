@@ -134,6 +134,12 @@ public abstract class GunBase : EquippableItemBase
     public GunPartData GetPart(SlotType slot) =>
         _parts.TryGetValue(slot, out var p) ? p : null;
 
+    public void SetAmmo(int current)
+    {
+        _currentAmmo = Mathf.Clamp(current, 0, _stat.MaxMagazine);
+        OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
+    }
+
     private void RecalculateStat()
     {
         _stat = _baseStat.Clone();

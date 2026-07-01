@@ -37,12 +37,22 @@ public class GunPartDropHandler : ItemHolderDropHandler
             return false;
 
         _gun.EquipPart(part);
+        WorldEquipmentManager.SetPart(_gun.Uid, _slotType, part.id);
+        SaveAmmo();
         return true;
     }
 
     public override void Unequip()
     {
         base.Unequip();              // 인벤토리로 반납
-        _gun?.UnequipPart(_slotType); // 총에서 제거 + 스탯 재계산
+        if (_gun == null) return;
+
+        _gun.UnequipPart(_slotType); // 총에서 제거 + 스탯 재계산
+        WorldEquipmentManager.RemovePart(_gun.Uid, _slotType);
+        SaveAmmo();
     }
+
+    // 최대 장탄수는 파츠에 따라 바뀌므로 파츠 변경 시 함께 갱신
+    private void SaveAmmo() =>
+        WorldEquipmentManager.SetAmmo(_gun.Uid, _gun.CurrentAmmo, _gun.Stat.MaxMagazine);
 }

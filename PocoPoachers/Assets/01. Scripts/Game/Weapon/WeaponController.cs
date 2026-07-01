@@ -101,6 +101,16 @@ public class WeaponController : EquipableController
         {
             var (current, _) = WorldEquipmentManager.GetOrCreate(uid, data.id, gun.MaxDurability);
             gun.SetDurability(current);
+
+            // 저장된 파츠 복원 — EquipPart가 RecalculateStat을 호출해 최대 장탄수도 갱신됨
+            foreach (var kv in WorldEquipmentManager.GetParts(uid))
+            {
+                var part = GunPartTable.Instance.Get(kv.Value);
+                if (part != null) gun.EquipPart(part);
+            }
+            // 파츠 복원 후 현재 장탄수 복원
+            if (WorldEquipmentManager.TryGetAmmo(uid, out int curAmmo, out _))
+                gun.SetAmmo(curAmmo);
         }
         Debug.Log($"[WeaponController] 장착: itemId={data.id}, uid={uid}, durability={gun.CurrentDurability}/{gun.MaxDurability}");
 

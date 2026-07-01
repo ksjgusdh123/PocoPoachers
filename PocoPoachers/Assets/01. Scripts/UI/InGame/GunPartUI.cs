@@ -20,6 +20,15 @@ public class GunPartUI : MonoBehaviour
             _closeButton.onClick.AddListener(Close);
     }
 
+    private void OnEnable() => WeaponController.OnWeaponChanged += OnWeaponChanged;
+    private void OnDisable() => WeaponController.OnWeaponChanged -= OnWeaponChanged;
+
+    // 무기 해제(data == null) 시 열려 있던 파츠 패널을 닫는다
+    private void OnWeaponChanged(int slotIndex, ItemData data)
+    {
+        if (data == null) Close();
+    }
+
     // 해당 총으로 패널을 연다. 지원 슬롯만 켜고, 각 슬롯에 총+장착 파츠를 Bind.
     public void Open(GunBase gun)
     {
