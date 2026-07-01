@@ -9,6 +9,10 @@ public class WeaponController : EquipableController
 
     public bool IsAiming    => _currentGun != null && _currentGun.IsAiming;
     public bool IsReloading => _currentGun != null && _currentGun.IsReloading;
+    public GunBase CurrentGun => _currentGun;
+
+    // 슬롯에 장착된 총 (없으면 null) — 파츠 패널 등 외부에서 조회
+    public GunBase GetGun(int slot) => _mount != null ? _mount.GetGun(slot) : null;
 
     public float MoveSpeedMultiplier
     {

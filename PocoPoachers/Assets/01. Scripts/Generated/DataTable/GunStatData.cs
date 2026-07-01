@@ -5,6 +5,7 @@ using System;
 public partial class GunStatData
 {
     public int id;
+    public GunType gun_type;
     public float damage;
     public float rpm;
     public int pellet_count;
@@ -35,6 +36,8 @@ public partial class GunStatData
     public float muzzle_color_b;
 
     public int Id { get => id; set => id = value; }
+
+    public GunType GunType { get => gun_type; set => gun_type = value; }
 
     public float Damage { get => damage; set => damage = value; }
 

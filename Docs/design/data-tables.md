@@ -35,6 +35,7 @@ Generated/DataTable/*Table.cs
 | `repair_cost.csv` | `RepairCostTable` | item_id, need_item | `RepairWorkbenchUI` |
 | `localization.csv` | `LocalizationTable` | key, ko, en | `LocalizationManager` |
 | `sound.csv` | `SoundTable`, `SoundData` | key, type, path | `SoundManager` |
+| `skill.csv` | `SkillTable`, `SkillData` | skill, cooldown, speed, distance, duration, power, clip_name (범용 컬럼, 스킬마다 재해석) | `SkillManager`, `DodgeRollSkill`, `RetreatSkill`, `HealSkill` |
 
 ## ItemType
 

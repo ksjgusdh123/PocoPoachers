@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class GunBase : EquippableItemBase
@@ -9,6 +10,8 @@ public abstract class GunBase : EquippableItemBase
     [SerializeField] private Transform _shellEjectPort;
 
     protected GunStatData _stat;
+    private GunStatData _baseStat;
+    private readonly Dictionary<SlotType, GunPartData> _parts = new();
     protected GameObject _bulletPrefab;
 
     public GunStatData Stat => _stat;
@@ -52,7 +55,8 @@ public abstract class GunBase : EquippableItemBase
 
     protected virtual void Awake()
     {
-        _stat = DataManager.GetGunStat(_itemId);
+        _baseStat = DataManager.GetGunStat(_itemId).Clone();
+        _stat = _baseStat.Clone();
         _bulletPrefab = Resources.Load<GameObject>(_stat.BulletPrefabPath);
         _currentAmmo = _stat.MaxMagazine;
         if (_maxDurability <= 0f) Initialize(_uid, _itemId, 1f);
@@ -114,6 +118,36 @@ public abstract class GunBase : EquippableItemBase
     }
 
     protected abstract void Shoot();
+
+    public void EquipPart(GunPartData part)
+    {
+        _parts[part.slot_type] = part;
+        RecalculateStat();
+    }
+
+    public void UnequipPart(SlotType slot)
+    {
+        if (_parts.Remove(slot))
+            RecalculateStat();
+    }
+
+    public GunPartData GetPart(SlotType slot) =>
+        _parts.TryGetValue(slot, out var p) ? p : null;
+
+    private void RecalculateStat()
+    {
+        _stat = _baseStat.Clone();
+        foreach (var part in _parts.Values)
+        {
+            _stat.spread             *= part.spread_multiplier;
+            _stat.aim_spread         *= part.spread_multiplier;
+            _stat.recoil_force       *= part.recoil_multiplier;
+            _stat.reload_time        *= part.reload_time_multiplier;
+            _stat.aim_fov_multiplier *= part.aim_fov_multiplier;
+            _stat.max_magazine       += part.max_magazine_bonus;
+            _stat.sound_range        *= part.sound_range_multiplier;
+        }
+    }
 
     public bool IsAiming { get; set; }
 

@@ -10,6 +10,8 @@ public class ProgressUI : ProgressUIBase
         GunBase.OnReloadEnded   += StopFilling;
         BaseOre.OnMineStarted += StartFilling;
         BaseOre.OnMineEnded   += StopFilling;
+        ChargingStation.OnChargeStarted += StartFilling;
+        ChargingStation.OnChargeEnded   += StopFilling;
     }
 
     protected override void Unsubscribe()
@@ -20,5 +22,7 @@ public class ProgressUI : ProgressUIBase
         GunBase.OnReloadEnded   -= StopFilling;
         BaseOre.OnMineStarted -= StartFilling;
         BaseOre.OnMineEnded   -= StopFilling;
+        ChargingStation.OnChargeStarted -= StartFilling;
+        ChargingStation.OnChargeEnded   -= StopFilling;
     }
 }

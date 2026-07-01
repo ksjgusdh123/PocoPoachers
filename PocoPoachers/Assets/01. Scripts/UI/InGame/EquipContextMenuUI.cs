@@ -5,6 +5,7 @@ using UnityEngine.UI;
 public class EquipContextMenuUI : UIBase
 {
     [SerializeField] private Button _unequipButton;
+    [SerializeField] private Button _partButton;   // 무기 슬롯일 때만 표시 — 파츠 패널 열기
     [SerializeField] private Vector2 _offset = new Vector2(100f, 0f);
 
     private ItemHolderDropHandler _targetHandler;
@@ -18,6 +19,8 @@ public class EquipContextMenuUI : UIBase
 
         _rectTransform = GetComponent<RectTransform>();
         _unequipButton.onClick.AddListener(OnClickUnequip);
+        if (_partButton != null)
+            _partButton.onClick.AddListener(OnClickPart);
 
         SlotInteractionManager.GetInstance().OnEquipRightClick += ShowAt;
     }
@@ -41,6 +44,11 @@ public class EquipContextMenuUI : UIBase
     {
         _targetHandler = handler;
         transform.position = handler.transform.position + (Vector3)_offset;
+
+        // "파츠 장착"은 총이 장착된 무기 슬롯에서만 노출
+        if (_partButton != null)
+            _partButton.gameObject.SetActive(GetTargetGun() != null);
+
         Show();
     }
 
@@ -49,4 +57,14 @@ public class EquipContextMenuUI : UIBase
         _targetHandler?.Unequip();
         Hide();
     }
+
+    private void OnClickPart()
+    {
+        GunBase gun = GetTargetGun();
+        if (gun != null)
+            SlotInteractionManager.GetInstance().InvokeGunPartRequest(gun);
+        Hide();
+    }
+
+    private GunBase GetTargetGun() => (_targetHandler as EquipDropHandler)?.GetEquippedGun();
 }

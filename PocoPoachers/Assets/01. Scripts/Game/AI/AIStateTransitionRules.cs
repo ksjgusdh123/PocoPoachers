@@ -11,7 +11,7 @@ public static class AIStateTransitionRules
         { AIState.Attack,  new HashSet<AIState> { AIState.Reload, AIState.Retreat, AIState.Chase, AIState.Rolling} },
         { AIState.Reload,  new HashSet<AIState> { AIState.Attack, AIState.Retreat, AIState.Rolling } },
         { AIState.Retreat, new HashSet<AIState> { AIState.Idle, AIState.Rolling } },
-        { AIState.Rolling, new HashSet<AIState> { AIState.Idle } },
+        { AIState.Rolling, new HashSet<AIState> { AIState.Idle, AIState.Retreat } },
     };
 
     public static bool CanTransition(AIState from, AIState to)

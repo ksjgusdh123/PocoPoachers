@@ -10,6 +10,9 @@ public class EquipDropHandler : ItemHolderDropHandler
     public int SlotIndex => _slotIndex;
     public void SetController(EquipableController controller) => _controller = controller;
 
+    // 무기 슬롯이면 장착된 총, 아니면 null (파츠 패널 진입용)
+    public GunBase GetEquippedGun() => (_controller as WeaponController)?.GetGun(_slotIndex);
+
     private void OnEnable()
     {
         if (_controller == null) return;
