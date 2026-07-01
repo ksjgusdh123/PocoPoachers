@@ -23,11 +23,17 @@ public static partial class PacketHandlers
         float hp = GuestValidator.ClampGuestHp(stat, packet.Hp, maxHp);
         float stamina = Mathf.Clamp(packet.Stamina, 0f, 200f);
         float battery = Mathf.Clamp(packet.Battery, 0f, 200f);
+        float defense = 0f;
 
         if (stat != null)
         {
+            // 방어율은 장착 아이템 기준으로 호스트가 직접 계산한 값만 신뢰한다(ApplyRemoteArmorStats).
+            // 게스트가 보낸 packet.Defense를 그대로 적용하면 임의의 값(예: 1.0)으로 무적이 될 수 있음.
             if (stat is RemotePlayerStat remote)
-                remote.ApplyNetworkStats(hp, maxHp, stamina, battery, packet.Defense);
+            {
+                defense = remote.ArmorDefenseRate;
+                remote.ApplyNetworkStats(hp, maxHp, stamina, battery, defense);
+            }
             else
                 stat.SetHpFromNetwork(hp, maxHp, 0);
         }
@@ -39,7 +45,7 @@ public static partial class PacketHandlers
             MaxHp    = maxHp,
             Stamina  = stamina,
             Battery  = battery,
-            Defense  = packet.Defense,
+            Defense  = defense,
         }, H_StatSync.Pack, PacketType.H_StatSync);
     }
 }
