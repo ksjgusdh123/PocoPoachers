@@ -231,6 +231,14 @@ public abstract class GunBase : EquippableItemBase
         return true;
     }
 
+    // 호스트가 G_Shoot를 거부했을 때 권위 있는 탄약/내구도로 맞춤
+    public void ApplyHostShootState(int ammo, float durability)
+    {
+        _currentAmmo = Mathf.Clamp(ammo, 0, _stat.MaxMagazine);
+        SetDurability(durability);
+        OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
+    }
+
     private void OnDrawGizmos()
     {
         if (_soundGizmoTimer <= 0f) return;

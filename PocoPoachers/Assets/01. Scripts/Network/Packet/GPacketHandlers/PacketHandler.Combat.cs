@@ -8,8 +8,19 @@ public static partial class PacketHandlers
         if (!RoomManager.TryGetGuestIdFromPacket(packet.PlayerId, autoRegister: false, out int guestId))
             return;
 
-        if (!GuestValidator.TryGetGuestWeapon(guestId, out var gun) || !gun.TryAuthorizeHostShot())
+        if (!GuestValidator.TryGetGuestWeapon(guestId, out var gun))
             return;
+
+        if (!gun.TryAuthorizeHostShot())
+        {
+            PacketBuilder.SendReliableToGuest(guestId, new H_ShootRejectedT
+            {
+                ItemUid           = gun.Uid,
+                CurrentAmmo       = gun.CurrentAmmo,
+                CurrentDurability = gun.CurrentDurability,
+            }, H_ShootRejected.Pack, PacketType.H_ShootRejected);
+            return;
+        }
 
         Vec3? originRaw = packet.Origin;
         Vec3? dirRaw    = packet.Direction;

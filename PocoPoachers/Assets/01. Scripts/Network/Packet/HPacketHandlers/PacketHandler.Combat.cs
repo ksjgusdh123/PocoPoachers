@@ -32,6 +32,24 @@ public static partial class PacketHandlers
             SoundEvent.Emit(origin, soundRange, attacker);
     }
 
+    public static void OnH_ShootRejected(FlatPacket root)
+    {
+        var packet = root.TypeAsH_ShootRejected();
+
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            GunBase gun = EquippableItemBase.FindByUid(packet.ItemUid) as GunBase;
+            if (gun == null)
+            {
+                var weapon = Object.FindAnyObjectByType<WeaponController>();
+                gun = weapon?.CurrentGun;
+            }
+            if (gun == null) return;
+
+            gun.ApplyHostShootState(packet.CurrentAmmo, packet.CurrentDurability);
+        });
+    }
+
     public static void OnH_SandbagDestroy(FlatPacket root)
     {
         var packet = root.TypeAsH_SandbagDestroy();
