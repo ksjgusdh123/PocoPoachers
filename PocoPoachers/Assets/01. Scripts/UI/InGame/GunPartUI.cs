@@ -7,7 +7,8 @@ using UnityEngine.UI;
 // 슬롯(GunPartDropHandler)은 SlotType별로 프리팹에 고정 배치.
 public class GunPartUI : MonoBehaviour
 {
-    [SerializeField] private Button _closeButton;   // 눌리면 패널을 끈다
+    [SerializeField] private Button _closeButton;
+    [SerializeField] private Image _gunImage;
 
     private GunPartDropHandler[] _slots;
     private GunBase _gun;   // 현재 패널이 다루는 총 (uid=_gun.Uid, 데이터=_gun.Stat)
@@ -27,6 +28,7 @@ public class GunPartUI : MonoBehaviour
         _gun = gun;
         gameObject.SetActive(true);
         CacheSlots();
+        ShowGunImage(gun);
 
         HashSet<SlotType> supported = GetSupportedSlots(gun);
         foreach (GunPartDropHandler slot in _slots)
@@ -38,8 +40,16 @@ public class GunPartUI : MonoBehaviour
         }
     }
 
-    // 닫기 버튼에 연결
     public void Close() => gameObject.SetActive(false);
+
+    private void ShowGunImage(GunBase gun)
+    {
+        if (_gunImage == null) return;
+
+        ItemData data = ItemTable.Instance.Get(gun.ItemId);
+        _gunImage.sprite = data != null ? ResourceManager.Instance.LoadSprite(data.icon) : null;
+        _gunImage.enabled = _gunImage.sprite != null;
+    }
 
     private void CacheSlots()
     {
