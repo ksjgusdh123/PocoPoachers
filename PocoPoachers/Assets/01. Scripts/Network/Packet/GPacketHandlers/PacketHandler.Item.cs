@@ -6,8 +6,9 @@ public static partial class PacketHandlers
     {
         var pkt = root.TypeAsG_ItemGain();
         if (!RoomManager.IsHost) return;
+        if (!RoomManager.TryResolveGuestSender(0, allowAutoRegister: false, out int requesterId))
+            return;
 
-        int requesterId = RoomManager.LastGuestId;
         bool success = false;
 
         var om = ObjectManager.Instance;
@@ -20,13 +21,11 @@ public static partial class PacketHandlers
             {
                 if (pkt.IsPlayerGained)
                 {
-                    // 박스 → 플레이어: 박스에서 제거
                     boxInv.RemoveItemAtSlot(pkt.RemovedSlotIndex, itemData, pkt.Amount);
                     success = true;
                 }
                 else
                 {
-                    // 플레이어 → 박스: 클라이언트가 미리 확정한 슬롯에 추가
                     success = boxInv.AddItemAtSlot(pkt.AddedSlotIndex, itemData, pkt.Amount, pkt.ItemUid);
                 }
             }
@@ -64,6 +63,8 @@ public static partial class PacketHandlers
     {
         var pkt = root.TypeAsG_ItemExchange();
         if (!RoomManager.IsHost) return;
+        if (!RoomManager.TryResolveGuestSender(0, allowAutoRegister: false, out _))
+            return;
 
         var om = ObjectManager.Instance;
         if (om != null && om.TryGet(ObjectKind.ItemBox, pkt.BoxUid, out var boxObj))
@@ -96,12 +97,13 @@ public static partial class PacketHandlers
     {
         var pkt = root.TypeAsG_ConsumeItem();
         if (!RoomManager.IsHost) return;
+        if (!RoomManager.TryResolveGuestSender(0, allowAutoRegister: false, out int senderId))
+            return;
 
         PacketBuilder.BroadcastToGuests(new H_ConsumeItemResultT
         {
-            PlayerId = RoomManager.LastGuestId,
+            PlayerId = senderId,
             ItemId   = pkt.ItemId,
         }, H_ConsumeItemResult.Pack, PacketType.H_ConsumeItemResult);
     }
 }
-

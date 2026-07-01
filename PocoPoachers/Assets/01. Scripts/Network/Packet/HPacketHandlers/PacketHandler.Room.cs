@@ -56,6 +56,9 @@ public static partial class PacketHandlers
             SceneLoader loader = SceneLoader.Instance;
             if (loader == null) return;
 
+            if (pkt.SpawnId != 0)
+                GameManager.Instance?.SetSpawnId((SpawnId)pkt.SpawnId);
+
             if (sceneName == SceneName.Shelter)
                 loader.LoadShelterScene();
             else if (sceneName.StartsWith("SC_Raid_") &&

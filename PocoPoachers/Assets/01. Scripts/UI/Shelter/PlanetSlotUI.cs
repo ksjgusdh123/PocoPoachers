@@ -42,11 +42,12 @@ public class PlanetSlotUI : MonoBehaviour
     {
         int planetId = _data.Id;
         GameManager.Instance.SetSelectedPlanet(planetId);
+        GameManager.Instance.SetSpawnId(SpawnId.FromShelter);
 
         if (RoomManager.IsHost && RoomManager.HasGuests)
         {
             PacketBuilder.BroadcastToGuests(
-                new H_LoadSceneT { SceneName = $"SC_Raid_{planetId}" },
+                new H_LoadSceneT { SceneName = $"SC_Raid_{planetId}", SpawnId = (int)SpawnId.FromShelter },
                 H_LoadScene.Pack, PacketType.H_LoadScene);
         }
 

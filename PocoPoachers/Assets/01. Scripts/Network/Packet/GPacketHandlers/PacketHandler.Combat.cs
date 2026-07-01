@@ -5,6 +5,9 @@ public static partial class PacketHandlers
     public static void OnG_Shoot(FlatPacket root)
     {
         var pkt = root.TypeAsG_Shoot();
+        if (!RoomManager.TryResolveGuestSender(pkt.PlayerId, allowAutoRegister: false, out int guestId))
+            return;
+
         Vec3? originRaw = pkt.Origin;
         Vec3? dirRaw    = pkt.Direction;
 
@@ -16,9 +19,8 @@ public static partial class PacketHandlers
         var prefab = pool?.NetworkBulletPrefab;
         if (prefab == null) return;
 
-        // 발사자 오브젝트를 찾아 전달 — 같은 태그(아군) 충돌 무시 판정에 사용
         GameObject attacker = null;
-        if (ObjectManager.Instance != null && ObjectManager.Instance.TryGet(ObjectKind.Player, pkt.PlayerId, out var shooterObj))
+        if (ObjectManager.Instance != null && ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var shooterObj))
             attacker = shooterObj.gameObject;
 
         var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(direction));
@@ -29,10 +31,10 @@ public static partial class PacketHandlers
             if (pkt.SoundRange > 0f)
                 SoundEvent.Emit(origin, pkt.SoundRange, null);
 
-            PacketBuilder.BroadcastToGuests(pkt.PlayerId,
+            PacketBuilder.BroadcastToGuests(guestId,
                 new H_ShootT
                 {
-                    PlayerId    = pkt.PlayerId,
+                    PlayerId    = guestId,
                     Origin      = originRaw.HasValue ? originRaw.Value.UnPack() : new Vec3T(),
                     Direction   = dirRaw.HasValue    ? dirRaw.Value.UnPack()    : new Vec3T(),
                     BulletSpeed = pkt.BulletSpeed,

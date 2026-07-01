@@ -31,7 +31,7 @@ public class UdpHolePuncher
 
     private void HandlePunchReceived(IPEndPoint from)
     {
-        if (from.Equals(_remoteEp) || from.Port == _remoteEp.Port)
+        if (from.Equals(_remoteEp))
             TrySuccess();
     }
 

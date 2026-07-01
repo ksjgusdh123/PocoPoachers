@@ -3,6 +3,8 @@ public static partial class PacketHandlers
     public static void OnG_Durability(FlatPacket root)
     {
         if (!RoomManager.IsHost) return;
+        if (!RoomManager.TryResolveGuestSender(0, allowAutoRegister: false, out _))
+            return;
 
         var pkt = root.TypeAsG_Durability();
         var (current, max) = WorldEquipmentManager.ApplyChange(pkt.ItemUid, pkt.ItemId, pkt.Amount, 1f);

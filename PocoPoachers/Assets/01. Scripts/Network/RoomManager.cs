@@ -15,11 +15,12 @@ public class RoomManager : Singleton<RoomManager>
 
     public static bool IsHost => Instance != null && Instance._isHost;
     public static bool HasGuests => Instance != null && Instance._hasGuests;
-    public static int LastGuestId => Instance != null ? Instance._lastGuestId : 0;
+    public static int PacketSenderId => Instance != null ? Instance._packetSenderId : 0;
+    public static int LastGuestId => PacketSenderId;
 
     public bool _hasGuests => _guests.Count > 0;
     private bool _isHost = true;
-    public int  _lastGuestId { get; private set; }
+    int _packetSenderId;
 
     public string SessionCode { get; set; }
 
@@ -47,6 +48,7 @@ public class RoomManager : Singleton<RoomManager>
     readonly ConcurrentDictionary<int, IPEndPoint>     _guests        = new();
     readonly ConcurrentDictionary<int, UdpHolePuncher> _punchers      = new();
     readonly ConcurrentDictionary<int, long>           _guestLastSeen = new();
+    readonly ConcurrentDictionary<int, NetInfoT>       _pendingGuests = new();
     long _hostLastSeen;
 
     const long TIMEOUT_MS = 30_000L;
@@ -67,18 +69,22 @@ public class RoomManager : Singleton<RoomManager>
         _guests.Clear();
         _punchers.Clear();
         _guestLastSeen.Clear();
+        _pendingGuests.Clear();
         _hostLastSeen = 0;
         NotifyGameStarted();
     }
 
     private void CreateOrJoinRoom(bool isHost, string code)
     {
+        TearDownUdpSession();
+
         _isHost = isHost;
         _memberCount = 1;
         _guests.Clear();
-        _punchers.Clear();
         _guestLastSeen.Clear();
+        _pendingGuests.Clear();
         _hostLastSeen = 0;
+        _hostEp = null;
 
         ThreadPool.QueueUserWorkItem(_ => {
             _udpSession = new UdpSession();
@@ -110,6 +116,9 @@ public class RoomManager : Singleton<RoomManager>
         int id = target.PlayerId;
         IPEndPoint ep = SelectEndPoint(target);
 
+        if (_isHost)
+            RegisterPendingGuest(target);
+
         if (!_isHost)
         {
             _hostEp = ep;
@@ -123,6 +132,7 @@ public class RoomManager : Singleton<RoomManager>
             _guests[id] = ep;
             _guestLastSeen[id] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             _punchers.TryRemove(id, out _);
+            _pendingGuests.TryRemove(id, out _);
             MainThreadDispatcher.Enqueue(() => {
                 if (_isHost)
                 {
@@ -184,27 +194,66 @@ public class RoomManager : Singleton<RoomManager>
         IPEndPoint capturedEp = sender;
         MainThreadDispatcher.Enqueue(() =>
         {
-            _lastGuestId = captured;
+            _packetSenderId = captured;
             _lastGuestEp = capturedEp;
             PacketManager.HandlePacket(data);
-            _lastGuestId = 0;
+            _packetSenderId = 0;
             _lastGuestEp = null;
         });
+    }
+
+    /// <summary>
+    /// G_* 패킷의 권위 있는 게스트 ID. 등록된 엔드포인트 기준이며 claimedPlayerId와 불일치 시 거부.
+    /// allowAutoRegister: 홀펀ching 미완료 시 G_Move 등으로 1회 등록 허용.
+    /// </summary>
+    public static bool TryResolveGuestSender(int claimedPlayerId, bool allowAutoRegister, out int guestId)
+    {
+        guestId = 0;
+        if (!IsHost || Instance == null) return false;
+
+        int sender = PacketSenderId;
+        if (sender > 0)
+        {
+            if (claimedPlayerId > 0 && claimedPlayerId != sender)
+                return false;
+            guestId = sender;
+            return true;
+        }
+
+        if (!allowAutoRegister || claimedPlayerId <= 0)
+            return false;
+
+        if (!Instance.TryAutoRegisterGuest(claimedPlayerId))
+            return false;
+
+        guestId = claimedPlayerId;
+        return true;
     }
 
     IPEndPoint _lastGuestEp;
     public static IPEndPoint LastGuestEp => Instance?._lastGuestEp;
 
-    // 펀칭 타이밍 미스로 _guests에 없는 게스트가 게임 패킷을 보낼 때 자동 등록
-    public void TryAutoRegisterGuest(int playerId)
+    public void RegisterPendingGuest(NetInfoT info)
     {
-        if (!_isHost || _guests.ContainsKey(playerId) || _lastGuestEp == null) return;
+        if (info == null || info.PlayerId == 0) return;
+        _pendingGuests[info.PlayerId] = info;
+    }
+
+    // 펀칭 타이밍 미스로 _guests에 없는 게스트가 게임 패킷을 보낼 때 자동 등록
+    public bool TryAutoRegisterGuest(int playerId)
+    {
+        if (!_isHost || _guests.ContainsKey(playerId) || _lastGuestEp == null) return false;
+        if (!_pendingGuests.TryGetValue(playerId, out var expected) || !MatchesNetInfo(expected, _lastGuestEp))
+            return false;
+
         _guests[playerId] = _lastGuestEp;
+        _pendingGuests.TryRemove(playerId, out _);
         if (_punchers.TryRemove(playerId, out var puncher))
             puncher.Stop();
         OnPlayerCountChanged?.Invoke(_guests.Count + 1);
         OnRoomJoined?.Invoke(playerId);
         SyncToGuest(playerId);
+        return true;
     }
 
     public void SetMemberCount(int count)
@@ -230,6 +279,26 @@ public class RoomManager : Singleton<RoomManager>
         if (!string.IsNullOrEmpty(info.PrivateIp) && info.PrivatePort != 0 && IsOnSameLan(info.PrivateIp))
             return new IPEndPoint(IPAddress.Parse(info.PrivateIp), info.PrivatePort);
         return new IPEndPoint(IPAddress.Parse(info.PublicIp), info.PublicPort);
+    }
+
+    static bool MatchesNetInfo(NetInfoT info, IPEndPoint ep)
+    {
+        if (info == null || ep == null) return false;
+        try
+        {
+            if (!string.IsNullOrEmpty(info.PublicIp) && info.PublicPort != 0)
+            {
+                var pub = new IPEndPoint(IPAddress.Parse(info.PublicIp), info.PublicPort);
+                if (pub.Address.Equals(ep.Address) && pub.Port == ep.Port) return true;
+            }
+            if (!string.IsNullOrEmpty(info.PrivateIp) && info.PrivatePort != 0)
+            {
+                var priv = new IPEndPoint(IPAddress.Parse(info.PrivateIp), info.PrivatePort);
+                if (priv.Address.Equals(ep.Address) && priv.Port == ep.Port) return true;
+            }
+        }
+        catch (FormatException) { }
+        return false;
     }
 
     private bool IsOnSameLan(string otherPrivateIp)
@@ -427,6 +496,7 @@ public class RoomManager : Singleton<RoomManager>
     {
         if (!_guests.TryRemove(guestId, out _)) return;
         _guestLastSeen.TryRemove(guestId, out _);
+        _pendingGuests.TryRemove(guestId, out _);
 
         ObjectManager.Instance?.Despawn(ObjectKind.Player, guestId);
         OnPlayerCountChanged?.Invoke(_guests.Count + 1);
@@ -449,18 +519,29 @@ public class RoomManager : Singleton<RoomManager>
     public void LeaveRoom()
     {
         RoomSync.Leave();
+        TearDownUdpSession();
 
-        foreach (var p in _punchers.Values) p.Stop();
-        _punchers.Clear();
         _guests.Clear();
         _guestLastSeen.Clear();
         _hostLastSeen = 0;
-        _udpSession?.Close();
-        _udpSession = null;
         _hostEp = null;
         _isHost = false;
+        _pendingGuests.Clear();
 
         ObjectManager.Instance?.Clear();
+    }
+
+    void TearDownUdpSession()
+    {
+        foreach (var p in _punchers.Values)
+            p.Stop();
+        _punchers.Clear();
+
+        if (_udpSession == null) return;
+
+        _udpSession.OnReceived -= OnUdpReceived;
+        _udpSession.Close();
+        _udpSession = null;
     }
 
     public void HandleFailure(string msg)
@@ -470,8 +551,7 @@ public class RoomManager : Singleton<RoomManager>
 
     protected override void OnDestroy()
     {
-        foreach (var p in _punchers.Values) p.Stop();
-        _udpSession?.Close();
+        TearDownUdpSession();
         base.OnDestroy();
     }
 }

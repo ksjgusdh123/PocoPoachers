@@ -23,16 +23,20 @@ public struct H_LoadScene : IFlatbufferObject
   public ArraySegment<byte>? GetSceneNameBytes() { return __p.__vector_as_arraysegment(4); }
 #endif
   public byte[] GetSceneNameArray() { return __p.__vector_as_array<byte>(4); }
+  public int SpawnId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<H_LoadScene> CreateH_LoadScene(FlatBufferBuilder builder,
-      StringOffset scene_nameOffset = default(StringOffset)) {
-    builder.StartTable(1);
+      StringOffset scene_nameOffset = default(StringOffset),
+      int spawn_id = 0) {
+    builder.StartTable(2);
+    H_LoadScene.AddSpawnId(builder, spawn_id);
     H_LoadScene.AddSceneName(builder, scene_nameOffset);
     return H_LoadScene.EndH_LoadScene(builder);
   }
 
-  public static void StartH_LoadScene(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void StartH_LoadScene(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddSceneName(FlatBufferBuilder builder, StringOffset sceneNameOffset) { builder.AddOffset(0, sceneNameOffset.Value, 0); }
+  public static void AddSpawnId(FlatBufferBuilder builder, int spawnId) { builder.AddInt(1, spawnId, 0); }
   public static Offset<H_LoadScene> EndH_LoadScene(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_LoadScene>(o);
@@ -44,22 +48,26 @@ public struct H_LoadScene : IFlatbufferObject
   }
   public void UnPackTo(H_LoadSceneT _o) {
     _o.SceneName = this.SceneName;
+    _o.SpawnId = this.SpawnId;
   }
   public static Offset<H_LoadScene> Pack(FlatBufferBuilder builder, H_LoadSceneT _o) {
     if (_o == null) return default(Offset<H_LoadScene>);
     var _scene_name = _o.SceneName == null ? default(StringOffset) : builder.CreateString(_o.SceneName);
     return CreateH_LoadScene(
       builder,
-      _scene_name);
+      _scene_name,
+      _o.SpawnId);
   }
 }
 
 public class H_LoadSceneT
 {
   public string SceneName { get; set; }
+  public int SpawnId { get; set; }
 
   public H_LoadSceneT() {
     this.SceneName = null;
+    this.SpawnId = 0;
   }
 }
 
@@ -70,6 +78,7 @@ static public class H_LoadSceneVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyString(tablePos, 4 /*SceneName*/, false)
+      && verifier.VerifyField(tablePos, 6 /*SpawnId*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

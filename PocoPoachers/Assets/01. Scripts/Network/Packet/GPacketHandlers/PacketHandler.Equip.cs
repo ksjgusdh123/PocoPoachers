@@ -3,29 +3,29 @@ public static partial class PacketHandlers
     public static void OnG_Equip(FlatPacket root)
     {
         var pkt = root.TypeAsG_Equip();
+        if (!RoomManager.TryResolveGuestSender(pkt.PlayerId, allowAutoRegister: false, out int guestId))
+            return;
 
-        int playerId  = pkt.PlayerId;
         int itemId    = pkt.ItemId;
         int itemUid   = pkt.ItemUid;
         int slotIndex = pkt.SlotIndex;
 
-        if (!ObjectManager.Instance.TryGet(ObjectKind.Player, playerId, out var worldObj)) return;
+        if (!ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var worldObj)) return;
 
         var spawned = ApplyRemoteEquip(worldObj, itemId, itemUid, slotIndex);
 
         if (RoomManager.IsHost)
         {
-            PacketBuilder.BroadcastToGuests(playerId,
+            PacketBuilder.BroadcastToGuests(guestId,
                 new H_EquipT
                 {
-                    PlayerId  = playerId,
+                    PlayerId  = guestId,
                     ItemId    = itemId,
                     ItemUid   = itemUid,
                     SlotIndex = slotIndex,
                 },
                 H_Equip.Pack, PacketType.H_Equip);
 
-            // 호스트가 기존 내구도를 조회/등록하고, 장착한 본인(sender 포함) 모두에게 동기화
             if (spawned != null && itemUid != 0)
             {
                 var (current, max) = WorldEquipmentManager.GetOrCreate(itemUid, itemId, spawned.MaxDurability);

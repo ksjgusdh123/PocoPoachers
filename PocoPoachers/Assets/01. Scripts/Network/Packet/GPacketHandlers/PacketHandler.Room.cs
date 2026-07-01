@@ -3,15 +3,19 @@ public static partial class PacketHandlers
     public static void OnG_Leave(FlatPacket root)
     {
         var pkt = root.TypeAsG_Leave();
-        RoomManager.Instance?.RemoveGuest(pkt.PlayerId);
+        if (!RoomManager.TryResolveGuestSender(pkt.PlayerId, allowAutoRegister: false, out int guestId))
+            return;
+
+        RoomManager.Instance?.RemoveGuest(guestId);
     }
 
     public static void OnG_ShelterLevel(FlatPacket root)
     {
         if (!RoomManager.IsHost) return;
+        if (!RoomManager.TryResolveGuestSender(0, allowAutoRegister: false, out int senderId))
+            return;
 
         var pkt = root.TypeAsG_ShelterLevel();
-        int senderId = RoomManager.LastGuestId;
 
         ShelterManager.GetInstance()?.SetLevel(pkt.Level);
 
