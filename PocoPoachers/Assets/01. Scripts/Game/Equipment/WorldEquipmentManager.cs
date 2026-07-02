@@ -12,6 +12,7 @@ public static class WorldEquipmentManager
         public float Max;
         public int CurrentAmmo;
         public int MaxAmmo;
+        public bool AmmoSet; // SetAmmo가 실제로 한 번이라도 호출됐는지 (GetOrCreate의 부수 생성과 구분하기 위함)
         public readonly Dictionary<SlotType, int> Parts = new();   // 슬롯 -> 파츠 id
     }
 
@@ -67,12 +68,14 @@ public static class WorldEquipmentManager
         if (state == null) return;
         state.MaxAmmo = max;
         state.CurrentAmmo = Mathf.Clamp(current, 0, Mathf.Max(0, max));
+        state.AmmoSet = true;
     }
 
-    // 등록된 적 없으면 false (호출측이 총 기본값으로 폴백)
+    // 실제로 SetAmmo가 호출된 적 없으면 false (호출측이 총 기본값으로 폴백)
+    // GetOrCreate 등이 내구도 조회를 위해 State를 미리 만들어둔 경우와 구분하기 위해 AmmoSet을 확인한다
     public static bool TryGetAmmo(int uid, out int current, out int max)
     {
-        if (uid != 0 && _states.TryGetValue(uid, out var state))
+        if (uid != 0 && _states.TryGetValue(uid, out var state) && state.AmmoSet)
         {
             current = state.CurrentAmmo;
             max = state.MaxAmmo;
