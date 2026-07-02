@@ -92,6 +92,7 @@ GameObject:
   - component: {fileID: 5278562045186556185}
   - component: {fileID: 7707555306937921155}
   - component: {fileID: 6698582916204891045}
+  - component: {fileID: 8332401434181766112}
   m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
@@ -222,6 +223,8 @@ MonoBehaviour:
   EnhancementTableUI: {fileID: 0}
   GunEnhancementTableUI: {fileID: 0}
   RepairWorkbenchUI: {fileID: 0}
+  CraftingTableUI: {fileID: 0}
+  _gunPartPanel: {fileID: 0}
   _cameraController: {fileID: 0}
   _useItemDuration: 1.5
 --- !u!114 &7471307466492674918
@@ -399,7 +402,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a9d451192ba499042984bd9dc1ec6fe0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BagMount
-  _bagMountPoint: {fileID: 3520312019052795702}
+  _bagMountPoint: {fileID: 257512575678206131}
 --- !u!114 &8674998174659162563
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -479,18 +482,22 @@ MonoBehaviour:
   _maxStaminaLevel: 0
   _moveSpeedLevel: 0
   _maxLevel: 4
-  _baseCost: 2
-  _costIncreasePerLevel: 2
   _maxHpIncreasePerLevel: 10
   _maxBatteryIncreasePerLevel: 10
   _maxStaminaIncreasePerLevel: 10
   _moveSpeedIncreasePerLevel: 0.25
-  _costTables:
-  - statType: 0
-    levelCosts:
-    - materials:
-      - itemId: 101
-        amount: 1
+--- !u!114 &8332401434181766112
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8183887473744995871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5c7dc6428a6c3042b673e395fabbe78, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerItemBoxDropper
 --- !u!1001 &8572826895787655771
 PrefabInstance:
   m_ObjectHideFlags: 0

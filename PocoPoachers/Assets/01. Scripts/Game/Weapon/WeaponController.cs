@@ -125,7 +125,12 @@ public class WeaponController : EquipableController
 
     public override void Unequip(int slotIndex)
     {
-        if (_mount.GetGun(slotIndex) == null) return;
+        GunBase gun = _mount.GetGun(slotIndex);
+        if (gun == null) return;
+
+        // 해제 시점의 탄약을 저장해둬야 나중에 재장착할 때 복원할 수 있음 (파츠 장착 시 저장 로직과 동일 목적)
+        RoomSync.GunAmmoSave(gun.Uid, gun.CurrentAmmo, gun.Stat.MaxMagazine);
+
         _mount.ApplyUnequip(slotIndex);
         if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
         OnWeaponChanged?.Invoke(slotIndex, null);

@@ -37,8 +37,7 @@ public class GunPartDropHandler : ItemHolderDropHandler
             return false;
 
         _gun.EquipPart(part);
-        WorldEquipmentManager.SetPart(_gun.Uid, _slotType, part.id);
-        SaveAmmo();
+        SyncPart(part.id);
         return true;
     }
 
@@ -48,11 +47,11 @@ public class GunPartDropHandler : ItemHolderDropHandler
         if (_gun == null) return;
 
         _gun.UnequipPart(_slotType); // 총에서 제거 + 스탯 재계산
-        WorldEquipmentManager.RemovePart(_gun.Uid, _slotType);
-        SaveAmmo();
+        SyncPart(0);
     }
 
-    // 최대 장탄수는 파츠에 따라 바뀌므로 파츠 변경 시 함께 갱신
-    private void SaveAmmo() =>
-        WorldEquipmentManager.SetAmmo(_gun.Uid, _gun.CurrentAmmo, _gun.Stat.MaxMagazine);
+    // 파츠 변경(장착=partId, 해제=0) + 바뀐 장탄수를 호스트에 저장.
+    // 호스트 본인이면 즉시 로컬 저장, 게스트면 호스트에게 패킷으로 요청한다
+    private void SyncPart(int partId) =>
+        RoomSync.GunPartEquip(_gun.Uid, _slotType, partId, _gun.CurrentAmmo, _gun.Stat.MaxMagazine);
 }

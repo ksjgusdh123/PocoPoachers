@@ -33,6 +33,19 @@ public class Inventory : MonoBehaviour
         }
     }
 
+    // 런타임에 최대/현재 용량을 재설정 (기존 슬롯은 전부 비워짐) — 아이템을 채우기 전에 호출해야 함
+    // 예: 플레이어 사망 시 인벤토리 크기에 맞춰 상자 용량을 동적으로 정할 때
+    public void SetCapacity(int maxCapacity, int? initialCapacity = null)
+    {
+        _maxCapacity = maxCapacity;
+        _initialCapacity = initialCapacity ?? maxCapacity;
+        _currentCapacity = _initialCapacity;
+
+        _slots.Clear();
+        for (int i = 0; i < _maxCapacity; i++)
+            _slots.Add(isPlayer ? new ItemSlot() : new BoxItemSlot());
+    }
+
     // 아이템 추가, 성공 여부 반환
     // 해당 아이템이 있는 첫 번째 슬롯 인덱스 반환, 없으면 -1
     public int FindItemSlotIndex(ItemData itemData)
