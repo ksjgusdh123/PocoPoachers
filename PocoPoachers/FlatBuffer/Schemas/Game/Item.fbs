@@ -101,3 +101,24 @@ table H_Durability
     current:  float;
     max:      float;
 }
+
+// 총 파츠 장착/해제 — part_id=0이면 해제. 게스트가 호스트에게 처리를 요청한다
+// current_ammo/max_magazine은 파츠 변경 직후 클라이언트(요청자)의 실제 값을 그대로 신뢰한다
+// (탄약은 발사/재장전 때마다 동기화되지 않으므로 호스트가 재계산할 수 없음)
+// 다른 플레이어의 화면에는 영향 없는 정보라 게스트로의 브로드캐스트는 하지 않는다
+table G_GunPartEquip
+{
+    gun_uid:      int;
+    slot_type:    int;
+    part_id:      int;
+    current_ammo: int;
+    max_magazine: int;
+}
+
+// 무기 해제 시점의 탄약 저장 요청 (게스트→호스트). 마찬가지로 다른 플레이어 화면에는 영향 없어 브로드캐스트 없음
+table G_GunAmmoSave
+{
+    gun_uid:      int;
+    current_ammo: int;
+    max_magazine: int;
+}

@@ -46,6 +46,8 @@ public struct FlatPacket : IFlatbufferObject
   public H_ConsumeItemResult TypeAsH_ConsumeItemResult() { return Type<H_ConsumeItemResult>().Value; }
   public G_Durability TypeAsG_Durability() { return Type<G_Durability>().Value; }
   public H_Durability TypeAsH_Durability() { return Type<H_Durability>().Value; }
+  public G_GunPartEquip TypeAsG_GunPartEquip() { return Type<G_GunPartEquip>().Value; }
+  public G_GunAmmoSave TypeAsG_GunAmmoSave() { return Type<G_GunAmmoSave>().Value; }
   public G_StatSync TypeAsG_StatSync() { return Type<G_StatSync>().Value; }
   public H_StatSync TypeAsH_StatSync() { return Type<H_StatSync>().Value; }
   public H_EnemySpawn TypeAsH_EnemySpawn() { return Type<H_EnemySpawn>().Value; }
@@ -163,6 +165,12 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_Durability:
         _o.Type.Value = this.Type<H_Durability>().HasValue ? this.Type<H_Durability>().Value.UnPack() : null;
+        break;
+      case PacketType.G_GunPartEquip:
+        _o.Type.Value = this.Type<G_GunPartEquip>().HasValue ? this.Type<G_GunPartEquip>().Value.UnPack() : null;
+        break;
+      case PacketType.G_GunAmmoSave:
+        _o.Type.Value = this.Type<G_GunAmmoSave>().HasValue ? this.Type<G_GunAmmoSave>().Value.UnPack() : null;
         break;
       case PacketType.G_StatSync:
         _o.Type.Value = this.Type<G_StatSync>().HasValue ? this.Type<G_StatSync>().Value.UnPack() : null;
