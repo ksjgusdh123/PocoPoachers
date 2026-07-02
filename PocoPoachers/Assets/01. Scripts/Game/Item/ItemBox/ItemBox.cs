@@ -50,12 +50,15 @@ public class ItemBox : MonoBehaviour, IInteractable
         if (_isPlayerNearby && !HasBeenOpened) ShowPulse();
     }
 
-    public void Initialize(int[] itemIds, int[] itemCounts = null, int[] itemUids = null, HashSet<int> noRevealIds = null)
+    // capacity를 지정하면 상자 슬롯 수를 그 값으로 강제 설정 (미지정 시 프리팹에 설정된 기본 용량 사용)
+    public void Initialize(int[] itemIds, int[] itemCounts = null, int[] itemUids = null, HashSet<int> noRevealIds = null, int? capacity = null)
     {
         ItemIds = itemIds;
 
         if (!gameObject.TryGetComponent<Inventory>(out var inven))
             inven = gameObject.AddComponent<Inventory>();
+        if (capacity.HasValue)
+            inven.SetCapacity(capacity.Value);
 
         for (int i = 0; i < itemIds.Length; i++)
         {
