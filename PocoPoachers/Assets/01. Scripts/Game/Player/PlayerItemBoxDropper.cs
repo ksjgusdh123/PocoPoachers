@@ -48,7 +48,7 @@ public class PlayerItemBoxDropper : MonoBehaviour
         float rot = transform.eulerAngles.y;
 
         omgr.SpawnItemBox(uid, BoxTypeId, pos, rot)
-            ?.Initialize(itemIds.ToArray(), itemCounts.ToArray(), itemUids.ToArray(), capacity: itemIds.Count);
+            ?.Initialize(itemIds.ToArray(), itemCounts.ToArray(), itemUids.ToArray(), capacity: itemIds.Count, skipReveal: true);
 
         omgr.RegisterSpawnedBox(new H_ItemSpawnT
         {
