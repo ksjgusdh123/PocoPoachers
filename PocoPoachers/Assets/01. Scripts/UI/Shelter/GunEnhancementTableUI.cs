@@ -1,5 +1,4 @@
 using System.Linq;
-using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,8 +7,13 @@ public class GunEnhancementTableUI : MonoBehaviour
 {
     [SerializeField] private GunEnhancementDropHandler _slot;
     [SerializeField] private TextMeshProUGUI _levelText;
-    [SerializeField] private TextMeshProUGUI _costText;
     [SerializeField] private Button _enhanceButton;
+
+    [Header("재료 슬롯 (최대 2개)")]
+    [SerializeField] private GameObject[] _ingredientRows;
+    [SerializeField] private Image[] _ingredientIcons;
+    [SerializeField] private TextMeshProUGUI[] _ingredientNameTexts;
+    [SerializeField] private TextMeshProUGUI[] _ingredientCountTexts;
 
     private const int MaxLevel = 3;
     private const string CostStatKey = "ItemEnhancement";
@@ -38,7 +42,7 @@ public class GunEnhancementTableUI : MonoBehaviour
         if (!hasItem)
         {
             _levelText.text = "-";
-            _costText.text = "-";
+            HideAllIngredients();
             return;
         }
 
@@ -47,12 +51,13 @@ public class GunEnhancementTableUI : MonoBehaviour
 
         if (level >= MaxLevel)
         {
-            _costText.text = "MAX";
+            HideAllIngredients();
             return;
         }
 
-        _costText.text = BuildCostText(level);
-        _enhanceButton.interactable = CanAfford(level);
+        var cost = GetCostData(level);
+        RefreshIngredients(cost);
+        _enhanceButton.interactable = CanAfford(cost);
     }
 
     private void OnClickEnhance()
@@ -61,9 +66,12 @@ public class GunEnhancementTableUI : MonoBehaviour
 
         int uid = _slot.DroppedUid;
         int level = WorldEquipmentManager.GetEnhancementLevel(uid);
-        if (level >= MaxLevel || !CanAfford(level)) return;
+        if (level >= MaxLevel) return;
 
-        ConsumeCost(level);
+        var cost = GetCostData(level);
+        if (!CanAfford(cost)) return;
+
+        ConsumeCost(cost);
         WorldEquipmentManager.SetEnhancementLevel(uid, level + 1);
         Refresh();
     }
@@ -71,25 +79,48 @@ public class GunEnhancementTableUI : MonoBehaviour
     private EnhancementCostData GetCostData(int currentLevel) =>
         EnhancementCostTable.Instance.All.FirstOrDefault(d => d.Stat == CostStatKey && d.Level == currentLevel + 1);
 
-    private bool CanAfford(int level)
+    private void RefreshIngredients(EnhancementCostData cost)
     {
-        if (_inventory == null) return false;
-        var cost = GetCostData(level);
-        if (cost == null) return false;
-        return HasItem(cost.NeedItem1Id, cost.NeedItem1Count)
-            && HasItem(cost.NeedItem2Id, cost.NeedItem2Count);
+        var ingredients = GetIngredients(cost);
+
+        for (int i = 0; i < _ingredientRows.Length; i++)
+        {
+            bool active = i < ingredients.Length;
+            _ingredientRows[i].SetActive(active);
+            if (!active) continue;
+
+            var (itemId, required) = ingredients[i];
+            var item = ItemTable.Instance.Get(itemId);
+            if (item == null) continue;
+
+            _ingredientIcons[i].sprite = ResourceManager.Instance.LoadSprite(item.icon);
+            _ingredientNameTexts[i].text = LocalizationManager.GetInstance().GetString(item.ItemName);
+
+            int owned = _inventory?.GetItemCount(item) ?? 0;
+            _ingredientCountTexts[i].text = $"{owned} / {required}";
+            _ingredientCountTexts[i].color = owned >= required ? Color.green : Color.red;
+        }
     }
 
-    private bool HasItem(int itemId, int count)
+    private void HideAllIngredients()
     {
-        if (itemId <= 0 || count <= 0) return true;
-        var data = ItemTable.Instance.Get(itemId);
-        return data != null && _inventory.HasItem(data, count);
+        foreach (var row in _ingredientRows)
+            row.SetActive(false);
     }
 
-    private void ConsumeCost(int level)
+    private bool CanAfford(EnhancementCostData cost)
     {
-        var cost = GetCostData(level);
+        if (_inventory == null || cost == null) return false;
+        foreach (var (itemId, required) in GetIngredients(cost))
+        {
+            var item = ItemTable.Instance.Get(itemId);
+            if (item == null || _inventory.GetItemCount(item) < required) return false;
+        }
+        return true;
+    }
+
+    private void ConsumeCost(EnhancementCostData cost)
+    {
         if (cost == null) return;
         RemoveItem(cost.NeedItem1Id, cost.NeedItem1Count);
         RemoveItem(cost.NeedItem2Id, cost.NeedItem2Count);
@@ -98,28 +129,18 @@ public class GunEnhancementTableUI : MonoBehaviour
     private void RemoveItem(int itemId, int count)
     {
         if (itemId <= 0 || count <= 0) return;
-        var data = ItemTable.Instance.Get(itemId);
-        if (data == null) return;
-        _inventory.RemoveItem(data, count);
+        var item = ItemTable.Instance.Get(itemId);
+        if (item == null) return;
+        _inventory.RemoveItem(item, count);
     }
 
-    private string BuildCostText(int level)
+    private static (int itemId, int count)[] GetIngredients(EnhancementCostData cost)
     {
-        var cost = GetCostData(level);
-        if (cost == null) return "-";
-        var sb = new StringBuilder();
-        AppendCostRow(sb, cost.NeedItem1Id, cost.NeedItem1Count);
-        AppendCostRow(sb, cost.NeedItem2Id, cost.NeedItem2Count);
-        return sb.Length > 0 ? sb.ToString() : "-";
-    }
+        if (cost == null) return System.Array.Empty<(int, int)>();
 
-    private void AppendCostRow(StringBuilder sb, int itemId, int count)
-    {
-        if (itemId <= 0 || count <= 0) return;
-        var data = ItemTable.Instance.Get(itemId);
-        string name = data != null ? LocalizationManager.GetInstance().GetString(data.ItemName) : $"ID:{itemId}";
-        int have = _inventory != null ? _inventory.GetItemCount(data) : 0;
-        if (sb.Length > 0) sb.Append('\n');
-        sb.Append($"{name} {have} / {count}");
+        var list = new System.Collections.Generic.List<(int, int)>();
+        if (cost.NeedItem1Id > 0) list.Add((cost.NeedItem1Id, cost.NeedItem1Count));
+        if (cost.NeedItem2Id > 0) list.Add((cost.NeedItem2Id, cost.NeedItem2Count));
+        return list.ToArray();
     }
 }
