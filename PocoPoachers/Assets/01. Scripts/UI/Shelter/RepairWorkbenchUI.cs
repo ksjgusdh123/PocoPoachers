@@ -50,8 +50,10 @@ public class RepairWorkbenchUI : MonoBehaviour
             return;
         }
 
-        // TODO: ItemSlot 내구도 시스템 구현 후 실제 값으로 교체
-        _durabilityText.text = "? / ?";
+        if (WorldEquipmentManager.TryGetDurability(_repairSlot.DroppedUid, out float cur, out float max))
+            _durabilityText.text = $"{cur:F0} / {max:F0}";
+        else
+            _durabilityText.text = "? / ?";
         _costText.text = BuildCostText(_repairSlot.DroppedItemData);
     }
 

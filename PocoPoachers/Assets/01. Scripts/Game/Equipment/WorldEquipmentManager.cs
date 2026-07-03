@@ -117,5 +117,18 @@ public static class WorldEquipmentManager
     public static IReadOnlyDictionary<SlotType, int> GetParts(int uid) =>
         uid != 0 && _states.TryGetValue(uid, out var state) ? state.Parts : _emptyParts;
 
+    public static bool TryGetDurability(int uid, out float current, out float max)
+    {
+        if (uid != 0 && _states.TryGetValue(uid, out var state))
+        {
+            current = state.Current;
+            max = state.Max;
+            return true;
+        }
+        current = 0f;
+        max = 0f;
+        return false;
+    }
+
     public static void Clear() => _states.Clear();
 }
