@@ -9,10 +9,17 @@ public class GunEnhancementDropHandler : ItemHolderDropHandler
 
     private int _droppedUid;
 
+    public int DroppedUid => _droppedUid;
+
     protected override bool OnItemDropped(ItemData data, int amount, int uid)
     {
-        if (!base.OnItemDropped(data, amount, uid)) return false;
+        if (data.ItemType != ItemType.Weapon &&
+            data.ItemType != ItemType.Armor &&
+            data.ItemType != ItemType.Helmet &&
+            data.ItemType != ItemType.GunPart)
+            return false;
 
+        SetDisplay(data, amount);
         _droppedUid = uid;
         OnGunSet?.Invoke(data);
         return true;

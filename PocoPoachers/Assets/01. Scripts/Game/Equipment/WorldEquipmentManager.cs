@@ -13,7 +13,9 @@ public static class WorldEquipmentManager
         public int CurrentAmmo;
         public int MaxAmmo;
         public bool AmmoSet; // SetAmmo가 실제로 한 번이라도 호출됐는지 (GetOrCreate의 부수 생성과 구분하기 위함)
-        public readonly Dictionary<SlotType, int> Parts = new();   // 슬롯 -> 파츠 id
+        public readonly Dictionary<SlotType, int> Parts = new();     // 슬롯 -> 파츠 id
+        public readonly Dictionary<SlotType, int> PartUids = new();  // 슬롯 -> 파츠 uid
+        public int EnhancementLevel;
     }
 
     private static readonly Dictionary<int, State> _states = new();
@@ -88,17 +90,24 @@ public static class WorldEquipmentManager
 
     // ---- 파츠 ----
 
-    public static void SetPart(int uid, SlotType slot, int partId)
+    public static void SetPart(int uid, SlotType slot, int partId, int partUid = 0)
     {
         var state = Ensure(uid);
         if (state == null) return;
         state.Parts[slot] = partId;
+        if (partUid != 0)
+            state.PartUids[slot] = partUid;
+        else
+            state.PartUids.Remove(slot);
     }
 
     public static void RemovePart(int uid, SlotType slot)
     {
         if (uid != 0 && _states.TryGetValue(uid, out var state))
+        {
             state.Parts.Remove(slot);
+            state.PartUids.Remove(slot);
+        }
     }
 
     // 전체 파츠 교체
@@ -108,6 +117,7 @@ public static class WorldEquipmentManager
         if (state == null) return;
 
         state.Parts.Clear();
+        state.PartUids.Clear();
         if (parts != null)
             foreach (var kv in parts)
                 state.Parts[kv.Key] = kv.Value;
@@ -116,6 +126,67 @@ public static class WorldEquipmentManager
     // 복원용 조회 — 없으면 빈 목록
     public static IReadOnlyDictionary<SlotType, int> GetParts(int uid) =>
         uid != 0 && _states.TryGetValue(uid, out var state) ? state.Parts : _emptyParts;
+
+    public static int GetPartUid(int gunUid, SlotType slot)
+    {
+        if (gunUid != 0 && _states.TryGetValue(gunUid, out var state) && state.PartUids.TryGetValue(slot, out int partUid))
+            return partUid;
+        return 0;
+    }
+
+    // ---- 강화 레벨 ----
+
+    public static void SetEnhancementLevel(int uid, int level)
+    {
+        var state = Ensure(uid);
+        if (state == null) return;
+        state.EnhancementLevel = Mathf.Max(0, level);
+    }
+
+    public static int GetEnhancementLevel(int uid)
+    {
+        if (uid != 0 && _states.TryGetValue(uid, out var state))
+            return state.EnhancementLevel;
+        return 0;
+    }
+
+    // 1.0 기준 편차(효과 크기)를 강화 레벨만큼 증폭
+    private static float EnhanceMultiplier(float baseValue, float bonusMultiplier)
+        => 1f + (baseValue - 1f) * bonusMultiplier;
+
+    public static ArmorStatData GetEnhancedArmorStat(int uid, ArmorStatData baseStat)
+    {
+        int level = GetEnhancementLevel(uid);
+        if (level <= 0) return baseStat;
+
+        float m = 1f + 0.1f * level;
+        return new ArmorStatData
+        {
+            defense_rate = baseStat.DefenseRate * m,
+            max_hp_bonus = baseStat.MaxHpBonus * m,
+            move_speed_multiplier = EnhanceMultiplier(baseStat.MoveSpeedMultiplier, m),
+        };
+    }
+
+    public static GunPartData GetEnhancedGunPart(GunPartData basePart, int partUid)
+    {
+        int level = GetEnhancementLevel(partUid);
+        if (level <= 0) return basePart;
+
+        float m = 1f + 0.1f * level;
+        return new GunPartData
+        {
+            id = basePart.Id,
+            slot_type = basePart.SlotType,
+            compatible_gun_types = basePart.CompatibleGunTypes,
+            spread_multiplier = EnhanceMultiplier(basePart.SpreadMultiplier, m),
+            aim_fov_multiplier = EnhanceMultiplier(basePart.AimFovMultiplier, m),
+            reload_time_multiplier = EnhanceMultiplier(basePart.ReloadTimeMultiplier, m),
+            recoil_multiplier = EnhanceMultiplier(basePart.RecoilMultiplier, m),
+            max_magazine_bonus = Mathf.RoundToInt(basePart.MaxMagazineBonus * m),
+            sound_range_multiplier = EnhanceMultiplier(basePart.SoundRangeMultiplier, m),
+        };
+    }
 
     public static bool TryGetDurability(int uid, out float current, out float max)
     {

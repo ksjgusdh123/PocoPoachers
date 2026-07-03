@@ -106,7 +106,11 @@ public class WeaponController : EquipableController
             foreach (var kv in WorldEquipmentManager.GetParts(uid))
             {
                 var part = GunPartTable.Instance.Get(kv.Value);
-                if (part != null) gun.EquipPart(part);
+                if (part != null)
+                {
+                    int partUid = WorldEquipmentManager.GetPartUid(uid, kv.Key);
+                    gun.EquipPart(WorldEquipmentManager.GetEnhancedGunPart(part, partUid));
+                }
             }
             // 파츠 복원 후 현재 장탄수 복원
             if (WorldEquipmentManager.TryGetAmmo(uid, out int curAmmo, out _))
