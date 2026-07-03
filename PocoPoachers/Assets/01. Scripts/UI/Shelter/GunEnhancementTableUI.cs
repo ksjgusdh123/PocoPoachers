@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using TMPro;
 using UnityEngine;
@@ -16,7 +17,6 @@ public class GunEnhancementTableUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI[] _ingredientCountTexts;
 
     private const int MaxLevel = 3;
-    private const string CostStatKey = "ItemEnhancement";
 
     private Inventory _inventory;
 
@@ -76,16 +76,21 @@ public class GunEnhancementTableUI : MonoBehaviour
         Refresh();
     }
 
-    private EnhancementCostData GetCostData(int currentLevel) =>
-        EnhancementCostTable.Instance.All.FirstOrDefault(d => d.Stat == CostStatKey && d.Level == currentLevel + 1);
+    private ItemEnhancementCostData GetCostData(int currentLevel)
+    {
+        if (!_slot.IsSetted) return null;
+        int itemId = _slot.DroppedItemData.Id;
+        return ItemEnhancementCostTable.Instance.All
+            .FirstOrDefault(d => d.ItemId == itemId && d.Level == currentLevel + 1);
+    }
 
-    private void RefreshIngredients(EnhancementCostData cost)
+    private void RefreshIngredients(ItemEnhancementCostData cost)
     {
         var ingredients = GetIngredients(cost);
 
         for (int i = 0; i < _ingredientRows.Length; i++)
         {
-            bool active = i < ingredients.Length;
+            bool active = i < ingredients.Count;
             _ingredientRows[i].SetActive(active);
             if (!active) continue;
 
@@ -108,7 +113,7 @@ public class GunEnhancementTableUI : MonoBehaviour
             row.SetActive(false);
     }
 
-    private bool CanAfford(EnhancementCostData cost)
+    private bool CanAfford(ItemEnhancementCostData cost)
     {
         if (_inventory == null || cost == null) return false;
         foreach (var (itemId, required) in GetIngredients(cost))
@@ -119,7 +124,7 @@ public class GunEnhancementTableUI : MonoBehaviour
         return true;
     }
 
-    private void ConsumeCost(EnhancementCostData cost)
+    private void ConsumeCost(ItemEnhancementCostData cost)
     {
         if (cost == null) return;
         RemoveItem(cost.NeedItem1Id, cost.NeedItem1Count);
@@ -134,13 +139,12 @@ public class GunEnhancementTableUI : MonoBehaviour
         _inventory.RemoveItem(item, count);
     }
 
-    private static (int itemId, int count)[] GetIngredients(EnhancementCostData cost)
+    private static List<(int itemId, int count)> GetIngredients(ItemEnhancementCostData cost)
     {
-        if (cost == null) return System.Array.Empty<(int, int)>();
-
-        var list = new System.Collections.Generic.List<(int, int)>();
+        var list = new List<(int, int)>();
+        if (cost == null) return list;
         if (cost.NeedItem1Id > 0) list.Add((cost.NeedItem1Id, cost.NeedItem1Count));
         if (cost.NeedItem2Id > 0) list.Add((cost.NeedItem2Id, cost.NeedItem2Count));
-        return list.ToArray();
+        return list;
     }
 }
