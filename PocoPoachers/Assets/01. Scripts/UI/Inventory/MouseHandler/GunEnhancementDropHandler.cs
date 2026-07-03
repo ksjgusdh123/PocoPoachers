@@ -13,8 +13,7 @@ public class GunEnhancementDropHandler : ItemHolderDropHandler
 
     protected override bool OnItemDropped(ItemData data, int amount, int uid)
     {
-        if (data.ItemType != ItemType.Weapon &&
-            data.ItemType != ItemType.Armor &&
+        if (data.ItemType != ItemType.Armor &&
             data.ItemType != ItemType.Helmet &&
             data.ItemType != ItemType.GunPart)
             return false;
