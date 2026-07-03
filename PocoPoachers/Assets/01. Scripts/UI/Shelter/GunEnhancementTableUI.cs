@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,6 +9,7 @@ public class GunEnhancementTableUI : MonoBehaviour
 {
     [SerializeField] private GunEnhancementDropHandler _slot;
     [SerializeField] private TextMeshProUGUI _levelText;
+    [SerializeField] private TextMeshProUGUI _statDescText;
     [SerializeField] private Button _enhanceButton;
 
     [Header("재료 슬롯 (최대 2개)")]
@@ -42,18 +44,24 @@ public class GunEnhancementTableUI : MonoBehaviour
         if (!hasItem)
         {
             _levelText.text = "-";
+            if (_statDescText != null) _statDescText.text = string.Empty;
             HideAllIngredients();
             return;
         }
 
-        int level = WorldEquipmentManager.GetEnhancementLevel(_slot.DroppedUid);
+        int itemId = _slot.DroppedItemData != null ? _slot.DroppedItemData.Id : 0;
+        int level = WorldEquipmentManager.GetEnhancementLevel(_slot.DroppedUid, itemId);
         _levelText.text = $"+{level}";
 
         if (level >= MaxLevel)
         {
+            if (_statDescText != null) _statDescText.text = string.Empty;
             HideAllIngredients();
             return;
         }
+
+        if (_statDescText != null)
+            _statDescText.text = BuildStatDescription(level);
 
         var cost = GetCostData(level);
         RefreshIngredients(cost);
@@ -65,15 +73,87 @@ public class GunEnhancementTableUI : MonoBehaviour
         if (!_slot.IsSetted) return;
 
         int uid = _slot.DroppedUid;
-        int level = WorldEquipmentManager.GetEnhancementLevel(uid);
+        int itemId = _slot.DroppedItemData != null ? _slot.DroppedItemData.Id : 0;
+        int level = WorldEquipmentManager.GetEnhancementLevel(uid, itemId);
         if (level >= MaxLevel) return;
 
         var cost = GetCostData(level);
         if (!CanAfford(cost)) return;
 
         ConsumeCost(cost);
-        WorldEquipmentManager.SetEnhancementLevel(uid, level + 1);
+        WorldEquipmentManager.SetEnhancementLevel(uid, level + 1, itemId);
         Refresh();
+    }
+
+    // 강화 전후 스탯 변화 텍스트 생성
+    private string BuildStatDescription(int currentLevel)
+    {
+        if (!_slot.IsSetted) return string.Empty;
+        var item = _slot.DroppedItemData;
+        int nextLevel = currentLevel + 1;
+        var sb = new StringBuilder();
+
+        if (item.ItemType == ItemType.GunPart)
+        {
+            var part = GunPartTable.Instance.Get(item.Id);
+            if (part == null) return string.Empty;
+
+            AppendMultiplierLine(sb, "산탄 확산", part.SpreadMultiplier, currentLevel, nextLevel);
+            AppendMultiplierLine(sb, "조준 속도", part.AimFovMultiplier, currentLevel, nextLevel);
+            AppendMultiplierLine(sb, "재장전 속도", part.ReloadTimeMultiplier, currentLevel, nextLevel);
+            AppendMultiplierLine(sb, "반동", part.RecoilMultiplier, currentLevel, nextLevel);
+            AppendMultiplierLine(sb, "소음 범위", part.SoundRangeMultiplier, currentLevel, nextLevel);
+
+            if (part.MaxMagazineBonus != 0)
+            {
+                int cur = EnhanceAdditive(part.MaxMagazineBonus, currentLevel);
+                int nxt = EnhanceAdditive(part.MaxMagazineBonus, nextLevel);
+                sb.AppendLine($"탄창 용량: +{cur} → +{nxt}");
+            }
+        }
+        else
+        {
+            var stat = ArmorStatTable.Instance.Get(item.Id);
+            if (stat == null) return string.Empty;
+
+            if (stat.DefenseRate > 0)
+            {
+                float cur = stat.DefenseRate * (1f + 0.1f * currentLevel);
+                float nxt = stat.DefenseRate * (1f + 0.1f * nextLevel);
+                sb.AppendLine($"방어율: {cur * 100f:F0}% → {nxt * 100f:F0}%");
+            }
+            if (stat.MaxHpBonus > 0)
+            {
+                float cur = stat.MaxHpBonus * (1f + 0.1f * currentLevel);
+                float nxt = stat.MaxHpBonus * (1f + 0.1f * nextLevel);
+                sb.AppendLine($"HP 보너스: +{cur:F0} → +{nxt:F0}");
+            }
+            AppendMultiplierLine(sb, "이동속도", stat.MoveSpeedMultiplier, currentLevel, nextLevel);
+        }
+
+        return sb.ToString().TrimEnd();
+    }
+
+    private static void AppendMultiplierLine(StringBuilder sb, string label, float baseVal, int curLv, int nxtLv)
+    {
+        if (Mathf.Approximately(baseVal, 1f)) return;
+        float cur = EnhanceMultiplier(baseVal, curLv);
+        float nxt = EnhanceMultiplier(baseVal, nxtLv);
+        sb.AppendLine($"{label}: {FormatPct(cur)} → {FormatPct(nxt)}");
+    }
+
+    // WorldEquipmentManager의 공식과 동일
+    private static float EnhanceMultiplier(float baseVal, int level)
+        => 1f + (baseVal - 1f) * (1f + 0.1f * level);
+
+    private static int EnhanceAdditive(int baseVal, int level)
+        => Mathf.RoundToInt(baseVal * (1f + 0.1f * level));
+
+    // 1.0 기준 배율을 %로 표시. 0.89 → "-11%", 1.1 → "+10%"
+    private static string FormatPct(float value)
+    {
+        int pct = Mathf.RoundToInt((value - 1f) * 100f);
+        return pct >= 0 ? $"+{pct}%" : $"{pct}%";
     }
 
     private ItemEnhancementCostData GetCostData(int currentLevel)

@@ -20,6 +20,8 @@ public static class WorldEquipmentManager
 
     private static readonly Dictionary<int, State> _states = new();
     private static readonly Dictionary<SlotType, int> _emptyParts = new();
+    // 인벤토리 아이템(uid=0)의 강화 레벨: itemId → level
+    private static readonly Dictionary<int, int> _itemTypeEnhancementLevels = new();
 
     // uid에 상태가 없으면 만들어 반환. uid==0(비영속)이면 null
     private static State Ensure(int uid)
@@ -136,17 +138,26 @@ public static class WorldEquipmentManager
 
     // ---- 강화 레벨 ----
 
-    public static void SetEnhancementLevel(int uid, int level)
+    // uid가 0(인벤토리 일반 아이템)일 때는 itemId 기반 딕셔너리에 저장
+    public static void SetEnhancementLevel(int uid, int level, int itemId = 0)
     {
-        var state = Ensure(uid);
-        if (state == null) return;
-        state.EnhancementLevel = Mathf.Max(0, level);
+        if (uid != 0)
+        {
+            var state = Ensure(uid);
+            if (state != null) state.EnhancementLevel = Mathf.Max(0, level);
+        }
+        else if (itemId > 0)
+        {
+            _itemTypeEnhancementLevels[itemId] = Mathf.Max(0, level);
+        }
     }
 
-    public static int GetEnhancementLevel(int uid)
+    public static int GetEnhancementLevel(int uid, int itemId = 0)
     {
         if (uid != 0 && _states.TryGetValue(uid, out var state))
             return state.EnhancementLevel;
+        if (itemId > 0 && _itemTypeEnhancementLevels.TryGetValue(itemId, out int typeLevel))
+            return typeLevel;
         return 0;
     }
 
@@ -170,7 +181,7 @@ public static class WorldEquipmentManager
 
     public static GunPartData GetEnhancedGunPart(GunPartData basePart, int partUid)
     {
-        int level = GetEnhancementLevel(partUid);
+        int level = GetEnhancementLevel(partUid, basePart.Id);
         if (level <= 0) return basePart;
 
         float m = 1f + 0.1f * level;
@@ -201,5 +212,9 @@ public static class WorldEquipmentManager
         return false;
     }
 
-    public static void Clear() => _states.Clear();
+    public static void Clear()
+    {
+        _states.Clear();
+        _itemTypeEnhancementLevels.Clear();
+    }
 }
