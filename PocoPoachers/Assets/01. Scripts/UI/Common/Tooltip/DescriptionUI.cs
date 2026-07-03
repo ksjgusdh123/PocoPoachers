@@ -9,6 +9,7 @@ public class DescriptionUI : MonoBehaviour
 
     [SerializeField] private TextMeshProUGUI _name;
     [SerializeField] private TextMeshProUGUI _description;
+    [SerializeField] private Image _icon;
     [SerializeField] private Vector3 _offset;
 
     // 내구도가 있는 장비(무기/방어구)를 호버했을 때만 활성화되는 영역
@@ -40,6 +41,7 @@ public class DescriptionUI : MonoBehaviour
         transform.position = anchorPosition + _offset;
         _name.text = LocalizationManager.GetInstance().GetString(data.ItemName);
         _description.text = LocalizationManager.GetInstance().GetString(data.Description);
+        if (_icon != null) _icon.sprite = ResourceManager.Instance.LoadSprite(data.icon);
         BindDurability(data, uid);
     }
 
@@ -47,6 +49,7 @@ public class DescriptionUI : MonoBehaviour
     {
         _name.text = "";
         _description.text = "";
+        if (_icon != null) _icon.sprite = null;
         UnbindDurability();
         gameObject.SetActive(false);
     }
