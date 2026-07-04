@@ -100,6 +100,19 @@ public class Inventory : MonoBehaviour
         ChangeInventory?.Invoke();
     }
 
+    // 가방 장착 등으로 최대 무게 증가/원복 (상한 없음)
+    public void ExpandMaxWeight(int amount)
+    {
+        _maxWeight += amount;
+        ChangeInventory?.Invoke();
+    }
+
+    public void ReduceMaxWeight(int amount)
+    {
+        _maxWeight = Mathf.Max(0, _maxWeight - amount);
+        ChangeInventory?.Invoke();
+    }
+
     // 용량을 count만큼 줄여도 보유 아이템(+reservedSlots개 추가 예정분)이 모두 들어가는지 확인
     public bool CanReduceCapacity(int count, int reservedSlots = 0)
     {
