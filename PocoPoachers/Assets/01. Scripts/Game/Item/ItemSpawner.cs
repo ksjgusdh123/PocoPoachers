@@ -36,13 +36,30 @@ public class ItemSpawner : MonoBehaviour
     static int _nextItemUid = 1;
     const int BOX_TYPE_ID = 301;
 
+    // 새로 발급되는 무기/방어구의 초기 내구도를 최대치의 이 비율 범위 안에서 랜덤으로 정한다
+    private const float MinInitialDurabilityRatio = 0.5f;
+    private const float DefaultMaxDurability = 100f; // GunBase/ArmorBase 기본 최대 내구도와 동일
+
     // 스택 불가 아이템(무기/방어구 등)에만 고유 uid 발급, 소모품류는 0
     // 모든 스포너(필드 박스/적 드롭 등)가 공유하는 카운터라 호스트 전역에서 충돌 없음
     public static int AssignItemUid(int itemId)
     {
         var data = ItemTable.Instance.Get(itemId);
-        return data != null && data.MaxStack <= 1 ? _nextItemUid++ : 0;
+        if (data == null || data.MaxStack > 1) return 0;
+
+        int uid = _nextItemUid++;
+
+        if (HasDurability(data.Type))
+        {
+            float current = DefaultMaxDurability * Random.Range(MinInitialDurabilityRatio, 1f);
+            WorldEquipmentManager.SetInitialDurability(uid, itemId, current, DefaultMaxDurability);
+        }
+
+        return uid;
     }
+
+    private static bool HasDurability(ItemType type) =>
+        type == ItemType.Weapon || type == ItemType.Helmet || type == ItemType.Armor;
 
     public List<int> GetIds(ItemType type)
     {

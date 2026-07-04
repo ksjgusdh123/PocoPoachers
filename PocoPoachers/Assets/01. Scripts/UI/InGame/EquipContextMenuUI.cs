@@ -23,6 +23,13 @@ public class EquipContextMenuUI : UIBase
             _partButton.onClick.AddListener(OnClickPart);
 
         SlotInteractionManager.GetInstance().OnEquipRightClick += ShowAt;
+        UIManager.GetInstance().OnPanelClosed += HandleInventoryClosed;
+    }
+
+    private void HandleInventoryClosed(UIType type)
+    {
+        if (type == UIType.Inventory)
+            Hide();
     }
 
     private void OnDisable()

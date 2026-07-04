@@ -10,6 +10,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Button _sortButton;
     [SerializeField] private TextMeshProUGUI _countText;
     [SerializeField] private TextMeshProUGUI _miniCountText;
+    [SerializeField] private TextMeshProUGUI _weightText;
 
     protected ItemSlotUI[] _slotUIs;
     private DescriptionUI _descriptionUI;
@@ -206,5 +207,8 @@ public class InventoryUI : MonoBehaviour
             _countText.text = $"({_inventory.ItemCount} / {_inventory.CurrentCapacity})";
             _miniCountText.text = _countText.text;
         }
+
+        if (_weightText != null)
+            _weightText.text = $"({_inventory.CurrentWeight} / {_inventory.MaxWeight})";
     }
 }

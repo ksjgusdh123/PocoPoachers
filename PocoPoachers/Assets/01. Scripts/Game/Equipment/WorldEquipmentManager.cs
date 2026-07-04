@@ -35,6 +35,13 @@ public static class WorldEquipmentManager
         return state;
     }
 
+    // 새로 발급된 uid의 초기 내구도를 미리 정해둔다 (예: 랜덤 내구도) — ItemSpawner.AssignItemUid에서 호출
+    public static void SetInitialDurability(int uid, int itemId, float current, float max)
+    {
+        if (uid == 0) return;
+        _states[uid] = new State { ItemId = itemId, Current = current, Max = max };
+    }
+
     // 장착 시 호출 — 처음 보는 uid면 풀내구도로 등록, 이미 있으면 기존 상태 반환
     public static (float current, float max) GetOrCreate(int uid, int itemId, float maxDurability)
     {
