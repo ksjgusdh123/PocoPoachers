@@ -31,7 +31,6 @@ public class ArmorController : EquipableController
             var (restoredCurrent, _) = WorldEquipmentManager.GetOrCreate(uid, data.id, armor.MaxDurability);
             armor.SetDurability(restoredCurrent);
         }
-        Debug.Log($"[ArmorController] 장착: itemId={data.id}, uid={uid}, durability={armor.CurrentDurability}/{armor.MaxDurability}");
 
         _stat.ApplyArmorStat(armor.Stat);
         _stat.OnDamaged += OnDamaged;

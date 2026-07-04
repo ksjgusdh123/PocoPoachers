@@ -13,6 +13,7 @@ public partial class ItemData
     public float use_time;
     public int max_stack;
     public int price;
+    public int weight;
     public string icon = "";
     public string prefab = "";
 
@@ -35,6 +36,8 @@ public partial class ItemData
     public int MaxStack { get => max_stack; set => max_stack = value; }
 
     public int Price { get => price; set => price = value; }
+
+    public int Weight { get => weight; set => weight = value; }
 
     public string IconPath { get => icon; set => icon = value; }
 

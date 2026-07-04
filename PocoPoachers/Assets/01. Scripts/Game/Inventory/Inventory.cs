@@ -7,6 +7,7 @@ public class Inventory : MonoBehaviour
     [SerializeField] private int _maxCapacity = 50;
     [SerializeField] private int _initialCapacity = 20;
     [SerializeField] private bool isPlayer;
+    [SerializeField] private int _maxWeight = 100; // 0 이하면 무게 제한 없음
 
     private List<ItemSlot> _slots = new List<ItemSlot>();
     private int _currentCapacity;
@@ -18,6 +19,8 @@ public class Inventory : MonoBehaviour
     public IReadOnlyList<ItemSlot> Slots => _slots;
     public int MaxCapacity => _maxCapacity;
     public int CurrentCapacity => _currentCapacity;
+    public int MaxWeight => _maxWeight;
+    public int CurrentWeight => CalculateWeight();
 
     // 현재 사용 중인 슬롯 수 (갭 포함)
     public int ItemCount => CountItems();
@@ -262,5 +265,16 @@ public class Inventory : MonoBehaviour
             if (!_slots[i].IsEmpty) count++;
         }
         return count;
+    }
+
+    private int CalculateWeight()
+    {
+        int weight = 0;
+        for (int i = 0; i < _currentCapacity; i++)
+        {
+            if (!_slots[i].IsEmpty)
+                weight += _slots[i].ItemData.Weight * _slots[i].Amount;
+        }
+        return weight;
     }
 }

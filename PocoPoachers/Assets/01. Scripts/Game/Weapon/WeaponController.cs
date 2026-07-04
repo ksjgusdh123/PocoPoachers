@@ -116,7 +116,6 @@ public class WeaponController : EquipableController
             if (WorldEquipmentManager.TryGetAmmo(uid, out int curAmmo, out _))
                 gun.SetAmmo(curAmmo);
         }
-        Debug.Log($"[WeaponController] 장착: itemId={data.id}, uid={uid}, durability={gun.CurrentDurability}/{gun.MaxDurability}");
 
         gun.Owner = gameObject;
         gun.gameObject.SetActive(false);
