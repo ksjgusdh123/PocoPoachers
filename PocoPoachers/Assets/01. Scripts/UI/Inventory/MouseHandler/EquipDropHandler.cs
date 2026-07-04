@@ -1,17 +1,32 @@
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class EquipDropHandler : ItemHolderDropHandler
+public class EquipDropHandler : ItemHolderDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private GameObject _itemVisual;
     [SerializeField] private int _slotIndex;
     private EquipableController _controller;
+    private DescriptionUI _descriptionUI;
 
     public int SlotIndex => _slotIndex;
     public void SetController(EquipableController controller) => _controller = controller;
 
     // 무기 슬롯이면 장착된 총, 아니면 null (파츠 패널 진입용)
     public GunBase GetEquippedGun() => (_controller as WeaponController)?.GetGun(_slotIndex);
+
+    protected override void Awake()
+    {
+        base.Awake();
+        _descriptionUI = FindAnyObjectByType<DescriptionUI>(FindObjectsInactive.Include);
+    }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!_isSetted) return;
+        _descriptionUI?.ShowDescription(DroppedItemData, GetUnequipUid(), transform.position);
+    }
+
+    public void OnPointerExit(PointerEventData eventData) => _descriptionUI?.HideDescription();
 
     private void OnEnable()
     {
@@ -28,6 +43,7 @@ public class EquipDropHandler : ItemHolderDropHandler
     {
         if (_controller != null)
             _controller.OnSlotUnequipped -= OnSlotUnequipped;
+        _descriptionUI?.HideDescription();
     }
 
     // 외부(사망 등)에서 장비가 해제되면 UI 표시를 정리한다 (인벤토리 반납 없이)

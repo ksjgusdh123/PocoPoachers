@@ -50,12 +50,16 @@ public class ItemBox : MonoBehaviour, IInteractable
         if (_isPlayerNearby && !HasBeenOpened) ShowPulse();
     }
 
-    public void Initialize(int[] itemIds, int[] itemCounts = null, int[] itemUids = null, HashSet<int> noRevealIds = null)
+    // capacity를 지정하면 상자 슬롯 수를 그 값으로 강제 설정 (미지정 시 프리팹에 설정된 기본 용량 사용)
+    // skipReveal=true면 담긴 아이템 전부를 카드 뒤집기 연출 없이 처음부터 공개된 상태로 채움 (예: 플레이어 사망 드롭)
+    public void Initialize(int[] itemIds, int[] itemCounts = null, int[] itemUids = null, HashSet<int> noRevealIds = null, int? capacity = null, bool skipReveal = false)
     {
         ItemIds = itemIds;
 
         if (!gameObject.TryGetComponent<Inventory>(out var inven))
             inven = gameObject.AddComponent<Inventory>();
+        if (capacity.HasValue)
+            inven.SetCapacity(capacity.Value);
 
         for (int i = 0; i < itemIds.Length; i++)
         {
@@ -66,7 +70,8 @@ public class ItemBox : MonoBehaviour, IInteractable
             int slotIndex = inven.CanAddItem(data, count);
             if (slotIndex < 0) continue;
             inven.AddItemAtSlot(slotIndex, data, count, uid);
-            if (noRevealIds != null && noRevealIds.Contains(itemIds[i]) && inven.Slots[slotIndex] is BoxItemSlot boxSlot)
+            bool noReveal = skipReveal || (noRevealIds != null && noRevealIds.Contains(itemIds[i]));
+            if (noReveal && inven.Slots[slotIndex] is BoxItemSlot boxSlot)
                 boxSlot.skipReveal = true;
         }
     }

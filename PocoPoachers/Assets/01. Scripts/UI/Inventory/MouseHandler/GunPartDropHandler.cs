@@ -7,6 +7,7 @@ public class GunPartDropHandler : ItemHolderDropHandler
     [SerializeField] private SlotType _slotType;
 
     private GunBase _gun;
+    private int _droppedPartUid;
 
     public SlotType SlotType => _slotType;
     public void SetGun(GunBase gun) => _gun = gun;
@@ -36,13 +37,31 @@ public class GunPartDropHandler : ItemHolderDropHandler
         if (!base.OnItemDropped(data, amount, uid))
             return false;
 
-        _gun.EquipPart(part);
+        _droppedPartUid = uid;
+        GunPartData enhanced = WorldEquipmentManager.GetEnhancedGunPart(part, uid);
+        _gun.EquipPart(enhanced);
+        SyncPart(part.id, uid);
         return true;
     }
 
     public override void Unequip()
     {
         base.Unequip();              // 인벤토리로 반납
-        _gun?.UnequipPart(_slotType); // 총에서 제거 + 스탯 재계산
+        if (_gun == null) return;
+
+        _gun.UnequipPart(_slotType); // 총에서 제거 + 스탯 재계산
+        SyncPart(0, 0);
+        _droppedPartUid = 0;
+    }
+
+    // 파츠 변경(장착=partId, 해제=0) + 바뀐 장탄수를 호스트에 저장.
+    // 호스트 본인이면 즉시 로컬 저장, 게스트면 호스트에게 패킷으로 요청한다
+    // partUid는 로컬에만 저장 (네트워크 패킷에는 포함되지 않음)
+    private void SyncPart(int partId, int partUid)
+    {
+        RoomSync.GunPartEquip(_gun.Uid, _slotType, partId, _gun.CurrentAmmo, _gun.Stat.MaxMagazine);
+        // RoomSync가 partUid 없이 WorldEquipmentManager를 갱신한 뒤, partUid를 덮어써서 보존
+        if (partId != 0)
+            WorldEquipmentManager.SetPart(_gun.Uid, _slotType, partId, partUid);
     }
 }

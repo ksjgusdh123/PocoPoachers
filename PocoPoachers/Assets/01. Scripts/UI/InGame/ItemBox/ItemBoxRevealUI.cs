@@ -15,7 +15,9 @@ public class ItemBoxRevealUI : MonoBehaviour
 
         BoxItemSlot[] slots = inven.Slots.Cast<BoxItemSlot>().ToArray();
 
-        for (int i = 0; i < slots.Length; ++i)
+        // 슬롯 수가 미리 배치된 카드 수보다 많을 수 있음 (예: 상자 용량이 동적으로 늘어난 경우) — 넘치는 슬롯은 리빌 연출 없이 넘어감
+        int count = Mathf.Min(slots.Length, _cards.Count);
+        for (int i = 0; i < count; ++i)
         {
             _cards[i].CheckSlotState(slots[i]);
         }

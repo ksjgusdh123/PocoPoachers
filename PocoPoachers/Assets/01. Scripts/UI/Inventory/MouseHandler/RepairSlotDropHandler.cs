@@ -22,6 +22,8 @@ public class RepairSlotDropHandler : ItemHolderDropHandler
         return true;
     }
 
+    public int DroppedUid => _droppedUid;
+
     protected override int GetUnequipUid() => _droppedUid;
 
     public override void Unequip()

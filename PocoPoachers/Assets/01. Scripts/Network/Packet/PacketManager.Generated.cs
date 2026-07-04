@@ -30,6 +30,8 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.H_ConsumeItemResult, PacketHandlers.OnH_ConsumeItemResult);
         _onRecv.Add(PacketType.G_Durability       , PacketHandlers.OnG_Durability);
         _onRecv.Add(PacketType.H_Durability       , PacketHandlers.OnH_Durability);
+        _onRecv.Add(PacketType.G_GunPartEquip     , PacketHandlers.OnG_GunPartEquip);
+        _onRecv.Add(PacketType.G_GunAmmoSave      , PacketHandlers.OnG_GunAmmoSave);
         _onRecv.Add(PacketType.G_StatSync         , PacketHandlers.OnG_StatSync);
         _onRecv.Add(PacketType.H_StatSync         , PacketHandlers.OnH_StatSync);
         _onRecv.Add(PacketType.H_EnemySpawn       , PacketHandlers.OnH_EnemySpawn);

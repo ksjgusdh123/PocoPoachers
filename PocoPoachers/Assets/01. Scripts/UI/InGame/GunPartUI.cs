@@ -1,15 +1,33 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 // 총기 파츠 장착 패널. 무기 우클릭 → "파츠 장착"으로 열린다(PlayerController가 Open 호출).
 // 씬에 비활성으로 둬도 됨 — 활성 객체가 Open을 부르면 그때 켜진다.
 // 슬롯(GunPartDropHandler)은 SlotType별로 프리팹에 고정 배치.
 public class GunPartUI : MonoBehaviour
 {
+    [SerializeField] private Button _closeButton;
+    [SerializeField] private Image _gunImage;
+
     private GunPartDropHandler[] _slots;
     private GunBase _gun;   // 현재 패널이 다루는 총 (uid=_gun.Uid, 데이터=_gun.Stat)
 
-    private void Awake() => CacheSlots();
+    private void Awake()
+    {
+        CacheSlots();
+        if (_closeButton != null)
+            _closeButton.onClick.AddListener(Close);
+    }
+
+    private void OnEnable() => WeaponController.OnWeaponChanged += OnWeaponChanged;
+    private void OnDisable() => WeaponController.OnWeaponChanged -= OnWeaponChanged;
+
+    // 무기 해제(data == null) 시 열려 있던 파츠 패널을 닫는다
+    private void OnWeaponChanged(int slotIndex, ItemData data)
+    {
+        if (data == null) Close();
+    }
 
     // 해당 총으로 패널을 연다. 지원 슬롯만 켜고, 각 슬롯에 총+장착 파츠를 Bind.
     public void Open(GunBase gun)
@@ -19,6 +37,7 @@ public class GunPartUI : MonoBehaviour
         _gun = gun;
         gameObject.SetActive(true);
         CacheSlots();
+        ShowGunImage(gun);
 
         HashSet<SlotType> supported = GetSupportedSlots(gun);
         foreach (GunPartDropHandler slot in _slots)
@@ -30,8 +49,16 @@ public class GunPartUI : MonoBehaviour
         }
     }
 
-    // 닫기 버튼에 연결
     public void Close() => gameObject.SetActive(false);
+
+    private void ShowGunImage(GunBase gun)
+    {
+        if (_gunImage == null) return;
+
+        ItemData data = ItemTable.Instance.Get(gun.ItemId);
+        _gunImage.sprite = data != null ? ResourceManager.Instance.LoadSprite(data.icon) : null;
+        _gunImage.enabled = _gunImage.sprite != null;
+    }
 
     private void CacheSlots()
     {
