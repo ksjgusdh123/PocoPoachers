@@ -67,8 +67,8 @@ public class ObjectManager : Singleton<ObjectManager>
     public void Despawn(ObjectKind kind, int id)
     {
         var key = (kind, id);
-        if (!_objects.TryGetValue(key, out var obj) || obj == null) return;
-        Destroy(obj.gameObject);
+        if (_objects.TryGetValue(key, out var obj) && obj != null)
+            Destroy(obj.gameObject);
         _objects.Remove(key);
     }
 
@@ -100,7 +100,10 @@ public class ObjectManager : Singleton<ObjectManager>
         if (IsLocalPlayer(m.Kind, m.Id)) return;
 
         var key = (m.Kind, m.Id);
-        if (!_objects.TryGetValue(key, out var obj))
+        if (_objects.TryGetValue(key, out var obj) && obj == null)
+            _objects.Remove(key);
+
+        if (!_objects.TryGetValue(key, out obj))
         {
             obj = CreateWorldObject(m.Kind, m.Id, m.TypeId);
             obj.transform.SetPositionAndRotation(m.Pos, Quaternion.Euler(0f, m.Rotation, 0f));

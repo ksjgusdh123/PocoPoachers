@@ -20,7 +20,7 @@ public class WeaponSlotUI : SlotUIBase
     {
         if (slotIndex != _slotIndex - 1) return;
 
-        _nameText.text = LocalizationManager.GetInstance().GetString(data.ItemName);
+        _nameText.text = data != null ? LocalizationManager.GetInstance().GetString(data.ItemName) : "";
         SetIcon(data);
     }
 }

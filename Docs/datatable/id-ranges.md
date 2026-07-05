@@ -26,6 +26,7 @@ CSV 원본: `PocoPoachers/DataTable/`
 | `5001 ~ 5999` | EnhancementCost (PlayerEnhancement 강화 재료) | stat(EnhancementStatType 이름) + level 조합당 1행 |
 | `6001 ~ 6999` | RepairCost (수리 재료) | item_id(수리 대상 무기/헬멧/갑옷 ID)당 1행, 고정 비용 |
 | `7001 ~ 7999` | Skill (AI 스킬) | `skill` 컬럼(Dodge/Retreat 등)이 동작 종류, `SkillManager._skillIds`로 AI별 할당 |
+| `8001 ~ 8999` | ItemEnhancementCost (장비/파츠 강화 재료) | item_id + level 조합당 1행, 최대 레벨 3 |
 | Item ID 공유 | CraftingRecipe (제작 레시피) | id = result_item_id (1:1), `CraftingRecipeTable.Get(itemId)`로 조회 |
 
 ---

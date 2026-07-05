@@ -50,13 +50,15 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         int playerSlot      = player.SlotIndex;
         int boxSlot         = box.SlotIndex;
         int boxUid          = box.InventoryUI.Box.Id;
+        int playerItemUid   = player.InventoryUI.Inventory.Slots[playerSlot].Uid;
+        int boxItemUid      = box.InventoryUI.Inventory.Slots[boxSlot].Uid;
 
-        ApplyExchangeLocally(player, boxUid, boxSlot, boxItem, boxAmount, playerSlot, playerItem, playerAmount);
+        ApplyExchangeLocally(player, boxUid, boxSlot, boxItem, boxAmount, boxItemUid, playerSlot, playerItem, playerAmount, playerItemUid);
 
         if (!RoomManager.IsHost)
         {
             // 낙관적 업데이트: 즉시 로컬 적용 후 호스트에 요청
-            RoomSync.ItemExchange(boxUid, playerItem?.id ?? 0, playerAmount, playerSlot, boxItem?.id ?? 0, boxAmount, boxSlot);
+            RoomSync.ItemExchange(boxUid, playerItem?.id ?? 0, playerAmount, playerItemUid, playerSlot, boxItem?.id ?? 0, boxAmount, boxItemUid, boxSlot);
         }
         else
         {
@@ -64,12 +66,12 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
                 RoomSync.ItemBoxUpdate(boxUid, boxItem.id, -boxAmount, boxSlot);
 
             if (playerItem != null)
-                RoomSync.ItemBoxUpdate(boxUid, playerItem.id, playerAmount, boxSlot);
+                RoomSync.ItemBoxUpdate(boxUid, playerItem.id, playerAmount, boxSlot, playerItemUid);
         }
     }
 
     // 박스 ↔ 플레이어 인벤토리에 교환 결과를 동일하게 반영 (호스트/게스트 공통)
-    private void ApplyExchangeLocally(ItemSlotUI player, int boxUid, int boxSlot, ItemData boxItem, int boxAmount, int playerSlot, ItemData playerItem, int playerAmount)
+    private void ApplyExchangeLocally(ItemSlotUI player, int boxUid, int boxSlot, ItemData boxItem, int boxAmount, int boxItemUid, int playerSlot, ItemData playerItem, int playerAmount, int playerItemUid)
     {
         var om = ObjectManager.Instance;
         if (om != null && om.TryGet(ObjectKind.ItemBox, boxUid, out var boxObj))
@@ -78,7 +80,7 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
             if (boxInv != null)
             {
                 if (boxItem != null && boxAmount > 0) boxInv.RemoveItemAtSlot(boxSlot, boxItem, boxAmount);
-                if (playerItem != null && playerAmount > 0) boxInv.AddItemAtSlot(boxSlot, playerItem, playerAmount);
+                if (playerItem != null && playerAmount > 0) boxInv.AddItemAtSlot(boxSlot, playerItem, playerAmount, playerItemUid);
             }
         }
 
@@ -86,12 +88,12 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         if (playerInv != null)
         {
             if (playerItem != null && playerAmount > 0) playerInv.RemoveItemAtSlot(playerSlot, playerItem, playerAmount);
-            if (boxItem != null && boxAmount > 0) playerInv.AddItemAtSlot(playerSlot, boxItem, boxAmount);
+            if (boxItem != null && boxAmount > 0) playerInv.AddItemAtSlot(playerSlot, boxItem, boxAmount, boxItemUid);
         }
     }
 
     // 호스트가 G_ItemExchange를 거부했을 때 게스트 낙관적 교환을 되돌림
-    public void RollbackExchange(int boxUid, int playerSlot, int playerItemId, int playerAmount, int boxSlot, int boxItemId, int boxAmount)
+    public void RollbackExchange(int boxUid, int playerSlot, int playerItemId, int playerAmount, int playerItemUid, int boxSlot, int boxItemId, int boxAmount, int boxItemUid)
     {
         var playerItem = ItemTable.Instance.Get(playerItemId);
         var boxItem = ItemTable.Instance.Get(boxItemId);
@@ -108,7 +110,7 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
             if (playerItem != null && playerAmount > 0)
                 boxInv.RemoveItemAtSlot(boxSlot, playerItem, playerAmount);
             if (boxItem != null && boxAmount > 0)
-                boxInv.AddItemAtSlot(boxSlot, boxItem, boxAmount);
+                boxInv.AddItemAtSlot(boxSlot, boxItem, boxAmount, boxItemUid);
         }
 
         if (playerInv != null)
@@ -116,7 +118,7 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
             if (boxItem != null && boxAmount > 0)
                 playerInv.RemoveItemAtSlot(playerSlot, boxItem, boxAmount);
             if (playerItem != null && playerAmount > 0)
-                playerInv.AddItemAtSlot(playerSlot, playerItem, playerAmount);
+                playerInv.AddItemAtSlot(playerSlot, playerItem, playerAmount, playerItemUid);
         }
     }
 

@@ -20,25 +20,31 @@ public struct H_ItemExchangeResult : IFlatbufferObject
   public int BoxUid { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int PlayerItemId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int PlayerItemAmount { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int PlayerSlotIndex { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int BoxItemId { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int BoxItemAmount { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public int BoxSlotIndex { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int PlayerItemUid { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int PlayerSlotIndex { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int BoxItemId { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int BoxItemAmount { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int BoxItemUid { get { int o = __p.__offset(20); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int BoxSlotIndex { get { int o = __p.__offset(22); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<H_ItemExchangeResult> CreateH_ItemExchangeResult(FlatBufferBuilder builder,
       bool success = false,
       int box_uid = 0,
       int player_item_id = 0,
       int player_item_amount = 0,
+      int player_item_uid = 0,
       int player_slot_index = 0,
       int box_item_id = 0,
       int box_item_amount = 0,
+      int box_item_uid = 0,
       int box_slot_index = 0) {
-    builder.StartTable(8);
+    builder.StartTable(10);
     H_ItemExchangeResult.AddBoxSlotIndex(builder, box_slot_index);
+    H_ItemExchangeResult.AddBoxItemUid(builder, box_item_uid);
     H_ItemExchangeResult.AddBoxItemAmount(builder, box_item_amount);
     H_ItemExchangeResult.AddBoxItemId(builder, box_item_id);
     H_ItemExchangeResult.AddPlayerSlotIndex(builder, player_slot_index);
+    H_ItemExchangeResult.AddPlayerItemUid(builder, player_item_uid);
     H_ItemExchangeResult.AddPlayerItemAmount(builder, player_item_amount);
     H_ItemExchangeResult.AddPlayerItemId(builder, player_item_id);
     H_ItemExchangeResult.AddBoxUid(builder, box_uid);
@@ -46,15 +52,17 @@ public struct H_ItemExchangeResult : IFlatbufferObject
     return H_ItemExchangeResult.EndH_ItemExchangeResult(builder);
   }
 
-  public static void StartH_ItemExchangeResult(FlatBufferBuilder builder) { builder.StartTable(8); }
+  public static void StartH_ItemExchangeResult(FlatBufferBuilder builder) { builder.StartTable(10); }
   public static void AddSuccess(FlatBufferBuilder builder, bool success) { builder.AddBool(0, success, false); }
   public static void AddBoxUid(FlatBufferBuilder builder, int boxUid) { builder.AddInt(1, boxUid, 0); }
   public static void AddPlayerItemId(FlatBufferBuilder builder, int playerItemId) { builder.AddInt(2, playerItemId, 0); }
   public static void AddPlayerItemAmount(FlatBufferBuilder builder, int playerItemAmount) { builder.AddInt(3, playerItemAmount, 0); }
-  public static void AddPlayerSlotIndex(FlatBufferBuilder builder, int playerSlotIndex) { builder.AddInt(4, playerSlotIndex, 0); }
-  public static void AddBoxItemId(FlatBufferBuilder builder, int boxItemId) { builder.AddInt(5, boxItemId, 0); }
-  public static void AddBoxItemAmount(FlatBufferBuilder builder, int boxItemAmount) { builder.AddInt(6, boxItemAmount, 0); }
-  public static void AddBoxSlotIndex(FlatBufferBuilder builder, int boxSlotIndex) { builder.AddInt(7, boxSlotIndex, 0); }
+  public static void AddPlayerItemUid(FlatBufferBuilder builder, int playerItemUid) { builder.AddInt(4, playerItemUid, 0); }
+  public static void AddPlayerSlotIndex(FlatBufferBuilder builder, int playerSlotIndex) { builder.AddInt(5, playerSlotIndex, 0); }
+  public static void AddBoxItemId(FlatBufferBuilder builder, int boxItemId) { builder.AddInt(6, boxItemId, 0); }
+  public static void AddBoxItemAmount(FlatBufferBuilder builder, int boxItemAmount) { builder.AddInt(7, boxItemAmount, 0); }
+  public static void AddBoxItemUid(FlatBufferBuilder builder, int boxItemUid) { builder.AddInt(8, boxItemUid, 0); }
+  public static void AddBoxSlotIndex(FlatBufferBuilder builder, int boxSlotIndex) { builder.AddInt(9, boxSlotIndex, 0); }
   public static Offset<H_ItemExchangeResult> EndH_ItemExchangeResult(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_ItemExchangeResult>(o);
@@ -69,9 +77,11 @@ public struct H_ItemExchangeResult : IFlatbufferObject
     _o.BoxUid = this.BoxUid;
     _o.PlayerItemId = this.PlayerItemId;
     _o.PlayerItemAmount = this.PlayerItemAmount;
+    _o.PlayerItemUid = this.PlayerItemUid;
     _o.PlayerSlotIndex = this.PlayerSlotIndex;
     _o.BoxItemId = this.BoxItemId;
     _o.BoxItemAmount = this.BoxItemAmount;
+    _o.BoxItemUid = this.BoxItemUid;
     _o.BoxSlotIndex = this.BoxSlotIndex;
   }
   public static Offset<H_ItemExchangeResult> Pack(FlatBufferBuilder builder, H_ItemExchangeResultT _o) {
@@ -82,9 +92,11 @@ public struct H_ItemExchangeResult : IFlatbufferObject
       _o.BoxUid,
       _o.PlayerItemId,
       _o.PlayerItemAmount,
+      _o.PlayerItemUid,
       _o.PlayerSlotIndex,
       _o.BoxItemId,
       _o.BoxItemAmount,
+      _o.BoxItemUid,
       _o.BoxSlotIndex);
   }
 }
@@ -95,9 +107,11 @@ public class H_ItemExchangeResultT
   public int BoxUid { get; set; }
   public int PlayerItemId { get; set; }
   public int PlayerItemAmount { get; set; }
+  public int PlayerItemUid { get; set; }
   public int PlayerSlotIndex { get; set; }
   public int BoxItemId { get; set; }
   public int BoxItemAmount { get; set; }
+  public int BoxItemUid { get; set; }
   public int BoxSlotIndex { get; set; }
 
   public H_ItemExchangeResultT() {
@@ -105,9 +119,11 @@ public class H_ItemExchangeResultT
     this.BoxUid = 0;
     this.PlayerItemId = 0;
     this.PlayerItemAmount = 0;
+    this.PlayerItemUid = 0;
     this.PlayerSlotIndex = 0;
     this.BoxItemId = 0;
     this.BoxItemAmount = 0;
+    this.BoxItemUid = 0;
     this.BoxSlotIndex = 0;
   }
 }
@@ -122,10 +138,12 @@ static public class H_ItemExchangeResultVerify
       && verifier.VerifyField(tablePos, 6 /*BoxUid*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*PlayerItemId*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 10 /*PlayerItemAmount*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 12 /*PlayerSlotIndex*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 14 /*BoxItemId*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 16 /*BoxItemAmount*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 18 /*BoxSlotIndex*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*PlayerItemUid*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*PlayerSlotIndex*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 16 /*BoxItemId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 18 /*BoxItemAmount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 20 /*BoxItemUid*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 22 /*BoxSlotIndex*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

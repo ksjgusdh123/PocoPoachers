@@ -34,18 +34,20 @@ public enum PacketType : byte
   H_ConsumeItemResult = 27,
   G_Durability = 28,
   H_Durability = 29,
-  G_StatSync = 30,
-  H_StatSync = 31,
-  H_EnemySpawn = 32,
-  H_EnemyMove = 33,
-  H_EnemyHit = 34,
-  H_EnemyDie = 35,
-  G_Leave = 36,
-  H_Leave = 37,
-  G_ShelterLevel = 38,
-  H_ShelterLevel = 39,
-  H_SandbagDestroy = 40,
-  H_LoadScene = 41,
+  G_GunPartEquip = 30,
+  G_GunAmmoSave = 31,
+  G_StatSync = 32,
+  H_StatSync = 33,
+  H_EnemySpawn = 34,
+  H_EnemyMove = 35,
+  H_EnemyHit = 36,
+  H_EnemyDie = 37,
+  G_Leave = 38,
+  H_Leave = 39,
+  G_ShelterLevel = 40,
+  H_ShelterLevel = 41,
+  H_SandbagDestroy = 42,
+  H_LoadScene = 43,
 };
 
 public class PacketTypeUnion {
@@ -116,6 +118,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_Durability(G_DurabilityT _g_durability) { return new PacketTypeUnion{ Type = PacketType.G_Durability, Value = _g_durability }; }
   public H_DurabilityT AsH_Durability() { return this.As<H_DurabilityT>(); }
   public static PacketTypeUnion FromH_Durability(H_DurabilityT _h_durability) { return new PacketTypeUnion{ Type = PacketType.H_Durability, Value = _h_durability }; }
+  public G_GunPartEquipT AsG_GunPartEquip() { return this.As<G_GunPartEquipT>(); }
+  public static PacketTypeUnion FromG_GunPartEquip(G_GunPartEquipT _g_gunpartequip) { return new PacketTypeUnion{ Type = PacketType.G_GunPartEquip, Value = _g_gunpartequip }; }
+  public G_GunAmmoSaveT AsG_GunAmmoSave() { return this.As<G_GunAmmoSaveT>(); }
+  public static PacketTypeUnion FromG_GunAmmoSave(G_GunAmmoSaveT _g_gunammosave) { return new PacketTypeUnion{ Type = PacketType.G_GunAmmoSave, Value = _g_gunammosave }; }
   public G_StatSyncT AsG_StatSync() { return this.As<G_StatSyncT>(); }
   public static PacketTypeUnion FromG_StatSync(G_StatSyncT _g_statsync) { return new PacketTypeUnion{ Type = PacketType.G_StatSync, Value = _g_statsync }; }
   public H_StatSyncT AsH_StatSync() { return this.As<H_StatSyncT>(); }
@@ -173,6 +179,8 @@ public class PacketTypeUnion {
       case PacketType.H_ConsumeItemResult: return H_ConsumeItemResult.Pack(builder, _o.AsH_ConsumeItemResult()).Value;
       case PacketType.G_Durability: return G_Durability.Pack(builder, _o.AsG_Durability()).Value;
       case PacketType.H_Durability: return H_Durability.Pack(builder, _o.AsH_Durability()).Value;
+      case PacketType.G_GunPartEquip: return G_GunPartEquip.Pack(builder, _o.AsG_GunPartEquip()).Value;
+      case PacketType.G_GunAmmoSave: return G_GunAmmoSave.Pack(builder, _o.AsG_GunAmmoSave()).Value;
       case PacketType.G_StatSync: return G_StatSync.Pack(builder, _o.AsG_StatSync()).Value;
       case PacketType.H_StatSync: return H_StatSync.Pack(builder, _o.AsH_StatSync()).Value;
       case PacketType.H_EnemySpawn: return H_EnemySpawn.Pack(builder, _o.AsH_EnemySpawn()).Value;
@@ -284,6 +292,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_Durability:
         result = H_DurabilityVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_GunPartEquip:
+        result = G_GunPartEquipVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_GunAmmoSave:
+        result = G_GunAmmoSaveVerify.Verify(verifier, tablePos);
         break;
       case PacketType.G_StatSync:
         result = G_StatSyncVerify.Verify(verifier, tablePos);

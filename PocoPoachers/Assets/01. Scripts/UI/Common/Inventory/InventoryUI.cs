@@ -10,6 +10,7 @@ public class InventoryUI : MonoBehaviour
     [SerializeField] private Button _sortButton;
     [SerializeField] private TextMeshProUGUI _countText;
     [SerializeField] private TextMeshProUGUI _miniCountText;
+    [SerializeField] private TextMeshProUGUI _weightText;
 
     protected ItemSlotUI[] _slotUIs;
     private DescriptionUI _descriptionUI;
@@ -112,7 +113,27 @@ public class InventoryUI : MonoBehaviour
             EnsureDescriptionUI();
             GenerateSlots();
         }
+        else
+        {
+            // 이 UI 패널은 여러 상자에 재사용될 수 있는데, 상자마다 용량이 다를 수 있음(예: 사망 드롭 상자)
+            // 미리 배치된 슬롯 UI 수보다 인벤토리 최대 용량이 크면 부족한 만큼 추가로 생성
+            EnsureSlotCapacity(_inventory.MaxCapacity);
+        }
         Refresh();
+    }
+
+    private void EnsureSlotCapacity(int capacity)
+    {
+        if (_slotUIs.Length >= capacity) return;
+
+        var extended = new ItemSlotUI[capacity];
+        _slotUIs.CopyTo(extended, 0);
+        for (int i = _slotUIs.Length; i < capacity; i++)
+        {
+            extended[i] = Instantiate(_slotPrefab, _slotParent);
+            extended[i].SetIndex(i);
+        }
+        _slotUIs = extended;
     }
 
     private void OnDisable()
@@ -186,5 +207,8 @@ public class InventoryUI : MonoBehaviour
             _countText.text = $"({_inventory.ItemCount} / {_inventory.CurrentCapacity})";
             _miniCountText.text = _countText.text;
         }
+
+        if (_weightText != null)
+            _weightText.text = $"({_inventory.CurrentWeight} / {_inventory.MaxWeight})";
     }
 }

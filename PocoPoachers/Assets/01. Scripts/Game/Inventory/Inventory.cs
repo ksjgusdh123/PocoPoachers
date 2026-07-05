@@ -7,6 +7,7 @@ public class Inventory : MonoBehaviour
     [SerializeField] private int _maxCapacity = 50;
     [SerializeField] private int _initialCapacity = 20;
     [SerializeField] private bool isPlayer;
+    [SerializeField] private int _maxWeight = 100; // 0 이하면 무게 제한 없음
 
     private List<ItemSlot> _slots = new List<ItemSlot>();
     private int _currentCapacity;
@@ -18,6 +19,8 @@ public class Inventory : MonoBehaviour
     public IReadOnlyList<ItemSlot> Slots => _slots;
     public int MaxCapacity => _maxCapacity;
     public int CurrentCapacity => _currentCapacity;
+    public int MaxWeight => _maxWeight;
+    public int CurrentWeight => CalculateWeight();
 
     // 현재 사용 중인 슬롯 수 (갭 포함)
     public int ItemCount => CountItems();
@@ -31,6 +34,19 @@ public class Inventory : MonoBehaviour
             ItemSlot slot = isPlayer ? new ItemSlot() : new BoxItemSlot();
             _slots.Add(slot);
         }
+    }
+
+    // 런타임에 최대/현재 용량을 재설정 (기존 슬롯은 전부 비워짐) — 아이템을 채우기 전에 호출해야 함
+    // 예: 플레이어 사망 시 인벤토리 크기에 맞춰 상자 용량을 동적으로 정할 때
+    public void SetCapacity(int maxCapacity, int? initialCapacity = null)
+    {
+        _maxCapacity = maxCapacity;
+        _initialCapacity = initialCapacity ?? maxCapacity;
+        _currentCapacity = _initialCapacity;
+
+        _slots.Clear();
+        for (int i = 0; i < _maxCapacity; i++)
+            _slots.Add(isPlayer ? new ItemSlot() : new BoxItemSlot());
     }
 
     // 아이템 추가, 성공 여부 반환
@@ -81,6 +97,19 @@ public class Inventory : MonoBehaviour
     public void ExpandCapacity(int count)
     {
         _currentCapacity = Mathf.Min(_currentCapacity + count, _maxCapacity);
+        ChangeInventory?.Invoke();
+    }
+
+    // 가방 장착 등으로 최대 무게 증가/원복 (상한 없음)
+    public void ExpandMaxWeight(int amount)
+    {
+        _maxWeight += amount;
+        ChangeInventory?.Invoke();
+    }
+
+    public void ReduceMaxWeight(int amount)
+    {
+        _maxWeight = Mathf.Max(0, _maxWeight - amount);
         ChangeInventory?.Invoke();
     }
 
@@ -249,5 +278,16 @@ public class Inventory : MonoBehaviour
             if (!_slots[i].IsEmpty) count++;
         }
         return count;
+    }
+
+    private int CalculateWeight()
+    {
+        int weight = 0;
+        for (int i = 0; i < _currentCapacity; i++)
+        {
+            if (!_slots[i].IsEmpty)
+                weight += _slots[i].ItemData.Weight * _slots[i].Amount;
+        }
+        return weight;
     }
 }

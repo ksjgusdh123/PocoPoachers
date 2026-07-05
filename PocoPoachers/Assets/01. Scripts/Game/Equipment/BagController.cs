@@ -26,10 +26,14 @@ public class BagController : EquipableController
 
         // 기존 가방의 용량 보너스 제거 후 새 가방 적용
         if (_appliedCapacity > 0)
+        {
             _inventory.ReduceCapacity(_appliedCapacity);
+            _inventory.ReduceMaxWeight(_appliedCapacity);
+        }
 
         _appliedCapacity = data.EffectValue;
         _inventory.ExpandCapacity(_appliedCapacity);
+        _inventory.ExpandMaxWeight(_appliedCapacity);
 
         _equippedSlotIndex = slotIndex;
         OnBagChanged?.Invoke(slotIndex, data);
@@ -50,7 +54,10 @@ public class BagController : EquipableController
         _mount.ApplyUnequip();
 
         if (_appliedCapacity > 0)
+        {
             _inventory.ReduceCapacity(_appliedCapacity);
+            _inventory.ReduceMaxWeight(_appliedCapacity);
+        }
         _appliedCapacity = 0;
         _equippedSlotIndex = -1;
 

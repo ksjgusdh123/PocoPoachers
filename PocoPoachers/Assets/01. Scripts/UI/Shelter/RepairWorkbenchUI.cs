@@ -50,8 +50,10 @@ public class RepairWorkbenchUI : MonoBehaviour
             return;
         }
 
-        // TODO: ItemSlot 내구도 시스템 구현 후 실제 값으로 교체
-        _durabilityText.text = "? / ?";
+        if (WorldEquipmentManager.TryGetDurability(_repairSlot.DroppedUid, out float cur, out float max))
+            _durabilityText.text = $"{cur:F0} / {max:F0}";
+        else
+            _durabilityText.text = "? / ?";
         _costText.text = BuildCostText(_repairSlot.DroppedItemData);
     }
 
@@ -83,6 +85,48 @@ public class RepairWorkbenchUI : MonoBehaviour
     {
         if (!_repairSlot.IsSetted) return;
 
-        // TODO: 수리 로직 구현
+        var itemData = _repairSlot.DroppedItemData;
+        var cost = RepairCostTable.Instance.All.FirstOrDefault(d => d.ItemId == itemData.Id);
+        if (cost == null) return;
+        if (!CanRepair(cost)) return;
+
+        int uid = _repairSlot.DroppedUid;
+        if (!WorldEquipmentManager.TryGetDurability(uid, out float cur, out float max)) return;
+        if (cur >= max) return;
+
+        ConsumeRepairCost(cost);
+
+        float restoreAmount = max - cur;
+        WorldEquipmentManager.ApplyChange(uid, itemData.Id, restoreAmount, max);
+        RoomSync.Durability(uid, itemData.Id, restoreAmount, max);
+
+        Refresh();
+    }
+
+    private bool CanRepair(RepairCostData cost)
+    {
+        return HasEnoughItem(cost.NeedItem1Id, cost.NeedItem1Count)
+            && HasEnoughItem(cost.NeedItem2Id, cost.NeedItem2Count);
+    }
+
+    private bool HasEnoughItem(int itemId, int amount)
+    {
+        if (itemId <= 0 || amount <= 0) return true;
+        var item = ItemTable.Instance.Get(itemId);
+        return item != null && _player.HasItem(item, amount);
+    }
+
+    private void ConsumeRepairCost(RepairCostData cost)
+    {
+        RemoveRepairItem(cost.NeedItem1Id, cost.NeedItem1Count);
+        RemoveRepairItem(cost.NeedItem2Id, cost.NeedItem2Count);
+    }
+
+    private void RemoveRepairItem(int itemId, int amount)
+    {
+        if (itemId <= 0 || amount <= 0) return;
+        var item = ItemTable.Instance.Get(itemId);
+        if (item == null) return;
+        _player.RemoveItem(item, amount);
     }
 }

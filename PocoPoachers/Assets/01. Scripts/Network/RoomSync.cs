@@ -76,6 +76,51 @@ public static class RoomSync
         }
     }
 
+    // 무기 해제 시점의 탄약 저장 — 호스트는 직접 저장하고, 게스트는 호스트에게 요청한다
+    public static void GunAmmoSave(int gunUid, int currentAmmo, int maxMagazine)
+    {
+        if (gunUid == 0) return;
+
+        if (RoomManager.IsHost)
+        {
+            WorldEquipmentManager.SetAmmo(gunUid, currentAmmo, maxMagazine);
+        }
+        else
+        {
+            PacketBuilder.SendToHost(new G_GunAmmoSaveT
+            {
+                GunUid      = gunUid,
+                CurrentAmmo = currentAmmo,
+                MaxMagazine = maxMagazine,
+            }, G_GunAmmoSave.Pack, PacketType.G_GunAmmoSave);
+        }
+    }
+
+    // 총 파츠 장착/해제 — partId=0이면 해제. 호스트는 직접 저장하고, 게스트는 호스트에게 요청한다
+    // currentAmmo/maxMagazine은 파츠 변경 직후 호출자(자기 자신) 총의 실제 값을 그대로 전달한다
+    public static void GunPartEquip(int gunUid, SlotType slotType, int partId, int currentAmmo, int maxMagazine)
+    {
+        if (gunUid == 0) return;
+
+        if (RoomManager.IsHost)
+        {
+            if (partId != 0) WorldEquipmentManager.SetPart(gunUid, slotType, partId);
+            else WorldEquipmentManager.RemovePart(gunUid, slotType);
+            WorldEquipmentManager.SetAmmo(gunUid, currentAmmo, maxMagazine);
+        }
+        else
+        {
+            PacketBuilder.SendToHost(new G_GunPartEquipT
+            {
+                GunUid      = gunUid,
+                SlotType    = (int)slotType,
+                PartId      = partId,
+                CurrentAmmo = currentAmmo,
+                MaxMagazine = maxMagazine,
+            }, G_GunPartEquip.Pack, PacketType.G_GunPartEquip);
+        }
+    }
+
     public static void ItemGain(bool isPlayerGained, int boxUid, int itemTypeId, int itemUid, int amount, int addedSlotIndex, int removedSlotIndex)
     {
         if (IsSolo) return;
@@ -91,7 +136,7 @@ public static class RoomSync
         }, G_ItemGain.Pack, PacketType.G_ItemGain);
     }
 
-    public static void ItemExchange(int boxUid, int playerItemId, int playerItemAmount, int playerSlotIndex, int boxItemId, int boxItemAmount, int boxSlotIndex)
+    public static void ItemExchange(int boxUid, int playerItemId, int playerItemAmount, int playerItemUid, int playerSlotIndex, int boxItemId, int boxItemAmount, int boxItemUid, int boxSlotIndex)
     {
         if (IsSolo) return;
         PacketBuilder.SendToHost(new G_ItemExchangeT
@@ -99,9 +144,11 @@ public static class RoomSync
             BoxUid           = boxUid,
             PlayerItemId     = playerItemId,
             PlayerItemAmount = playerItemAmount,
+            PlayerItemUid    = playerItemUid,
             PlayerSlotIndex  = playerSlotIndex,
             BoxItemId        = boxItemId,
             BoxItemAmount    = boxItemAmount,
+            BoxItemUid       = boxItemUid,
             BoxSlotIndex     = boxSlotIndex,
         }, G_ItemExchange.Pack, PacketType.G_ItemExchange);
     }
@@ -159,11 +206,16 @@ public static class RoomSync
 
     public static void ShelterLevel(int level)
     {
-        if (IsSolo || !RoomManager.IsHost) return;
+        if (IsSolo) return;
 
-        PacketBuilder.BroadcastToGuests(
-            new H_ShelterLevelT { Level = level },
-            H_ShelterLevel.Pack, PacketType.H_ShelterLevel);
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastToGuests(
+                new H_ShelterLevelT { Level = level },
+                H_ShelterLevel.Pack, PacketType.H_ShelterLevel);
+        else
+            PacketBuilder.SendToHost(
+                new G_ShelterLevelT { Level = level },
+                G_ShelterLevel.Pack, PacketType.G_ShelterLevel);
     }
 
     public static void EnemySpawnToGuest(int guestPlayerId, int enemyTypeId, int enemyId, Vector3 pos, float rotation, float hp, float maxHp, int weaponId, int helmetId)

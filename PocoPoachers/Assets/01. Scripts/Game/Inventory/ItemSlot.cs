@@ -17,15 +17,12 @@ public class ItemSlot
 
     public void SetUid(int uid)
     {
-        if (uid != _uid)
-            Debug.Log($"[ItemSlot] uid 변경: {_uid} -> {uid} (item={_itemData?.id ?? 0})");
         _uid = uid;
     }
 
     // uid를 생략하면 0(미배정)으로 설정됨 — 같은 아이템의 uid를 유지하려면 호출부에서 명시적으로 넘겨야 함
     public void Set(ItemData newItemData, int newAmount, int uid = 0)
     {
-        Debug.Log($"[ItemSlot] Set: item={newItemData?.id ?? 0}, amount={newAmount}, uid={_uid} -> {uid}");
         _itemData = newItemData;
         _amount = newAmount;
         _uid = uid;
@@ -34,8 +31,6 @@ public class ItemSlot
 
     public void Clear()
     {
-        if (_itemData != null)
-            Debug.Log($"[ItemSlot] Clear: item={_itemData.id}, uid={_uid} -> 0");
         _itemData = null;
         _amount = 0;
         _uid = 0;

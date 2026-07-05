@@ -46,7 +46,6 @@ public class EnemyStat : StatBase
     {
         if (!RoomManager.IsHost) return false;
 
-        // 회피(구르기)로 막을 수 있으면 데미지 없이 구르기 발동 — false 반환 시 총알은 관통 처리됨
         if (_dodgeState != null && _dodgeState.TryEvade(attacker))
         {
             if (attacker != null) _targetDetector?.ForceSetTarget(attacker);

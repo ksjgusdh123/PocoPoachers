@@ -38,7 +38,7 @@ public abstract class GunBase : EquippableItemBase
     public event Action<int> OnReloadComplete;
     public event Action<int, int> OnAmmoChanged; // (현재 탄약, 최대 탄약)
 
-    [SerializeField] private float _durabilityDecreasePerShot = 0.01f;
+    [SerializeField] private float _durabilityDecreasePerShot = 1f;
 
     private GameObject _owner;
     private bool _isLocalPlayerOwner;
@@ -60,7 +60,7 @@ public abstract class GunBase : EquippableItemBase
         _stat = _baseStat.Clone();
         _bulletPrefab = Resources.Load<GameObject>(_stat.BulletPrefabPath);
         _currentAmmo = _stat.MaxMagazine;
-        if (_maxDurability <= 0f) Initialize(_uid, _itemId, 1f);
+        if (_maxDurability <= 0f) Initialize(_uid, _itemId, 100f);
         _originLocalPos = transform.localPosition;
     }
 
@@ -135,6 +135,12 @@ public abstract class GunBase : EquippableItemBase
 
     public GunPartData GetPart(SlotType slot) =>
         _parts.TryGetValue(slot, out var p) ? p : null;
+
+    public void SetAmmo(int current)
+    {
+        _currentAmmo = Mathf.Clamp(current, 0, _stat.MaxMagazine);
+        OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
+    }
 
     private void RecalculateStat()
     {
