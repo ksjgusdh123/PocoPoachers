@@ -21,6 +21,7 @@ public class SceneLoader : Singleton<SceneLoader>
     private void LoadViaLoadingScreen(string targetSceneName)
     {
         TargetSceneName = targetSceneName;
+        ObjectManager.Instance?.Clear();
         SceneManager.LoadScene(SceneName.Loading);
     }
 }

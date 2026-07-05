@@ -59,6 +59,11 @@ public class WeaponController : EquipableController
         _playerDodge = GetComponent<PlayerDodge>();
         _playerMovement = GetComponent<PlayerMovement>();
 
+        // Player는 씬마다 PlayerSpawner가 새로 Instantiate하므로 프리팹 자체에는 씬의
+        // CrosshairUI를 인스펙터 참조로 담아둘 수 없다. 비어있으면 씬에서 찾아 채운다.
+        if (_crosshairUI == null)
+            _crosshairUI = FindAnyObjectByType<CrosshairUI>(FindObjectsInactive.Include);
+
         if (_inventory != null)
             _inventory.OnItemAdded += OnItemAddedToInventory;
     }

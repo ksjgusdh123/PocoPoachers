@@ -42,6 +42,17 @@ public class ObjectManager : Singleton<ObjectManager>
 
     protected override void Awake()
     {
+        // NetworkManager/MainThreadDispatcher가 같은 GameObject에서 DontDestroyOnLoad를 걸기 때문에
+        // ObjectManager도 덩달아 씬을 넘어 살아남는다. 그러면 매 씬마다 새로 배치된 ObjectManager는
+        // 중복 싱글턴으로 인식되어 base.Awake()에서 곧바로 파괴되는데, 그 전에 이 씬의 _entries를
+        // 살아남는 인스턴스로 넘겨줘야 씬별로 다른 프리팹 설정이 무시되지 않는다.
+        if (_instance != null && _instance != this)
+        {
+            _instance.ApplySceneEntries(_entries);
+            base.Awake(); // 중복 인스턴스이므로 여기서 gameObject가 파괴된다
+            return;
+        }
+
         base.Awake();
         CachePrefabs();
     }
@@ -49,6 +60,12 @@ public class ObjectManager : Singleton<ObjectManager>
 #if UNITY_EDITOR
     void OnValidate() => CachePrefabs();
 #endif
+
+    void ApplySceneEntries(Entry[] entries)
+    {
+        _entries = entries;
+        CachePrefabs();
+    }
 
     void CachePrefabs()
     {

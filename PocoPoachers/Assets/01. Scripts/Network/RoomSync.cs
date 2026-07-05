@@ -52,7 +52,7 @@ public static class RoomSync
                 new H_EquipT { PlayerId = id, ItemId = itemId, ItemUid = itemUid, SlotIndex = slotIndex },
                 H_Equip.Pack, PacketType.H_Equip);
         else
-            PacketBuilder.SendToHost(
+            PacketBuilder.SendReliableToHost(
                 new G_EquipT { PlayerId = id, ItemId = itemId, ItemUid = itemUid, SlotIndex = slotIndex },
                 G_Equip.Pack, PacketType.G_Equip);
     }
@@ -71,7 +71,7 @@ public static class RoomSync
         }
         else
         {
-            PacketBuilder.SendToHost(new G_DurabilityT { ItemUid = itemUid, ItemId = itemId, Amount = amount },
+            PacketBuilder.SendReliableToHost(new G_DurabilityT { ItemUid = itemUid, ItemId = itemId, Amount = amount },
                 G_Durability.Pack, PacketType.G_Durability);
         }
     }
@@ -87,7 +87,7 @@ public static class RoomSync
         }
         else
         {
-            PacketBuilder.SendToHost(new G_GunAmmoSaveT
+            PacketBuilder.SendReliableToHost(new G_GunAmmoSaveT
             {
                 GunUid      = gunUid,
                 CurrentAmmo = currentAmmo,
@@ -110,7 +110,7 @@ public static class RoomSync
         }
         else
         {
-            PacketBuilder.SendToHost(new G_GunPartEquipT
+            PacketBuilder.SendReliableToHost(new G_GunPartEquipT
             {
                 GunUid      = gunUid,
                 SlotType    = (int)slotType,
@@ -124,7 +124,7 @@ public static class RoomSync
     public static void ItemGain(bool isPlayerGained, int boxUid, int itemTypeId, int itemUid, int amount, int addedSlotIndex, int removedSlotIndex)
     {
         if (IsSolo) return;
-        PacketBuilder.SendToHost(new G_ItemGainT
+        PacketBuilder.SendReliableToHost(new G_ItemGainT
         {
             IsPlayerGained   = isPlayerGained,
             BoxUid           = boxUid,
@@ -139,7 +139,7 @@ public static class RoomSync
     public static void ItemExchange(int boxUid, int playerItemId, int playerItemAmount, int playerItemUid, int playerSlotIndex, int boxItemId, int boxItemAmount, int boxItemUid, int boxSlotIndex)
     {
         if (IsSolo) return;
-        PacketBuilder.SendToHost(new G_ItemExchangeT
+        PacketBuilder.SendReliableToHost(new G_ItemExchangeT
         {
             BoxUid           = boxUid,
             PlayerItemId     = playerItemId,
@@ -213,7 +213,7 @@ public static class RoomSync
                 new H_ShelterLevelT { Level = level },
                 H_ShelterLevel.Pack, PacketType.H_ShelterLevel);
         else
-            PacketBuilder.SendToHost(
+            PacketBuilder.SendReliableToHost(
                 new G_ShelterLevelT { Level = level },
                 G_ShelterLevel.Pack, PacketType.G_ShelterLevel);
     }

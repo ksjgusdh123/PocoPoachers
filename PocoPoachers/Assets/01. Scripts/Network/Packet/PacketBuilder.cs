@@ -20,6 +20,10 @@ public static class PacketBuilder
         where TTable : struct where TObj : class
         => RoomManager.Instance?.UdpSendToHost(data, pack, type);
 
+    public static void SendReliableToHost<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
+        where TTable : struct where TObj : class
+        => RoomManager.Instance?.UdpSendReliableToHost(data, pack, type);
+
     public static void BroadcastToGuests<TTable, TObj>(int skipPlayerId, TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
         where TTable : struct where TObj : class
         => RoomManager.Instance?.UdpBroadcastToGuests(data, pack, type, skipPlayerId);

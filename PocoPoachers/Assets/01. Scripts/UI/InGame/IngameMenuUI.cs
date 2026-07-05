@@ -42,6 +42,9 @@ public class IngameMenuUI : UIBase
 
         RoomManager.OnGuestLeft += OnGuestLeft;
         RoomManager.OnHostLeft  += OnHostLeft;
+
+        if (RoomManager.Instance != null)
+            RoomManager.Instance.OnSyncFailed += OnSyncFailed;
     }
 
     protected override void OnDestroy()
@@ -53,6 +56,9 @@ public class IngameMenuUI : UIBase
 
         RoomManager.OnGuestLeft -= OnGuestLeft;
         RoomManager.OnHostLeft  -= OnHostLeft;
+
+        if (RoomManager.Instance != null)
+            RoomManager.Instance.OnSyncFailed -= OnSyncFailed;
     }
 
     private void OnClickResume() => Hide();
@@ -109,6 +115,14 @@ public class IngameMenuUI : UIBase
             LocalizationManager.GetInstance().GetString("menu.guest_left_message"),
             onConfirm: () => SceneLoader.Instance.LoadTitleScene(),
             onCancel:  () => { }
+        );
+    }
+
+    private void OnSyncFailed(string messageKey)
+    {
+        UIManager.GetInstance().ShowNotice(
+            LocalizationManager.GetInstance().GetString("network.sync_failed_title"),
+            LocalizationManager.GetInstance().GetString(messageKey)
         );
     }
 

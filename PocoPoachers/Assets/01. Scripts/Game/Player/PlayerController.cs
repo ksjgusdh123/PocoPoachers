@@ -108,16 +108,18 @@ public class PlayerController : MonoBehaviour
 
     // Player는 씬마다 PlayerSpawner가 새로 Instantiate하므로 프리팹 자체에는 씬 UI를 직접 참조로
     // 담아둘 수 없다(fileID: 0으로 직렬화됨). 인스펙터 값이 비어있으면 씬에서 이름으로 찾아 채운다.
+    // ??=는 UnityEngine.Object의 오버로딩된 == 연산자를 타지 않아 "할당된 적 없는(fake-null)"
+    // SerializeField를 실제 null로 인식하지 못한다(대입이 실행되지 않음). 반드시 if(x == null)로 검사해야 한다.
     private void ResolveSceneUIReferences()
     {
-        PlayerBagUI ??= FindInSceneByName("PlayerBagUI");
-        PlayerMainGameUI ??= FindInSceneByName("MainGameUI");
-        boxUI ??= FindInSceneByName("ItemBoxUI");
-        StorageUI ??= FindInSceneByName("StorageUI");
-        EnhancementTableUI ??= FindInSceneByName("EnhancementUI");
-        GunEnhancementTableUI ??= FindInSceneByName("GunEnhancementUI");
-        RepairWorkbenchUI ??= FindInSceneByName("RepairWorkbenchUI");
-        CraftingTableUI ??= FindInSceneByName("CraftingTableUI");
+        if (PlayerBagUI == null) PlayerBagUI = FindInSceneByName("TotalBagUI");
+        if (PlayerMainGameUI == null) PlayerMainGameUI = FindInSceneByName("MainGameUI");
+        if (boxUI == null) boxUI = FindInSceneByName("ItemBoxUI");
+        if (StorageUI == null) StorageUI = FindInSceneByName("StorageUI");
+        if (EnhancementTableUI == null) EnhancementTableUI = FindInSceneByName("EnhancementUI");
+        if (GunEnhancementTableUI == null) GunEnhancementTableUI = FindInSceneByName("GunEnhancementUI");
+        if (RepairWorkbenchUI == null) RepairWorkbenchUI = FindInSceneByName("RepairWorkbenchUI");
+        if (CraftingTableUI == null) CraftingTableUI = FindInSceneByName("CraftingTableUI");
     }
 
     // 비활성 오브젝트도 찾아야 해서(SetActive(false)로 꺼진 패널) GameObject.Find 대신 직접 순회

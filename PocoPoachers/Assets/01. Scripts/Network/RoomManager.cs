@@ -28,6 +28,7 @@ public class RoomManager : Singleton<RoomManager>
     public event Action<string>  OnSessionCodeReceived;
     public event Action<int>     OnRoomJoined;
     public event Action<string>  OnRoomJoinFailed;
+    public event Action<string>  OnSyncFailed;
     public static event Action<int> OnGuestLeft;
     public static event Action      OnHostLeft;
     public static event Action<int> OnPlayerCountChanged;
@@ -115,6 +116,7 @@ public class RoomManager : Singleton<RoomManager>
             }
             _udpSession.StartReceive();
             _reliable = new UdpReliable(_udpSession);
+            _reliable.OnDeliveryFailed += OnReliableDeliveryFailed;
             var myInfo = GetMySessionInfo();
             MainThreadDispatcher.Enqueue(() => {
                 if (_isHost)
@@ -187,6 +189,14 @@ public class RoomManager : Singleton<RoomManager>
         _udpSession.Send(PacketBuilder.BuildSegment(data, pack, type), _hostEp);
     }
 
+    public void UdpSendReliableToHost<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type)
+        where TTable : struct where TObj : class
+    {
+        if (_reliable == null || _hostEp == null) return;
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        _reliable.Send(PacketBuilder.BuildSegment(data, pack, type), _hostEp, now, type);
+    }
+
     public void UdpBroadcastToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type, int skipPlayerId = -1)
         where TTable : struct where TObj : class
     {
@@ -211,7 +221,7 @@ public class RoomManager : Singleton<RoomManager>
     {
         if (_reliable == null || !_guests.TryGetValue(playerId, out var ep)) return;
         long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        _reliable.Send(PacketBuilder.BuildSegment(data, pack, type), ep, now);
+        _reliable.Send(PacketBuilder.BuildSegment(data, pack, type), ep, now, type);
     }
 
     public void UdpBroadcastReliableToGuests<TTable, TObj>(TObj data, Func<FlatBufferBuilder, TObj, Offset<TTable>> pack, PacketType type, int skipPlayerId = -1)
@@ -223,7 +233,7 @@ public class RoomManager : Singleton<RoomManager>
         foreach (var kv in _guests)
         {
             if (kv.Key == skipPlayerId) continue;
-            _reliable.Send(segment, kv.Value, now);
+            _reliable.Send(segment, kv.Value, now, type);
         }
     }
 
@@ -700,6 +710,8 @@ public class RoomManager : Singleton<RoomManager>
 
         if (_udpSession == null) return;
 
+        if (_reliable != null)
+            _reliable.OnDeliveryFailed -= OnReliableDeliveryFailed;
         _reliable?.Unsubscribe();
         _reliable?.Clear();
         _reliable = null;
@@ -714,6 +726,12 @@ public class RoomManager : Singleton<RoomManager>
     public void HandleFailure(string messageKey)
     {
         MainThreadDispatcher.Enqueue(() => OnRoomJoinFailed?.Invoke(messageKey));
+    }
+
+    void OnReliableDeliveryFailed(PacketType type, IPEndPoint endPoint)
+    {
+        Debug.LogWarning($"[RoomManager] Reliable delivery gave up: type={type}, to={endPoint}");
+        MainThreadDispatcher.Enqueue(() => OnSyncFailed?.Invoke("network.sync_failed_message"));
     }
 
     public static string GetNetworkFailureTitleKey(string messageKey)

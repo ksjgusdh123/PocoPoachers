@@ -73,7 +73,7 @@ public class QuickSlotInventory : MonoBehaviour
 
         if (!RoomManager.IsHost)
         {
-            PacketBuilder.SendToHost(new G_ConsumeItemT
+            PacketBuilder.SendReliableToHost(new G_ConsumeItemT
             {
                 ItemId = usedItemData.id,
                 Amount = 1

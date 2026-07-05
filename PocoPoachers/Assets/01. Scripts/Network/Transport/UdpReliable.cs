@@ -16,9 +16,12 @@ public sealed class UdpReliable
     readonly Queue<string> _receivedKeyOrder = new();
     uint _nextSequence = 1;
 
+    public event Action<PacketType, IPEndPoint> OnDeliveryFailed;
+
     struct PendingSend
     {
         public uint Sequence;
+        public PacketType Type;
         public byte[] Payload;
         public IPEndPoint EndPoint;
         public int RemainingRetries;
@@ -50,7 +53,7 @@ public sealed class UdpReliable
         _session.OnReliableAckReceived -= OnReliableAck;
     }
 
-    public void Send(ArraySegment<byte> payload, IPEndPoint endPoint, long nowMs)
+    public void Send(ArraySegment<byte> payload, IPEndPoint endPoint, long nowMs, PacketType type = PacketType.NONE)
     {
         if (_session == null || endPoint == null || payload.Count == 0) return;
 
@@ -60,6 +63,7 @@ public sealed class UdpReliable
         var pending = new PendingSend
         {
             Sequence = 0,
+            Type = type,
             Payload = copy,
             EndPoint = endPoint,
             RemainingRetries = MaxRetries,
@@ -75,6 +79,8 @@ public sealed class UdpReliable
 
     public void Tick(long nowMs)
     {
+        List<(PacketType Type, IPEndPoint EndPoint)> failed = null;
+
         lock (_pendingLock)
         {
             for (int i = _pending.Count - 1; i >= 0; i--)
@@ -84,6 +90,7 @@ public sealed class UdpReliable
 
                 if (p.RemainingRetries <= 0)
                 {
+                    (failed ??= new()).Add((p.Type, p.EndPoint));
                     _pending.RemoveAt(i);
                     continue;
                 }
@@ -94,6 +101,10 @@ public sealed class UdpReliable
                 _session.SendReliable(p.Sequence, new ArraySegment<byte>(p.Payload), p.EndPoint);
             }
         }
+
+        if (failed != null)
+            foreach (var (type, endPoint) in failed)
+                OnDeliveryFailed?.Invoke(type, endPoint);
     }
 
     void OnReliableAck(uint sequence, IPEndPoint sender)
