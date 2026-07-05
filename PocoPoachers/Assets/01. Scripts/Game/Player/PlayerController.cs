@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -53,6 +54,8 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
+        ResolveSceneUIReferences();
+
         _playerWeaponController = GetComponent<WeaponController>();
         _saveManager = SaveManager.GetInstance();
 
@@ -101,6 +104,42 @@ public class PlayerController : MonoBehaviour
         SlotInteractionManager.GetInstance().OnGunPartRequest += OnGunPartRequested;
 
         InitEquipSlots();
+    }
+
+    // Player는 씬마다 PlayerSpawner가 새로 Instantiate하므로 프리팹 자체에는 씬 UI를 직접 참조로
+    // 담아둘 수 없다(fileID: 0으로 직렬화됨). 인스펙터 값이 비어있으면 씬에서 이름으로 찾아 채운다.
+    private void ResolveSceneUIReferences()
+    {
+        PlayerBagUI ??= FindInSceneByName("PlayerBagUI");
+        PlayerMainGameUI ??= FindInSceneByName("MainGameUI");
+        boxUI ??= FindInSceneByName("ItemBoxUI");
+        StorageUI ??= FindInSceneByName("StorageUI");
+        EnhancementTableUI ??= FindInSceneByName("EnhancementUI");
+        GunEnhancementTableUI ??= FindInSceneByName("GunEnhancementUI");
+        RepairWorkbenchUI ??= FindInSceneByName("RepairWorkbenchUI");
+        CraftingTableUI ??= FindInSceneByName("CraftingTableUI");
+    }
+
+    // 비활성 오브젝트도 찾아야 해서(SetActive(false)로 꺼진 패널) GameObject.Find 대신 직접 순회
+    private static GameObject FindInSceneByName(string name)
+    {
+        foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects())
+        {
+            var found = FindDeepChild(root.transform, name);
+            if (found != null) return found.gameObject;
+        }
+        return null;
+    }
+
+    private static Transform FindDeepChild(Transform parent, string name)
+    {
+        if (parent.name == name) return parent;
+        foreach (Transform child in parent)
+        {
+            var result = FindDeepChild(child, name);
+            if (result != null) return result;
+        }
+        return null;
     }
 
     private void BindPlayerInventoryUI()
