@@ -70,12 +70,7 @@ public class PlayerController : MonoBehaviour
         if (_playerStat != null)
             _playerStat.OnDie += HandleDeath;
 
-        var gm = GameManager.GetInstance();
-        if (gm.ShouldLoadPlayerInventory)
-        {
-            _saveManager.LoadInventory(PlayerSaveKey, _inventory);
-            gm.SetLoadPlayerInventory(false);
-        }
+        _saveManager.LoadInventory(PlayerSaveKey, _inventory);
 
         BindPlayerInventoryUI();
 

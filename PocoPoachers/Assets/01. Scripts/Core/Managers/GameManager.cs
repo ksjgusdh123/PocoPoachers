@@ -9,11 +9,9 @@ public class GameManager : Singleton<GameManager>
     public Inventory GainedInventory { get; private set; }
     public Inventory GiveInventory { get; private set; }
 
-    public bool ShouldLoadPlayerInventory { get; private set; }
     public SpawnId PendingSpawnId { get; private set; }
     public int SelectedPlanetId { get; private set; }
 
-    public void SetLoadPlayerInventory(bool load) => ShouldLoadPlayerInventory = load;
     public void SetSpawnId(SpawnId id) => PendingSpawnId = id;
     public void SetSelectedPlanet(int id) => SelectedPlanetId = id;
 

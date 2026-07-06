@@ -80,7 +80,6 @@ public class MainMenuUI : MonoBehaviour
     {
         CloseSaveSlotPanel();
         SaveManager.GetInstance().SetActiveSlot(slotIndex);
-        GameManager.GetInstance().SetLoadPlayerInventory(true);
         SetButtonsInteractable(false);
         StartCoroutine(CoConnectThen(
             onSuccess: () => RoomManager.Instance.StartAsHost(),
@@ -88,11 +87,7 @@ public class MainMenuUI : MonoBehaviour
                 LocalizationManager.GetInstance().GetString("network.connect_failed_title"),
                 LocalizationManager.GetInstance().GetString("network.local_play_fallback"),
                 onConfirm: () => RoomManager.Instance.StartLocalHost(),
-                onCancel:  () =>
-                {
-                    GameManager.GetInstance().SetLoadPlayerInventory(false);
-                    SetButtonsInteractable(true);
-                }
+                onCancel:  () => SetButtonsInteractable(true)
             )
         ));
     }
