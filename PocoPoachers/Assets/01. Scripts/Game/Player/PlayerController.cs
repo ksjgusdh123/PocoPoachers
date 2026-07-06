@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -54,7 +53,15 @@ public class PlayerController : MonoBehaviour
 
     private void Start()
     {
-        ResolveSceneUIReferences();
+        var ui = UIManager.GetInstance();
+        if (PlayerBagUI == null) PlayerBagUI = ui.GetPanel(UIType.Inventory);
+        if (PlayerMainGameUI == null) PlayerMainGameUI = ui.GetPanel(UIType.MainGameUI);
+        if (boxUI == null) boxUI = ui.GetPanel(UIType.ItemBoxReveal);
+        if (StorageUI == null) StorageUI = ui.GetPanel(UIType.Storage);
+        if (EnhancementTableUI == null) EnhancementTableUI = ui.GetPanel(UIType.EnhancementTable);
+        if (GunEnhancementTableUI == null) GunEnhancementTableUI = ui.GetPanel(UIType.GunEnhancementTable);
+        if (RepairWorkbenchUI == null) RepairWorkbenchUI = ui.GetPanel(UIType.RepairWorkbench);
+        if (CraftingTableUI == null) CraftingTableUI = ui.GetPanel(UIType.CraftingTable);
 
         _playerWeaponController = GetComponent<WeaponController>();
         _saveManager = SaveManager.GetInstance();
@@ -90,58 +97,12 @@ public class PlayerController : MonoBehaviour
         if (_cameraController != null)
             _cameraController.SetTarget(transform);
 
-        var ui = UIManager.GetInstance();
-        ui.Register(UIType.Inventory, PlayerBagUI);
-        ui.Register(UIType.Storage, StorageUI);
-        ui.Register(UIType.EnhancementTable, EnhancementTableUI);
-        ui.Register(UIType.GunEnhancementTable, GunEnhancementTableUI);
-        ui.Register(UIType.RepairWorkbench, RepairWorkbenchUI);
-        ui.Register(UIType.CraftingTable, CraftingTableUI);
-        ui.Register(UIType.ItemBoxReveal, boxUI);
         ui.OnPanelOpened += OnPanelOpened;
         ui.OnPanelClosed += OnPanelClosed;
 
         SlotInteractionManager.GetInstance().OnGunPartRequest += OnGunPartRequested;
 
         InitEquipSlots();
-    }
-
-    // Player는 씬마다 PlayerSpawner가 새로 Instantiate하므로 프리팹 자체에는 씬 UI를 직접 참조로
-    // 담아둘 수 없다(fileID: 0으로 직렬화됨). 인스펙터 값이 비어있으면 씬에서 이름으로 찾아 채운다.
-    // ??=는 UnityEngine.Object의 오버로딩된 == 연산자를 타지 않아 "할당된 적 없는(fake-null)"
-    // SerializeField를 실제 null로 인식하지 못한다(대입이 실행되지 않음). 반드시 if(x == null)로 검사해야 한다.
-    private void ResolveSceneUIReferences()
-    {
-        if (PlayerBagUI == null) PlayerBagUI = FindInSceneByName("TotalBagUI");
-        if (PlayerMainGameUI == null) PlayerMainGameUI = FindInSceneByName("MainGameUI");
-        if (boxUI == null) boxUI = FindInSceneByName("ItemBoxUI");
-        if (StorageUI == null) StorageUI = FindInSceneByName("StorageUI");
-        if (EnhancementTableUI == null) EnhancementTableUI = FindInSceneByName("EnhancementUI");
-        if (GunEnhancementTableUI == null) GunEnhancementTableUI = FindInSceneByName("GunEnhancementUI");
-        if (RepairWorkbenchUI == null) RepairWorkbenchUI = FindInSceneByName("RepairWorkbenchUI");
-        if (CraftingTableUI == null) CraftingTableUI = FindInSceneByName("CraftingTableUI");
-    }
-
-    // 비활성 오브젝트도 찾아야 해서(SetActive(false)로 꺼진 패널) GameObject.Find 대신 직접 순회
-    private static GameObject FindInSceneByName(string name)
-    {
-        foreach (var root in SceneManager.GetActiveScene().GetRootGameObjects())
-        {
-            var found = FindDeepChild(root.transform, name);
-            if (found != null) return found.gameObject;
-        }
-        return null;
-    }
-
-    private static Transform FindDeepChild(Transform parent, string name)
-    {
-        if (parent.name == name) return parent;
-        foreach (Transform child in parent)
-        {
-            var result = FindDeepChild(child, name);
-            if (result != null) return result;
-        }
-        return null;
     }
 
     private void BindPlayerInventoryUI()
@@ -222,10 +183,6 @@ public class PlayerController : MonoBehaviour
 
         var ui = UIManager.GetInstance();
         if (ui == null) return;
-        ui.Unregister(UIType.Inventory);
-        ui.Unregister(UIType.Storage);
-        ui.Unregister(UIType.EnhancementTable);
-        ui.Unregister(UIType.ItemBoxReveal);
         ui.OnPanelOpened -= OnPanelOpened;
         ui.OnPanelClosed -= OnPanelClosed;
     }

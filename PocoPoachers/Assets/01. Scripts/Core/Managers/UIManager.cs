@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public enum UIType
 {
@@ -20,6 +21,7 @@ public enum UIType
     PlanetSelect,
     ShelterUpgrade,
     CraftingTable,
+    MainGameUI,
 }
 
 public class UIManager : Singleton<UIManager>
@@ -37,6 +39,32 @@ public class UIManager : Singleton<UIManager>
 
     private Action _warningConfirmAction;
     private Action _warningCancelAction;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        if (_instance != this) return;
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        RegisterScenePanels();
+    }
+
+    protected override void OnDestroy()
+    {
+        if (_instance == this)
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        base.OnDestroy();
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => RegisterScenePanels();
+
+    // 대부분의 UI 패널은 기본 비활성 상태라 Awake가 씬 로드 시 호출되지 않는다.
+    // 그래서 비활성 오브젝트까지 포함해 직접 스캔하여 등록한다 (SceneUIRegistrar 참고).
+    private void RegisterScenePanels()
+    {
+        foreach (var registrar in FindObjectsByType<SceneUIRegistrar>(FindObjectsInactive.Include))
+            registrar.RegisterSelf();
+    }
 
     private void Update()
     {
@@ -139,6 +167,10 @@ public class UIManager : Singleton<UIManager>
         if (!_panels.Remove(type)) return;
         _stack.Remove(type);
     }
+
+    // 씬에 자기등록된 UI 패널을 이름 검색 없이 조회 (SceneUIRegistrar 참고)
+    public GameObject GetPanel(UIType type) =>
+        _panels.TryGetValue(type, out var panel) ? panel : null;
 
     public void Show(UIType type)
     {
