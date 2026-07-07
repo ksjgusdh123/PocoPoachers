@@ -48,6 +48,7 @@ public enum PacketType : byte
   H_ShelterLevel = 41,
   H_SandbagDestroy = 42,
   H_LoadScene = 43,
+  G_SceneReady = 44,
 };
 
 public class PacketTypeUnion {
@@ -146,6 +147,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_SandbagDestroy(H_SandbagDestroyT _h_sandbagdestroy) { return new PacketTypeUnion{ Type = PacketType.H_SandbagDestroy, Value = _h_sandbagdestroy }; }
   public H_LoadSceneT AsH_LoadScene() { return this.As<H_LoadSceneT>(); }
   public static PacketTypeUnion FromH_LoadScene(H_LoadSceneT _h_loadscene) { return new PacketTypeUnion{ Type = PacketType.H_LoadScene, Value = _h_loadscene }; }
+  public G_SceneReadyT AsG_SceneReady() { return this.As<G_SceneReadyT>(); }
+  public static PacketTypeUnion FromG_SceneReady(G_SceneReadyT _g_sceneready) { return new PacketTypeUnion{ Type = PacketType.G_SceneReady, Value = _g_sceneready }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -193,6 +196,7 @@ public class PacketTypeUnion {
       case PacketType.H_ShelterLevel: return H_ShelterLevel.Pack(builder, _o.AsH_ShelterLevel()).Value;
       case PacketType.H_SandbagDestroy: return H_SandbagDestroy.Pack(builder, _o.AsH_SandbagDestroy()).Value;
       case PacketType.H_LoadScene: return H_LoadScene.Pack(builder, _o.AsH_LoadScene()).Value;
+      case PacketType.G_SceneReady: return G_SceneReady.Pack(builder, _o.AsG_SceneReady()).Value;
     }
   }
 }
@@ -334,6 +338,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_LoadScene:
         result = H_LoadSceneVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_SceneReady:
+        result = G_SceneReadyVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

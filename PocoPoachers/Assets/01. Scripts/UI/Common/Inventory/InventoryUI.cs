@@ -88,7 +88,7 @@ public class InventoryUI : MonoBehaviour
     }
 
     // 아직 공개(리빌)되지 않은 박스 슬롯인지 — 가져가기/설명 표시 차단에 사용
-    public bool IsSlotUnrevealed(int slotIndex) =>
+    public virtual bool IsSlotUnrevealed(int slotIndex) =>
         _inventory.Slots[slotIndex] is BoxItemSlot boxSlot && !boxSlot.isOpen && !boxSlot.skipReveal;
 
     public void OnSlotDropped()

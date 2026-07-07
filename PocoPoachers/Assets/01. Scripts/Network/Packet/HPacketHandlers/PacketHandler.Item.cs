@@ -15,12 +15,42 @@ public static partial class PacketHandlers
         int[] item_ids = packet.GetItemIdsArray();
         int[] item_counts = packet.GetItemCountArray();
         int[] item_uids = packet.GetItemUidsArray();
+        int[] item_slots = packet.GetItemSlotsArray();
 
         MainThreadDispatcher.Enqueue(() =>
         {
-            var box = ObjectManager.Instance?.SpawnItemBox(uid, typeId, pos, rotation);
+            var objectManager = ObjectManager.Instance;
+            if (objectManager == null) return;
+
+            // 씬에 미리 배치되어 이미 등록된 오브젝트(쉘터 창고 등)는 스폰 없이 내용물만 갱신
+            if (objectManager.TryGet(ObjectKind.ItemBox, uid, out var existing) && existing != null)
+            {
+                FillInventory(existing.GetComponent<Inventory>(), item_ids, item_counts, item_uids, item_slots);
+                return;
+            }
+
+            var box = objectManager.SpawnItemBox(uid, typeId, pos, rotation);
             box?.Initialize(item_ids, item_counts, item_uids);
         });
+    }
+
+    // 스냅샷 내용으로 인벤토리를 통째로 교체. item_slots가 있으면 호스트와 동일한 슬롯에 배치
+    private static void FillInventory(Inventory inventory, int[] itemIds, int[] itemCounts, int[] itemUids, int[] itemSlots)
+    {
+        if (inventory == null || itemIds == null) return;
+
+        inventory.Clear();
+        for (int i = 0; i < itemIds.Length; i++)
+        {
+            var data = ItemTable.Instance.Get(itemIds[i]);
+            if (data == null) continue;
+
+            int count = (itemCounts != null && i < itemCounts.Length) ? itemCounts[i] : 1;
+            int uid   = (itemUids  != null && i < itemUids.Length)  ? itemUids[i]  : 0;
+            int slot  = (itemSlots != null && i < itemSlots.Length) ? itemSlots[i] : inventory.CanAddItem(data, count);
+            if (slot >= 0)
+                inventory.AddItemAtSlot(slot, data, count, uid);
+        }
     }
 
     public static void OnH_ItemDespawn(FlatPacket root)

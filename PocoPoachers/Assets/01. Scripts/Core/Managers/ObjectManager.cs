@@ -168,6 +168,16 @@ public class ObjectManager : Singleton<ObjectManager>
         _spawnedBoxes.Clear();
     }
 
+    // 씬에 미리 배치된 오브젝트를 네트워크 식별용으로 등록 (예: 쉘터 창고)
+    // 호스트/게스트 양쪽에서 같은 고정 id로 등록해야 uid 기반 패킷이 서로 같은 오브젝트를 가리킨다
+    public void RegisterSceneObject(ObjectKind kind, int id, GameObject go)
+    {
+        if (!go.TryGetComponent<WorldObject>(out var component))
+            component = go.AddComponent<WorldObject>();
+        component.Initialize(kind, id);
+        _objects[(kind, id)] = component;
+    }
+
     public ItemBox SpawnItemBox(int uid, int typeId, Vector3 pos, float rotation)
     {
         var obj = CreateWorldObject(ObjectKind.ItemBox, uid, typeId);

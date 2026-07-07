@@ -16,6 +16,9 @@ public class StorageUI : InventoryUI
 
     public int PageCount => Mathf.CeilToInt((float)Inventory.CurrentCapacity / _pageSize);
 
+    // 창고는 리빌 연출이 없으므로 항상 공개 상태로 취급 (더블클릭/설명 차단 해제)
+    public override bool IsSlotUnrevealed(int slotIndex) => false;
+
     // 필터 설정 (인스펙터 버튼 OnClick에서 직접 호출, 같은 타입 재클릭 시 None으로 토글)
     public void SetFilter(int typeIndex)
     {

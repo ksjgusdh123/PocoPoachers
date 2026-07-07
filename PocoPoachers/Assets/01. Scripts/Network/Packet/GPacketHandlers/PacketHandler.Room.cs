@@ -28,4 +28,17 @@ public static partial class PacketHandlers
 
         RoomSync.ShelterLevel(shelter.CurrentLevel);
     }
+
+    // 게스트가 씬 로드를 마친 뒤 보내는 신호. 호스트는 이 시점에 박스/적 스냅샷을 전송한다.
+    // (씬 전환 직후 보내면 게스트가 아직 로딩 중이라 유실되므로 게스트 준비 완료를 기다린다)
+    public static void OnG_SceneReady(FlatPacket root)
+    {
+        if (!RoomManager.IsHost) return;
+
+        var packet = root.TypeAsG_SceneReady();
+        if (!RoomManager.TryGetGuestIdFromPacket(packet.PlayerId, autoRegister: true, out int guestId))
+            return;
+
+        RoomManager.Instance?.HandleGuestSceneReady(guestId);
+    }
 }
