@@ -13,6 +13,7 @@ public class Storage : MonoBehaviour, IInteractable
 
     public Inventory StorageInventory => _inventory;
     private Inventory _inventory;
+    private InventoryUI _storageUI;
     private bool _isDirty;
 
     private void Awake()
@@ -20,12 +21,19 @@ public class Storage : MonoBehaviour, IInteractable
         _inventory = GetComponent<Inventory>();
 
         var storageUI = FindAnyObjectByType<StorageUI>(FindObjectsInactive.Include);
-        storageUI?.GetComponent<InventoryUI>()?.Bind(_inventory);
-        storageUI.gameObject.SetActive(false);
+        _storageUI = storageUI?.GetComponent<InventoryUI>();
+        if (storageUI != null) storageUI.gameObject.SetActive(false);
 
         // 호스트/게스트 공통 — uid 기반 패킷이 이 오브젝트를 찾을 수 있게 등록.
         // WorldObject가 붙으면서 InventoryUI.IsBox가 true가 되어 UI 조작이 자동으로 네트워크 경로를 탄다
         ObjectManager.Instance?.RegisterSceneObject(ObjectKind.ItemBox, STORAGE_UID, gameObject);
+    }
+
+    // 같은 GameObject의 Inventory.Awake가 슬롯을 채운 뒤 실행되도록 Start에서 초기화한다.
+    // (동일 오브젝트라도 컴포넌트 간 Awake 순서는 보장되지 않아, Awake에서 슬롯을 참조하면 0개일 수 있음)
+    private void Start()
+    {
+        _storageUI?.Bind(_inventory);
 
         // 게스트는 로컬 세이브 대신 호스트가 보내주는 스냅샷으로 채운다 (로컬 파일과 갈라짐 방지)
         if (!RoomManager.IsHost) return;
