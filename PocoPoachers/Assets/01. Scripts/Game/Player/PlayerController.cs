@@ -63,6 +63,8 @@ public class PlayerController : MonoBehaviour
         if (RepairWorkbenchUI == null) RepairWorkbenchUI = ui.GetPanel(UIType.RepairWorkbench);
         if (CraftingTableUI == null) CraftingTableUI = ui.GetPanel(UIType.CraftingTable);
 
+        if (_gunPartPanel == null) _gunPartPanel = FindAnyObjectByType<GunPartUI>(FindObjectsInactive.Include);
+
         _playerWeaponController = GetComponent<WeaponController>();
         _saveManager = SaveManager.GetInstance();
 
@@ -162,6 +164,9 @@ public class PlayerController : MonoBehaviour
 
         if (_inventory != null)
             _saveManager?.SaveInventory(PlayerSaveKey, _inventory);
+
+        // 씬 전환/종료 시점에 uid별 장비 상태(내구도/장탄수/파츠)를 함께 영속화 (호스트 전용은 내부에서 처리)
+        _saveManager?.SaveEquipmentState();
 
         if (_inputHander != null)
         {

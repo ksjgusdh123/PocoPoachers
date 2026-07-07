@@ -753,6 +753,9 @@ public class RoomManager : Singleton<RoomManager>
         RoomSync.Leave();
         CloseUdpSession();
 
+        // 아직 호스트일 때(_isHost=false 및 Clear 이전) 장비 상태를 최종 저장 — 이후 빈 상태로 덮어쓰기 방지
+        SaveManager.GetInstance()?.SaveEquipmentState();
+
         _guests.Clear();
         _guestLastSeen.Clear();
         _hostLastSeen = 0;

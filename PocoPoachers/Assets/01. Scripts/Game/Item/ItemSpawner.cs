@@ -160,17 +160,7 @@ public class ItemSpawner : MonoBehaviour
                 ?.Initialize(randomItems.ToArray(), randomCounts.ToArray(), randomUids.ToArray());
         }
 
-        // temp
-        int iuid = _nextUid++;
-        var idata = new H_ItemSpawnT
-        {
-            Uid = iuid,
-            TypeId = 302,
-            Pos = new Vec3T { X = 4.5f, Y = 0f, Z = 2f },
-            Rotation = 0,
-        };
-        omgr.RegisterSpawnedBox(idata);
-        omgr.SpawnItemBox(iuid, 302, new Vector3(4.5f, 0f, 2f), 0);
+     
     }
 
     (int id, ItemType type) GetRandomItemId()
@@ -192,6 +182,13 @@ public class ItemSpawner : MonoBehaviour
     {
         _nextUid = 1000;
         _nextItemUid = 1;
+    }
+
+    // 저장에서 복원한 아이템 uid와 겹치지 않도록 카운터를 최댓값 다음으로 밀어둔다 (게임 로드 시 호출)
+    public static void SeedItemUid(int maxUsedUid)
+    {
+        if (maxUsedUid >= _nextItemUid)
+            _nextItemUid = maxUsedUid + 1;
     }
 
     static List<int> _dropIds;

@@ -118,9 +118,12 @@ public class WeaponController : EquipableController
                 }
             }
             // 파츠 복원 후 현재 장탄수 복원
-            if (WorldEquipmentManager.TryGetAmmo(uid, out int curAmmo, out _))
+            bool hasSavedAmmo = WorldEquipmentManager.TryGetAmmo(uid, out int curAmmo, out _); // TODO: 디버그 후 제거
+            Debug.Log($"[AmmoRestore] 장착 uid={uid} 저장탄약있음={hasSavedAmmo} 복원값={(hasSavedAmmo ? curAmmo : gun.CurrentAmmo)} (없으면 풀장전)"); // TODO: 디버그 후 제거
+            if (hasSavedAmmo)
                 gun.SetAmmo(curAmmo);
         }
+        else if (uid != 0) Debug.Log($"[AmmoRestore] 복원 스킵 IsHost={RoomManager.IsHost} uid={uid}"); // TODO: 디버그 후 제거
 
         gun.Owner = gameObject;
         gun.gameObject.SetActive(false);
