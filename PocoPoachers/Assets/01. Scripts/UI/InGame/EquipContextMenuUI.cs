@@ -26,6 +26,19 @@ public class EquipContextMenuUI : UIBase
         UIManager.GetInstance().OnPanelClosed += HandleInventoryClosed;
     }
 
+    // 구독 대상이 DontDestroyOnLoad 싱글톤이라, 씬 전환으로 파괴될 때 해제하지 않으면
+    // 파괴된 인스턴스로 이벤트가 들어와 예외가 난다
+    protected override void OnDestroy()
+    {
+        var slotManager = SlotInteractionManager.GetInstance();
+        if (slotManager != null) slotManager.OnEquipRightClick -= ShowAt;
+
+        var ui = UIManager.GetInstance();
+        if (ui != null) ui.OnPanelClosed -= HandleInventoryClosed;
+
+        base.OnDestroy();
+    }
+
     private void HandleInventoryClosed(UIType type)
     {
         if (type == UIType.Inventory)

@@ -200,7 +200,7 @@ public class CheatConsole : Singleton<CheatConsole>
             return;
         }
 
-        int added = inventory.AddItem(itemData, amount);
+        int added = GiveItem(inventory, itemData, amount);
         if (added == 0)
         {
             Log("인벤토리 공간이 부족합니다.");
@@ -355,9 +355,36 @@ public class CheatConsole : Singleton<CheatConsole>
             return;
         }
 
-        int added = inventory.AddItem(itemData, count);
+        int added = GiveItem(inventory, itemData, count);
         if (added < count)
             Log($"item {itemId}: {added}/{count}만 추가됨 (인벤토리 부족)");
+    }
+
+    // 스택 불가 아이템(무기/방어구 등)은 정상 스폰과 동일하게 개체별 uid를 발급해 한 칸에 하나씩 넣는다.
+    // (uid가 있어야 내구도/장탄수/파츠 상태가 WorldEquipmentManager에 연결됨) — 스택 가능 아이템은 uid 없이 합산.
+    static int GiveItem(Inventory inventory, ItemData itemData, int amount)
+    {
+        if (itemData.MaxStack > 1)
+            return inventory.AddItem(itemData, amount);
+
+        int added = 0;
+        for (int i = 0; i < amount; i++)
+        {
+            int slot = FindEmptySlot(inventory);
+            if (slot < 0) break;
+
+            int uid = ItemSpawner.AssignItemUid(itemData.id);
+            inventory.AddItemAtSlot(slot, itemData, 1, uid);
+            added++;
+        }
+        return added;
+    }
+
+    static int FindEmptySlot(Inventory inventory)
+    {
+        for (int i = 0; i < inventory.CurrentCapacity; i++)
+            if (inventory.Slots[i].IsEmpty) return i;
+        return -1;
     }
 
     static Inventory FindStorageInventory()

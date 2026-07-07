@@ -48,7 +48,7 @@ public class SaveManager : Singleton<SaveManager>
         {
             var slot = inventory.Slots[i];
             if (!slot.IsEmpty)
-                entries.Add(new SlotSaveEntry { slotIndex = i, itemId = slot.ItemData.id, amount = slot.Amount });
+                entries.Add(new SlotSaveEntry { slotIndex = i, itemId = slot.ItemData.id, amount = slot.Amount, uid = slot.Uid });
         }
         data.SetInventory(key, entries);
         data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
@@ -64,8 +64,27 @@ public class SaveManager : Singleton<SaveManager>
         {
             var itemData = ItemTable.Instance.Get(entry.itemId);
             if (itemData != null)
-                inventory.AddItemAtSlot(entry.slotIndex, itemData, entry.amount);
+                inventory.AddItemAtSlot(entry.slotIndex, itemData, entry.amount, entry.uid);
         }
+    }
+
+    // 총기/방어구 등 uid별 인스턴스 상태(내구도/장탄수/파츠/강화)를 디스크에 저장 (호스트 전용)
+    public void SaveEquipmentState()
+    {
+        if (!RoomManager.IsHost) return;
+        var data = GetOrLoad(_activeSlot);
+        data.equipment = WorldEquipmentManager.Export();
+        data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    // 저장된 장비 상태를 WorldEquipmentManager로 복원하고, uid 카운터를 최댓값 다음으로 시드한다.
+    // 게임 로드 시 게임플레이 시작 전에 1회 호출 (인벤토리 로드보다 먼저일 필요는 없으나, 장착 복원 전에 완료돼야 함)
+    public void LoadEquipmentState()
+    {
+        var data = GetOrLoad(_activeSlot);
+        WorldEquipmentManager.Import(data.equipment);
+        ItemSpawner.SeedItemUid(WorldEquipmentManager.MaxUid());
     }
 
     public bool HasSave(int slotIndex) =>
@@ -119,6 +138,7 @@ public class SaveManager : Singleton<SaveManager>
         public int slotIndex;
         public int itemId;
         public int amount;
+        public int uid; // 스택 불가 아이템(무기/방어구)의 개체 식별자. 0이면 미배정(소모품 등)
     }
 
     [Serializable]
@@ -144,6 +164,7 @@ public class SaveManager : Singleton<SaveManager>
         public string lastSavedAt;
         public int shelterLevel = 1;
         public List<InventorySaveEntry> inventories = new List<InventorySaveEntry>();
+        public WorldEquipmentManager.SaveData equipment = new WorldEquipmentManager.SaveData();
 
         public void SetInventory(string key, List<SlotSaveEntry> entries)
         {

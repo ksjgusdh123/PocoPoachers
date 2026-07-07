@@ -224,4 +224,116 @@ public static class WorldEquipmentManager
         _states.Clear();
         _itemTypeEnhancementLevels.Clear();
     }
+
+    // ---- 영속화 (SaveManager가 디스크에 저장/복원) ----
+
+    // 현재 uid별 상태 전체를 직렬화 가능한 형태로 내보낸다 (호스트 전용)
+    public static SaveData Export()
+    {
+        var data = new SaveData();
+        foreach (var kv in _states)
+        {
+            var s = kv.Value;
+            var entry = new StateEntry
+            {
+                uid = kv.Key,
+                itemId = s.ItemId,
+                current = s.Current,
+                max = s.Max,
+                currentAmmo = s.CurrentAmmo,
+                maxAmmo = s.MaxAmmo,
+                ammoSet = s.AmmoSet,
+                enhancementLevel = s.EnhancementLevel,
+            };
+            foreach (var p in s.Parts)
+            {
+                int partUid = s.PartUids.TryGetValue(p.Key, out var pu) ? pu : 0;
+                entry.parts.Add(new PartEntry { slotType = (int)p.Key, partId = p.Value, partUid = partUid });
+            }
+            data.states.Add(entry);
+        }
+        foreach (var kv in _itemTypeEnhancementLevels)
+            data.itemTypeEnhancements.Add(new TypeEnhancementEntry { itemId = kv.Key, level = kv.Value });
+        return data;
+    }
+
+    // 저장 데이터로 상태를 통째로 교체 (게임 로드 시 1회, 게임플레이 시작 전에 호출)
+    public static void Import(SaveData data)
+    {
+        _states.Clear();
+        _itemTypeEnhancementLevels.Clear();
+        if (data == null) return;
+
+        if (data.states != null)
+            foreach (var e in data.states)
+            {
+                var state = new State
+                {
+                    ItemId = e.itemId,
+                    Current = e.current,
+                    Max = e.max,
+                    CurrentAmmo = e.currentAmmo,
+                    MaxAmmo = e.maxAmmo,
+                    AmmoSet = e.ammoSet,
+                    EnhancementLevel = e.enhancementLevel,
+                };
+                if (e.parts != null)
+                    foreach (var p in e.parts)
+                    {
+                        state.Parts[(SlotType)p.slotType] = p.partId;
+                        if (p.partUid != 0)
+                            state.PartUids[(SlotType)p.slotType] = p.partUid;
+                    }
+                _states[e.uid] = state;
+            }
+
+        if (data.itemTypeEnhancements != null)
+            foreach (var t in data.itemTypeEnhancements)
+                _itemTypeEnhancementLevels[t.itemId] = t.level;
+    }
+
+    // 발급된 uid 중 최댓값 (로드 후 uid 카운터를 이보다 크게 시드해 충돌 방지)
+    public static int MaxUid()
+    {
+        int max = 0;
+        foreach (var uid in _states.Keys)
+            if (uid > max) max = uid;
+        return max;
+    }
+
+    [System.Serializable]
+    public class SaveData
+    {
+        public List<StateEntry> states = new();
+        public List<TypeEnhancementEntry> itemTypeEnhancements = new();
+    }
+
+    [System.Serializable]
+    public class StateEntry
+    {
+        public int uid;
+        public int itemId;
+        public float current;
+        public float max;
+        public int currentAmmo;
+        public int maxAmmo;
+        public bool ammoSet;
+        public int enhancementLevel;
+        public List<PartEntry> parts = new();
+    }
+
+    [System.Serializable]
+    public class PartEntry
+    {
+        public int slotType;  // (int)SlotType
+        public int partId;
+        public int partUid;
+    }
+
+    [System.Serializable]
+    public class TypeEnhancementEntry
+    {
+        public int itemId;
+        public int level;
+    }
 }

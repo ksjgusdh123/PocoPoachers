@@ -63,6 +63,17 @@ public class PlayerController : MonoBehaviour
         if (RepairWorkbenchUI == null) RepairWorkbenchUI = ui.GetPanel(UIType.RepairWorkbench);
         if (CraftingTableUI == null) CraftingTableUI = ui.GetPanel(UIType.CraftingTable);
 
+        if (_gunPartPanel == null) _gunPartPanel = FindAnyObjectByType<GunPartUI>(FindObjectsInactive.Include);
+
+        // EquipContextMenuUI는 우클릭 이벤트 구독을 자기 Awake에서 하는데, 씬에 비활성으로 배치되면
+        // Awake가 실행되지 않아 우클릭 메뉴가 뜨지 않는다. 아직 등록 전이면 한 번 활성화해서 Awake를
+        // 돌린다 — UIBase.Awake가 등록/구독 후 스스로 다시 비활성화하므로 화면에 보이지 않는다.
+        if (ui.GetPanel(UIType.EquipContextMenu) == null)
+        {
+            var equipMenu = FindAnyObjectByType<EquipContextMenuUI>(FindObjectsInactive.Include);
+            equipMenu?.gameObject.SetActive(true);
+        }
+
         _playerWeaponController = GetComponent<WeaponController>();
         _saveManager = SaveManager.GetInstance();
 
@@ -162,6 +173,9 @@ public class PlayerController : MonoBehaviour
 
         if (_inventory != null)
             _saveManager?.SaveInventory(PlayerSaveKey, _inventory);
+
+        // 씬 전환/종료 시점에 uid별 장비 상태(내구도/장탄수/파츠)를 함께 영속화 (호스트 전용은 내부에서 처리)
+        _saveManager?.SaveEquipmentState();
 
         if (_inputHander != null)
         {

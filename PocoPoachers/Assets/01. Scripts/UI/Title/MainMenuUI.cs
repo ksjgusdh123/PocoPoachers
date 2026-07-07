@@ -59,6 +59,7 @@ public class MainMenuUI : MonoBehaviour
     void OnClickNewGame()
     {
         SaveManager.GetInstance().AllocateNewSlot();
+        SaveManager.GetInstance().LoadEquipmentState(); // 새 슬롯: 장비 상태 초기화 + uid 카운터 리셋
         SetButtonsInteractable(false);
         StartCoroutine(CoConnectThen(
             onSuccess: () => RoomManager.Instance.StartAsHost(),
@@ -80,6 +81,7 @@ public class MainMenuUI : MonoBehaviour
     {
         CloseSaveSlotPanel();
         SaveManager.GetInstance().SetActiveSlot(slotIndex);
+        SaveManager.GetInstance().LoadEquipmentState(); // 저장된 장비 상태 복원 + uid 카운터 시드
         SetButtonsInteractable(false);
         StartCoroutine(CoConnectThen(
             onSuccess: () => RoomManager.Instance.StartAsHost(),

@@ -83,6 +83,7 @@ public static class RoomSync
 
         if (RoomManager.IsHost)
         {
+            Debug.Log($"[AmmoSave] 저장 uid={gunUid} ammo={currentAmmo}/{maxMagazine}"); // TODO: 디버그 후 제거
             WorldEquipmentManager.SetAmmo(gunUid, currentAmmo, maxMagazine);
         }
         else
