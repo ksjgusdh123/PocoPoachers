@@ -218,9 +218,19 @@ public static class RoomSync
                 G_ShelterLevel.Pack, PacketType.G_ShelterLevel);
     }
 
+    // 게스트가 씬 로드 완료를 호스트에 알림 (호스트가 박스/적 스냅샷을 보내는 트리거)
+    public static void SceneReady()
+    {
+        if (RoomManager.IsHost) return;
+
+        PacketBuilder.SendReliableToHost(
+            new G_SceneReadyT { PlayerId = MyId },
+            G_SceneReady.Pack, PacketType.G_SceneReady);
+    }
+
     public static void EnemySpawnToGuest(int guestPlayerId, int enemyTypeId, int enemyId, Vector3 pos, float rotation, float hp, float maxHp, int weaponId, int helmetId)
     {
-        PacketBuilder.SendToGuest(guestPlayerId, new H_EnemySpawnT
+        PacketBuilder.SendReliableToGuest(guestPlayerId, new H_EnemySpawnT
         {
             EnemyTypeId = enemyTypeId,
             EnemyId  = enemyId,

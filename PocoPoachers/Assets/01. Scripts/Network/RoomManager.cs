@@ -1,5 +1,6 @@
 ﻿using Google.FlatBuffers;
 using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
@@ -57,11 +58,16 @@ public class RoomManager : Singleton<RoomManager>
     const long KEEPALIVE_INTERVAL_MS = 5_000L;
     long _lastKeepaliveSent;
 
+    // 씬 준비가 끝난 뒤 월드 오브젝트(박스/적) 스냅샷을 기다리는 게스트 목록
+    readonly HashSet<int> _sceneReadyGuests = new();
+    bool _worldObjectsReady;
+
     protected override void Awake()
     {
         base.Awake();
         DontDestroyOnLoad(gameObject);
         OnGameStarted += LoadShelterIfOnTitle;
+        SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
     void LoadShelterIfOnTitle()
@@ -83,6 +89,7 @@ public class RoomManager : Singleton<RoomManager>
         _punchers.Clear();
         _guestLastSeen.Clear();
         _waitingGuests.Clear();
+        _sceneReadyGuests.Clear();
         _hostLastSeen = 0;
         NotifyGameStarted();
     }
@@ -96,8 +103,10 @@ public class RoomManager : Singleton<RoomManager>
         _guests.Clear();
         _guestLastSeen.Clear();
         _waitingGuests.Clear();
+        _sceneReadyGuests.Clear();
         _hostLastSeen = 0;
         _hostEp = null;
+        _worldObjectsReady = IsGameplayScene(SceneManager.GetActiveScene().name);
 
         ThreadPool.QueueUserWorkItem(_ => {
             _udpSession = new UdpSession();
@@ -164,7 +173,12 @@ public class RoomManager : Singleton<RoomManager>
                     SendWorldStateToGuest(id);
                 }
                 else
+                {
                     OnGameStarted?.Invoke();
+                    // 이미 게임 씬에 있으면 씬 로드 이벤트가 없으므로 즉시 준비 완료를 알린다
+                    if (IsGameplayScene(SceneManager.GetActiveScene().name))
+                        RoomSync.SceneReady();
+                }
             });
         };
         puncher.OnFailed += (_, reason) => {
@@ -473,7 +487,53 @@ public class RoomManager : Singleton<RoomManager>
                 new H_ShelterLevelT { Level = shelterMgr.CurrentLevel },
                 H_ShelterLevel.Pack, PacketType.H_ShelterLevel);
 
-        EnemyNetSync.SendAllToGuest(newGuestId);
+        SendAllPlayerStatsToGuest(newGuestId);
+    }
+
+    static bool IsGameplayScene(string sceneName) =>
+        sceneName == SceneName.Shelter || sceneName.StartsWith("SC_Raid_");
+
+    void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        if (!IsGameplayScene(scene.name))
+        {
+            _worldObjectsReady = false;
+            return;
+        }
+
+        if (_isHost)
+            StartCoroutine(MarkWorldObjectsReady());
+        else if (_hostEp != null)
+            RoomSync.SceneReady();
+    }
+
+    // 스포너(ItemSpawner/EnemySpawner)의 Start가 실행된 다음 프레임에 스냅샷 전송 가능 상태로 전환
+    IEnumerator MarkWorldObjectsReady()
+    {
+        yield return null;
+        _worldObjectsReady = true;
+        foreach (var guestId in _sceneReadyGuests)
+            SendWorldObjectsToGuest(guestId);
+        _sceneReadyGuests.Clear();
+    }
+
+    // 게스트가 씬 로드를 마쳤다고 알려온 시점에 호출. 호스트 자신이 아직 스폰 전이면 대기시킨다.
+    public void HandleGuestSceneReady(int guestId)
+    {
+        if (!_isHost) return;
+
+        if (_worldObjectsReady)
+            SendWorldObjectsToGuest(guestId);
+        else
+            _sceneReadyGuests.Add(guestId);
+    }
+
+    void SendWorldObjectsToGuest(int guestId)
+    {
+        EnemyNetSync.SendAllToGuest(guestId);
+
+        var objectManager = ObjectManager.Instance;
+        if (objectManager == null) return;
 
         foreach (var original in objectManager.SpawnedBoxes)
         {
@@ -492,7 +552,7 @@ public class RoomManager : Singleton<RoomManager>
                             currentItemUids.Add(slot.Uid);
                         }
             }
-            PacketBuilder.SendToGuest(newGuestId, new H_ItemSpawnT
+            PacketBuilder.SendReliableToGuest(guestId, new H_ItemSpawnT
             {
                 Uid       = original.Uid,
                 TypeId    = original.TypeId,
@@ -503,8 +563,6 @@ public class RoomManager : Singleton<RoomManager>
                 ItemUids  = currentItemUids,
             }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
-
-        SendAllPlayerStatsToGuest(newGuestId);
     }
 
     void SendAllPlayerStatsToGuest(int guestId)

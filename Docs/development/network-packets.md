@@ -148,6 +148,7 @@ UDP 수신은 **반드시 메인 스레드**에서 핸들러 실행.
 | `G/H_Durability` | G→H 요청, H→G 결과 | 무기 내구도 |
 | `G/H_StatSync` | 양방향 | HP 등 스탯 |
 | `G/H_Leave` | — | 퇴장 |
+| `G_SceneReady` | G→H (신뢰) | 씬 로드 완료 알림 — 호스트가 박스/적 스냅샷 전송 트리거 |
 
 ### 아이템
 
@@ -166,6 +167,10 @@ UDP 수신은 **반드시 메인 스레드**에서 핸들러 실행.
 ### 적
 
 `H_EnemySpawn`, `H_EnemyMove`, `H_EnemyHit`, `H_EnemyDie`
+
+### 씬 전환 시 월드 오브젝트 동기화
+
+호스트는 씬 전환 직후가 아니라 **게스트의 `G_SceneReady` 수신 후**에 박스(`H_ItemSpawn`)와 적(`H_EnemySpawn`) 스냅샷을 신뢰 전송한다. 게스트가 아직 로딩 중일 때 보내면 유실되기 때문. 호스트 자신이 스폰 전이면 `RoomManager._sceneReadyGuests`에 대기시켰다가 스폰 완료 다음 프레임에 일괄 전송한다.
 
 ---
 
