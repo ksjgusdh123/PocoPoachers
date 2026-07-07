@@ -44,6 +44,14 @@ public struct H_ItemSpawn : IFlatbufferObject
   public ArraySegment<byte>? GetItemUidsBytes() { return __p.__vector_as_arraysegment(16); }
 #endif
   public int[] GetItemUidsArray() { return __p.__vector_as_array<int>(16); }
+  public int ItemSlots(int j) { int o = __p.__offset(18); return o != 0 ? __p.bb.GetInt(__p.__vector(o) + j * 4) : (int)0; }
+  public int ItemSlotsLength { get { int o = __p.__offset(18); return o != 0 ? __p.__vector_len(o) : 0; } }
+#if ENABLE_SPAN_T
+  public Span<int> GetItemSlotsBytes() { return __p.__vector_as_span<int>(18, 4); }
+#else
+  public ArraySegment<byte>? GetItemSlotsBytes() { return __p.__vector_as_arraysegment(18); }
+#endif
+  public int[] GetItemSlotsArray() { return __p.__vector_as_array<int>(18); }
 
   public static Offset<H_ItemSpawn> CreateH_ItemSpawn(FlatBufferBuilder builder,
       int uid = 0,
@@ -52,8 +60,10 @@ public struct H_ItemSpawn : IFlatbufferObject
       float rotation = 0.0f,
       VectorOffset item_idsOffset = default(VectorOffset),
       VectorOffset item_countOffset = default(VectorOffset),
-      VectorOffset item_uidsOffset = default(VectorOffset)) {
-    builder.StartTable(7);
+      VectorOffset item_uidsOffset = default(VectorOffset),
+      VectorOffset item_slotsOffset = default(VectorOffset)) {
+    builder.StartTable(8);
+    H_ItemSpawn.AddItemSlots(builder, item_slotsOffset);
     H_ItemSpawn.AddItemUids(builder, item_uidsOffset);
     H_ItemSpawn.AddItemCount(builder, item_countOffset);
     H_ItemSpawn.AddItemIds(builder, item_idsOffset);
@@ -64,7 +74,7 @@ public struct H_ItemSpawn : IFlatbufferObject
     return H_ItemSpawn.EndH_ItemSpawn(builder);
   }
 
-  public static void StartH_ItemSpawn(FlatBufferBuilder builder) { builder.StartTable(7); }
+  public static void StartH_ItemSpawn(FlatBufferBuilder builder) { builder.StartTable(8); }
   public static void AddUid(FlatBufferBuilder builder, int uid) { builder.AddInt(0, uid, 0); }
   public static void AddTypeId(FlatBufferBuilder builder, int typeId) { builder.AddInt(1, typeId, 0); }
   public static void AddPos(FlatBufferBuilder builder, Offset<Vec3> posOffset) { builder.AddStruct(2, posOffset.Value, 0); }
@@ -87,6 +97,12 @@ public struct H_ItemSpawn : IFlatbufferObject
   public static VectorOffset CreateItemUidsVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateItemUidsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartItemUidsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddItemSlots(FlatBufferBuilder builder, VectorOffset itemSlotsOffset) { builder.AddOffset(7, itemSlotsOffset.Value, 0); }
+  public static VectorOffset CreateItemSlotsVector(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddInt(data[i]); return builder.EndVector(); }
+  public static VectorOffset CreateItemSlotsVectorBlock(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateItemSlotsVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateItemSlotsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartItemSlotsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<H_ItemSpawn> EndH_ItemSpawn(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_ItemSpawn>(o);
@@ -107,6 +123,8 @@ public struct H_ItemSpawn : IFlatbufferObject
     for (var _j = 0; _j < this.ItemCountLength; ++_j) {_o.ItemCount.Add(this.ItemCount(_j));}
     _o.ItemUids = new List<int>();
     for (var _j = 0; _j < this.ItemUidsLength; ++_j) {_o.ItemUids.Add(this.ItemUids(_j));}
+    _o.ItemSlots = new List<int>();
+    for (var _j = 0; _j < this.ItemSlotsLength; ++_j) {_o.ItemSlots.Add(this.ItemSlots(_j));}
   }
   public static Offset<H_ItemSpawn> Pack(FlatBufferBuilder builder, H_ItemSpawnT _o) {
     if (_o == null) return default(Offset<H_ItemSpawn>);
@@ -125,6 +143,11 @@ public struct H_ItemSpawn : IFlatbufferObject
       var __item_uids = _o.ItemUids.ToArray();
       _item_uids = CreateItemUidsVector(builder, __item_uids);
     }
+    var _item_slots = default(VectorOffset);
+    if (_o.ItemSlots != null) {
+      var __item_slots = _o.ItemSlots.ToArray();
+      _item_slots = CreateItemSlotsVector(builder, __item_slots);
+    }
     return CreateH_ItemSpawn(
       builder,
       _o.Uid,
@@ -133,7 +156,8 @@ public struct H_ItemSpawn : IFlatbufferObject
       _o.Rotation,
       _item_ids,
       _item_count,
-      _item_uids);
+      _item_uids,
+      _item_slots);
   }
 }
 
@@ -146,6 +170,7 @@ public class H_ItemSpawnT
   public List<int> ItemIds { get; set; }
   public List<int> ItemCount { get; set; }
   public List<int> ItemUids { get; set; }
+  public List<int> ItemSlots { get; set; }
 
   public H_ItemSpawnT() {
     this.Uid = 0;
@@ -155,6 +180,7 @@ public class H_ItemSpawnT
     this.ItemIds = null;
     this.ItemCount = null;
     this.ItemUids = null;
+    this.ItemSlots = null;
   }
 }
 
@@ -171,6 +197,7 @@ static public class H_ItemSpawnVerify
       && verifier.VerifyVectorOfData(tablePos, 12 /*ItemIds*/, 4 /*int*/, false)
       && verifier.VerifyVectorOfData(tablePos, 14 /*ItemCount*/, 4 /*int*/, false)
       && verifier.VerifyVectorOfData(tablePos, 16 /*ItemUids*/, 4 /*int*/, false)
+      && verifier.VerifyVectorOfData(tablePos, 18 /*ItemSlots*/, 4 /*int*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

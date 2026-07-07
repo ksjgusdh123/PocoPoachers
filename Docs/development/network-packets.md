@@ -154,7 +154,7 @@ UDP 수신은 **반드시 메인 스레드**에서 핸들러 실행.
 
 | 패킷 | 방향 | 용도 |
 |------|------|------|
-| `H_ItemSpawn` | H→G | 박스 스폰 |
+| `H_ItemSpawn` | H→G | 박스 스폰 (`item_slots`로 슬롯 배치 일치, 이미 등록된 uid면 스폰 없이 내용물만 갱신 — 쉘터 창고) |
 | `H_ItemDespawn` | H→G | 월드 아이템 제거 |
 | `G_ItemGain` | G→H | 빈 슬롯 이동 요청 |
 | `H_ItemGainResult` | H→G | 성공/실패 (실패 시 롤백) |
@@ -167,6 +167,10 @@ UDP 수신은 **반드시 메인 스레드**에서 핸들러 실행.
 ### 적
 
 `H_EnemySpawn`, `H_EnemyMove`, `H_EnemyHit`, `H_EnemyDie`
+
+### 쉘터 창고 (Storage)
+
+씬에 미리 배치 + `ObjectManager.RegisterSceneObject`로 고정 UID(`Storage.STORAGE_UID = 1`, 필드 박스는 1000~) 자기등록. `WorldObject`가 붙으면서 `InventoryUI.IsBox`가 true가 되어 기존 박스 교환 패킷이 그대로 동작한다. 내용물은 호스트만 `SaveManager`로 영속화하고(슬롯 변경 이벤트 기반), 게스트는 씬 준비 후 `H_ItemSpawn` 스냅샷으로 받는다.
 
 ### 씬 전환 시 월드 오브젝트 동기화
 

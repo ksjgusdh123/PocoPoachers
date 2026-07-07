@@ -540,17 +540,20 @@ public class RoomManager : Singleton<RoomManager>
             var currentItemIds   = new List<int>();
             var currentItemCounts = new List<int>();
             var currentItemUids  = new List<int>();
+            var currentItemSlots = new List<int>();
             if (objectManager.TryGet(ObjectKind.ItemBox, original.Uid, out var boxObj))
             {
                 var inv = boxObj.GetComponent<Inventory>();
                 if (inv != null)
-                    foreach (var slot in inv.Slots)
-                        if (!slot.IsEmpty)
-                        {
-                            currentItemIds.Add(slot.ItemData.Id);
-                            currentItemCounts.Add(slot.Amount);
-                            currentItemUids.Add(slot.Uid);
-                        }
+                    for (int i = 0; i < inv.Slots.Count; i++)
+                    {
+                        var slot = inv.Slots[i];
+                        if (slot.IsEmpty) continue;
+                        currentItemIds.Add(slot.ItemData.Id);
+                        currentItemCounts.Add(slot.Amount);
+                        currentItemUids.Add(slot.Uid);
+                        currentItemSlots.Add(i);
+                    }
             }
             PacketBuilder.SendReliableToGuest(guestId, new H_ItemSpawnT
             {
@@ -561,6 +564,7 @@ public class RoomManager : Singleton<RoomManager>
                 ItemIds   = currentItemIds,
                 ItemCount = currentItemCounts,
                 ItemUids  = currentItemUids,
+                ItemSlots = currentItemSlots,
             }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
     }

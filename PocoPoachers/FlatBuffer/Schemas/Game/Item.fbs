@@ -9,6 +9,7 @@ table H_ItemSpawn
     item_ids: [int];
     item_count: [int];
     item_uids: [int]; // item_ids와 같은 순서, 무기/방어구 등 인스턴스 식별용 (소모품은 0)
+    item_slots: [int]; // item_ids와 같은 순서의 슬롯 인덱스 — 스냅샷 시 호스트와 슬롯 배치를 일치시킴 (없으면 순차 배치)
 }
 
 table H_ItemDespawn
