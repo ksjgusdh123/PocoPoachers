@@ -8,6 +8,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _acceleration = 10f;
     [SerializeField] private float _itemUseSpeedMultiplier = 0.4f; // 아이템 사용 중 이동속도 배율
 
+    [Header("중력")]
+    [SerializeField] private float _gravity = -20f;
+    [SerializeField] private float _groundedGravity = -2f; // 접지 유지용 하강 속도
+
     [SerializeField] private float _sendInterval = 0.1f;
     [SerializeField] private float _minMoveSqrEpsilon = 0.0004f;
     [SerializeField] private float _minYawDelta = 0.5f;
@@ -20,6 +24,7 @@ public class PlayerMovement : MonoBehaviour
     private PlayerStat _playerStat;
 
     private Vector3 _currentVelocity; // _currentSpeed 대신 벡터로 교체
+    private float _verticalVelocity;
     private float _currentItemUseMultiplier = 1f;
 
     private float _nextSendTime;
@@ -77,7 +82,18 @@ public class PlayerMovement : MonoBehaviour
 
     private void Move()
     {
-      if (_playerDodge.IsRolling) return;
+      // isGrounded는 직전 Move() 결과 기준 — 접지 시 소량 하강을 유지해야 판정이 안정적
+      if (_characterController.isGrounded)
+          _verticalVelocity = _groundedGravity;
+      else
+          _verticalVelocity += _gravity * Time.deltaTime;
+
+      if (_playerDodge.IsRolling)
+      {
+          // 구르기 중 수평 이동은 PlayerDodge가 담당, 여기서는 중력만 적용
+          _characterController.Move(Vector3.up * (_verticalVelocity * Time.deltaTime));
+          return;
+      }
 
       Vector2 input = _inputHandler.MoveInput;
       Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
@@ -108,7 +124,9 @@ public class PlayerMovement : MonoBehaviour
       _animator.SetFloat("VelocityZ", _localVelZ, 0.1f, Time.deltaTime);
       _animator.SetBool("IsSprinting", _isSprinting);
 
-      _characterController.Move(_currentVelocity * Time.deltaTime);
+      Vector3 motion = _currentVelocity;
+      motion.y = _verticalVelocity;
+      _characterController.Move(motion * Time.deltaTime);
     }
 
     private bool CanSprint() => _playerStat == null || _playerStat.CurrentStamina > 0f;
