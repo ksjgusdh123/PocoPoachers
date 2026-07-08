@@ -5,10 +5,18 @@ using UnityEngine.UI;
 
 public class StorageUI : InventoryUI
 {
+    [System.Serializable]
+    private struct FilterEntry
+    {
+        public Button Button;
+        public ItemType Type;
+    }
+
     [SerializeField] private int _pageSize = 5;
     [SerializeField] private Button _prevButton;
     [SerializeField] private Button _nextButton;
     [SerializeField] private TextMeshProUGUI _pageText;
+    [SerializeField] private FilterEntry[] _filterButtons;
 
     private int _currentPage = 0;
     private ItemType _filterType = ItemType.None;
@@ -19,10 +27,9 @@ public class StorageUI : InventoryUI
     // 창고는 리빌 연출이 없으므로 항상 공개 상태로 취급 (더블클릭/설명 차단 해제)
     public override bool IsSlotUnrevealed(int slotIndex) => false;
 
-    // 필터 설정 (인스펙터 버튼 OnClick에서 직접 호출, 같은 타입 재클릭 시 None으로 토글)
-    public void SetFilter(int typeIndex)
+    // 필터 설정 — 같은 타입 재클릭 시 None으로 토글
+    public void SetFilter(ItemType type)
     {
-        ItemType type = (ItemType)typeIndex;
         _filterType = _filterType == type ? ItemType.None : type;
         _currentPage = 0;
         Refresh();
@@ -34,6 +41,12 @@ public class StorageUI : InventoryUI
 
         _prevButton?.onClick.AddListener(PrevPage);
         _nextButton?.onClick.AddListener(NextPage);
+
+        foreach (var entry in _filterButtons)
+        {
+            var type = entry.Type;
+            entry.Button.onClick.AddListener(() => SetFilter(type));
+        }
     }
 
 public void NextPage()
