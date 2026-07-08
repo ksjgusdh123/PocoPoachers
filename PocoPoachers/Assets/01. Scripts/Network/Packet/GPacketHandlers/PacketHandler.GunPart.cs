@@ -13,7 +13,7 @@ public static partial class PacketHandlers
             if (pkt.PartId != 0)
             {
                 var part = GunPartTable.Instance.Get(pkt.PartId);
-                if (part != null) gun.EquipPart(part);
+                if (part != null) gun.EquipPart(WorldEquipmentManager.GetEnhancedGunPart(part, pkt.PartUid));
             }
             else
             {
@@ -23,7 +23,7 @@ public static partial class PacketHandlers
         }
 
         if (pkt.PartId != 0)
-            WorldEquipmentManager.SetPart(pkt.GunUid, slotType, pkt.PartId);
+            WorldEquipmentManager.SetPart(pkt.GunUid, slotType, pkt.PartId, pkt.PartUid);
         else
             WorldEquipmentManager.RemovePart(pkt.GunUid, slotType);
         WorldEquipmentManager.SetAmmo(pkt.GunUid, pkt.CurrentAmmo, pkt.MaxMagazine);

@@ -99,13 +99,13 @@ public static class RoomSync
 
     // 총 파츠 장착/해제 — partId=0이면 해제. 호스트는 직접 저장하고, 게스트는 호스트에게 요청한다
     // currentAmmo/maxMagazine은 파츠 변경 직후 호출자(자기 자신) 총의 실제 값을 그대로 전달한다
-    public static void GunPartEquip(int gunUid, SlotType slotType, int partId, int currentAmmo, int maxMagazine)
+    public static void GunPartEquip(int gunUid, SlotType slotType, int partId, int partUid, int currentAmmo, int maxMagazine)
     {
         if (gunUid == 0) return;
 
         if (RoomManager.IsHost)
         {
-            if (partId != 0) WorldEquipmentManager.SetPart(gunUid, slotType, partId);
+            if (partId != 0) WorldEquipmentManager.SetPart(gunUid, slotType, partId, partUid);
             else WorldEquipmentManager.RemovePart(gunUid, slotType);
             WorldEquipmentManager.SetAmmo(gunUid, currentAmmo, maxMagazine);
         }
@@ -116,6 +116,7 @@ public static class RoomSync
                 GunUid      = gunUid,
                 SlotType    = (int)slotType,
                 PartId      = partId,
+                PartUid     = partUid,
                 CurrentAmmo = currentAmmo,
                 MaxMagazine = maxMagazine,
             }, G_GunPartEquip.Pack, PacketType.G_GunPartEquip);

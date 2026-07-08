@@ -130,6 +130,7 @@ table G_GunPartEquip
     part_id:      int;
     current_ammo: int;
     max_magazine: int;
+    part_uid:     int; // 파츠 인스턴스 uid (강화 레벨 연결용, 없으면 0)
 }
 
 // 무기 해제 시점의 탄약 저장 요청 (게스트→호스트). 마찬가지로 다른 플레이어 화면에는 영향 없어 브로드캐스트 없음
