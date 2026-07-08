@@ -37,6 +37,7 @@ shelter               쉘터 레벨/재료 확인
 shelter level <n>     쉘터 레벨 설정
 shelter upgrade       재료 없이 1레벨 업
 shelter need          다음 업그레이드 재료 지급
+god [on|off]          플레이어 무적 토글
 ```
 
 ### 예시

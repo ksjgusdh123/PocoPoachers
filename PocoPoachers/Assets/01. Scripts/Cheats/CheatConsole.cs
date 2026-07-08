@@ -42,6 +42,7 @@ public class CheatConsole : Singleton<CheatConsole>
         _commands["clear"] = new CheatEntry { Usage = "clear", Handler = _ => CmdClear() };
         _commands["items"] = new CheatEntry { Usage = "items [limit]", Handler = CmdItems };
         _commands["shelter"] = new CheatEntry { Usage = "shelter [level <n>|upgrade|need]", Handler = CmdShelter };
+        _commands["god"] = new CheatEntry { Usage = "god [on|off]", Handler = CmdGod };
     }
 
     void Update()
@@ -213,6 +214,40 @@ public class CheatConsole : Singleton<CheatConsole>
 
         Log(message);
         Debug.Log(message);
+    }
+
+    // 무적 토글 — 인자 없으면 현재 상태 반전, on/off로 명시 지정
+    // 데미지는 호스트에서만 적용되므로(Bullet._applyDamage) 호스트 자기 플레이어에만 유효
+    void CmdGod(string[] args)
+    {
+        if (!RequireHost())
+            return;
+
+        var player = FindLocalPlayer();
+        var stat = player != null ? player.GetComponent<PlayerStat>() : null;
+        if (stat == null)
+        {
+            Log("플레이어를 찾을 수 없습니다.");
+            Log("게임 씬에서 플레이어가 스폰된 뒤 다시 시도하세요.");
+            return;
+        }
+
+        bool enable = !stat.IsGodMode;
+        if (args.Length >= 1)
+        {
+            if (string.Equals(args[0], "on", StringComparison.OrdinalIgnoreCase))
+                enable = true;
+            else if (string.Equals(args[0], "off", StringComparison.OrdinalIgnoreCase))
+                enable = false;
+            else
+            {
+                Log("사용법: god [on|off]");
+                return;
+            }
+        }
+
+        stat.SetGodMode(enable);
+        Log($"[CHEAT] 무적 {(enable ? "ON" : "OFF")}");
     }
 
     void CmdClear()

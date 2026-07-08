@@ -17,6 +17,12 @@ public abstract class StatBase : MonoBehaviour, IDamageable
     public bool IsInvincible { get; private set; }
     public void SetInvincible(bool value) => IsInvincible = value;
 
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+    // 치트 무적 — 구르기 무적과 별개로 유지되어 구르기 종료에 꺼지지 않음
+    public bool IsGodMode { get; private set; }
+    public void SetGodMode(bool value) => IsGodMode = value;
+#endif
+
     protected float _totalDefenseRate;
 
     protected virtual void Awake()
@@ -40,6 +46,9 @@ public abstract class StatBase : MonoBehaviour, IDamageable
     public virtual bool TakeDamage(float damage, GameObject attacker = null)
     {
         if (IsInvincible) return false;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (IsGodMode) return false;
+#endif
         if (CurrentHp <= 0f) return false;
 
         float actualDamage = damage * (1f - Mathf.Clamp01(DefenseRate));
