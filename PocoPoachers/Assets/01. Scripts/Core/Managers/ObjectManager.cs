@@ -78,8 +78,18 @@ public class ObjectManager : Singleton<ObjectManager>
         }
     }
 
-    public bool TryGet(ObjectKind kind, int id, out WorldObject obj) =>
-        _objects.TryGetValue((kind, id), out obj);
+    public bool TryGet(ObjectKind kind, int id, out WorldObject obj)
+    {
+        var key = (kind, id);
+        // 파괴된(씬 전환/퇴장) 오브젝트가 남아있으면 제거하고 없는 것으로 취급 — 호출부의 GetComponent 예외 방지
+        if (_objects.TryGetValue(key, out obj))
+        {
+            if (obj != null) return true;
+            _objects.Remove(key);
+        }
+        obj = null;
+        return false;
+    }
 
     public void Despawn(ObjectKind kind, int id)
     {
@@ -135,6 +145,25 @@ public class ObjectManager : Singleton<ObjectManager>
         if (kind != ObjectKind.Player) return false;
         var nm = NetworkManager.Instance;
         return nm != null && id == nm.MyPlayerId;
+    }
+
+    // excluded(방금 죽은 플레이어)를 제외하고 살아있는(HP가 남은) 플레이어가 하나라도 있는지
+    // 로컬 플레이어는 _objects에 없으므로(ApplyMove의 IsLocalPlayer) 별도로 확인한다
+    public bool HasLivingPlayerExcept(StatBase excluded)
+    {
+        var local = FindFirstObjectByType<PlayerStat>();
+        if (local != null && !ReferenceEquals(local, excluded) && local.CurrentHp > 0f)
+            return true;
+
+        foreach (var kv in _objects)
+        {
+            if (kv.Key.kind != ObjectKind.Player || kv.Value == null) continue;
+
+            var stat = kv.Value.GetComponent<StatBase>();
+            if (stat == null || ReferenceEquals(stat, excluded)) continue;
+            if (stat.CurrentHp > 0f) return true;
+        }
+        return false;
     }
 
     public List<PlayerInfoT> GetAllPlayerInfos(int excludeId = -1)
@@ -207,6 +236,11 @@ public class ObjectManager : Singleton<ObjectManager>
             component = go.AddComponent<WorldObject>();
 
         component.Initialize(kind, id, typeId);
+
+        // 원격 플레이어는 생성 즉시 스탯을 붙여야 첫 StatSync 도착 전에도 총알 피격(IDamageable)이 가능하다
+        if (kind == ObjectKind.Player && !go.TryGetComponent<StatBase>(out _))
+            go.AddComponent<RemotePlayerStat>();
+
         return component;
     }
 

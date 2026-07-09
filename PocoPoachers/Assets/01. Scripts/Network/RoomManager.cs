@@ -598,8 +598,8 @@ public class RoomManager : Singleton<RoomManager>
             float defense = 0f;
             if (stat is RemotePlayerStat remote)
             {
-                stamina = remote.Stamina;
-                battery = remote.Battery;
+                stamina = remote.CurrentStamina;
+                battery = remote.CurrentBattery;
                 defense = remote.ArmorDefenseRate;
             }
 

@@ -1,9 +1,22 @@
+using System;
 using UnityEngine;
 
+// 원격 플레이어의 스탯 사본 — PlayerStat과 같은 스탯 구성(HP/스태미나/배터리)을 갖되
+// 값은 로컬 시뮬레이션 없이 네트워크 동기화로만 갱신된다
 public class RemotePlayerStat : StatBase
 {
-    public float Stamina { get; private set; }
-    public float Battery { get; private set; }
+    [SerializeField] private float _maxHp = 100f;
+    [SerializeField] private float _maxStamina = 100f;
+    [SerializeField] private float _maxBattery = 100f;
+
+    public float MaxStamina { get; private set; }
+    public float CurrentStamina { get; private set; }
+
+    public float MaxBattery { get; private set; }
+    public float CurrentBattery { get; private set; }
+
+    public event Action<float, float> OnStaminaChanged;
+    public event Action<float, float> OnBatteryChanged;
 
     float _armorDefenseRate;
     float _armorMaxHpBonus;
@@ -13,6 +26,22 @@ public class RemotePlayerStat : StatBase
 
     public float ArmorMoveSpeedMultiplier => _armorMoveSpeedMultiplier;
     public float ArmorDefenseRate => _armorDefenseRate;
+
+    protected override void Awake()
+    {
+        base.Awake();
+
+        // PlayerStat과 동일한 기본값으로 시작 — 첫 동기화 전까지 HP 0(사망/피격 불가 취급)이 되는 것을 방지
+        MaxHp = _maxHp;
+        CurrentHp = MaxHp;
+        MaxStamina = _maxStamina;
+        CurrentStamina = MaxStamina;
+        MaxBattery = _maxBattery;
+        CurrentBattery = MaxBattery;
+
+        // 데미지는 호스트에서만 적용되므로(Bullet._applyDamage) 게스트의 전투 사망은 호스트의 이 컴포넌트에서 감지된다
+        OnDie += HandleRemoteDeath;
+    }
 
     public void ApplyNetworkStats(float hp, float maxHp, float stamina, float battery, float defense)
     {
@@ -25,8 +54,14 @@ public class RemotePlayerStat : StatBase
 
     public void SetVitalsFromNetwork(float stamina, float battery)
     {
-        Stamina = stamina;
-        Battery = battery;
+        // 강화 등으로 소유자의 최대치가 100을 넘을 수 있는데 패킷엔 현재값만 오므로, 관측된 최대값으로 보정
+        MaxStamina = Mathf.Max(MaxStamina, stamina);
+        MaxBattery = Mathf.Max(MaxBattery, battery);
+
+        CurrentStamina = stamina;
+        CurrentBattery = battery;
+        OnStaminaChanged?.Invoke(CurrentStamina, MaxStamina);
+        OnBatteryChanged?.Invoke(CurrentBattery, MaxBattery);
     }
 
     public void SetArmorDefenseRate(float defenseRate) => _armorDefenseRate = defenseRate;
@@ -68,16 +103,44 @@ public class RemotePlayerStat : StatBase
                 break;
             case EffectType.Hunger:
             case EffectType.Thirst:
-                Battery = Mathf.Min(200f, Battery + data.effect_value);
+                CurrentBattery = Mathf.Min(MaxBattery, CurrentBattery + data.effect_value);
+                OnBatteryChanged?.Invoke(CurrentBattery, MaxBattery);
                 break;
             case EffectType.Stamina:
-                Stamina = Mathf.Min(200f, Stamina + data.effect_value);
+                CurrentStamina = Mathf.Min(MaxStamina, CurrentStamina + data.effect_value);
+                OnStaminaChanged?.Invoke(CurrentStamina, MaxStamina);
                 break;
         }
     }
 
-    protected override void Awake()
+    // 호스트에서 총알/힐이 이 원격 플레이어에 적용됐을 때(TakeDamage/Heal) 판정 결과를 모든 게스트에 전파
+    // 소유 게스트가 이걸 받아 자기 로컬 PlayerStat에 반영해야 HP 권한이 호스트로 통일된다
+    // (게스트 자기보고 수신은 SetHpFromNetwork 경로라 여기를 타지 않음 — 에코 루프 없음)
+    protected override void OnLocalHpChanged(float hp, float maxHp)
     {
-        base.Awake();
+        if (!RoomManager.IsHost) return;
+        if (!TryGetComponent<WorldObject>(out var worldObj)) return;
+
+        Debug.Log($"[RemotePlayerStat] 플레이어 {worldObj.Id} HP {hp}/{maxHp} 판정 → 게스트 전파");
+        PacketBuilder.BroadcastReliableToGuests(new H_StatSyncT
+        {
+            PlayerId = worldObj.Id,
+            Hp       = hp,
+            MaxHp    = maxHp,
+            Stamina  = CurrentStamina,
+            Battery  = CurrentBattery,
+            Defense  = _armorDefenseRate,
+        }, H_StatSync.Pack, PacketType.H_StatSync);
+    }
+
+    // 원격 플레이어 사망 감지 — 호스트는 TakeDamage에서, 게스트는 SetHpFromNetwork(HP 0 수신)에서 발동
+    // 살아있는 다른 플레이어가 있으면 이 사본을 구출(F 상호작용) 대상으로 표시 (게스트 상자 스폰은 아직 미지원)
+    private void HandleRemoteDeath()
+    {
+        if (ObjectManager.Instance != null && ObjectManager.Instance.HasLivingPlayerExcept(this))
+        {
+            Debug.Log("구출!");
+            RescueInteractable.MarkDowned(gameObject);
+        }
     }
 }
