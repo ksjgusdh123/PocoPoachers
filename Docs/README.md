@@ -23,10 +23,13 @@ Escape From Duckov 스타일 **탈출·파밍·성장** 게임. 쉘터 거점 �
 | 플레이어·전투·장비 | [design/player-combat.md](design/player-combat.md) |
 | 인벤·창고·아이템 박스 | [design/inventory-exchange.md](design/inventory-exchange.md) |
 | 쉘터·레이드·채광 | [design/shelter-raid.md](design/shelter-raid.md) |
+| 행성/섹터 스펙 (안개·가시거리·위험도) | [design/planet-sectors.md](design/planet-sectors.md) |
 | 적 AI | [design/enemy-ai.md](design/enemy-ai.md) |
 | 멀티플레이 (개요) | [design/multiplayer.md](design/multiplayer.md) |
 | 패킷 추가·디버깅 | [development/network-packets.md](development/network-packets.md) |
 | CSV·fbs·제너레이터 | [development/code-generators.md](development/code-generators.md) + [datatable/id-ranges.md](datatable/id-ranges.md) |
+| 맵 자동 생성 (기획 배경) | [design/map-generation.md](design/map-generation.md) |
+| 맵 자동 생성 (사용법·팔레트·트러블슈팅) | [development/map-generator.md](development/map-generator.md) |
 | DataTable 연동 | [design/data-tables.md](design/data-tables.md) |
 | 강화·수리·성장 | [design/progression.md](design/progression.md) |
 | 세이브 | [design/save.md](design/save.md) |

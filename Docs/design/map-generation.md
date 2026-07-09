@@ -1,0 +1,66 @@
+# 맵 자동 생성 (기획)
+
+이미지 레이어를 색상/명도로 해석해 3D 월드(지형·오브젝트·자원·적 스폰)를 자동 생성하는 파이프라인의 기획 배경.
+사용법·팔레트 설정·트러블슈팅은 [development/map-generator.md](../development/map-generator.md) 참고.
+
+---
+
+## 배경
+
+레벨 디자이너가 오브젝트를 수작업 배치하는 기존 방식은 오픈월드/생존 장르처럼 넓은 맵을 다룰 때 다음 문제가 있음:
+
+- 대량 프리팹 수작업 배치
+- 지형 수정 시 오브젝트 재배치 필요
+- 디자이너·개발자 간 작업 의존성 증가
+- 프로토타입 제작 속도 저하
+
+## 목표
+
+디자이너가 이미지 편집 툴(Photoshop 등)에서 레이어를 수정하면 Unity가 자동으로 읽어 3D 월드를 생성 — **"이미지를 그리면 맵이 만들어진다."**
+
+---
+
+## 레이어 정의
+
+| 레이어 | 역할 | 해석 방식 |
+|--------|------|-----------|
+| Height Map | 지형 높이 | 흑백 명도 → 높이 (검정=낮음, 흰색=산악) |
+| Biome Map | 지역 환경 | 색상 → `TerrainLayer` (숲/초원/황무지/설원/호수) |
+| Object Map | 오브젝트 배치 | 색상 → 프리팹 (나무/바위/건물/던전 입구) |
+| Resource Map | 자원 배치 | 색상 → 자원 프리팹 (식물/광물/희귀) |
+| Enemy Spawn Map | 적 스폰 위치 | 명도 → 스폰 후보(흰색=허용, 검정=금지) |
+| Road Map | 이동 경로 | 미구현 |
+
+## 제작 파이프라인
+
+```
+1. 디자이너가 이미지 레이어 수정
+2. Unity Import (Tools → Generator → Map)
+3. 픽셀 색상/명도 분석 → 팔레트 매칭
+4. Terrain 생성 (Height Map)
+5. 프리팹 자동 배치 (Object/Resource Map)
+6. NavMesh 베이크
+7. 결과 즉시 확인
+```
+
+수정 시 이미지만 바꾸고 재생성하면 됨 — 구현 상세: [development/map-generator.md](../development/map-generator.md#워크플로)
+
+## 기대 효과
+
+- 반복 배치 작업 감소, 대규모 맵 제작 시간 단축
+- 이미지 수정만으로 전체 월드 갱신 — 유지보수 비용 감소
+- 디자이너는 이미지 파일만 공유 — 개발자 의존도 감소
+
+---
+
+## 구현 현황
+
+| 항목 | 상태 |
+|------|------|
+| Height/Biome/Object/Resource/Enemy Spawn Map | ✅ [development/map-generator.md](../development/map-generator.md) |
+| Road Map | ❌ 미구현 |
+| NavMeshModifier 자동 부착 (배치 오브젝트 장애물 처리) | ❌ 미구현 |
+| PSD 레이어 직접 Import | ❌ 미구현 (향후 확장 아이디어) |
+| AI 기반 레이어 이미지 생성 연동 | ❌ 미구현 (향후 확장 아이디어) |
+
+행성별 안개 밀도·가시거리·수직성 테마를 이 파이프라인에 대입하는 설계 기준은 [planet-sectors.md](planet-sectors.md) 참고.

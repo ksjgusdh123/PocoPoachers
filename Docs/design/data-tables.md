@@ -70,6 +70,8 @@ Generated/DataTable/*Table.cs
 | `fog_density` | 안개 밀도 | 미적용 |
 | `draw_distance` | 시야 거리 | 미적용 |
 
+수직성 테마·광물 매장 티어·위험도/스폰 캡은 `planet.csv`에 대응 컬럼조차 없음 — 전체 설계 기준: [planet-sectors.md](planet-sectors.md)
+
 ## 네트워크 패킷
 
 FlatBuffer 스키마 → `Generated/FlatBuffer/` — [multiplayer.md](multiplayer.md) 참고.

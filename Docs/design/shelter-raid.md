@@ -51,8 +51,11 @@
 | 1001 | 폐기 황무지 | 1 | 1 | 시간 제한 없음 |
 | 1002 | 동결 정점 | 2 | 2 | 600초 제한 (미적용) |
 | 1003 | 화산 원자로 | 3 | 3 | 600초 제한 (미적용) |
+| — | 미지의 심연 (Tier 4) | 4 | — | ❌ `planet.csv` 미등록 |
 
 `need_power`, `use_time_limit`, `max_session_time`, `fog_density`, `draw_distance` 필드는 **선택 UI 잠금에 shelter_level만 사용**되고, 레이드 런타임에는 미적용.
+
+전체 스펙(안개/가시거리/수직성 테마/광물 티어/위험도)은 [planet-sectors.md](planet-sectors.md) 참고.
 
 ### 레이드 콘텐츠
 
