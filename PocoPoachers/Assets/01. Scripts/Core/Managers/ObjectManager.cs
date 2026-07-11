@@ -32,6 +32,8 @@ public class ObjectManager : Singleton<ObjectManager>
     readonly Dictionary<(ObjectKind kind, int id), WorldObject> _objects = new();
     readonly Dictionary<ObjectKind, WorldObject> _prefabs = new();
     readonly List<H_ItemSpawnT> _spawnedBoxes = new();
+    // 씬 배치 고정 오브젝트(창고 등). Clear()에서 Destroy하지 않는다.
+    readonly HashSet<(ObjectKind kind, int id)> _sceneObjects = new();
 
     public IReadOnlyList<H_ItemSpawnT> SpawnedBoxes => _spawnedBoxes;
     public void RegisterSpawnedBox(H_ItemSpawnT data) => _spawnedBoxes.Add(data);
@@ -159,12 +161,19 @@ public class ObjectManager : Singleton<ObjectManager>
         lock (_moveLock)
             _pending.Clear();
 
+        var toDestroy = new List<WorldObject>();
         foreach (var kv in _objects)
         {
+            if (_sceneObjects.Contains(kv.Key)) continue;
             if (kv.Value != null)
-                Destroy(kv.Value.gameObject);
+                toDestroy.Add(kv.Value);
         }
+
+        foreach (var obj in toDestroy)
+            Destroy(obj.gameObject);
+
         _objects.Clear();
+        _sceneObjects.Clear();
         _spawnedBoxes.Clear();
     }
 
@@ -175,7 +184,17 @@ public class ObjectManager : Singleton<ObjectManager>
         if (!go.TryGetComponent<WorldObject>(out var component))
             component = go.AddComponent<WorldObject>();
         component.Initialize(kind, id);
-        _objects[(kind, id)] = component;
+        var key = (kind, id);
+        _objects[key] = component;
+        _sceneObjects.Add(key);
+    }
+
+    public void UnregisterSceneObject(ObjectKind kind, int id)
+    {
+        var key = (kind, id);
+        _sceneObjects.Remove(key);
+        _objects.Remove(key);
+        _spawnedBoxes.RemoveAll(box => box.Uid == id && kind == ObjectKind.ItemBox);
     }
 
     public ItemBox SpawnItemBox(int uid, int typeId, Vector3 pos, float rotation)

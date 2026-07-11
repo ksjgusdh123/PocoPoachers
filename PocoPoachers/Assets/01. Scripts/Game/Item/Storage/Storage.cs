@@ -66,6 +66,11 @@ public class Storage : MonoBehaviour, IInteractable
         SaveManager.GetInstance()?.SaveInventory(_saveKey, _inventory);
     }
 
+    private void OnDestroy()
+    {
+        ObjectManager.Instance?.UnregisterSceneObject(ObjectKind.ItemBox, STORAGE_UID);
+    }
+
     public void OnInteract(PlayerController player)
     {
         SoundManager.GetInstance().PlaySfx("sfx_storage_open");
