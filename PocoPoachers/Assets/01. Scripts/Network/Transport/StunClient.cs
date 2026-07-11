@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 
@@ -13,7 +14,15 @@ public static class StunClient
         publicEp = null;
         try
         {
-            var stunEp = new IPEndPoint(Dns.GetHostAddresses(stunHost)[0], stunPort);
+            IPAddress stunAddr = Dns.GetHostAddresses(stunHost)
+                .FirstOrDefault(a => a.AddressFamily == AddressFamily.InterNetwork);
+            if (stunAddr == null)
+            {
+                UnityEngine.Debug.LogError($"[StunClient] {stunHost}에 대한 IPv4 주소를 찾을 수 없습니다.");
+                return false;
+            }
+
+            var stunEp = new IPEndPoint(stunAddr, stunPort);
             byte[] request = BuildBindingRequest(out byte[] txId);
 
             boundUdpSocket.SendTo(request, stunEp);
