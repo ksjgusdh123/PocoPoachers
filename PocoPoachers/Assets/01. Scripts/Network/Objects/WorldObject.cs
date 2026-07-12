@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public enum ObjectKind
@@ -34,6 +35,7 @@ public class WorldObject : MonoBehaviour
     bool _wasRolling;
 
     Animator _animator;
+    HashSet<int> _animParams;
 
     public void Initialize(ObjectKind kind, int id, int typeId = 0)
     {
@@ -41,7 +43,22 @@ public class WorldObject : MonoBehaviour
         Id = id;
         TypeId = typeId;
         _animator = GetComponentInChildren<Animator>();
+        CacheAnimatorParameters();
     }
+
+    // Animator Controller에 실제 존재하는 파라미터만 세팅하기 위해 미리 해시를 모아둔다
+    // (오브젝트마다 컨트롤러가 달라 없는 파라미터 세팅 시 "Parameter does not exist" 경고가 스팸됨)
+    void CacheAnimatorParameters()
+    {
+        _animParams = null;
+        if (_animator == null || _animator.runtimeAnimatorController == null) return;
+
+        _animParams = new HashSet<int>();
+        foreach (var p in _animator.parameters)
+            _animParams.Add(p.nameHash);
+    }
+
+    bool HasParam(int hash) => _animParams != null && _animParams.Contains(hash);
 
     public void SetMoveTarget(Vector3 worldPos, float yawDegrees, float velX = 0f, float velZ = 0f, bool isSprinting = false, bool isRolling = false, bool isAiming = false, bool isReloading = false)
     {
@@ -56,15 +73,15 @@ public class WorldObject : MonoBehaviour
         {
             if (isRolling && !_wasRolling)
             {
-                _animator.SetTrigger(HashRoll);
+                if (HasParam(HashRoll)) _animator.SetTrigger(HashRoll);
                 _animator.SetLayerWeight(1, 0f);
             }
             else if (!isRolling && _wasRolling)
             {
                 _animator.SetLayerWeight(1, 1f);
             }
-            _animator.SetBool(HashAiming,    isAiming);
-            _animator.SetBool(HashReloading, isReloading);
+            if (HasParam(HashAiming))    _animator.SetBool(HashAiming,    isAiming);
+            if (HasParam(HashReloading)) _animator.SetBool(HashReloading, isReloading);
         }
         _wasRolling = isRolling;
     }
@@ -79,8 +96,8 @@ public class WorldObject : MonoBehaviour
         transform.rotation = Quaternion.Euler(0f, y, 0f);
 
         if (_animator == null) return;
-        _animator.SetFloat(HashVelX, _targetVelX, _animSmooth, Time.deltaTime);
-        _animator.SetFloat(HashVelZ, _targetVelZ, _animSmooth, Time.deltaTime);
-        _animator.SetBool(HashSprinting, _targetSprinting);
+        if (HasParam(HashVelX))      _animator.SetFloat(HashVelX, _targetVelX, _animSmooth, Time.deltaTime);
+        if (HasParam(HashVelZ))      _animator.SetFloat(HashVelZ, _targetVelZ, _animSmooth, Time.deltaTime);
+        if (HasParam(HashSprinting)) _animator.SetBool(HashSprinting, _targetSprinting);
     }
 }

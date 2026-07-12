@@ -158,8 +158,15 @@ public class PlayerController : MonoBehaviour
 
     // 사망 시 인벤토리+장착 아이템을 상자에 담아 스폰(PlayerItemBoxDropper) + 장착 무기/방어구/가방 모두 해제
     // 상자 스폰이 먼저 실행돼야 장착 중이던 아이템을 조회할 수 있음
+    // 단, 살아있는 다른 플레이어가 있으면 구출 가능하므로 상자를 만들지 않고 인벤토리/장비를 그대로 둔다
     private void HandleDeath()
     {
+        if (ObjectManager.Instance != null && ObjectManager.Instance.HasLivingPlayerExcept(_playerStat))
+        {
+            Debug.Log("구출!");
+            return;
+        }
+
         GetComponent<PlayerItemBoxDropper>()?.SpawnLootBox();
 
         foreach (var equip in GetComponents<EquipableController>())

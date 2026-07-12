@@ -74,8 +74,8 @@ public static partial class PacketHandlers
             PlayerId = playerId,
             Hp       = remote.CurrentHp,
             MaxHp    = remote.MaxHp,
-            Stamina  = remote.Stamina,
-            Battery  = remote.Battery,
+            Stamina  = remote.CurrentStamina,
+            Battery  = remote.CurrentBattery,
             Defense  = remote.ArmorDefenseRate,
         }, H_StatSync.Pack, PacketType.H_StatSync);
     }

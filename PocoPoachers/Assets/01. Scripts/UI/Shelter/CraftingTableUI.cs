@@ -11,7 +11,7 @@ public class CraftingTableUI : MonoBehaviour
     [SerializeField] private Button[] _categoryButtons;
     [SerializeField] private ItemType[] _categoryTypes;
 
-    [Header("Recipe List")]
+    [Header("Recipe List")] 
     [SerializeField] private Transform _recipeListContent;
     [SerializeField] private CraftingRecipeEntryUI _recipeEntryPrefab;
 

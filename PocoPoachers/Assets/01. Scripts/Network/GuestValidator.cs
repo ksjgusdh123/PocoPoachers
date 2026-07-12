@@ -68,6 +68,11 @@ public static class GuestValidator
 
         if (stat == null) return hp;
 
+        // 이미 사망 판정된 플레이어는 자기보고로 되살아날 수 없음
+        // (치명 데미지 직전에 전송된 낡은 보고가 도착해 호스트 기록을 되돌리는 레이스 방지)
+        if (stat.IsDead || stat.CurrentHp <= 0f)
+            return stat.CurrentHp;
+
         const float maxHealDelta = 100f;
         if (hp > stat.CurrentHp + maxHealDelta)
             hp = stat.CurrentHp;
