@@ -9,6 +9,7 @@ table G_Shoot
     damage:       float;
     max_range:    float;
     sound_range:  float;
+    directions:   [Vec3]; // 샷건 등 다발 발사의 펠릿별 방향. 비어 있으면 direction 단발로 처리
 }
 
 table H_Shoot
@@ -19,6 +20,7 @@ table H_Shoot
     bullet_speed: float;
     damage:       float;
     max_range:    float;
+    directions:   [Vec3]; // 샷건 등 다발 발사의 펠릿별 방향. 비어 있으면 direction 단발로 처리
 }
 
 // 호스트가 G_Shoot를 거부했을 때 게스트 로컬 탄약/내구도를 권위 값으로 되돌림

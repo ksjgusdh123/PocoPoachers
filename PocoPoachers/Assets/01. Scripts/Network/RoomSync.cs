@@ -23,22 +23,33 @@ public static class RoomSync
                 G_Move.Pack, PacketType.G_Move);
     }
 
-    public static void Shoot(Vector3 origin, Vector3 direction, GunStatData stat)
+    // pelletDirections: 샷건 등 다발 발사의 펠릿별 방향. null/비어 있으면 direction 단발로 처리
+    public static void Shoot(Vector3 origin, Vector3 direction, GunStatData stat, IReadOnlyList<Vector3> pelletDirections = null)
     {
         if (IsSolo) return;
 
         var originT = new Vec3T { X = origin.x, Y = origin.y, Z = origin.z };
         var dirT    = new Vec3T { X = direction.x, Y = direction.y, Z = direction.z };
+        List<Vec3T> dirsT = ToVec3TList(pelletDirections);
         int id = MyId;
 
         if (RoomManager.IsHost)
             PacketBuilder.BroadcastToGuests(
-                new H_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange },
+                new H_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, Directions = dirsT },
                 H_Shoot.Pack, PacketType.H_Shoot);
         else
             PacketBuilder.SendToHost(
-                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, SoundRange = stat.SoundRange },
+                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, SoundRange = stat.SoundRange, Directions = dirsT },
                 G_Shoot.Pack, PacketType.G_Shoot);
+    }
+
+    private static List<Vec3T> ToVec3TList(IReadOnlyList<Vector3> dirs)
+    {
+        if (dirs == null || dirs.Count == 0) return null;
+        var list = new List<Vec3T>(dirs.Count);
+        for (int i = 0; i < dirs.Count; i++)
+            list.Add(new Vec3T { X = dirs[i].x, Y = dirs[i].y, Z = dirs[i].z });
+        return list;
     }
 
     public static void Equip(int itemId, int slotIndex, int itemUid = 0)
