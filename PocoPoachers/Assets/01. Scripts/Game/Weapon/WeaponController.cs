@@ -156,10 +156,10 @@ public class WeaponController : EquipableController
             Unequip(i);
     }
 
-    public int GetEquippedItemId(int slotIndex) => _mount.GetEquippedItemId(slotIndex);
+    public int GetEquippedItemId(int slotIndex) => _mount != null ? _mount.GetEquippedItemId(slotIndex) : 0;
 
-    public override int GetEquippedId(int slotIndex) => _mount.GetEquippedItemId(slotIndex);
-    public override int GetEquippedUid(int slotIndex) => _mount.GetGun(slotIndex)?.Uid ?? 0;
+    public override int GetEquippedId(int slotIndex) => _mount != null ? _mount.GetEquippedItemId(slotIndex) : 0;
+    public override int GetEquippedUid(int slotIndex) => _mount != null ? _mount.GetEquippedUid(slotIndex) : 0;
 
 
     private void SwitchWeapon(int index)
@@ -213,7 +213,13 @@ public class WeaponController : EquipableController
 
             _reloadRequestedHandler = () => TryReloadFromInventory();
             _reloadCompleteHandler = consumed => ConsumeAmmoFromInventory(consumed);
-            _ammoChangedHandler = (cur, _) => OnAmmoChanged?.Invoke(cur, GetInventoryAmmoCount());
+            _ammoChangedHandler = (cur, max) =>
+            {
+                // 현재 탄약을 영속 저장소에 반영해 씬 전환 후 재장착 시 복원되게 한다 (호스트 권위)
+                if (RoomManager.IsHost && gun.Uid != 0)
+                    WorldEquipmentManager.SetAmmo(gun.Uid, cur, max);
+                OnAmmoChanged?.Invoke(cur, GetInventoryAmmoCount());
+            };
             _currentGun.OnReloadRequested += _reloadRequestedHandler;
             _currentGun.OnReloadComplete += _reloadCompleteHandler;
             _currentGun.OnAmmoChanged += _ammoChangedHandler;

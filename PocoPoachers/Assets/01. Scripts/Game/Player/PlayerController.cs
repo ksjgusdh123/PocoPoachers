@@ -40,6 +40,7 @@ public class PlayerController : MonoBehaviour
     private PlayerInputHandler _inputHander;
     private QuickSlotDropHandler[] _quickSlots;
     private GunPartDropHandler[] _gunPartSlots;
+    private EquipDropHandler[] _equipHandlers;
     private readonly List<GameObject> _interactObjects = new();
     private IInteractable _currentInteractable;
     private Coroutine _useCoroutine;
@@ -81,6 +82,8 @@ public class PlayerController : MonoBehaviour
         if (_playerStat != null)
             _playerStat.OnDie += HandleDeath;
 
+        // 장비를 먼저 복원한다 — 가방이 인벤토리 용량을 확장하므로, 인벤 로드보다 앞서야 확장 슬롯 아이템이 정상 적재된다.
+        RestoreEquippedSlots();
         _saveManager.LoadInventory(PlayerSaveKey, _inventory);
 
         BindPlayerInventoryUI();
@@ -148,12 +151,74 @@ public class PlayerController : MonoBehaviour
         var armorController = GetComponent<PlayerArmorController>();
         var bagController = GetComponent<BagController>();
 
-        foreach (var handler in PlayerBagUI.GetComponentsInChildren<EquipDropHandler>(true))
+        _equipHandlers = PlayerBagUI.GetComponentsInChildren<EquipDropHandler>(true);
+        foreach (var handler in _equipHandlers)
         {
             if (handler.SlotIndex <= 1) handler.SetController(weaponController);
             else if (handler.SlotIndex <= 3) handler.SetController(armorController);
             else handler.SetController(bagController);
+
+            // 복원된 장착 상태를 슬롯 표시에 반영 (드래그드롭이 아닌 경로로 장착됐으므로 명시적 동기화 필요)
+            handler.SyncDisplayToEquipped();
         }
+    }
+
+    // 저장된 장착 슬롯 구성을 복원한다. WorldEquipmentManager(static)에 uid별 내구도/장탄수/파츠가 남아 있어
+    // 각 컨트롤러의 Equip 안에서 함께 복원된다. 가방 복원 시 인벤토리 용량이 확장되므로 인벤 로드 전에 호출한다.
+    private void RestoreEquippedSlots()
+    {
+        var entries = _saveManager?.LoadEquipSlots();
+        Debug.Log($"[EquipRestore] 복원 항목 수={entries?.Count ?? 0}, IsHost={RoomManager.IsHost}"); // TODO: 디버그 후 제거
+        if (entries == null || entries.Count == 0) return;
+
+        var weaponController = GetComponent<WeaponController>();
+        var armorController = GetComponent<PlayerArmorController>();
+        var bagController = GetComponent<BagController>();
+
+        foreach (var e in entries)
+        {
+            var data = ItemTable.Instance.Get(e.itemId);
+            if (data == null) continue;
+
+            EquipableController controller =
+                e.slotIndex <= 1 ? (EquipableController)weaponController :
+                e.slotIndex <= 3 ? armorController : bagController;
+
+            controller?.Equip(data, e.slotIndex, e.uid);
+        }
+    }
+
+    // 현재 장착 중인 슬롯 구성을 수집한다. 복원과 동일하게 컨트롤러에서 직접 읽어 UI(_equipHandlers) 유무와 무관하게 동작한다.
+    // 슬롯 인덱스는 복원의 매핑(0~1 무기, 2~3 방어구, 그 외 가방)과 일치시킨다.
+    private List<SaveManager.EquipSlotEntry> GatherEquippedSlots()
+    {
+        var result = new List<SaveManager.EquipSlotEntry>();
+        var seenUids = new HashSet<int>();
+
+        var weapon = GetComponent<WeaponController>();
+        var armor = GetComponent<PlayerArmorController>();
+        var bag = GetComponent<BagController>();
+
+        if (weapon != null)
+        {
+            AddEquipEntry(result, seenUids, weapon, 0);
+            AddEquipEntry(result, seenUids, weapon, 1);
+        }
+        if (armor != null) AddEquipEntry(result, seenUids, armor, 2); // 방어구(헬멧) — 단일
+        if (bag != null) AddEquipEntry(result, seenUids, bag, 4);
+
+        return result;
+    }
+
+    private void AddEquipEntry(List<SaveManager.EquipSlotEntry> list, HashSet<int> seenUids, EquipableController controller, int slotIndex)
+    {
+        int itemId = controller.GetEquippedId(slotIndex);
+        if (itemId == 0) return;
+
+        int uid = controller.GetEquippedUid(slotIndex);
+        if (uid != 0 && !seenUids.Add(uid)) return; // 같은 인스턴스가 여러 슬롯에서 보고되면 한 번만
+
+        list.Add(new SaveManager.EquipSlotEntry { slotIndex = slotIndex, itemId = itemId, uid = uid });
     }
 
     // 사망 시 인벤토리+장착 아이템을 상자에 담아 스폰(PlayerItemBoxDropper) + 장착 무기/방어구/가방 모두 해제
@@ -180,6 +245,11 @@ public class PlayerController : MonoBehaviour
 
         if (_inventory != null)
             _saveManager?.SaveInventory(PlayerSaveKey, _inventory);
+
+        // 장착 슬롯 구성(어떤 아이템이 몇 번 슬롯에 장착됐는지)을 저장 — 인벤토리와 함께 씬 전환/종료 시 영속화
+        var equipSlots = GatherEquippedSlots();
+        Debug.Log($"[EquipSave] 저장 항목 수={equipSlots.Count}"); // TODO: 디버그 후 제거
+        _saveManager?.SaveEquipSlots(equipSlots);
 
         // 씬 전환/종료 시점에 uid별 장비 상태(내구도/장탄수/파츠)를 함께 영속화 (호스트 전용은 내부에서 처리)
         _saveManager?.SaveEquipmentState();

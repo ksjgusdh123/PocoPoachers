@@ -241,6 +241,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
   _acceleration: 10
   _itemUseSpeedMultiplier: 0.4
+  _gravity: -20
+  _groundedGravity: -2
   _sendInterval: 0.1
   _minMoveSqrEpsilon: 0.0004
   _minYawDelta: 0.5
@@ -290,6 +292,7 @@ MonoBehaviour:
   _maxCapacity: 50
   _initialCapacity: 20
   isPlayer: 1
+  _maxWeight: 100
 --- !u!114 &1875585390747020784
 MonoBehaviour:
   m_ObjectHideFlags: 0

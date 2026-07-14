@@ -68,6 +68,18 @@ public class SaveManager : Singleton<SaveManager>
         }
     }
 
+    // 장착 슬롯(무기/방어구/가방) 구성 저장 — 어떤 아이템(itemId/uid)이 몇 번 슬롯에 장착됐는지.
+    // uid로 WorldEquipmentManager의 내구도/장탄수/파츠와 연결된다. 인벤토리와 동일하게 게스트도 로컬 저장.
+    public void SaveEquipSlots(List<EquipSlotEntry> slots)
+    {
+        var data = GetOrLoad(_activeSlot);
+        data.equipSlots = slots ?? new List<EquipSlotEntry>();
+        data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    public List<EquipSlotEntry> LoadEquipSlots() => GetOrLoad(_activeSlot).equipSlots;
+
     // 총기/방어구 등 uid별 인스턴스 상태(내구도/장탄수/파츠/강화)를 디스크에 저장 (호스트 전용)
     public void SaveEquipmentState()
     {
@@ -148,6 +160,14 @@ public class SaveManager : Singleton<SaveManager>
         public List<SlotSaveEntry> slots = new List<SlotSaveEntry>();
     }
 
+    [Serializable]
+    public class EquipSlotEntry
+    {
+        public int slotIndex; // 장착 UI 슬롯 인덱스 (무기 0~1, 방어구 2~3, 가방 4)
+        public int itemId;
+        public int uid; // WorldEquipmentManager의 인스턴스 상태(내구도/장탄수/파츠)와 연결
+    }
+
     public void SaveShelterLevel(int level)
     {
         var data = GetOrLoad(_activeSlot);
@@ -164,6 +184,7 @@ public class SaveManager : Singleton<SaveManager>
         public string lastSavedAt;
         public int shelterLevel = 1;
         public List<InventorySaveEntry> inventories = new List<InventorySaveEntry>();
+        public List<EquipSlotEntry> equipSlots = new List<EquipSlotEntry>();
         public WorldEquipmentManager.SaveData equipment = new WorldEquipmentManager.SaveData();
 
         public void SetInventory(string key, List<SlotSaveEntry> entries)

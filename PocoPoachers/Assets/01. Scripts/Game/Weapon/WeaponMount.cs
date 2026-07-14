@@ -6,6 +6,7 @@ public class WeaponMount : MonoBehaviour
 
     private readonly GunBase[] _guns = new GunBase[2];
     private readonly int[] _equippedItemIds = new int[2];
+    private readonly int[] _equippedUids = new int[2];
     private int _activeSlot = -1;
 
     public GunBase GetGun(int slotIndex) =>
@@ -39,6 +40,10 @@ public class WeaponMount : MonoBehaviour
     public int GetEquippedItemId(int slotIndex) =>
         (uint)slotIndex < (uint)_equippedItemIds.Length ? _equippedItemIds[slotIndex] : 0;
 
+    // 씬 언로드 중(OnDestroy) gun 오브젝트가 먼저 파괴돼도 안전하도록 uid를 별도 보관
+    public int GetEquippedUid(int slotIndex) =>
+        (uint)slotIndex < (uint)_equippedUids.Length ? _equippedUids[slotIndex] : 0;
+
     public GunBase ApplyEquip(int itemId, int slotIndex, int uid = 0)
     {
         GunBase gun = SpawnGun(itemId, slotIndex);
@@ -46,6 +51,7 @@ public class WeaponMount : MonoBehaviour
 
         gun.SetUid(uid);
         _equippedItemIds[slotIndex] = itemId;
+        _equippedUids[slotIndex] = uid;
         _activeSlot = slotIndex;
         for (int i = 0; i < _guns.Length; i++)
         {
@@ -61,6 +67,7 @@ public class WeaponMount : MonoBehaviour
         Destroy(_guns[slotIndex].gameObject);
         _guns[slotIndex] = null;
         _equippedItemIds[slotIndex] = 0;
+        _equippedUids[slotIndex] = 0;
         if (_activeSlot == slotIndex) _activeSlot = -1;
     }
 
