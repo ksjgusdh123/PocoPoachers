@@ -187,8 +187,12 @@ public static class WorldEquipmentManager
     }
 
     public static GunPartData GetEnhancedGunPart(GunPartData basePart, int partUid)
+        => BuildEnhancedGunPart(basePart, GetEnhancementLevel(partUid, basePart.Id));
+
+    // 강화 레벨을 인자로 직접 받는다 — 게스트는 로컬 강화 상태가 호스트 월드와 무관하므로
+    // uid로 조회하지 못하고, 호스트가 H_GunState로 알려준 레벨을 그대로 써야 한다
+    public static GunPartData BuildEnhancedGunPart(GunPartData basePart, int level)
     {
-        int level = GetEnhancementLevel(partUid, basePart.Id);
         if (level <= 0) return basePart;
 
         float m = 1f + 0.1f * level;

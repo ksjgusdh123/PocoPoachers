@@ -50,6 +50,7 @@ public struct FlatPacket : IFlatbufferObject
   public H_Durability TypeAsH_Durability() { return Type<H_Durability>().Value; }
   public G_GunPartEquip TypeAsG_GunPartEquip() { return Type<G_GunPartEquip>().Value; }
   public G_GunAmmoSave TypeAsG_GunAmmoSave() { return Type<G_GunAmmoSave>().Value; }
+  public H_GunState TypeAsH_GunState() { return Type<H_GunState>().Value; }
   public G_StatSync TypeAsG_StatSync() { return Type<G_StatSync>().Value; }
   public H_StatSync TypeAsH_StatSync() { return Type<H_StatSync>().Value; }
   public H_EnemySpawn TypeAsH_EnemySpawn() { return Type<H_EnemySpawn>().Value; }
@@ -184,6 +185,9 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.G_GunAmmoSave:
         _o.Type.Value = this.Type<G_GunAmmoSave>().HasValue ? this.Type<G_GunAmmoSave>().Value.UnPack() : null;
+        break;
+      case PacketType.H_GunState:
+        _o.Type.Value = this.Type<H_GunState>().HasValue ? this.Type<H_GunState>().Value.UnPack() : null;
         break;
       case PacketType.G_StatSync:
         _o.Type.Value = this.Type<G_StatSync>().HasValue ? this.Type<G_StatSync>().Value.UnPack() : null;

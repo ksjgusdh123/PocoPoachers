@@ -140,3 +140,19 @@ table G_GunAmmoSave
     current_ammo: int;
     max_magazine: int;
 }
+
+// G_Equip 응답 — 호스트가 보관 중인 총기 인스턴스 상태(탄약/파츠)를 장착한 게스트에게 되돌려준다.
+// 게스트는 WorldEquipmentManager를 신뢰할 수 없어(자기 세이브 데이터가 들어있음) 스스로 복원할 수 없다.
+// 내구도는 기존 H_Durability가 담당하므로 여기 포함하지 않는다.
+// 요청한 게스트에게만 보낸다 — 남의 화면에는 영향 없는 정보다.
+table H_GunState
+{
+    gun_uid:      int;
+    has_ammo:     bool; // false면 저장된 탄약이 없다는 뜻 — 게스트는 풀장전 기본값을 유지한다
+    current_ammo: int;
+    max_magazine: int;
+    // 파츠 목록 — 슬롯은 GunPartData.slot_type에 있으므로 따로 보내지 않는다
+    part_ids:    [int];
+    // 강화 레벨을 호스트가 계산해 보낸다 — 게스트 로컬의 강화 상태는 호스트 월드와 무관하다
+    part_levels: [int]; // part_ids와 같은 순서
+}
