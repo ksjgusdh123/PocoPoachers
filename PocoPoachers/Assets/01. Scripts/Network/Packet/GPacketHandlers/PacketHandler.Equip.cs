@@ -10,14 +10,19 @@ public static partial class PacketHandlers
         int itemUid   = packet.ItemUid;
         int slotIndex = packet.SlotIndex;
 
-        if (!ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var worldObj)) return;
+        // 오브젝트가 아직 없어도 상태는 남긴다 — 스폰 시 RemoteEquipState.ApplyTo가 입혀준다
+        RemoteEquipState.SetSlot(guestId, slotIndex, itemId, itemUid);
 
-        ApplyRemoteArmorStats(worldObj, guestId, itemId, slotIndex, sendToOthers: true);
-        var spawned = ApplyRemoteEquipVisual(worldObj, itemId, itemUid, slotIndex);
+        EquippableItemBase spawned = null;
+        if (ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var worldObj))
+        {
+            ApplyRemoteArmorStats(worldObj, guestId, itemId, slotIndex, sendToOthers: true);
+            spawned = ApplyRemoteEquipVisual(worldObj, itemId, itemUid, slotIndex);
+        }
 
         if (RoomManager.IsHost)
         {
-            PacketBuilder.BroadcastToGuests(guestId,
+            PacketBuilder.BroadcastReliableToGuests(guestId,
                 new H_EquipT
                 {
                     PlayerId  = guestId,

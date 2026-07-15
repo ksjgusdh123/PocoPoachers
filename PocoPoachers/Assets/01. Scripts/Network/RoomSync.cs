@@ -58,8 +58,9 @@ public static class RoomSync
 
         int id = MyId;
 
+        // 장착은 상태 변화(1회성)라 유실되면 복구 경로가 없다 — 게스트 경로와 동일하게 신뢰 전송
         if (RoomManager.IsHost)
-            PacketBuilder.BroadcastToGuests(
+            PacketBuilder.BroadcastReliableToGuests(
                 new H_EquipT { PlayerId = id, ItemId = itemId, ItemUid = itemUid, SlotIndex = slotIndex },
                 H_Equip.Pack, PacketType.H_Equip);
         else

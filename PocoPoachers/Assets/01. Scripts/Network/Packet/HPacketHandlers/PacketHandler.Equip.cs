@@ -3,13 +3,17 @@ public static partial class PacketHandlers
     public static void OnH_Equip(FlatPacket root)
     {
         var packet = root.TypeAsH_Equip();
+
+        // 오브젝트가 아직 없어도 상태는 남긴다 — 스폰 시 RemoteEquipState.ApplyTo가 입혀준다
+        RemoteEquipState.SetSlot(packet.PlayerId, packet.SlotIndex, packet.ItemId, packet.ItemUid);
+
         if (!ObjectManager.Instance.TryGet(ObjectKind.Player, packet.PlayerId, out var worldObj)) return;
 
         ApplyRemoteArmorStats(worldObj, packet.PlayerId, packet.ItemId, packet.SlotIndex, sendToOthers: false);
         ApplyRemoteEquipVisual(worldObj, packet.ItemId, packet.ItemUid, packet.SlotIndex);
     }
 
-    static EquippableItemBase ApplyRemoteEquipVisual(WorldObject worldObj, int itemId, int itemUid, int slotIndex)
+    public static EquippableItemBase ApplyRemoteEquipVisual(WorldObject worldObj, int itemId, int itemUid, int slotIndex)
     {
         if (slotIndex == 4)
         {
@@ -47,7 +51,7 @@ public static partial class PacketHandlers
         return mount.ApplyEquip(itemId, slotIndex, itemUid);
     }
 
-    static void ApplyRemoteArmorStats(WorldObject worldObj, int playerId, int newItemId, int slotIndex, bool sendToOthers)
+    public static void ApplyRemoteArmorStats(WorldObject worldObj, int playerId, int newItemId, int slotIndex, bool sendToOthers)
     {
         if (slotIndex < 2 || slotIndex == 4) return;
         if (worldObj.GetComponent<RemotePlayerStat>() is not RemotePlayerStat remote) return;

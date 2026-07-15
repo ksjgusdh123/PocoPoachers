@@ -39,6 +39,7 @@ public static partial class PacketHandlers
         else
         {
             ObjectManager.Instance?.Despawn(ObjectKind.Player, packet.PlayerId);
+            RemoteEquipState.ClearPlayer(packet.PlayerId);
             RoomManager.Instance?.RemoveMember();
         }
     }
