@@ -36,11 +36,15 @@ public class ItemSlotUI : ItemSlotUIBase
         {
             ClearDisplay();
             IsSettedItem = false;
-            return;
+        }
+        else
+        {
+            SetDisplay(_settedSlot.ItemData, _settedSlot.Amount);
+            IsSettedItem = true;
         }
 
-        SetDisplay(_settedSlot.ItemData, _settedSlot.Amount);
-        IsSettedItem = true;
+        // 이 슬롯을 호버 중이었다면 설명 UI도 바뀐 내용에 맞춘다
+        SlotInteractionManager.GetInstance()?.RefreshHovered(this);
     }
 
     public void ClearSlot() => _settedSlot?.Clear();
