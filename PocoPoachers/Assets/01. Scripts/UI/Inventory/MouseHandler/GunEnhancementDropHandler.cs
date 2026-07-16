@@ -15,7 +15,8 @@ public class GunEnhancementDropHandler : ItemHolderDropHandler
     {
         if (data.ItemType != ItemType.Armor &&
             data.ItemType != ItemType.Helmet &&
-            data.ItemType != ItemType.GunPart)
+            data.ItemType != ItemType.GunPart &&
+            data.ItemType != ItemType.Weapon)
             return false;
 
         SetDisplay(data, amount);
