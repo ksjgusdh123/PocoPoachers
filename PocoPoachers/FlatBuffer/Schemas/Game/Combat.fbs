@@ -54,3 +54,21 @@ table H_SandbagDestroy
 {
     sandbag_id: int;
 }
+
+// 구출 진행 알림 — state: 0=시작, 1=취소, 2=완료 (RescueState)
+// 구출자 id는 호스트가 송신자로부터 직접 판별하므로 게스트가 실을 수 없다
+table G_Rescue
+{
+    target_id: int;
+    state:     byte;
+    duration:  float;
+}
+
+// 호스트가 구출자·대상 두 명에게만 되돌려주는 구출 진행 정보
+table H_Rescue
+{
+    rescuer_id: int;
+    target_id:  int;
+    state:      byte;
+    duration:   float;
+}

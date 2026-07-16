@@ -48,6 +48,7 @@ public class RemotePlayerStat : StatBase
 
         // 데미지는 호스트에서만 적용되므로(Bullet._applyDamage) 게스트의 전투 사망은 호스트의 이 컴포넌트에서 감지된다
         OnDie += HandleRemoteDeath;
+        OnRevive += HandleRemoteRevive;
     }
 
     public void ApplyNetworkStats(float hp, float maxHp, float stamina, float battery, float defense)
@@ -150,11 +151,15 @@ public class RemotePlayerStat : StatBase
         SetRescueTriggerActive(true);
     }
 
+    // 구출로 되살아나면 더 이상 구출 대상이 아니다 — 호스트/게스트 모두 이 경로로 트리거를 내린다
+    private void HandleRemoteRevive() => SetRescueTriggerActive(false);
+
     public void SetRescueTriggerActive(bool active)
     {
         if (_rescueTrigger == null)
         {
-            Debug.LogWarning($"[RemotePlayerStat] {name}에 구출 트리거가 지정되지 않아 구출할 수 없습니다", this);
+            if (active)
+                Debug.LogWarning($"[RemotePlayerStat] {name}에 구출 트리거가 지정되지 않아 구출할 수 없습니다", this);
             return;
         }
 

@@ -10,6 +10,7 @@ public abstract class StatBase : MonoBehaviour, IDamageable
     public event Action<float, float> OnHpChanged;
     public event Action<float, Vector3, GameObject> OnDamaged;
     public event Action OnDie;
+    public event Action OnRevive;
 
     public bool IsDead { get; private set; }
 
@@ -80,6 +81,19 @@ public abstract class StatBase : MonoBehaviour, IDamageable
         OnDie?.Invoke();
     }
 
+    // 사망 상태에서 되살리기 — Heal은 HP 0에서 막히고 IsDead도 되돌리지 못하므로 부활은 이 경로로만 가능하다
+    // IsDead를 풀지 않으면 Die()가 다시 발동하지 않아 두 번째 죽음이 무시된다
+    public void Revive(float hp)
+    {
+        if (!IsDead && CurrentHp > 0f) return;
+
+        IsDead = false;
+        CurrentHp = Mathf.Clamp(hp, 1f, MaxHp);
+        RaiseHpChanged();
+        OnRevive?.Invoke();
+        OnLocalHpChanged(CurrentHp, MaxHp);
+    }
+
     public void Heal(float amount)
     {
         if (CurrentHp <= 0f) return;
@@ -102,7 +116,17 @@ public abstract class StatBase : MonoBehaviour, IDamageable
 
         // 호스트 권한으로 판정된 죽음도 로컬 사망 처리(OnDie)와 동일하게 이어지도록
         if (CurrentHp <= 0f)
+        {
             Die();
+            return;
+        }
+
+        // 호스트가 살아있다고 판정했으면 로컬 사망 상태도 함께 푼다 (구출 부활이 이 경로로 전파된다)
+        if (IsDead)
+        {
+            IsDead = false;
+            OnRevive?.Invoke();
+        }
     }
 
     protected void RaiseHpChanged() => OnHpChanged?.Invoke(CurrentHp, MaxHp);

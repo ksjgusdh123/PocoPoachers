@@ -88,6 +88,23 @@ public static class RoomSync
         }
     }
 
+    // 구출 진행 알림 — 구출자가 보내면 호스트가 구출자·대상 두 명에게만 되돌려준다
+    // 진행 시간 판정은 구출자 로컬 코루틴이 하고, 이 패킷은 양쪽 게이지 UI 표시용이다
+    public static void Rescue(int targetId, RescueState state, float duration)
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            RescueRelay.Relay(MyId, targetId, state, duration);
+        else
+            PacketBuilder.SendReliableToHost(new G_RescueT
+            {
+                TargetId = targetId,
+                State    = (sbyte)state,
+                Duration = duration,
+            }, G_Rescue.Pack, PacketType.G_Rescue);
+    }
+
     // 무기 해제 시점의 탄약 저장 — 호스트는 직접 저장하고, 게스트는 호스트에게 요청한다
     public static void GunAmmoSave(int gunUid, int currentAmmo, int maxMagazine)
     {
