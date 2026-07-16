@@ -522,6 +522,9 @@ public class RoomManager : Singleton<RoomManager>
     {
         if (!_isHost) return;
 
+        // 씬 전환 때는 게스트 입장 경로(SendWorldStateToGuest)를 타지 않으므로 장비를 여기서 다시 보낸다
+        SendHostEquipToGuest(guestId);
+
         if (_worldObjectsReady)
             SendWorldObjectsToGuest(guestId);
         else
@@ -619,8 +622,13 @@ public class RoomManager : Singleton<RoomManager>
     {
         int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
 
+        // 마운트는 RemotePlayer 프리팹에도 있으므로 씬 전체 검색(FindFirstObjectByType)을 쓰면
+        // 남의 장비를 내 것으로 보낼 수 있다. 로컬 플레이어(PlayerMovement 보유)에서만 읽는다.
+        var localRoot = PlayerMovement.LocalTransform;
+        if (localRoot == null) return;
+
         // 무기 (슬롯 0, 1)
-        var weaponMount = FindFirstObjectByType<WeaponMount>();
+        var weaponMount = localRoot.GetComponentInChildren<WeaponMount>(true);
         if (weaponMount != null)
         {
             for (int slot = 0; slot < 2; slot++)
@@ -646,7 +654,7 @@ public class RoomManager : Singleton<RoomManager>
         }
 
         // 방어구 (슬롯 2)
-        var armorMount = FindFirstObjectByType<ArmorMount>();
+        var armorMount = localRoot.GetComponentInChildren<ArmorMount>(true);
         if (armorMount != null)
         {
             int itemId = armorMount.GetEquippedItemId();
@@ -670,7 +678,7 @@ public class RoomManager : Singleton<RoomManager>
         }
 
         // 가방 (슬롯 4)
-        var bagMount = FindFirstObjectByType<BagMount>();
+        var bagMount = localRoot.GetComponentInChildren<BagMount>(true);
         if (bagMount != null)
         {
             int itemId = bagMount.GetEquippedItemId();
@@ -729,6 +737,7 @@ public class RoomManager : Singleton<RoomManager>
         _guestLastSeen.TryRemove(guestId, out long _);
         _waitingGuests.TryRemove(guestId, out NetInfoT _);
         GuestInventoryTracker.ClearGuest(guestId);
+        RemoteEquipState.ClearPlayer(guestId);
 
         ObjectManager.Instance?.Despawn(ObjectKind.Player, guestId);
         OnPlayerCountChanged?.Invoke(_guests.Count + 1);
@@ -765,6 +774,7 @@ public class RoomManager : Singleton<RoomManager>
 
         ObjectManager.Instance?.Clear();
         WorldEquipmentManager.Clear();
+        RemoteEquipState.Clear();
     }
 
     void CloseUdpSession()

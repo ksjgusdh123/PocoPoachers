@@ -68,8 +68,8 @@ public class ArmorController : EquipableController
             Unequip(_equippedSlotIndex);
     }
 
-    public override int GetEquippedId(int slotIndex) => _mount.GetEquippedItemId();
-    public override int GetEquippedUid(int slotIndex) => _mount.GetArmor()?.Uid ?? 0;
+    public override int GetEquippedId(int slotIndex) => _mount != null ? _mount.GetEquippedItemId() : 0;
+    public override int GetEquippedUid(int slotIndex) => _mount != null ? _mount.GetEquippedUid() : 0;
 
     protected virtual void OnEquipped(int slotIndex, ItemData data, int uid) { }
     protected virtual void OnUnequipped(int slotIndex) { }

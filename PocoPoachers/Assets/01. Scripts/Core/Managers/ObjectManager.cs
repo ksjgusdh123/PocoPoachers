@@ -257,8 +257,14 @@ public class ObjectManager : Singleton<ObjectManager>
         component.Initialize(kind, id, typeId);
 
         // 원격 플레이어는 생성 즉시 스탯을 붙여야 첫 StatSync 도착 전에도 총알 피격(IDamageable)이 가능하다
-        if (kind == ObjectKind.Player && !go.TryGetComponent<StatBase>(out _))
-            go.AddComponent<RemotePlayerStat>();
+        if (kind == ObjectKind.Player)
+        {
+            if (!go.TryGetComponent<StatBase>(out _))
+                go.AddComponent<RemotePlayerStat>();
+
+            // Equip 패킷이 스폰보다 먼저 도착했을 수 있다 (씬 전환 시 장비 복원이 첫 Move보다 빠름)
+            RemoteEquipState.ApplyTo(component, id);
+        }
 
         return component;
     }

@@ -11,6 +11,10 @@ public class EquipDropHandler : ItemHolderDropHandler, IPointerEnterHandler, IPo
     public int SlotIndex => _slotIndex;
     public void SetController(EquipableController controller) => _controller = controller;
 
+    // 저장/복원용 — 현재 이 슬롯에 장착된 아이템 정보
+    public int EquippedItemId => _controller != null ? _controller.GetEquippedId(_slotIndex) : 0;
+    public int EquippedUid => _controller != null ? _controller.GetEquippedUid(_slotIndex) : 0;
+
     // 무기 슬롯이면 장착된 총, 아니면 null (파츠 패널 진입용)
     public GunBase GetEquippedGun() => (_controller as WeaponController)?.GetGun(_slotIndex);
 
@@ -34,9 +38,31 @@ public class EquipDropHandler : ItemHolderDropHandler, IPointerEnterHandler, IPo
 
         _controller.OnSlotUnequipped += OnSlotUnequipped;
 
-        // UI가 닫혀 있는 동안(사망 등) 해제됐을 수 있으니, 열릴 때 실제 장착 상태로 동기화
-        if (_isSetted && _controller.GetEquippedId(_slotIndex) == 0)
-            OnSlotUnequipped(_slotIndex);
+        // 열릴 때 실제 장착 상태로 동기화 (닫혀 있는 동안 해제됐거나, 씬 전환으로 재장착됐을 수 있음)
+        SyncDisplayToEquipped();
+    }
+
+    // 드래그드롭이 아닌 경로(씬 전환 복원 등)로 장비가 바뀌었을 때 슬롯 표시를 실제 장착 상태에 맞춘다.
+    public void SyncDisplayToEquipped()
+    {
+        if (_controller == null) return;
+
+        int itemId = _controller.GetEquippedId(_slotIndex);
+        var data = itemId != 0 ? ItemTable.Instance.Get(itemId) : null;
+
+        // 이 슬롯 타입과 맞는 아이템만 표시한다. 방어구 컨트롤러는 헬멧/갑옷을 단일로 취급해
+        // 두 슬롯 모두 같은 id를 반환하므로, 타입이 다른 슬롯엔 표시하지 않아 중복 노출을 막는다.
+        if (data == null || data.ItemType != _itemType)
+        {
+            if (_isSetted) OnSlotUnequipped(_slotIndex);
+            return;
+        }
+
+        if (_isSetted && DroppedItemData != null && DroppedItemData.id == itemId) return; // 이미 동일 표시
+
+        SetDisplay(data, 1);
+        if (_itemVisual != null)
+            _itemVisual.SetActive(true);
     }
 
     private void OnDisable()

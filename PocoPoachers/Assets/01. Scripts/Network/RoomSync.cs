@@ -23,22 +23,33 @@ public static class RoomSync
                 G_Move.Pack, PacketType.G_Move);
     }
 
-    public static void Shoot(Vector3 origin, Vector3 direction, GunStatData stat)
+    // pelletDirections: 샷건 등 다발 발사의 펠릿별 방향. null/비어 있으면 direction 단발로 처리
+    public static void Shoot(Vector3 origin, Vector3 direction, GunStatData stat, IReadOnlyList<Vector3> pelletDirections = null)
     {
         if (IsSolo) return;
 
         var originT = new Vec3T { X = origin.x, Y = origin.y, Z = origin.z };
         var dirT    = new Vec3T { X = direction.x, Y = direction.y, Z = direction.z };
+        List<Vec3T> dirsT = ToVec3TList(pelletDirections);
         int id = MyId;
 
         if (RoomManager.IsHost)
             PacketBuilder.BroadcastToGuests(
-                new H_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange },
+                new H_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, Directions = dirsT },
                 H_Shoot.Pack, PacketType.H_Shoot);
         else
             PacketBuilder.SendToHost(
-                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, SoundRange = stat.SoundRange },
+                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, SoundRange = stat.SoundRange, Directions = dirsT },
                 G_Shoot.Pack, PacketType.G_Shoot);
+    }
+
+    private static List<Vec3T> ToVec3TList(IReadOnlyList<Vector3> dirs)
+    {
+        if (dirs == null || dirs.Count == 0) return null;
+        var list = new List<Vec3T>(dirs.Count);
+        for (int i = 0; i < dirs.Count; i++)
+            list.Add(new Vec3T { X = dirs[i].x, Y = dirs[i].y, Z = dirs[i].z });
+        return list;
     }
 
     public static void Equip(int itemId, int slotIndex, int itemUid = 0)
@@ -47,8 +58,9 @@ public static class RoomSync
 
         int id = MyId;
 
+        // 장착은 상태 변화(1회성)라 유실되면 복구 경로가 없다 — 게스트 경로와 동일하게 신뢰 전송
         if (RoomManager.IsHost)
-            PacketBuilder.BroadcastToGuests(
+            PacketBuilder.BroadcastReliableToGuests(
                 new H_EquipT { PlayerId = id, ItemId = itemId, ItemUid = itemUid, SlotIndex = slotIndex },
                 H_Equip.Pack, PacketType.H_Equip);
         else
@@ -74,6 +86,23 @@ public static class RoomSync
             PacketBuilder.SendReliableToHost(new G_DurabilityT { ItemUid = itemUid, ItemId = itemId, Amount = amount },
                 G_Durability.Pack, PacketType.G_Durability);
         }
+    }
+
+    // 구출 진행 알림 — 구출자가 보내면 호스트가 구출자·대상 두 명에게만 되돌려준다
+    // 진행 시간 판정은 구출자 로컬 코루틴이 하고, 이 패킷은 양쪽 게이지 UI 표시용이다
+    public static void Rescue(int targetId, RescueState state, float duration)
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            RescueRelay.Relay(MyId, targetId, state, duration);
+        else
+            PacketBuilder.SendReliableToHost(new G_RescueT
+            {
+                TargetId = targetId,
+                State    = (sbyte)state,
+                Duration = duration,
+            }, G_Rescue.Pack, PacketType.G_Rescue);
     }
 
     // 무기 해제 시점의 탄약 저장 — 호스트는 직접 저장하고, 게스트는 호스트에게 요청한다

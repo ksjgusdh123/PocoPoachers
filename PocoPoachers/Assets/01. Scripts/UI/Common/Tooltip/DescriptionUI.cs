@@ -1,3 +1,4 @@
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,8 +18,27 @@ public class DescriptionUI : MonoBehaviour
     [SerializeField] private Slider _durabilitySlider;
     [SerializeField] private TextMeshProUGUI _durabilityText;
 
+    // 타입별 스탯 표기 영역 — 표기할 스탯이 있는 아이템(무기/파츠/방어구)에서만 활성화된다
+    [SerializeField] private GameObject _statRoot;
+    [SerializeField] private TextMeshProUGUI _statText;
+
     // 호버 중 실시간 갱신을 위해 구독해둔 대상 (다른 슬롯으로 옮기거나 닫을 때 해제)
     private EquippableItemBase _durabilityTarget;
+
+    private RectTransform _rect;
+    private RectTransform _canvasRect;
+
+    // 매 호버마다 배열을 새로 만들지 않도록 재사용
+    private readonly Vector3[] _corners = new Vector3[4];
+    private readonly Vector3[] _canvasCorners = new Vector3[4];
+
+    private void Awake()
+    {
+        _rect = transform as RectTransform;
+
+        var canvas = GetComponentInParent<Canvas>(true);
+        if (canvas != null) _canvasRect = canvas.rootCanvas.transform as RectTransform;
+    }
 
     public void ShowDescription(ItemSlotUI slot)
     {
@@ -43,6 +63,33 @@ public class DescriptionUI : MonoBehaviour
         _description.text = LocalizationManager.GetInstance().GetString(data.Description);
         if (_icon != null) _icon.sprite = ResourceManager.Instance.LoadSprite(data.icon);
         BindDurability(data, uid);
+        BindStats(data, uid);
+
+        // 내용에 따라 크기가 달라지므로 모든 텍스트를 채운 뒤에 위치를 보정한다
+        ClampInsideCanvas();
+    }
+
+    // 툴팁이 화면(루트 캔버스) 밖으로 나가면 안쪽으로 밀어 넣는다
+    // 두 RectTransform의 코너를 같은 월드 공간에서 비교하므로 캔버스 렌더 모드와 무관하게 동작한다
+    private void ClampInsideCanvas()
+    {
+        if (_rect == null || _canvasRect == null) return;
+
+        // 방금 바꾼 텍스트가 크기에 반영되기 전에 재면 어긋난다
+        LayoutRebuilder.ForceRebuildLayoutImmediate(_rect);
+
+        _rect.GetWorldCorners(_corners);
+        _canvasRect.GetWorldCorners(_canvasCorners);
+
+        // 0 = 좌하단, 2 = 우상단
+        Vector3 push = Vector3.zero;
+        if (_corners[0].x < _canvasCorners[0].x) push.x = _canvasCorners[0].x - _corners[0].x;
+        else if (_corners[2].x > _canvasCorners[2].x) push.x = _canvasCorners[2].x - _corners[2].x;
+
+        if (_corners[0].y < _canvasCorners[0].y) push.y = _canvasCorners[0].y - _corners[0].y;
+        else if (_corners[2].y > _canvasCorners[2].y) push.y = _canvasCorners[2].y - _corners[2].y;
+
+        _rect.position += push;
     }
 
     public void HideDescription()
@@ -51,6 +98,7 @@ public class DescriptionUI : MonoBehaviour
         _description.text = "";
         if (_icon != null) _icon.sprite = null;
         UnbindDurability();
+        _statRoot?.SetActive(false);
         gameObject.SetActive(false);
     }
 
@@ -100,5 +148,84 @@ public class DescriptionUI : MonoBehaviour
             _durabilitySlider.value = max > 0f ? current / max : 0f;
         if (_durabilityText != null)
             _durabilityText.text = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
+    }
+
+    // 표기할 스탯이 없는 타입(음식/재료 등)이면 영역을 통째로 숨겨 설명만 남긴다
+    private void BindStats(ItemData data, int uid)
+    {
+        if (_statText == null) return;
+
+        string text = BuildStatText(data, uid);
+        _statText.text = text;
+        _statRoot?.SetActive(!string.IsNullOrEmpty(text));
+    }
+
+    private static string BuildStatText(ItemData data, int uid) => data.ItemType switch
+    {
+        ItemType.Weapon => BuildGunStatText(data),
+        ItemType.GunPart => BuildGunPartStatText(data, uid),
+        ItemType.Helmet or ItemType.Armor => BuildArmorStatText(data, uid),
+        _ => string.Empty,
+    };
+
+    private static string BuildGunStatText(ItemData data)
+    {
+        var stat = GunStatTable.Instance.Get(data.Id);
+        if (stat == null) return string.Empty;
+
+        var sb = new StringBuilder();
+        sb.AppendLine($"데미지: {stat.Damage:F0}");
+        if (stat.PelletCount > 1) sb.AppendLine($"탄자 수: {stat.PelletCount}");
+        sb.AppendLine($"연사: {stat.Rpm:F0} RPM");
+        sb.AppendLine($"탄창: {stat.MaxMagazine}");
+        sb.AppendLine($"장전: {stat.ReloadTime:F1}초");
+        sb.AppendLine($"사거리: {stat.BulletRange:F0}");
+        return sb.ToString().TrimEnd();
+    }
+
+    // 강화 수치는 WorldEquipmentManager가 실제 적용하는 값을 그대로 조회한다 (공식 중복 방지)
+    private static string BuildGunPartStatText(ItemData data, int uid)
+    {
+        var basePart = GunPartTable.Instance.Get(data.Id);
+        if (basePart == null) return string.Empty;
+
+        var part = WorldEquipmentManager.GetEnhancedGunPart(basePart, uid);
+        var sb = new StringBuilder();
+        AppendLevel(sb, WorldEquipmentManager.GetEnhancementLevel(uid, data.Id));
+        AppendMultiplier(sb, "산탄 확산", part.SpreadMultiplier);
+        AppendMultiplier(sb, "조준 속도", part.AimFovMultiplier);
+        AppendMultiplier(sb, "재장전 속도", part.ReloadTimeMultiplier);
+        AppendMultiplier(sb, "반동", part.RecoilMultiplier);
+        AppendMultiplier(sb, "소음 범위", part.SoundRangeMultiplier);
+        if (part.MaxMagazineBonus != 0) sb.AppendLine($"탄창 용량: +{part.MaxMagazineBonus}");
+        return sb.ToString().TrimEnd();
+    }
+
+    private static string BuildArmorStatText(ItemData data, int uid)
+    {
+        var baseStat = ArmorStatTable.Instance.Get(data.Id);
+        if (baseStat == null) return string.Empty;
+
+        var stat = WorldEquipmentManager.GetEnhancedArmorStat(uid, baseStat);
+        var sb = new StringBuilder();
+        AppendLevel(sb, WorldEquipmentManager.GetEnhancementLevel(uid, data.Id));
+        if (stat.DefenseRate > 0f) sb.AppendLine($"방어율: {stat.DefenseRate * 100f:F0}%");
+        if (stat.MaxHpBonus > 0f) sb.AppendLine($"HP 보너스: +{stat.MaxHpBonus:F0}");
+        AppendMultiplier(sb, "이동속도", stat.MoveSpeedMultiplier);
+        return sb.ToString().TrimEnd();
+    }
+
+    private static void AppendLevel(StringBuilder sb, int level)
+    {
+        if (level > 0) sb.AppendLine($"강화: +{level}");
+    }
+
+    // 효과가 없는(배율 1) 스탯은 줄을 만들지 않는다
+    private static void AppendMultiplier(StringBuilder sb, string label, float value)
+    {
+        if (Mathf.Approximately(value, 1f)) return;
+
+        int pct = Mathf.RoundToInt((value - 1f) * 100f);
+        sb.AppendLine($"{label}: {(pct >= 0 ? "+" : "")}{pct}%");
     }
 }

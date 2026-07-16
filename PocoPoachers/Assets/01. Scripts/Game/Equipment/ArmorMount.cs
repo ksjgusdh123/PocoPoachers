@@ -7,9 +7,13 @@ public class ArmorMount : MonoBehaviour
 
     private ArmorBase _helmet;
     private int _equippedItemId;
+    private int _equippedUid;
 
     public ArmorBase GetArmor() => _helmet;
     public int GetEquippedItemId() => _equippedItemId;
+
+    // 씬 언로드 중(OnDestroy) armor 오브젝트가 먼저 파괴돼도 안전하도록 uid를 별도 보관
+    public int GetEquippedUid() => _equippedUid;
 
     public ArmorBase ApplyEquip(int itemId, int uid = 0)
     {
@@ -18,6 +22,7 @@ public class ArmorMount : MonoBehaviour
 
         armor.SetUid(uid);
         _equippedItemId = itemId;
+        _equippedUid = uid;
         return armor;
     }
 
@@ -27,6 +32,7 @@ public class ArmorMount : MonoBehaviour
         Destroy(_helmet.gameObject);
         _helmet = null;
         _equippedItemId = 0;
+        _equippedUid = 0;
     }
 
     private ArmorBase SpawnArmor(int itemId)

@@ -204,6 +204,17 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         OnHoverExit?.Invoke(slot);
     }
 
+    // 호버 중인 슬롯의 내용이 바뀌었을 때(더블클릭으로 가져가기/스왑 등) 설명 UI를 현재 내용에 다시 맞춘다
+    // 커서는 그대로 슬롯 위에 있어 OnPointerExit이 발생하지 않으므로, 이게 없으면 사라진 아이템의 설명이 남는다
+    // HoveredSlot은 비우지 않는다 — 커서는 여전히 이 슬롯 위에 있다
+    public void RefreshHovered(ItemSlotUI slot)
+    {
+        if (HoveredSlot != slot) return;
+
+        if (slot.IsSettedItem) OnHoverEnter?.Invoke(slot);
+        else OnHoverExit?.Invoke(slot);
+    }
+
     public void SetDragged(ItemSlotUI slot, CanvasGroup canvasGroup, int amount)
     {
         DragAmount = amount;

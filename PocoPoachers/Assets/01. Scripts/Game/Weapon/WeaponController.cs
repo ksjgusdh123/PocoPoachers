@@ -102,6 +102,8 @@ public class WeaponController : EquipableController
         if (gun == null) return;
 
         // 호스트(싱글플레이 포함) 본인이 장착하는 경우, 기존 내구도를 바로 조회해서 복원
+        // 게스트는 여기서 복원하지 않는다 — RoomSync.Equip(G_Equip)에 대한 응답으로
+        // 호스트가 H_Durability(내구도)와 H_GunState(탄약/파츠)를 되돌려준다
         if (RoomManager.IsHost && uid != 0)
         {
             var (current, _) = WorldEquipmentManager.GetOrCreate(uid, data.id, gun.MaxDurability);
@@ -123,7 +125,7 @@ public class WeaponController : EquipableController
             if (hasSavedAmmo)
                 gun.SetAmmo(curAmmo);
         }
-        else if (uid != 0) Debug.Log($"[AmmoRestore] 복원 스킵 IsHost={RoomManager.IsHost} uid={uid}"); // TODO: 디버그 후 제거
+        else if (uid != 0) Debug.Log($"[AmmoRestore] 게스트 장착 uid={uid} — 호스트의 H_GunState 대기"); // TODO: 디버그 후 제거
 
         gun.Owner = gameObject;
         gun.gameObject.SetActive(false);
@@ -156,10 +158,10 @@ public class WeaponController : EquipableController
             Unequip(i);
     }
 
-    public int GetEquippedItemId(int slotIndex) => _mount.GetEquippedItemId(slotIndex);
+    public int GetEquippedItemId(int slotIndex) => _mount != null ? _mount.GetEquippedItemId(slotIndex) : 0;
 
-    public override int GetEquippedId(int slotIndex) => _mount.GetEquippedItemId(slotIndex);
-    public override int GetEquippedUid(int slotIndex) => _mount.GetGun(slotIndex)?.Uid ?? 0;
+    public override int GetEquippedId(int slotIndex) => _mount != null ? _mount.GetEquippedItemId(slotIndex) : 0;
+    public override int GetEquippedUid(int slotIndex) => _mount != null ? _mount.GetEquippedUid(slotIndex) : 0;
 
 
     private void SwitchWeapon(int index)
@@ -213,7 +215,13 @@ public class WeaponController : EquipableController
 
             _reloadRequestedHandler = () => TryReloadFromInventory();
             _reloadCompleteHandler = consumed => ConsumeAmmoFromInventory(consumed);
-            _ammoChangedHandler = (cur, _) => OnAmmoChanged?.Invoke(cur, GetInventoryAmmoCount());
+            _ammoChangedHandler = (cur, max) =>
+            {
+                // 현재 탄약을 영속 저장소에 반영해 씬 전환 후 재장착 시 복원되게 한다 (호스트 권위)
+                if (RoomManager.IsHost && gun.Uid != 0)
+                    WorldEquipmentManager.SetAmmo(gun.Uid, cur, max);
+                OnAmmoChanged?.Invoke(cur, GetInventoryAmmoCount());
+            };
             _currentGun.OnReloadRequested += _reloadRequestedHandler;
             _currentGun.OnReloadComplete += _reloadCompleteHandler;
             _currentGun.OnAmmoChanged += _ammoChangedHandler;
