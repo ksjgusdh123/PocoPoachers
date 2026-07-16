@@ -9,6 +9,9 @@ public class RemotePlayerStat : StatBase
     [SerializeField] private float _maxStamina = 100f;
     [SerializeField] private float _maxBattery = 100f;
 
+    // 구출용 트리거 자식 오브젝트 — 평소엔 꺼두고 다운 시에만 켠다 (프리팹에서 지정)
+    [SerializeField] private RescueInteractable _rescueTrigger;
+
     public float MaxStamina { get; private set; }
     public float CurrentStamina { get; private set; }
 
@@ -38,6 +41,10 @@ public class RemotePlayerStat : StatBase
         CurrentStamina = MaxStamina;
         MaxBattery = _maxBattery;
         CurrentBattery = MaxBattery;
+
+        // 프리팹에 켜진 채로 저장돼도 살아있는 플레이어가 구출 대상으로 보이지 않도록 강제로 끈다
+        if (_rescueTrigger != null)
+            _rescueTrigger.gameObject.SetActive(false);
 
         // 데미지는 호스트에서만 적용되므로(Bullet._applyDamage) 게스트의 전투 사망은 호스트의 이 컴포넌트에서 감지된다
         OnDie += HandleRemoteDeath;
@@ -134,13 +141,23 @@ public class RemotePlayerStat : StatBase
     }
 
     // 원격 플레이어 사망 감지 — 호스트는 TakeDamage에서, 게스트는 SetHpFromNetwork(HP 0 수신)에서 발동
-    // 살아있는 다른 플레이어가 있으면 이 사본을 구출(F 상호작용) 대상으로 표시 (게스트 상자 스폰은 아직 미지원)
+    // 살아있는 다른 플레이어가 있으면 이 사본을 구출(F 상호작용) 대상으로 전환 (게스트 상자 스폰은 아직 미지원)
     private void HandleRemoteDeath()
     {
-        if (ObjectManager.Instance != null && ObjectManager.Instance.HasLivingPlayerExcept(this))
+        if (ObjectManager.Instance == null || !ObjectManager.Instance.HasLivingPlayerExcept(this)) return;
+
+        Debug.Log("구출!");
+        SetRescueTriggerActive(true);
+    }
+
+    public void SetRescueTriggerActive(bool active)
+    {
+        if (_rescueTrigger == null)
         {
-            Debug.Log("구출!");
-            RescueInteractable.MarkDowned(gameObject);
+            Debug.LogWarning($"[RemotePlayerStat] {name}에 구출 트리거가 지정되지 않아 구출할 수 없습니다", this);
+            return;
         }
+
+        _rescueTrigger.gameObject.SetActive(active);
     }
 }
