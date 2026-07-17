@@ -26,16 +26,20 @@ public class PlayerStat : StatBase
 
     private Inventory _inventory;
     private const float OverweightMoveSpeedMultiplier = 0.2f; // 무게 초과 시 이동속도 80% 감소
+    private const float DownedMoveSpeedMultiplier = 0.1f;     // 구조대기(사망) 상태 시 이동속도 90% 감소
 
     // 인벤토리 무게가 최대치를 초과한 상태인지
     private bool IsOverweight => _inventory != null && _inventory.MaxWeight > 0 && _inventory.CurrentWeight > _inventory.MaxWeight;
+
+    // 사망 후 구조대기 상태 시 적용되는 이동속도 배율
+    private float DownedMultiplier => IsDead ? DownedMoveSpeedMultiplier : 1f;
 
     // 배율 미적용 기준 속도 (애니메이션 정규화용)
     public float BaseMoveSpeed => _moveSpeed + _enhancementMoveSpeedBonus;
 
     // 배율이 모두 적용된 최종 이동/달리기 속도
-    public float MoveSpeed => (_moveSpeed + _enhancementMoveSpeedBonus) * _armorMoveSpeedMultiplier * (IsOverweight ? OverweightMoveSpeedMultiplier : 1f);
-    public float SprintSpeed => (_sprintSpeed + _enhancementMoveSpeedBonus) * _armorMoveSpeedMultiplier * (IsOverweight ? OverweightMoveSpeedMultiplier : 1f);
+    public float MoveSpeed => (_moveSpeed + _enhancementMoveSpeedBonus) * _armorMoveSpeedMultiplier * (IsOverweight ? OverweightMoveSpeedMultiplier : 1f) * DownedMultiplier;
+    public float SprintSpeed => (_sprintSpeed + _enhancementMoveSpeedBonus) * _armorMoveSpeedMultiplier * (IsOverweight ? OverweightMoveSpeedMultiplier : 1f) * DownedMultiplier;
 
     protected override float DefenseRate => base.DefenseRate;
 

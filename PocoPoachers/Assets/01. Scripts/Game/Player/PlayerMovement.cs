@@ -129,7 +129,7 @@ public class PlayerMovement : MonoBehaviour
       _characterController.Move(motion * Time.deltaTime);
     }
 
-    private bool CanSprint() => _playerStat == null || _playerStat.CurrentStamina > 0f;
+    private bool CanSprint() => _playerStat != null && !_playerStat.IsDead && _playerStat.CurrentStamina > 0f;
 
     private void SyncMove()
     {
