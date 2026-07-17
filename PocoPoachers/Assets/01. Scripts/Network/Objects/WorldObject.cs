@@ -25,6 +25,10 @@ public class WorldObject : MonoBehaviour
     public ObjectKind Kind { get; private set; }
     public int TypeId { get; private set; }
 
+    // 원격 발소리 방출(RemoteFootstepEmitter)이 참조하는 이동 상태
+    public bool IsSprintingState => _targetSprinting;
+    public float PlanarMoveSqr => _targetVelX * _targetVelX + _targetVelZ * _targetVelZ;
+
     Vector3 _targetPos;
     float _targetYaw;
     bool _hasTarget;
