@@ -22,6 +22,9 @@ public class DodgeRollSkill : SkillBase
             _direction = self.forward;
         _direction.Normalize();
 
+        // 공격 온 방향(구르는 방향)으로 즉시 회전한 뒤 구른다
+        self.rotation = Quaternion.LookRotation(_direction);
+
         ctx.Stat?.SetInvincible(true);
 
         // 지속 시간은 구르기 클립 길이, 못 구하면 폴백
