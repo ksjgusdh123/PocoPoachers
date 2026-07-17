@@ -17,6 +17,6 @@ public class SingleGun : GunBase
             _stat.MuzzleColor
         );
 
-        RoomSync.Shoot(_muzzle.position, fireDir, _stat);
+        BroadcastShoot(_muzzle.position, fireDir);
     }
 }

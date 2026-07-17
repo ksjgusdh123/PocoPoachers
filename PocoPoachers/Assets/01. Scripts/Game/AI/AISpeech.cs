@@ -7,10 +7,12 @@ public class AISpeech : MonoBehaviour
 
     private PlayerVision _localPlayerVision;
     private SpeechBubble _activeBubble;
+    private EnemyNetSync _netSync;
 
     private void Awake()
     {
         _localPlayerVision = FindLocalPlayerVision();
+        _netSync = GetComponentInParent<EnemyNetSync>();
     }
 
     private void OnEnable()
@@ -32,6 +34,20 @@ public class AISpeech : MonoBehaviour
 
     public void Say(string message, float duration)
     {
+        // AI는 호스트에서만 돌아 이 경로도 호스트에서만 실행된다.
+        // 게스트는 AI가 없어 대사가 안 뜨므로, 호스트가 대사를 전파해 각 게스트가 자기 시야로 표시하게 한다.
+        if (RoomManager.IsHost && _netSync != null && _netSync.EnemyId != 0)
+            RoomSync.EnemySpeak(_netSync.EnemyId, message, duration);
+
+        ShowBubble(message, duration);
+    }
+
+    // 네트워크로 받은 대사를 로컬에만 표시 (재전파 없음)
+    public void ShowRemote(string message, float duration) => ShowBubble(message, duration);
+
+    private void ShowBubble(string message, float duration)
+    {
+        // 표시 판정은 각 클라이언트의 로컬 플레이어 시야 기준 — 자기가 보는 적의 대사만 뜬다
         if (_localPlayerVision != null && !_localPlayerVision.DetectedTargets.Contains(gameObject))
             return;
 

@@ -202,4 +202,22 @@ public class EnemyNetSync : MonoBehaviour
         DeathVFXPool.Instance?.Spawn(e.transform.position);
         Destroy(e.gameObject);
     }
+
+    // 게스트가 적 총알을 스폰할 때 attacker(=적 오브젝트)로 쓰기 위한 조회 — 레이어가 Enemy라 적끼리 오사가 안 난다
+    public static bool TryGetGameObject(int id, out GameObject go)
+    {
+        go = null;
+        if (!_registry.TryGetValue(id, out var e) || e == null) return false;
+        go = e.gameObject;
+        return true;
+    }
+
+    // 호스트가 전파한 AI 대사 — 게스트가 자기 쪽 같은 적을 찾아 말풍선 표시 (표시 판정은 각자 시야로)
+    public static void OnNetSpeak(int id, string message, float duration)
+    {
+        if (!_registry.TryGetValue(id, out var e) || e == null) return;
+        var speech = e.GetComponentInChildren<AISpeech>();
+        if (speech != null)
+            speech.ShowRemote(message, duration);
+    }
 }

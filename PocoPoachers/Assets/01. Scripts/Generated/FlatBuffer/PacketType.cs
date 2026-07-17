@@ -52,6 +52,8 @@ public enum PacketType : byte
   H_SandbagDestroy = 45,
   H_LoadScene = 46,
   G_SceneReady = 47,
+  H_EnemySpeak = 48,
+  H_EnemyShoot = 49,
 };
 
 public class PacketTypeUnion {
@@ -158,6 +160,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_LoadScene(H_LoadSceneT _h_loadscene) { return new PacketTypeUnion{ Type = PacketType.H_LoadScene, Value = _h_loadscene }; }
   public G_SceneReadyT AsG_SceneReady() { return this.As<G_SceneReadyT>(); }
   public static PacketTypeUnion FromG_SceneReady(G_SceneReadyT _g_sceneready) { return new PacketTypeUnion{ Type = PacketType.G_SceneReady, Value = _g_sceneready }; }
+  public H_EnemySpeakT AsH_EnemySpeak() { return this.As<H_EnemySpeakT>(); }
+  public static PacketTypeUnion FromH_EnemySpeak(H_EnemySpeakT _h_enemyspeak) { return new PacketTypeUnion{ Type = PacketType.H_EnemySpeak, Value = _h_enemyspeak }; }
+  public H_EnemyShootT AsH_EnemyShoot() { return this.As<H_EnemyShootT>(); }
+  public static PacketTypeUnion FromH_EnemyShoot(H_EnemyShootT _h_enemyshoot) { return new PacketTypeUnion{ Type = PacketType.H_EnemyShoot, Value = _h_enemyshoot }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -209,6 +215,8 @@ public class PacketTypeUnion {
       case PacketType.H_SandbagDestroy: return H_SandbagDestroy.Pack(builder, _o.AsH_SandbagDestroy()).Value;
       case PacketType.H_LoadScene: return H_LoadScene.Pack(builder, _o.AsH_LoadScene()).Value;
       case PacketType.G_SceneReady: return G_SceneReady.Pack(builder, _o.AsG_SceneReady()).Value;
+      case PacketType.H_EnemySpeak: return H_EnemySpeak.Pack(builder, _o.AsH_EnemySpeak()).Value;
+      case PacketType.H_EnemyShoot: return H_EnemyShoot.Pack(builder, _o.AsH_EnemyShoot()).Value;
     }
   }
 }
@@ -362,6 +370,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.G_SceneReady:
         result = G_SceneReadyVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_EnemySpeak:
+        result = H_EnemySpeakVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_EnemyShoot:
+        result = H_EnemyShootVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

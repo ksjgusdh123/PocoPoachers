@@ -307,6 +307,34 @@ public static class RoomSync
         }, H_EnemyDie.Pack, PacketType.H_EnemyDie);
     }
 
+    public static void EnemySpeak(int enemyId, string message, float duration)
+    {
+        if (!RoomManager.HasGuests) return;
+        PacketBuilder.BroadcastToGuests(new H_EnemySpeakT
+        {
+            EnemyId  = enemyId,
+            Message  = message,
+            Duration = duration,
+        }, H_EnemySpeak.Pack, PacketType.H_EnemySpeak);
+    }
+
+    // 적 사격 전파 — 적은 호스트에서만 발사되므로 호스트→게스트 단방향.
+    // 게스트는 enemyId로 발사 적을 찾아 attacker=적(Enemy 레이어)으로 스폰해야 적끼리 오사가 안 난다.
+    public static void EnemyShoot(int enemyId, Vector3 origin, Vector3 direction, GunStatData stat, IReadOnlyList<Vector3> pelletDirections = null)
+    {
+        if (!RoomManager.IsHost || !RoomManager.HasGuests) return;
+        PacketBuilder.BroadcastToGuests(new H_EnemyShootT
+        {
+            EnemyId     = enemyId,
+            Origin      = new Vec3T { X = origin.x, Y = origin.y, Z = origin.z },
+            Direction   = new Vec3T { X = direction.x, Y = direction.y, Z = direction.z },
+            BulletSpeed = stat.BulletSpeed,
+            Damage      = stat.Damage,
+            MaxRange    = stat.BulletRange,
+            Directions  = ToVec3TList(pelletDirections),
+        }, H_EnemyShoot.Pack, PacketType.H_EnemyShoot);
+    }
+
     public static void ItemSpawn(int uid, int typeId, Vector3 pos, float rotation, List<int> itemIds, List<int> itemCounts = null, List<int> itemUids = null)
     {
         if (!RoomManager.HasGuests) return;

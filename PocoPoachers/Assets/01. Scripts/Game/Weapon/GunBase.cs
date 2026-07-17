@@ -27,7 +27,20 @@ public abstract class GunBase : EquippableItemBase
             _owner = value;
             // 재장전 게이지 등 UI는 로컬 플레이어(PlayerController 보유)의 총에만 표시
             _isLocalPlayerOwner = value != null && value.TryGetComponent<PlayerController>(out _);
+            // 소유자가 적이면 사격을 적 전용 경로로 전파하기 위해 캐시 (플레이어 총알과 attacker/레이어가 다름)
+            _ownerEnemy = value != null ? value.GetComponent<EnemyNetSync>() : null;
         }
+    }
+
+    // 사격 네트워크 전파 — 소유자가 적이면 적 전용(enemyId 기반), 아니면 플레이어 경로로 보낸다.
+    // 적 총알을 플레이어 경로(RoomSync.Shoot, MyId)로 보내면 게스트에서 호스트 플레이어로 오귀속돼
+    // 같은 레이어(적끼리) 스킵이 깨진다 — 그래서 적은 반드시 이 분기를 타야 한다.
+    protected void BroadcastShoot(Vector3 origin, Vector3 direction, System.Collections.Generic.IReadOnlyList<Vector3> pelletDirections = null)
+    {
+        if (_ownerEnemy != null)
+            RoomSync.EnemyShoot(_ownerEnemy.EnemyId, origin, direction, _stat, pelletDirections);
+        else
+            RoomSync.Shoot(origin, direction, _stat, pelletDirections);
     }
 
     public static event Action<float> OnReloadStarted;
@@ -42,6 +55,7 @@ public abstract class GunBase : EquippableItemBase
 
     private GameObject _owner;
     private bool _isLocalPlayerOwner;
+    private EnemyNetSync _ownerEnemy;
     private int _currentAmmo;
     private bool _isReloading;
     private float _nextFireTime;

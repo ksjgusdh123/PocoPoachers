@@ -66,6 +66,8 @@ public struct FlatPacket : IFlatbufferObject
   public H_SandbagDestroy TypeAsH_SandbagDestroy() { return Type<H_SandbagDestroy>().Value; }
   public H_LoadScene TypeAsH_LoadScene() { return Type<H_LoadScene>().Value; }
   public G_SceneReady TypeAsG_SceneReady() { return Type<G_SceneReady>().Value; }
+  public H_EnemySpeak TypeAsH_EnemySpeak() { return Type<H_EnemySpeak>().Value; }
+  public H_EnemyShoot TypeAsH_EnemyShoot() { return Type<H_EnemyShoot>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -235,6 +237,12 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.G_SceneReady:
         _o.Type.Value = this.Type<G_SceneReady>().HasValue ? this.Type<G_SceneReady>().Value.UnPack() : null;
+        break;
+      case PacketType.H_EnemySpeak:
+        _o.Type.Value = this.Type<H_EnemySpeak>().HasValue ? this.Type<H_EnemySpeak>().Value.UnPack() : null;
+        break;
+      case PacketType.H_EnemyShoot:
+        _o.Type.Value = this.Type<H_EnemyShoot>().HasValue ? this.Type<H_EnemyShoot>().Value.UnPack() : null;
         break;
     }
   }
