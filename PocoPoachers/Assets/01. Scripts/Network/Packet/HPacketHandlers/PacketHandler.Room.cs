@@ -50,6 +50,18 @@ public static partial class PacketHandlers
         ShelterManager.GetInstance()?.SetLevel(packet.Level);
     }
 
+    // 접속 시 호스트가 보낸 방 세계 상태를 로컬 플레이어에 복원한다.
+    public static void OnH_GuestRestore(FlatPacket root)
+    {
+        var packet = root.TypeAsH_GuestRestore().UnPack();
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            var player = UnityEngine.Object.FindAnyObjectByType<PlayerController>();
+            if (player == null) return;
+            player.ApplyRoomRestore(packet.Equips, packet.Inventory);
+        });
+    }
+
     public static void OnH_LoadScene(FlatPacket root)
     {
         var packet = root.TypeAsH_LoadScene();

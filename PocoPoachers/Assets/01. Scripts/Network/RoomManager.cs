@@ -525,6 +525,9 @@ public class RoomManager : Singleton<RoomManager>
         // 씬 전환 때는 게스트 입장 경로(SendWorldStateToGuest)를 타지 않으므로 장비를 여기서 다시 보낸다
         SendHostEquipToGuest(guestId);
 
+        // 방 세계에 저장된 이 게스트의 상태를 복원 전송한다 (없으면 빈손 유지)
+        SendGuestRoomRestore(guestId);
+
         if (_worldObjectsReady)
             SendWorldObjectsToGuest(guestId);
         else
@@ -736,6 +739,10 @@ public class RoomManager : Singleton<RoomManager>
         if (!_guests.TryRemove(guestId, out IPEndPoint _)) return;
         _guestLastSeen.TryRemove(guestId, out long _);
         _waitingGuests.TryRemove(guestId, out NetInfoT _);
+
+        // 트래커를 비우기 전에 게스트 상태를 방 세계 세이브에 영속화 (재접속 시 복원용)
+        PersistGuestRoomState(guestId);
+
         GuestInventoryTracker.ClearGuest(guestId);
         RemoteEquipState.ClearPlayer(guestId);
 
@@ -746,6 +753,59 @@ public class RoomManager : Singleton<RoomManager>
         PacketBuilder.BroadcastToGuests(
             new H_LeaveT { PlayerId = guestId, IsHost = false },
             H_Leave.Pack, PacketType.H_Leave);
+    }
+
+    // 호스트 전용 — 게스트의 현재 상태(인벤/로드아웃/총·방어구 인스턴스상태)를 호스트가 보유한
+    // 트래커에서 수집해 방 세계 세이브에 저장한다. playerId를 키로 쓴다(현재는 세션 id).
+    void PersistGuestRoomState(int guestId)
+    {
+        if (!_isHost) return;
+
+        var state = new SaveManager.GuestRoomState { playerId = guestId };
+        var uids = new HashSet<int>();
+
+        foreach (var (slot, itemId, amount, uid) in GuestInventoryTracker.GetSlots(guestId))
+        {
+            state.inventory.Add(new SaveManager.SlotSaveEntry { slotIndex = slot, itemId = itemId, amount = amount, uid = uid });
+            if (uid != 0) uids.Add(uid);
+        }
+
+        foreach (var (slot, itemId, uid) in RemoteEquipState.GetSlots(guestId))
+        {
+            state.equipSlots.Add(new SaveManager.EquipSlotEntry { slotIndex = slot, itemId = itemId, uid = uid });
+            if (uid != 0) uids.Add(uid);
+        }
+
+        state.equipment = WorldEquipmentManager.ExportSubset(uids);
+
+        SaveManager.GetInstance()?.SaveGuestRoomState(state);
+    }
+
+    // 호스트 전용 — 방 세계에 저장된 게스트 상태를 접속 시 그 게스트에게 복원 전송한다.
+    // 총 내구도/파츠/탄약은 담지 않는다 — 게스트가 재장착하면 기존 H_Durability/H_GunState 흐름이 채운다
+    // (호스트 WorldEquipmentManager에 그 uid 상태가 이미 로드돼 있으므로).
+    void SendGuestRoomRestore(int guestId)
+    {
+        var state = SaveManager.GetInstance()?.LoadGuestRoomState(guestId);
+        if (state == null) return; // 저장된 게 없으면 빈손 시작
+
+        var t = new H_GuestRestoreT
+        {
+            PlayerId = guestId,
+            Inventory = new List<GuestInvEntryT>(),
+            Equips = new List<GuestEquipEntryT>(),
+        };
+
+        foreach (var inv in state.inventory)
+        {
+            // 호스트 미러도 저장분으로 선반영 — 게스트가 채울 인벤과 일치시켜 교환 검증 정합성 유지
+            GuestInventoryTracker.SetSlot(guestId, inv.slotIndex, inv.itemId, inv.amount, inv.uid);
+            t.Inventory.Add(new GuestInvEntryT { SlotIndex = inv.slotIndex, ItemId = inv.itemId, Amount = inv.amount, ItemUid = inv.uid });
+        }
+        foreach (var eq in state.equipSlots)
+            t.Equips.Add(new GuestEquipEntryT { SlotIndex = eq.slotIndex, ItemId = eq.itemId, ItemUid = eq.uid });
+
+        PacketBuilder.SendReliableToGuest(guestId, t, H_GuestRestore.Pack, PacketType.H_GuestRestore);
     }
 
     public void HandleHostLeft()

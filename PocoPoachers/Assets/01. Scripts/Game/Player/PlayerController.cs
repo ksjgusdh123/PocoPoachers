@@ -85,9 +85,14 @@ public class PlayerController : MonoBehaviour
         if (_playerStat != null)
             _playerStat.OnDie += HandleDeath;
 
-        // 장비를 먼저 복원한다 — 가방이 인벤토리 용량을 확장하므로, 인벤 로드보다 앞서야 확장 슬롯 아이템이 정상 적재된다.
-        RestoreEquippedSlots();
-        _saveManager.LoadInventory(PlayerSaveKey, _inventory);
+        // 코옵 게스트는 개인 세이브를 쓰지 않는다 — 방 세계(호스트 소유)에서 상태를 받는다.
+        // 호스트/솔로만 자기 개인 세이브에서 복원한다(호스트 세이브 = 방 세계).
+        if (RoomManager.IsHost)
+        {
+            // 장비를 먼저 복원한다 — 가방이 인벤토리 용량을 확장하므로, 인벤 로드보다 앞서야 확장 슬롯 아이템이 정상 적재된다.
+            RestoreEquippedSlots();
+            _saveManager.LoadInventory(PlayerSaveKey, _inventory);
+        }
 
         BindPlayerInventoryUI();
 
@@ -116,8 +121,9 @@ public class PlayerController : MonoBehaviour
 
         InitEquipSlots();
 
-        // 저장된 활력치(체력/스태미나/배터리) 복원 — 없으면(새 게임) PlayerStat.Awake의 최대치 유지
-        if (_playerStat != null && _saveManager.TryLoadVitals(out float savedHp, out float savedStamina, out float savedBattery))
+        // 저장된 활력치(체력/스태미나/배터리) 복원 — 없으면(새 게임) PlayerStat.Awake의 최대치 유지.
+        // 게스트는 개인 세이브를 쓰지 않으므로 호스트/솔로만 복원한다.
+        if (RoomManager.IsHost && _playerStat != null && _saveManager.TryLoadVitals(out float savedHp, out float savedStamina, out float savedBattery))
             _playerStat.RestoreVitals(savedHp, savedStamina, savedBattery);
     }
 
@@ -195,6 +201,40 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    // 코옵 게스트 복원 — 호스트가 보낸 방 세계 상태(로드아웃+인벤)를 로컬에 적용한다.
+    // 장착이 controller.Equip → G_Equip을 보내 호스트가 총 상태(H_Durability/H_GunState)를 되돌려주게 한다.
+    // 가방 장착이 인벤 용량을 확장하므로 장착을 인벤 채우기보다 먼저 한다(RestoreEquippedSlots와 동일).
+    public void ApplyRoomRestore(List<GuestEquipEntryT> equips, List<GuestInvEntryT> inventory)
+    {
+        var weaponController = GetComponent<WeaponController>();
+        var armorController = GetComponent<PlayerArmorController>();
+        var bagController = GetComponent<BagController>();
+
+        if (equips != null)
+            foreach (var e in equips)
+            {
+                if (e == null) continue;
+                var data = ItemTable.Instance.Get(e.ItemId);
+                if (data == null) continue;
+
+                EquipableController controller =
+                    e.SlotIndex <= 1 ? (EquipableController)weaponController :
+                    e.SlotIndex <= 3 ? armorController : bagController;
+                controller?.Equip(data, e.SlotIndex, e.ItemUid);
+            }
+
+        if (inventory != null && _inventory != null)
+            foreach (var it in inventory)
+            {
+                if (it == null) continue;
+                var data = ItemTable.Instance.Get(it.ItemId);
+                if (data == null) continue;
+                _inventory.AddItemAtSlot(it.SlotIndex, data, it.Amount, it.ItemUid);
+            }
+
+        InitEquipSlots();
+    }
+
     // 현재 장착 중인 슬롯 구성을 수집한다. 복원과 동일하게 컨트롤러에서 직접 읽어 UI(_equipHandlers) 유무와 무관하게 동작한다.
     // 슬롯 인덱스는 복원의 매핑(0~1 무기, 2~3 방어구, 그 외 가방)과 일치시킨다.
     private List<SaveManager.EquipSlotEntry> GatherEquippedSlots()
@@ -250,25 +290,28 @@ public class PlayerController : MonoBehaviour
         if (_playerStat != null)
             _playerStat.OnDie -= HandleDeath;
 
-        if (_inventory != null)
-            _saveManager?.SaveInventory(PlayerSaveKey, _inventory);
-
-        // 장착 슬롯 구성(어떤 아이템이 몇 번 슬롯에 장착됐는지)을 저장 — 인벤토리와 함께 씬 전환/종료 시 영속화
-        var equipSlots = GatherEquippedSlots();
-        Debug.Log($"[EquipSave] 저장 항목 수={equipSlots.Count}"); // TODO: 디버그 후 제거
-        _saveManager?.SaveEquipSlots(equipSlots);
-
-        // 씬 전환/종료 시점에 uid별 장비 상태(내구도/장탄수/파츠)를 함께 영속화 (호스트 전용은 내부에서 처리)
-        _saveManager?.SaveEquipmentState();
-
-        // 활력치(체력/스태미나/배터리)를 영속화해 맵 전환 시 유지한다.
-        // 단 사망 상태면 저장값을 버려(ClearVitals) 다음 스폰이 0 체력으로 시작하지 않게 한다.
-        if (_playerStat != null)
+        // 코옵 게스트는 개인 세이브에 저장하지 않는다(방 세계는 호스트가 저장). 호스트/솔로만 자기 개인 세이브에 저장.
+        if (RoomManager.IsHost)
         {
-            if (_playerStat.IsDead || _playerStat.CurrentHp <= 0f)
-                _saveManager?.ClearVitals();
-            else
-                _saveManager?.SaveVitals(_playerStat.CurrentHp, _playerStat.CurrentStamina, _playerStat.CurrentBattery);
+            if (_inventory != null)
+                _saveManager?.SaveInventory(PlayerSaveKey, _inventory);
+
+            // 장착 슬롯 구성(어떤 아이템이 몇 번 슬롯에 장착됐는지)을 저장 — 인벤토리와 함께 씬 전환/종료 시 영속화
+            var equipSlots = GatherEquippedSlots();
+            _saveManager?.SaveEquipSlots(equipSlots);
+
+            // 씬 전환/종료 시점에 uid별 장비 상태(내구도/장탄수/파츠)를 함께 영속화
+            _saveManager?.SaveEquipmentState();
+
+            // 활력치(체력/스태미나/배터리)를 영속화해 맵 전환 시 유지한다.
+            // 단 사망 상태면 저장값을 버려(ClearVitals) 다음 스폰이 0 체력으로 시작하지 않게 한다.
+            if (_playerStat != null)
+            {
+                if (_playerStat.IsDead || _playerStat.CurrentHp <= 0f)
+                    _saveManager?.ClearVitals();
+                else
+                    _saveManager?.SaveVitals(_playerStat.CurrentHp, _playerStat.CurrentStamina, _playerStat.CurrentBattery);
+            }
         }
 
         if (_inputHander != null)

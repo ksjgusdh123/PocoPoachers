@@ -73,3 +73,29 @@ table G_SceneReady
 {
     player_id: int;
 }
+
+// 방 세계 복원용 — 호스트가 저장해둔 게스트의 인벤 한 칸
+table GuestInvEntry
+{
+    slot_index: int;
+    item_id:    int;
+    amount:     int;
+    item_uid:   int; // 무기/방어구 등 인스턴스 uid, 소모품은 0
+}
+
+// 방 세계 복원용 — 게스트의 장착 슬롯 한 칸
+table GuestEquipEntry
+{
+    slot_index: int;
+    item_id:    int;
+    item_uid:   int;
+}
+
+// 호스트→게스트(신뢰), 접속 시 방 세계에 저장된 그 게스트의 상태를 복원시킨다.
+// 인벤/로드아웃만 담는다 — 총 내구도/파츠/탄약은 게스트가 재장착할 때 H_Durability/H_GunState가 채운다.
+table H_GuestRestore
+{
+    player_id: int;
+    inventory: [GuestInvEntry];
+    equips:    [GuestEquipEntry];
+}

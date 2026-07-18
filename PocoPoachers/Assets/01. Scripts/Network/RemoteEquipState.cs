@@ -36,6 +36,14 @@ public static class RemoteEquipState
             slots[slotIndex] = (itemId, uid);
     }
 
+    // 방 세계 저장용 — 해당 플레이어의 장착 슬롯 전체 열거
+    public static IEnumerable<(int Slot, int ItemId, int Uid)> GetSlots(int playerId)
+    {
+        if (_playerSlots.TryGetValue(playerId, out var slots))
+            foreach (var kv in slots)
+                yield return (kv.Key, kv.Value.ItemId, kv.Value.Uid);
+    }
+
     // 갓 생성된 원격 플레이어에게 알려진 장착 상태를 입힌다
     public static void ApplyTo(WorldObject worldObj, int playerId)
     {
