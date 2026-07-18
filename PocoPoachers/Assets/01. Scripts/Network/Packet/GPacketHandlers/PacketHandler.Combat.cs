@@ -48,6 +48,8 @@ public static partial class PacketHandlers
         GameObject prefab = ResolveBulletPrefab(gun, pool, out Color bulletColor);
         if (prefab == null) return;
 
+        gun.PlayMuzzleFlash();
+
         GameObject attacker = null;
         if (ObjectManager.Instance != null && ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var shooterObj))
             attacker = shooterObj.gameObject;
