@@ -48,13 +48,19 @@ public static partial class PacketHandlers
         Vector3 baseDir = dirRaw.HasValue    ? new Vector3(dirRaw.Value.X,    dirRaw.Value.Y,    dirRaw.Value.Z)    : Vector3.forward;
         if (baseDir == Vector3.zero) baseDir = Vector3.forward;
 
-        var pool   = BulletPool.Instance;
-        var prefab = pool?.NetworkBulletPrefab;
-        if (prefab == null) return;
+        var pool = BulletPool.Instance;
+        if (pool == null) return;
 
         GameObject attacker = null;
+        GunBase gun = null;
         if (EnemyNetSync.TryGetGameObject(packet.EnemyId, out var enemyGo))
+        {
             attacker = enemyGo;
+            gun = enemyGo.GetComponent<AIWeaponController>()?.Gun;
+        }
+
+        GameObject prefab = ResolveBulletPrefab(gun, pool, out Color bulletColor);
+        if (prefab == null) return;
 
         int pelletCount = Mathf.Max(1, packet.DirectionsLength);
         for (int i = 0; i < pelletCount; i++)
@@ -68,7 +74,7 @@ public static partial class PacketHandlers
             }
 
             var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(dir));
-            bullet.Initialize(packet.BulletSpeed, packet.Damage, packet.MaxRange, dir, () => pool.Release(prefab, bullet), attacker);
+            bullet.Initialize(packet.BulletSpeed, packet.Damage, packet.MaxRange, dir, () => pool.Release(prefab, bullet), attacker, bulletColor);
         }
     }
 }

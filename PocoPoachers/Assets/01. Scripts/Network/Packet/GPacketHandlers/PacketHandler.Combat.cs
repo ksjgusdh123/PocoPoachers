@@ -44,7 +44,8 @@ public static partial class PacketHandlers
         }
 
         var pool = BulletPool.Instance;
-        var prefab = pool?.NetworkBulletPrefab;
+        if (pool == null) return;
+        GameObject prefab = ResolveBulletPrefab(gun, pool, out Color bulletColor);
         if (prefab == null) return;
 
         GameObject attacker = null;
@@ -64,7 +65,7 @@ public static partial class PacketHandlers
             }
 
             var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(dir));
-            bullet.Initialize(bulletSpeed, damage, maxRange, dir, () => pool.Release(prefab, bullet), attacker);
+            bullet.Initialize(bulletSpeed, damage, maxRange, dir, () => pool.Release(prefab, bullet), attacker, bulletColor);
         }
 
         if (RoomManager.IsHost)
