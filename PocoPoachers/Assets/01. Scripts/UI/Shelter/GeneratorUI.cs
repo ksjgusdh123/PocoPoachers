@@ -11,6 +11,13 @@ public class GeneratorUI : MonoBehaviour
 
     [SerializeField] private Slider _powerBar;
     [SerializeField] private TextMeshProUGUI _powerText;
+    [SerializeField] private GeneratorFuelDropHandler _fuelSlot;
+    [SerializeField] private Button _insertButton;
+
+    private void Awake()
+    {
+        _insertButton?.onClick.AddListener(OnClickInsert);
+    }
 
     private void OnEnable()
     {
@@ -54,5 +61,10 @@ public class GeneratorUI : MonoBehaviour
         if (ratio < 0.4f) return LowColor;
         if (ratio < 0.7f) return MediumColor;
         return HighColor;
+    }
+
+    private void OnClickInsert()
+    {
+        _fuelSlot?.TryInsertToGenerator();
     }
 }
