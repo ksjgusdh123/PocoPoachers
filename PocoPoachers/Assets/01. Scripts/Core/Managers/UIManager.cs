@@ -22,6 +22,7 @@ public enum UIType
     ShelterUpgrade,
     CraftingTable,
     MainGameUI,
+    Generator,
 }
 
 public class UIManager : Singleton<UIManager>

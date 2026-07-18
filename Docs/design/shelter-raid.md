@@ -16,6 +16,8 @@
 | 무기 강화대 | `GunEnhancementTable` | 무기 드롭 슬롯 (로직 미완) |
 | 수리대 | `RepairWorkbench` | 수리 UI (로직 미완) |
 | 우주선 | `Spaceship` | `PlanetSelectUI` → 레이드 출발 |
+| 발전기 | `Generator` | 전력 저장/방전, 연료 투입(`GeneratorFuelTable`) — 시설 전력 소비 연동은 미구현 |
+| 수동 충전기 | `ManualCrank` | F 연타 시 `Generator`에 소량(+2.0, 최대 100.0) 강제 충전 |
 
 ### 쉘터 업그레이드 (`ShelterManager`)
 

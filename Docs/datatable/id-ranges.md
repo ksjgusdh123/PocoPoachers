@@ -28,6 +28,7 @@ CSV 원본: `PocoPoachers/DataTable/`
 | `7001 ~ 7999` | Skill (AI 스킬) | `skill` 컬럼(Dodge/Retreat 등)이 동작 종류, `SkillManager._skillIds`로 AI별 할당 |
 | `8001 ~ 8999` | ItemEnhancementCost (장비/파츠 강화 재료) | item_id + level 조합당 1행, 최대 레벨 3 |
 | Item ID 공유 | CraftingRecipe (제작 레시피) | id = result_item_id (1:1), `CraftingRecipeTable.Get(itemId)`로 조회 |
+| Item ID 공유 | GeneratorFuel (발전기 연료) | id = 연료 아이템의 Item ID (1:1), `GeneratorFuelTable.Get(itemId)`로 전력 보충값(power_seconds) 조회. 연료 아이템은 800~899(Ingredient) 범위 사용 |
 
 ---
 
@@ -46,6 +47,9 @@ CSV 원본: `PocoPoachers/DataTable/`
 
 `CraftingRecipeData`도 동일 패턴을 따른다. id = 제작 결과 아이템의 Item ID.
 `CraftingRecipeTable.Get(itemId)`로 해당 아이템의 레시피를 조회. 레시피가 없으면 null.
+
+`GeneratorFuelData`도 동일 패턴을 따른다. id = 연료 아이템의 Item ID.
+`GeneratorFuelTable.Get(itemId)`로 해당 아이템의 전력 보충값(power_seconds)을 조회. 연료가 아니면 null.
 
 `GunPartData`도 동일 패턴을 따른다. id = 파츠 아이템의 Item ID.
 `GunPartTable.Get(itemId)`로 해당 파츠의 슬롯/호환/스탯 정보를 조회.

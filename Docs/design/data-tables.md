@@ -33,6 +33,7 @@ Generated/DataTable/*Table.cs
 | `shelter.csv` | `ShelterTable`, `ShelterData` | need_item1/2 | `ShelterManager` |
 | `enhancement_cost.csv` | `EnhancementCostTable` | stat, level, need_item | `PlayerEnhancement` |
 | `repair_cost.csv` | `RepairCostTable` | item_id, need_item | `RepairWorkbenchUI` |
+| `generator_fuel.csv` | `GeneratorFuelTable`, `GeneratorFuelData` | id(=연료 item_id), power_seconds | `Generator.TryInsertFuel` |
 | `localization.csv` | `LocalizationTable` | key, ko, en | `LocalizationManager` |
 | `sound.csv` | `SoundTable`, `SoundData` | key, type, path | `SoundManager` |
 | `skill.csv` | `SkillTable`, `SkillData` | skill, cooldown, speed, distance, duration, power, clip_name (범용 컬럼, 스킬마다 재해석) | `SkillManager`, `DodgeRollSkill`, `RetreatSkill`, `HealSkill` |

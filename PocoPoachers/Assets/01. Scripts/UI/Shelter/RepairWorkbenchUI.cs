@@ -6,6 +6,8 @@ using UnityEngine.UI;
 
 public class RepairWorkbenchUI : MonoBehaviour
 {
+    private const float PowerCost = 30f;
+
     [SerializeField] private RepairSlotDropHandler _repairSlot;
     [SerializeField] private TextMeshProUGUI _durabilityText;
     [SerializeField] private TextMeshProUGUI _costText;
@@ -93,6 +95,12 @@ public class RepairWorkbenchUI : MonoBehaviour
         int uid = _repairSlot.DroppedUid;
         if (!WorldEquipmentManager.TryGetDurability(uid, out float cur, out float max)) return;
         if (cur >= max) return;
+
+        if (Generator.Instance == null || !Generator.Instance.TryConsume(PowerCost))
+        {
+            UIManager.GetInstance().ShowNotice("발전기", "발전기 전력 부족");
+            return;
+        }
 
         ConsumeRepairCost(cost);
 
