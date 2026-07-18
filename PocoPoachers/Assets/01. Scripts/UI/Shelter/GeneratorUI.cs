@@ -45,6 +45,8 @@ public class GeneratorUI : MonoBehaviour
 
     public void Open(PlayerController player)
     {
+        _fuelSlot?.BindInventoryUI(player.PlayerBagInventoryUI);
+
         if (Generator.Instance == null) return;
 
         Refresh(Generator.Instance.CurrentPower, Generator.Instance.MaxPowerCapacity);
