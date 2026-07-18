@@ -68,6 +68,7 @@ public class Generator : MonoBehaviour, IInteractable
 
     public void OnInteract(PlayerController player)
     {
+        player.SetInventoryOpen(true);
         UIManager.GetInstance().Show(UIType.Generator);
 
         var ui = player.GetGeneratorUI;
@@ -79,6 +80,7 @@ public class Generator : MonoBehaviour, IInteractable
     public void OnInteractExit(PlayerController player)
     {
         UIManager.GetInstance().Hide(UIType.Generator);
+        player.SetInventoryOpen(false);
 
         player.SwitchInputMap(PlayerInputMapType.Game);
         UIManager.GetInstance().ChangeMouseCursor(true);
