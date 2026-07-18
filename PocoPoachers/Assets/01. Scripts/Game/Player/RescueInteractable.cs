@@ -10,8 +10,11 @@ using UnityEngine;
 public class RescueInteractable : MonoBehaviour, IInteractable
 {
     [SerializeField] private float _rescueDuration = 1f;
+    [SerializeField] private ProximityDetector _proximityDetector; // 구출자 근접 감지 (ItemBox/BaseOre와 동일 패턴)
 
     private Coroutine _rescueCoroutine;
+    private UIScalePulse _pulseUI;
+    private bool _isPlayerNearby;
 
     // ProgressUI가 구독하는 구출 진행 이벤트 (BaseOre 채광 이벤트와 동일 패턴)
     // 게이지는 호스트가 되돌려준 H_Rescue로만 뜬다 — 구출자·대상 양쪽에서 같은 경로로 표시된다
@@ -29,6 +32,48 @@ public class RescueInteractable : MonoBehaviour, IInteractable
     // 구출 대상의 플레이어 id — 이 컴포넌트는 RemotePlayer의 자식이라 부모에서 찾는다
     private int TargetId => GetComponentInParent<WorldObject>()?.Id ?? 0;
 
+    private void Awake()
+    {
+        if (_proximityDetector != null)
+        {
+            _proximityDetector.OnEnter += OnPlayerEntered;
+            _proximityDetector.OnExit += OnPlayerExited;
+        }
+    }
+
+    private void OnDestroy()
+    {
+        if (_proximityDetector != null)
+        {
+            _proximityDetector.OnEnter -= OnPlayerEntered;
+            _proximityDetector.OnExit -= OnPlayerExited;
+        }
+    }
+
+    private void OnPlayerEntered()
+    {
+        _isPlayerNearby = true;
+        if (_rescueCoroutine == null) ShowPulse(); // 구출 진행 중이 아닐 때만 표시
+    }
+
+    private void OnPlayerExited()
+    {
+        _isPlayerNearby = false;
+        HidePulse();
+    }
+
+    private void ShowPulse()
+    {
+        if (_pulseUI != null) return; // 중복 생성 방지
+        _pulseUI = WorldUIManager.Instance.Create<UIScalePulse>(WorldUIType.ScalePulse, transform);
+    }
+
+    private void HidePulse()
+    {
+        _pulseUI?.Release();
+        _pulseUI = null;
+    }
+
     public void OnInteract(PlayerController player)
     {
         if (_rescueCoroutine != null) return;
@@ -41,6 +86,7 @@ public class RescueInteractable : MonoBehaviour, IInteractable
         }
 
         RoomSync.Rescue(targetId, RescueState.Started, _rescueDuration);
+        HidePulse(); // 구출 진행 중엔 게이지가 뜨므로 펄스는 숨긴다
         _rescueCoroutine = StartCoroutine(RescueRoutine(player));
     }
 
@@ -58,12 +104,15 @@ public class RescueInteractable : MonoBehaviour, IInteractable
     public void OnInteractExit(PlayerController player)
     {
         CancelRescue();
+        if (_isPlayerNearby) ShowPulse(); // 구출을 마치지 못하고 벗어났으면 근처에 있는 한 다시 안내
     }
 
     // 구출 도중 대상이 비활성화(구출 성공/완전 사망)되면 코루틴이 멈추므로 게이지도 함께 내린다
     private void OnDisable()
     {
         CancelRescue();
+        HidePulse();
+        _isPlayerNearby = false;
     }
 
     private void CancelRescue()

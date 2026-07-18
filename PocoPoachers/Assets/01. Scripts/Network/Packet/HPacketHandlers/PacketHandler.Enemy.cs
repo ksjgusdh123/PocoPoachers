@@ -29,4 +29,46 @@ public static partial class PacketHandlers
         var packet = root.TypeAsH_EnemyDie();
         EnemyNetSync.OnNetDie(packet.EnemyId);
     }
+
+    public static void OnH_EnemySpeak(FlatPacket root)
+    {
+        var packet = root.TypeAsH_EnemySpeak();
+        EnemyNetSync.OnNetSpeak(packet.EnemyId, packet.Message, packet.Duration);
+    }
+
+    // 적 총알을 게스트에 스폰 — attacker를 발사한 적(Enemy 레이어)으로 지정해야 같은 레이어(적끼리) 스킵이 동작한다.
+    // (플레이어 사격 경로와 달리 PlayerId가 아닌 EnemyId로 발사자를 해석)
+    public static void OnH_EnemyShoot(FlatPacket root)
+    {
+        var packet = root.TypeAsH_EnemyShoot();
+        Vec3? originRaw = packet.Origin;
+        Vec3? dirRaw    = packet.Direction;
+
+        Vector3 origin  = originRaw.HasValue ? new Vector3(originRaw.Value.X, originRaw.Value.Y, originRaw.Value.Z) : Vector3.zero;
+        Vector3 baseDir = dirRaw.HasValue    ? new Vector3(dirRaw.Value.X,    dirRaw.Value.Y,    dirRaw.Value.Z)    : Vector3.forward;
+        if (baseDir == Vector3.zero) baseDir = Vector3.forward;
+
+        var pool   = BulletPool.Instance;
+        var prefab = pool?.NetworkBulletPrefab;
+        if (prefab == null) return;
+
+        GameObject attacker = null;
+        if (EnemyNetSync.TryGetGameObject(packet.EnemyId, out var enemyGo))
+            attacker = enemyGo;
+
+        int pelletCount = Mathf.Max(1, packet.DirectionsLength);
+        for (int i = 0; i < pelletCount; i++)
+        {
+            Vector3 dir = baseDir;
+            if (packet.DirectionsLength > 0)
+            {
+                Vec3? p = packet.Directions(i);
+                if (p.HasValue) dir = new Vector3(p.Value.X, p.Value.Y, p.Value.Z);
+                if (dir == Vector3.zero) dir = baseDir;
+            }
+
+            var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(dir));
+            bullet.Initialize(packet.BulletSpeed, packet.Damage, packet.MaxRange, dir, () => pool.Release(prefab, bullet), attacker);
+        }
+    }
 }

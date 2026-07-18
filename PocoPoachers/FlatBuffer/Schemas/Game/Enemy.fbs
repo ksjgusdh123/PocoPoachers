@@ -32,3 +32,21 @@ table H_EnemyDie
 {
     enemy_id: int;
 }
+
+table H_EnemySpeak
+{
+    enemy_id: int;
+    message:  string;
+    duration: float;
+}
+
+table H_EnemyShoot
+{
+    enemy_id:     int;
+    origin:       Vec3;
+    direction:    Vec3;
+    bullet_speed: float;
+    damage:       float;
+    max_range:    float;
+    directions:   [Vec3]; // 샷건 등 다발 발사의 펠릿별 방향. 비어 있으면 direction 단발
+}

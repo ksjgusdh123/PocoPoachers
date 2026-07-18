@@ -262,6 +262,10 @@ public class ObjectManager : Singleton<ObjectManager>
             if (!go.TryGetComponent<StatBase>(out _))
                 go.AddComponent<RemotePlayerStat>();
 
+            // 원격 플레이어 발소리 방출 — 프리팹에 미리 붙여 값을 조정했다면 그것을 쓰고, 없으면 기본값으로 부착
+            if (!go.TryGetComponent<RemoteFootstepEmitter>(out _))
+                go.AddComponent<RemoteFootstepEmitter>();
+
             // Equip 패킷이 스폰보다 먼저 도착했을 수 있다 (씬 전환 시 장비 복원이 첫 Move보다 빠름)
             RemoteEquipState.ApplyTo(component, id);
         }

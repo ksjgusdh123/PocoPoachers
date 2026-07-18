@@ -8,6 +8,12 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float _acceleration = 10f;
     [SerializeField] private float _itemUseSpeedMultiplier = 0.4f; // 아이템 사용 중 이동속도 배율
 
+    [Header("발소리 (AI 인식용)")]
+    [SerializeField] private float _walkSoundRange = 4f;      // 걷기 시 발소리 인식 반경
+    [SerializeField] private float _sprintSoundRange = 10f;   // 달리기 시 발소리 인식 반경
+    [SerializeField] private float _walkStepInterval = 0.5f;  // 걷기 발소리 방출 간격(초)
+    [SerializeField] private float _sprintStepInterval = 0.3f; // 달리기 발소리 방출 간격(초)
+
     [Header("중력")]
     [SerializeField] private float _gravity = -20f;
     [SerializeField] private float _groundedGravity = -2f; // 접지 유지용 하강 속도
@@ -36,6 +42,7 @@ public class PlayerMovement : MonoBehaviour
     private float _localVelX;
     private float _localVelZ;
     private bool _isSprinting;
+    private float _nextStepTime;
 
     public static Transform LocalTransform { get; private set; }
 
@@ -127,9 +134,30 @@ public class PlayerMovement : MonoBehaviour
       Vector3 motion = _currentVelocity;
       motion.y = _verticalVelocity;
       _characterController.Move(motion * Time.deltaTime);
+
+      EmitFootstep(moveDir != Vector3.zero, isSprinting);
     }
 
-    private bool CanSprint() => _playerStat == null || _playerStat.CurrentStamina > 0f;
+    // 이동 중일 때 걷기/달리기에 따라 다른 반경으로 발소리(AI 인식용 소음)를 방출한다
+    // 실제 오디오 재생과는 무관 — SoundEvent는 AI 청각 판정 전용
+    private void EmitFootstep(bool isMoving, bool isSprinting)
+    {
+        // 게스트는 방출하지 않는다 — AI는 호스트에서만 돌고, 게스트 발소리는 호스트가 원격으로 방출한다
+        if (RoomManager.Instance != null && !RoomManager.IsHost)
+            return;
+
+        if (!isMoving || !_characterController.isGrounded)
+            return;
+
+        if (Time.time < _nextStepTime)
+            return;
+
+        _nextStepTime = Time.time + (isSprinting ? _sprintStepInterval : _walkStepInterval);
+        float range = isSprinting ? _sprintSoundRange : _walkSoundRange;
+        SoundEvent.Emit(transform.position, range, gameObject);
+    }
+
+    private bool CanSprint() => _playerStat != null && !_playerStat.IsDead && _playerStat.CurrentStamina > 0f;
 
     private void SyncMove()
     {

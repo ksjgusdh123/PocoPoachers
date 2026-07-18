@@ -217,22 +217,22 @@ public class CheatConsole : Singleton<CheatConsole>
     }
 
     // 무적 토글 — 인자 없으면 현재 상태 반전, on/off로 명시 지정
-    // 데미지는 호스트에서만 적용되므로(Bullet._applyDamage) 호스트 자기 플레이어에만 유효
+    // 데미지는 호스트에서만 적용되므로(Bullet._applyDamage) 호스트가 들고 있는 모든 플레이어 스탯에 걸어야
+    // 접속한 전체 플레이어(로컬 + 원격)가 무적이 된다. 원격 플레이어는 호스트의 RemotePlayerStat이 데미지를 막는다.
     void CmdGod(string[] args)
     {
         if (!RequireHost())
             return;
 
-        var player = FindLocalPlayer();
-        var stat = player != null ? player.GetComponent<PlayerStat>() : null;
-        if (stat == null)
+        var stats = CollectPlayerStats();
+        if (stats.Count == 0)
         {
             Log("플레이어를 찾을 수 없습니다.");
             Log("게임 씬에서 플레이어가 스폰된 뒤 다시 시도하세요.");
             return;
         }
 
-        bool enable = !stat.IsGodMode;
+        bool enable = !stats[0].IsGodMode; // 인자 없으면 첫 플레이어 상태 기준으로 반전
         if (args.Length >= 1)
         {
             if (string.Equals(args[0], "on", StringComparison.OrdinalIgnoreCase))
@@ -246,8 +246,19 @@ public class CheatConsole : Singleton<CheatConsole>
             }
         }
 
-        stat.SetGodMode(enable);
-        Log($"[CHEAT] 무적 {(enable ? "ON" : "OFF")}");
+        foreach (var stat in stats)
+            stat.SetGodMode(enable);
+
+        Log($"[CHEAT] 전체 플레이어 무적 {(enable ? "ON" : "OFF")} ({stats.Count}명)");
+    }
+
+    // 호스트 기준 접속한 모든 플레이어의 스탯 — 로컬(PlayerStat) + 원격(RemotePlayerStat)
+    static List<StatBase> CollectPlayerStats()
+    {
+        var result = new List<StatBase>();
+        result.AddRange(FindObjectsByType<PlayerStat>(FindObjectsInactive.Exclude, FindObjectsSortMode.None));
+        result.AddRange(FindObjectsByType<RemotePlayerStat>(FindObjectsInactive.Exclude, FindObjectsSortMode.None));
+        return result;
     }
 
     void CmdClear()
