@@ -99,6 +99,37 @@ public class SaveManager : Singleton<SaveManager>
         ItemSpawner.SeedItemUid(WorldEquipmentManager.MaxUid());
     }
 
+    // 활력치(체력/스태미나/배터리) 저장 — 맵 전환 시 유지되도록 로컬에 영속화. 인벤/장비와 동일하게 게스트도 로컬 저장.
+    public void SaveVitals(float hp, float stamina, float battery)
+    {
+        var data = GetOrLoad(_activeSlot);
+        data.hasVitals = true;
+        data.hp = hp;
+        data.stamina = stamina;
+        data.battery = battery;
+        data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    // 사망 등으로 저장값을 버리고 다음 스폰을 최대치로 시작시키고 싶을 때 호출
+    public void ClearVitals()
+    {
+        var data = GetOrLoad(_activeSlot);
+        if (!data.hasVitals) return;
+        data.hasVitals = false;
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    // 저장된 활력치가 있으면 true. 없으면(새 게임 등) false — 호출측이 최대치로 폴백한다.
+    public bool TryLoadVitals(out float hp, out float stamina, out float battery)
+    {
+        var data = GetOrLoad(_activeSlot);
+        hp = data.hp;
+        stamina = data.stamina;
+        battery = data.battery;
+        return data.hasVitals;
+    }
+
     public bool HasSave(int slotIndex) =>
         !string.IsNullOrEmpty(GetOrLoad(slotIndex).lastSavedAt);
 
@@ -186,6 +217,12 @@ public class SaveManager : Singleton<SaveManager>
         public List<InventorySaveEntry> inventories = new List<InventorySaveEntry>();
         public List<EquipSlotEntry> equipSlots = new List<EquipSlotEntry>();
         public WorldEquipmentManager.SaveData equipment = new WorldEquipmentManager.SaveData();
+
+        // 활력치 — hasVitals가 false면 미저장(새 게임)이라 최대치로 시작
+        public bool hasVitals;
+        public float hp;
+        public float stamina;
+        public float battery;
 
         public void SetInventory(string key, List<SlotSaveEntry> entries)
         {

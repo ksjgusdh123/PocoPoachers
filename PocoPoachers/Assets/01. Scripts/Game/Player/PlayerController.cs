@@ -115,6 +115,10 @@ public class PlayerController : MonoBehaviour
         SlotInteractionManager.GetInstance().OnGunPartRequest += OnGunPartRequested;
 
         InitEquipSlots();
+
+        // 저장된 활력치(체력/스태미나/배터리) 복원 — 없으면(새 게임) PlayerStat.Awake의 최대치 유지
+        if (_playerStat != null && _saveManager.TryLoadVitals(out float savedHp, out float savedStamina, out float savedBattery))
+            _playerStat.RestoreVitals(savedHp, savedStamina, savedBattery);
     }
 
     private void BindPlayerInventoryUI()
@@ -256,6 +260,16 @@ public class PlayerController : MonoBehaviour
 
         // 씬 전환/종료 시점에 uid별 장비 상태(내구도/장탄수/파츠)를 함께 영속화 (호스트 전용은 내부에서 처리)
         _saveManager?.SaveEquipmentState();
+
+        // 활력치(체력/스태미나/배터리)를 영속화해 맵 전환 시 유지한다.
+        // 단 사망 상태면 저장값을 버려(ClearVitals) 다음 스폰이 0 체력으로 시작하지 않게 한다.
+        if (_playerStat != null)
+        {
+            if (_playerStat.IsDead || _playerStat.CurrentHp <= 0f)
+                _saveManager?.ClearVitals();
+            else
+                _saveManager?.SaveVitals(_playerStat.CurrentHp, _playerStat.CurrentStamina, _playerStat.CurrentBattery);
+        }
 
         if (_inputHander != null)
         {
