@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject GunEnhancementTableUI;
     [SerializeField] private GameObject RepairWorkbenchUI;
     [SerializeField] private GameObject CraftingTableUI;
+    [SerializeField] private GameObject GeneratorUI;
     [SerializeField] private GunPartUI _gunPartPanel;   // 비활성으로 둬도 됨 (이벤트로 열림)
     [SerializeField] private CameraController _cameraController;
     [SerializeField] private float _useItemDuration = 1.5f;
@@ -31,6 +32,7 @@ public class PlayerController : MonoBehaviour
     public GameObject GetGunEnhancementTableUI => GunEnhancementTableUI;
     public GameObject GetRepairWorkbenchUI => RepairWorkbenchUI;
     public GameObject GetCraftingTableUI => CraftingTableUI;
+    public GameObject GetGeneratorUI => GeneratorUI;
     public InventoryUI PlayerBagInventoryUI => _playerBagInventoryUI;
 
     private Inventory _inventory;
@@ -63,6 +65,7 @@ public class PlayerController : MonoBehaviour
         if (GunEnhancementTableUI == null) GunEnhancementTableUI = ui.GetPanel(UIType.GunEnhancementTable);
         if (RepairWorkbenchUI == null) RepairWorkbenchUI = ui.GetPanel(UIType.RepairWorkbench);
         if (CraftingTableUI == null) CraftingTableUI = ui.GetPanel(UIType.CraftingTable);
+        if (GeneratorUI == null) GeneratorUI = ui.GetPanel(UIType.Generator);
 
         if (_gunPartPanel == null) _gunPartPanel = FindAnyObjectByType<GunPartUI>(FindObjectsInactive.Include);
 
