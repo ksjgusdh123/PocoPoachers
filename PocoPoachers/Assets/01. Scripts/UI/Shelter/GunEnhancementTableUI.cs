@@ -7,6 +7,8 @@ using UnityEngine.UI;
 
 public class GunEnhancementTableUI : MonoBehaviour
 {
+    private const float PowerCost = 50f;
+
     [SerializeField] private GunEnhancementDropHandler _slot;
     [SerializeField] private TextMeshProUGUI _levelText;
     [SerializeField] private TextMeshProUGUI _statDescText;
@@ -65,8 +67,10 @@ public class GunEnhancementTableUI : MonoBehaviour
 
         var cost = GetCostData(level);
         RefreshIngredients(cost);
-        _enhanceButton.interactable = CanAfford(cost);
+        _enhanceButton.interactable = CanAfford(cost) && HasEnoughPower(PowerCost);
     }
+
+    private static bool HasEnoughPower(float cost) => Generator.Instance != null && Generator.Instance.CurrentPower >= cost;
 
     private void OnClickEnhance()
     {
@@ -79,6 +83,12 @@ public class GunEnhancementTableUI : MonoBehaviour
 
         var cost = GetCostData(level);
         if (!CanAfford(cost)) return;
+
+        if (Generator.Instance == null || !Generator.Instance.TryConsume(PowerCost))
+        {
+            UIManager.GetInstance().ShowNotice("발전기", "발전기 전력 부족");
+            return;
+        }
 
         ConsumeCost(cost);
         WorldEquipmentManager.SetEnhancementLevel(uid, level + 1, itemId);

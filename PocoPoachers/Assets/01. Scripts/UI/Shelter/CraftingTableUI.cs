@@ -7,6 +7,8 @@ using UnityEngine.UI;
 // 우측: 선택된 아이템 상세 (아이콘, 이름, 설명, 재료, 제작 버튼)
 public class CraftingTableUI : MonoBehaviour
 {
+    private const float PowerCost = 20f;
+
     [Header("Category")]
     [SerializeField] private Button[] _categoryButtons;
     [SerializeField] private ItemType[] _categoryTypes;
@@ -139,7 +141,7 @@ public class CraftingTableUI : MonoBehaviour
             _ingredientCountTexts[i].color = owned >= required ? Color.green : Color.red;
         }
 
-        _craftButton.interactable = CanCraft(_selectedRecipe);
+        _craftButton.interactable = CanCraft(_selectedRecipe) && HasEnoughPower(PowerCost);
     }
 
     private bool CanCraft(CraftingRecipeData recipe)
@@ -153,6 +155,8 @@ public class CraftingTableUI : MonoBehaviour
         return true;
     }
 
+    private static bool HasEnoughPower(float cost) => Generator.Instance != null && Generator.Instance.CurrentPower >= cost;
+
     private void OnClickCraft()
     {
         if (_selectedRecipe == null || !CanCraft(_selectedRecipe)) return;
@@ -160,6 +164,12 @@ public class CraftingTableUI : MonoBehaviour
         var resultItem = ItemTable.Instance.Get(_selectedRecipe.ResultItemId);
         if (resultItem == null) return;
         if (_inventory.CanAddItem(resultItem, _selectedRecipe.ResultCount) < 0) return;
+
+        if (Generator.Instance == null || !Generator.Instance.TryConsume(PowerCost))
+        {
+            UIManager.GetInstance().ShowNotice("발전기", "발전기 전력 부족");
+            return;
+        }
 
         foreach (var (itemId, required) in GetIngredients(_selectedRecipe))
             _inventory.RemoveItem(ItemTable.Instance.Get(itemId), required);

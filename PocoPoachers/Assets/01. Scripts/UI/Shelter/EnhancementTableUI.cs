@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class EnhancementTableUI : MonoBehaviour
 {
+    private const float PowerCost = 50f;
+
     [Header("Stat Select Buttons")]
     [SerializeField] private Button _hpButton;
     [SerializeField] private Button _batteryButton;
@@ -84,8 +86,16 @@ public class EnhancementTableUI : MonoBehaviour
         EnhanceRequested?.Invoke(_selectedStatType);
 
         if (_playerEnhancement == null) return;
+
+        if (Generator.Instance == null || Generator.Instance.CurrentPower < PowerCost)
+        {
+            UIManager.GetInstance().ShowNotice("발전기", "발전기 전력 부족");
+            return;
+        }
+
         if (!_playerEnhancement.TryEnhance(_selectedStatType)) return;
 
+        Generator.Instance.TryConsume(PowerCost);
         Refresh();
     }
 
