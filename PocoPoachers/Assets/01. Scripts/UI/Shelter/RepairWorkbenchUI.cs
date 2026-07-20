@@ -11,6 +11,7 @@ public class RepairWorkbenchUI : MonoBehaviour
     [SerializeField] private RepairSlotDropHandler _repairSlot;
     [SerializeField] private TextMeshProUGUI _durabilityText;
     [SerializeField] private TextMeshProUGUI _costText;
+    [SerializeField] private TextMeshProUGUI _powerCostText;
     [SerializeField] private Button _repairButton;
 
     private Inventory _player;
@@ -21,6 +22,20 @@ public class RepairWorkbenchUI : MonoBehaviour
         _repairSlot.OnItemCleared += OnItemCleared;
         _repairButton.onClick.AddListener(OnClickRepair);
     }
+
+    private void OnEnable()
+    {
+        if (Generator.Instance != null)
+            Generator.Instance.OnPowerChanged += HandlePowerChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (Generator.Instance != null)
+            Generator.Instance.OnPowerChanged -= HandlePowerChanged;
+    }
+
+    private void HandlePowerChanged(float current, float max) => RefreshPowerCostUI();
 
     public void Open(PlayerController player)
     {
@@ -43,12 +58,11 @@ public class RepairWorkbenchUI : MonoBehaviour
     {
         bool hasItem = _repairSlot.IsSetted;
 
-        _repairButton.interactable = hasItem;
-
         if (!hasItem)
         {
             _durabilityText.text = "- / -";
             _costText.text = "-";
+            RefreshPowerCostUI();
             return;
         }
 
@@ -57,6 +71,21 @@ public class RepairWorkbenchUI : MonoBehaviour
         else
             _durabilityText.text = "? / ?";
         _costText.text = BuildCostText(_repairSlot.DroppedItemData);
+
+        RefreshPowerCostUI();
+    }
+
+    private void RefreshPowerCostUI()
+    {
+        bool canAffordPower = Generator.Instance != null && Generator.Instance.CurrentPower >= PowerCost;
+
+        if (_powerCostText != null)
+        {
+            _powerCostText.text = $"전력 {PowerCost:0}";
+            _powerCostText.color = canAffordPower ? Color.green : Color.red;
+        }
+
+        _repairButton.interactable = _repairSlot.IsSetted && canAffordPower;
     }
 
     private string BuildCostText(ItemData itemData)

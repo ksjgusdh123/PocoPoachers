@@ -18,6 +18,7 @@ public class EnhancementTableUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _levelText;
     [SerializeField] private TextMeshProUGUI _valueText;
     [SerializeField] private TextMeshProUGUI _costText;
+    [SerializeField] private TextMeshProUGUI _powerCostText;
     [SerializeField] private Button _enhanceButton;
 
     private PlayerController _player;
@@ -35,6 +36,20 @@ public class EnhancementTableUI : MonoBehaviour
         _speedButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MoveSpeed));
         _enhanceButton?.onClick.AddListener(OnClickEnhance);
     }
+
+    private void OnEnable()
+    {
+        if (Generator.Instance != null)
+            Generator.Instance.OnPowerChanged += HandlePowerChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (Generator.Instance != null)
+            Generator.Instance.OnPowerChanged -= HandlePowerChanged;
+    }
+
+    private void HandlePowerChanged(float current, float max) => RefreshPowerCostUI();
 
     public void Open(PlayerController player)
     {
@@ -73,6 +88,22 @@ public class EnhancementTableUI : MonoBehaviour
 
         if (_costText != null)
             _costText.text = GetCostText(_selectedStatType);
+
+        RefreshPowerCostUI();
+    }
+
+    private void RefreshPowerCostUI()
+    {
+        bool canAffordPower = Generator.Instance != null && Generator.Instance.CurrentPower >= PowerCost;
+
+        if (_powerCostText != null)
+        {
+            _powerCostText.text = $"전력 {PowerCost:0}";
+            _powerCostText.color = canAffordPower ? Color.green : Color.red;
+        }
+
+        if (_enhanceButton != null)
+            _enhanceButton.interactable = canAffordPower;
     }
 
     private void SelectStat(EnhancementStatType statType)
@@ -158,5 +189,11 @@ public class EnhancementTableUI : MonoBehaviour
 
         if (_costText != null)
             _costText.text = "Missing PlayerEnhancement";
+
+        if (_powerCostText != null)
+            _powerCostText.text = "-";
+
+        if (_enhanceButton != null)
+            _enhanceButton.interactable = false;
     }
 }

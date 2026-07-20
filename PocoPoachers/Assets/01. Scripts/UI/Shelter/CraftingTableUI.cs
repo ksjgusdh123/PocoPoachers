@@ -32,6 +32,7 @@ public class CraftingTableUI : MonoBehaviour
 
     [Header("Craft")]
     [SerializeField] private Button _craftButton;
+    [SerializeField] private TextMeshProUGUI _powerCostText;
 
     private PlayerController _player;
     private Inventory _inventory;
@@ -49,6 +50,20 @@ public class CraftingTableUI : MonoBehaviour
         _craftButton?.onClick.AddListener(OnClickCraft);
         _detailPanel?.SetActive(false);
     }
+
+    private void OnEnable()
+    {
+        if (Generator.Instance != null)
+            Generator.Instance.OnPowerChanged += HandlePowerChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (Generator.Instance != null)
+            Generator.Instance.OnPowerChanged -= HandlePowerChanged;
+    }
+
+    private void HandlePowerChanged(float current, float max) => RefreshPowerCostUI();
 
     public void Open(PlayerController player)
     {
@@ -141,7 +156,21 @@ public class CraftingTableUI : MonoBehaviour
             _ingredientCountTexts[i].color = owned >= required ? Color.green : Color.red;
         }
 
-        _craftButton.interactable = CanCraft(_selectedRecipe) && HasEnoughPower(PowerCost);
+        RefreshPowerCostUI();
+    }
+
+    private void RefreshPowerCostUI()
+    {
+        bool canAffordPower = HasEnoughPower(PowerCost);
+
+        if (_powerCostText != null)
+        {
+            _powerCostText.text = $"전력 {PowerCost:0}";
+            _powerCostText.color = canAffordPower ? Color.green : Color.red;
+        }
+
+        if (_selectedRecipe != null)
+            _craftButton.interactable = CanCraft(_selectedRecipe) && canAffordPower;
     }
 
     private bool CanCraft(CraftingRecipeData recipe)

@@ -12,6 +12,7 @@ public class GunEnhancementTableUI : MonoBehaviour
     [SerializeField] private GunEnhancementDropHandler _slot;
     [SerializeField] private TextMeshProUGUI _levelText;
     [SerializeField] private TextMeshProUGUI _statDescText;
+    [SerializeField] private TextMeshProUGUI _powerCostText;
     [SerializeField] private Button _enhanceButton;
 
     [Header("재료 슬롯 (최대 2개)")]
@@ -31,6 +32,20 @@ public class GunEnhancementTableUI : MonoBehaviour
         _enhanceButton.onClick.AddListener(OnClickEnhance);
     }
 
+    private void OnEnable()
+    {
+        if (Generator.Instance != null)
+            Generator.Instance.OnPowerChanged += HandlePowerChanged;
+    }
+
+    private void OnDisable()
+    {
+        if (Generator.Instance != null)
+            Generator.Instance.OnPowerChanged -= HandlePowerChanged;
+    }
+
+    private void HandlePowerChanged(float current, float max) => RefreshPowerCostUI();
+
     public void Open(PlayerController player)
     {
         _inventory = player.PlayerInventory;
@@ -48,6 +63,7 @@ public class GunEnhancementTableUI : MonoBehaviour
             _levelText.text = "-";
             if (_statDescText != null) _statDescText.text = string.Empty;
             HideAllIngredients();
+            RefreshPowerCostUI();
             return;
         }
 
@@ -59,6 +75,7 @@ public class GunEnhancementTableUI : MonoBehaviour
         {
             if (_statDescText != null) _statDescText.text = string.Empty;
             HideAllIngredients();
+            RefreshPowerCostUI();
             return;
         }
 
@@ -67,10 +84,39 @@ public class GunEnhancementTableUI : MonoBehaviour
 
         var cost = GetCostData(level);
         RefreshIngredients(cost);
-        _enhanceButton.interactable = CanAfford(cost) && HasEnoughPower(PowerCost);
+        RefreshPowerCostUI();
     }
 
     private static bool HasEnoughPower(float cost) => Generator.Instance != null && Generator.Instance.CurrentPower >= cost;
+
+    // 발전기 전력 잔량에 따라 전력 소비량 표시(초록/빨강)와 강화 버튼 활성화 여부를 갱신
+    private void RefreshPowerCostUI()
+    {
+        bool canAffordPower = HasEnoughPower(PowerCost);
+
+        if (_powerCostText != null)
+        {
+            _powerCostText.text = $"전력 {PowerCost:0}";
+            _powerCostText.color = canAffordPower ? Color.green : Color.red;
+        }
+
+        if (!_slot.IsSetted)
+        {
+            _enhanceButton.interactable = false;
+            return;
+        }
+
+        int itemId = _slot.DroppedItemData != null ? _slot.DroppedItemData.Id : 0;
+        int level = WorldEquipmentManager.GetEnhancementLevel(_slot.DroppedUid, itemId);
+        if (level >= MaxLevel)
+        {
+            _enhanceButton.interactable = false;
+            return;
+        }
+
+        var cost = GetCostData(level);
+        _enhanceButton.interactable = CanAfford(cost) && canAffordPower;
+    }
 
     private void OnClickEnhance()
     {
