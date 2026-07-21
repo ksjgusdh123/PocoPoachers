@@ -4,54 +4,60 @@ using DG.Tweening;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 레이드 종료 결과 오버레이. 현재는 임무 실패(팀 전멸)만 표시한다.
-// 이벤트로 활성화되어 페이드 인 → "셸터로 돌아가기" 버튼 클릭 → 페이드 아웃 후 OnFinished를 발생시킨다.
-// 실제 씬 복귀는 OnFinished 구독측(호스트)이 수행한다.
+// 레이드 종료 결과 오버레이 — 탈출 성공 / 임무 실패(팀 전멸) 공용.
+// ShowSuccess/ShowFailure로 활성화되어 페이드 인 → 확정 버튼 클릭 → 페이드 아웃 후,
+// 호출측이 넘긴 onConfirm(씬 전환 등)을 실행한다. 무엇을 할지는 UI가 정하지 않고 호출측이 정한다.
 //
-// 코옵: 복귀 버튼은 호스트에게만 보인다. 게스트는 호스트가 복귀시키면 H_LoadScene으로 따라오므로
-// 버튼을 눌러 직접 전환할 필요가 없다. (게스트 화면은 씬 전환 시 로딩 화면으로 덮인다)
+// 버튼 노출 규칙 (버튼은 성공/실패 공용 1개):
+//  - 성공(탈출): 상호작용한 로컬 플레이어가 확정 → 버튼을 모두에게 노출.
+//  - 실패(전멸): 복귀는 호스트만 트리거 → 버튼을 호스트에게만 노출(게스트는 호스트를 따라 이동).
 //
-// 이 오브젝트는 평소 비활성으로 둬도 된다 — ShowFailure에서 스스로 켠다.
+// 이 오브젝트는 평소 비활성으로 둬도 된다 — Show 시 스스로 켠다.
 [RequireComponent(typeof(CanvasGroup))]
 public class RaidResultUI : MonoBehaviour
 {
-    [SerializeField] private CanvasGroup _group;      // 페이드 대상 (미지정 시 이 오브젝트의 CanvasGroup)
-    [SerializeField] private Button _returnButton;    // "셸터로 돌아가기" — 호스트에게만 표시
-    [SerializeField] private float _fadeDuration = 0.4f; // 페이드 인/아웃 시간
+    [SerializeField] private CanvasGroup _group;         // 페이드 대상 (미지정 시 이 오브젝트의 CanvasGroup)
+    [SerializeField] private GameObject _successPanel;   // 탈출 성공 패널
+    [SerializeField] private GameObject _failurePanel;   // 임무 실패 패널
+    [SerializeField] private Button _confirmButton;      // 확정 버튼 (성공/실패 공용)
+    [SerializeField] private float _fadeDuration = 0.4f;
 
-    // 결과 연출이 끝나(버튼 클릭 → 페이드 아웃) 씬 복귀 준비가 됐을 때
-    public event Action OnFinished;
-
+    private Action _onConfirm;
     private bool _isShowing;
 
     private void Awake()
     {
         if (_group == null) _group = GetComponent<CanvasGroup>();
-        if (_returnButton != null)
-            _returnButton.onClick.AddListener(OnReturnClicked);
+        if (_confirmButton != null) _confirmButton.onClick.AddListener(OnConfirmClicked);
 
-        // 씬에 활성으로 놓였다면 숨긴다. 단 이미 표시 중이면(켜지는 순간 실행되는 Awake) 건드리지 않는다.
         if (!_isShowing)
             gameObject.SetActive(false);
     }
 
     private void OnDestroy()
     {
-        if (_returnButton != null)
-            _returnButton.onClick.RemoveListener(OnReturnClicked);
+        if (_confirmButton != null) _confirmButton.onClick.RemoveListener(OnConfirmClicked);
     }
 
-    // 임무 실패 표시 시작 — 비활성이었어도 스스로 켠 뒤 페이드 인한다
-    public void ShowFailure()
+    // 탈출 성공 표시. onConfirm: 확정 시 실행할 동작(예: 셸터로 이동)
+    public void ShowSuccess(Action onConfirm) => Show(success: true, onConfirm, buttonVisible: true);
+
+    // 임무 실패 표시. onConfirm: 확정 시 실행할 동작. 버튼은 호스트에게만.
+    public void ShowFailure(Action onConfirm) => Show(success: false, onConfirm, buttonVisible: RoomManager.IsHost);
+
+    private void Show(bool success, Action onConfirm, bool buttonVisible)
     {
+        _onConfirm = onConfirm;
         _isShowing = true;
         gameObject.SetActive(true);
 
-        // 복귀 버튼은 호스트만 — 게스트는 호스트를 따라 이동한다
-        if (_returnButton != null)
+        if (_successPanel != null) _successPanel.SetActive(success);
+        if (_failurePanel != null) _failurePanel.SetActive(!success);
+
+        if (_confirmButton != null)
         {
-            _returnButton.gameObject.SetActive(RoomManager.IsHost);
-            _returnButton.interactable = true;
+            _confirmButton.gameObject.SetActive(buttonVisible);
+            _confirmButton.interactable = true;
         }
 
         _group.interactable = true;
@@ -60,20 +66,20 @@ public class RaidResultUI : MonoBehaviour
         _group.DOFade(1f, _fadeDuration); // 페이드 인
     }
 
-    private void OnReturnClicked()
+    private void OnConfirmClicked()
     {
         if (!_isShowing) return;
         _isShowing = false;
-        if (_returnButton != null) _returnButton.interactable = false;
-        StartCoroutine(FadeOutThenFinish());
+        if (_confirmButton != null) _confirmButton.interactable = false;
+        StartCoroutine(FadeOutThenConfirm());
     }
 
-    private IEnumerator FadeOutThenFinish()
+    private IEnumerator FadeOutThenConfirm()
     {
         _group.DOFade(0f, _fadeDuration); // 페이드 아웃
         yield return new WaitForSeconds(_fadeDuration);
 
-        OnFinished?.Invoke();
         gameObject.SetActive(false);
+        _onConfirm?.Invoke();
     }
 }
