@@ -6,6 +6,7 @@ public class ManualCrank : MonoBehaviour, IInteractable
     public void OnInteract(PlayerController player)
     {
         Generator.Instance?.CrankCharge();
+        CrankGaugeUI.Instance?.Show();
         player.EndInteraction(this);
     }
 
