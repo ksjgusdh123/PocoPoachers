@@ -17,16 +17,20 @@ public struct H_EnemyDie : IFlatbufferObject
   public H_EnemyDie __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public int EnemyId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int KillerPlayerId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<H_EnemyDie> CreateH_EnemyDie(FlatBufferBuilder builder,
-      int enemy_id = 0) {
-    builder.StartTable(1);
+      int enemy_id = 0,
+      int killer_player_id = 0) {
+    builder.StartTable(2);
+    H_EnemyDie.AddKillerPlayerId(builder, killer_player_id);
     H_EnemyDie.AddEnemyId(builder, enemy_id);
     return H_EnemyDie.EndH_EnemyDie(builder);
   }
 
-  public static void StartH_EnemyDie(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void StartH_EnemyDie(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddEnemyId(FlatBufferBuilder builder, int enemyId) { builder.AddInt(0, enemyId, 0); }
+  public static void AddKillerPlayerId(FlatBufferBuilder builder, int killerPlayerId) { builder.AddInt(1, killerPlayerId, 0); }
   public static Offset<H_EnemyDie> EndH_EnemyDie(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_EnemyDie>(o);
@@ -38,21 +42,25 @@ public struct H_EnemyDie : IFlatbufferObject
   }
   public void UnPackTo(H_EnemyDieT _o) {
     _o.EnemyId = this.EnemyId;
+    _o.KillerPlayerId = this.KillerPlayerId;
   }
   public static Offset<H_EnemyDie> Pack(FlatBufferBuilder builder, H_EnemyDieT _o) {
     if (_o == null) return default(Offset<H_EnemyDie>);
     return CreateH_EnemyDie(
       builder,
-      _o.EnemyId);
+      _o.EnemyId,
+      _o.KillerPlayerId);
   }
 }
 
 public class H_EnemyDieT
 {
   public int EnemyId { get; set; }
+  public int KillerPlayerId { get; set; }
 
   public H_EnemyDieT() {
     this.EnemyId = 0;
+    this.KillerPlayerId = 0;
   }
 }
 
@@ -63,6 +71,7 @@ static public class H_EnemyDieVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*EnemyId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*KillerPlayerId*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

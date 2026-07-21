@@ -495,6 +495,12 @@ public class RoomManager : Singleton<RoomManager>
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
+        // 레이드 진입 시 통계 시작 / 그 외 씬이면 멈춤 (각 클라이언트가 자기 진행시간을 집계)
+        if (scene.name.StartsWith("SC_Raid_"))
+            RaidStats.Instance.StartRaid();
+        else
+            RaidStats.Instance.StopRaid();
+
         if (!IsGameplayScene(scene.name))
         {
             _worldObjectsReady = false;

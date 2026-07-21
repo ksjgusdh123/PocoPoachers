@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using DG.Tweening;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -20,6 +21,8 @@ public class RaidResultUI : MonoBehaviour
     [SerializeField] private GameObject _successPanel;   // 탈출 성공 패널
     [SerializeField] private GameObject _failurePanel;   // 임무 실패 패널
     [SerializeField] private Button _confirmButton;      // 확정 버튼 (성공/실패 공용)
+    [SerializeField] private TextMeshProUGUI _timeText;  // 진행 시간 표시
+    [SerializeField] private TextMeshProUGUI _killText;  // 처치 수 표시
     [SerializeField] private float _fadeDuration = 0.4f;
 
     private Action _onConfirm;
@@ -60,6 +63,12 @@ public class RaidResultUI : MonoBehaviour
             _confirmButton.interactable = true;
         }
 
+        // 진행 통계 표시 — 집계를 멈추고 최종 값을 반영
+        var stats = RaidStats.Instance;
+        stats.StopRaid();
+        if (_timeText != null) _timeText.text = FormatTime(stats.ElapsedTime);
+        if (_killText != null) _killText.text = stats.Kills.ToString();
+
         _group.interactable = true;
         _group.blocksRaycasts = true;
         _group.alpha = 0f;
@@ -81,5 +90,12 @@ public class RaidResultUI : MonoBehaviour
 
         gameObject.SetActive(false);
         _onConfirm?.Invoke();
+    }
+
+    // 초 → "mm:ss"
+    private static string FormatTime(float seconds)
+    {
+        int total = Mathf.FloorToInt(seconds);
+        return $"{total / 60:00}:{total % 60:00}";
     }
 }

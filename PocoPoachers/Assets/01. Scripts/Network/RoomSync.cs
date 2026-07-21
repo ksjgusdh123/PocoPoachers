@@ -298,12 +298,13 @@ public static class RoomSync
         }, H_EnemyHit.Pack, PacketType.H_EnemyHit);
     }
 
-    public static void EnemyDie(int enemyId)
+    public static void EnemyDie(int enemyId, int killerPlayerId = 0)
     {
         if (!RoomManager.HasGuests) return;
         PacketBuilder.BroadcastToGuests(new H_EnemyDieT
         {
             EnemyId = enemyId,
+            KillerPlayerId = killerPlayerId,
         }, H_EnemyDie.Pack, PacketType.H_EnemyDie);
     }
 

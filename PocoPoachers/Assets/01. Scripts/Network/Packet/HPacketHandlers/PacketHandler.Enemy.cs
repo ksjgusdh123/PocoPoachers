@@ -27,6 +27,12 @@ public static partial class PacketHandlers
     public static void OnH_EnemyDie(FlatPacket root)
     {
         var packet = root.TypeAsH_EnemyDie();
+
+        // 이 적을 내가 처치했으면 킬 집계 (호스트가 killerId를 실어 보냄)
+        int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
+        if (packet.KillerPlayerId != 0 && packet.KillerPlayerId == myId)
+            RaidStats.Instance.AddKill();
+
         EnemyNetSync.OnNetDie(packet.EnemyId);
     }
 

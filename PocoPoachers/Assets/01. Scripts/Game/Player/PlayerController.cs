@@ -349,6 +349,10 @@ public class PlayerController : MonoBehaviour
         if (_finalized) return;
         _finalized = true;
         _isFainting = false;
+
+        // 게임 시간은 "자신이 완전히 사망한 시점"까지만 기록한다 (이후 관전 시간은 미포함)
+        RaidStats.Instance.StopRaid();
+
         _faintingUI?.StopFainting();
 
         GetComponent<PlayerItemBoxDropper>()?.SpawnLootBox();
