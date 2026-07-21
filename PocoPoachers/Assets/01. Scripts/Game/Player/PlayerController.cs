@@ -40,6 +40,7 @@ public class PlayerController : MonoBehaviour
     private InventoryUI _playerBagInventoryUI;
     private PlayerStat _playerStat;
     private FaintingUI _faintingUI;
+    private RaidResultUI _raidResultUI;
     private bool _isFainting;   // 기절(다운) 상태 진행 중 여부
     private bool _finalized;    // 완전 사망 처리(상자 스폰)를 이미 실행했는지 — 중복 방지
     private bool _raidWipeHandled; // 레이드 전멸 → 셸터 복귀를 이미 처리했는지 (호스트 전용, 씬당 1회)
@@ -96,6 +97,10 @@ public class PlayerController : MonoBehaviour
         _faintingUI = FindAnyObjectByType<FaintingUI>(FindObjectsInactive.Include);
         if (_faintingUI != null)
             _faintingUI.OnFaintingComplete += FinalizeDeath;
+
+        _raidResultUI = FindAnyObjectByType<RaidResultUI>(FindObjectsInactive.Include);
+        if (_raidResultUI != null)
+            _raidResultUI.OnFinished += OnRaidResultFinished;
 
         // 코옵 게스트는 개인 세이브를 쓰지 않는다 — 방 세계(호스트 소유)에서 상태를 받는다.
         // 호스트/솔로만 자기 개인 세이브에서 복원한다(호스트 세이브 = 방 세계).
@@ -298,20 +303,31 @@ public class PlayerController : MonoBehaviour
     private bool HasOtherLivingPlayer()
         => ObjectManager.Instance != null && ObjectManager.Instance.HasLivingPlayerExcept(_playerStat);
 
-    // 레이드 씬에서 살아있는 플레이어가 하나도 없으면(팀 전멸) 호스트가 팀을 셸터로 복귀시킨다.
-    // 게스트는 호스트가 보내는 H_LoadScene을 받아 따라오므로 별도 처리가 필요 없다.
+    // 레이드 씬에서 살아있는 플레이어가 하나도 없으면(팀 전멸) 실패 UI를 띄운다.
+    // UI 표시는 모든 클라이언트가 로컬로(스탯 동기화로 각자 전멸을 판정), 실제 셸터 복귀는
+    // UI 연출이 끝난 뒤 OnRaidResultFinished에서 호스트만 수행한다(게스트는 H_LoadScene으로 따라옴).
     private void CheckRaidWipe()
     {
-        if (_raidWipeHandled || !RoomManager.IsHost) return;
+        if (_raidWipeHandled) return;
         if (!SceneManager.GetActiveScene().name.StartsWith("SC_Raid_")) return;
 
         // 로컬+원격 통틀어 살아있는 플레이어가 하나라도 있으면 아직 전멸이 아니다
         if (ObjectManager.Instance == null || ObjectManager.Instance.HasLivingPlayerExcept(null)) return;
 
         _raidWipeHandled = true;
-        Debug.Log("[PlayerController] 레이드 팀 전멸 — 셸터로 복귀");
+        Debug.Log("[PlayerController] 레이드 팀 전멸 — 임무 실패 UI 표시");
 
-        SceneTransition.Go(SceneName.Shelter, SpawnId.FromRaid);
+        if (_raidResultUI != null)
+            _raidResultUI.ShowFailure();
+        else if (RoomManager.IsHost)
+            SceneTransition.Go(SceneName.Shelter, SpawnId.FromRaid); // UI 없으면(안전장치) 바로 복귀
+    }
+
+    // 실패 UI 연출이 끝나면 호스트만 팀을 셸터로 복귀시킨다 (게스트는 H_LoadScene으로 따라옴)
+    private void OnRaidResultFinished()
+    {
+        if (RoomManager.IsHost)
+            SceneTransition.Go(SceneName.Shelter, SpawnId.FromRaid);
     }
 
     private void HandleDeath()
@@ -364,6 +380,9 @@ public class PlayerController : MonoBehaviour
 
         if (_faintingUI != null)
             _faintingUI.OnFaintingComplete -= FinalizeDeath;
+
+        if (_raidResultUI != null)
+            _raidResultUI.OnFinished -= OnRaidResultFinished;
 
         // 코옵 게스트는 개인 세이브에 저장하지 않는다(방 세계는 호스트가 저장). 호스트/솔로만 자기 개인 세이브에 저장.
         if (RoomManager.IsHost)
