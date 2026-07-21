@@ -44,6 +44,8 @@ public class PlayerController : MonoBehaviour
     private bool _isFainting;   // 기절(다운) 상태 진행 중 여부
     private bool _finalized;    // 완전 사망 처리(상자 스폰)를 이미 실행했는지 — 중복 방지
     private bool _raidWipeHandled; // 레이드 전멸 → 셸터 복귀를 이미 처리했는지 (호스트 전용, 씬당 1회)
+    private bool _spectating;      // 완전 사망 후 동료 시점 관전 중인지
+    private StatBase _spectateStat; // 현재 관전 중인 동료의 스탯 (사망/이탈 시 다른 동료로 전환)
     private SaveManager _saveManager;
     private PlayerInputHandler _inputHander;
     private QuickSlotDropHandler[] _quickSlots;
@@ -295,6 +297,7 @@ public class PlayerController : MonoBehaviour
             FinalizeDeath();
         }
 
+        UpdateSpectate();
         CheckRaidWipe();
     }
 
@@ -352,6 +355,8 @@ public class PlayerController : MonoBehaviour
 
         foreach (var equip in GetComponents<EquipableController>())
             equip.UnequipAll();
+
+        BeginSpectate();
     }
 
     // 구조되어 부활하면 기절 게이지를 중단하고 상태를 초기화한다 (다음 사망을 다시 처리할 수 있도록)
@@ -360,6 +365,43 @@ public class PlayerController : MonoBehaviour
         _isFainting = false;
         _finalized = false;
         _faintingUI?.StopFainting();
+
+        // 관전 중이었다면 해제하고 카메라를 자신에게 되돌린다
+        _spectating = false;
+        _spectateStat = null;
+        _cameraController?.SetSpectate(false);
+        _cameraController?.SetTarget(transform);
+    }
+
+    // 완전 사망 후 살아있는 동료 시점으로 카메라를 옮긴다 (관전 시작)
+    private void BeginSpectate()
+    {
+        _spectating = true;
+        // 관전 모드: 이펙트 잠금 + 스무딩 강화로 원격 보간 떨림을 완화한다
+        _cameraController?.SetSpectate(true);
+        RetargetSpectate();
+    }
+
+    // 관전 중 현재 대상이 죽거나 사라졌으면 다른 살아있는 동료로 카메라를 옮긴다
+    private void UpdateSpectate()
+    {
+        if (!_spectating) return;
+
+        if (_spectateStat != null && !_spectateStat.IsDead && _spectateStat.CurrentHp > 0f)
+            return; // 현재 대상이 아직 살아있으면 유지
+
+        RetargetSpectate();
+    }
+
+    private void RetargetSpectate()
+    {
+        if (_cameraController == null) return;
+
+        var living = ObjectManager.Instance?.GetLivingPlayer(_playerStat);
+        if (living == null) return; // 살아있는 동료 없음 → 팀 전멸(CheckRaidWipe가 셸터로 복귀)
+
+        _spectateStat = living.GetComponent<StatBase>();
+        _cameraController.SetTarget(living.transform);
     }
 
     private void OnDestroy()
