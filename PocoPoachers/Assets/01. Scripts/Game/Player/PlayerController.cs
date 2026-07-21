@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
@@ -39,6 +40,9 @@ public class PlayerController : MonoBehaviour
     private InventoryUI _playerBagInventoryUI;
     private PlayerStat _playerStat;
     private FaintingUI _faintingUI;
+    private bool _isFainting;   // 기절(다운) 상태 진행 중 여부
+    private bool _finalized;    // 완전 사망 처리(상자 스폰)를 이미 실행했는지 — 중복 방지
+    private bool _raidWipeHandled; // 레이드 전멸 → 셸터 복귀를 이미 처리했는지 (호스트 전용, 씬당 1회)
     private SaveManager _saveManager;
     private PlayerInputHandler _inputHander;
     private QuickSlotDropHandler[] _quickSlots;
@@ -279,13 +283,46 @@ public class PlayerController : MonoBehaviour
     // 사망 시 인벤토리+장착 아이템을 상자에 담아 스폰(PlayerItemBoxDropper) + 장착 무기/방어구/가방 모두 해제
     // 상자 스폰이 먼저 실행돼야 장착 중이던 아이템을 조회할 수 있음
     // 단, 살아있는 다른 플레이어가 있으면 구출 가능하므로 상자를 만들지 않고 인벤토리/장비를 그대로 둔다
+    private void Update()
+    {
+        // 기절 중 다른 살아있는 플레이어가 모두 사망하면 구조가 불가능하므로 즉시 완전 사망시킨다
+        if (_isFainting && !HasOtherLivingPlayer())
+        {
+            Debug.Log("[PlayerController] 기절 중 다른 플레이어 전원 사망 — 구조 불가로 즉시 완전 사망");
+            FinalizeDeath();
+        }
+
+        CheckRaidWipe();
+    }
+
+    private bool HasOtherLivingPlayer()
+        => ObjectManager.Instance != null && ObjectManager.Instance.HasLivingPlayerExcept(_playerStat);
+
+    // 레이드 씬에서 살아있는 플레이어가 하나도 없으면(팀 전멸) 호스트가 팀을 셸터로 복귀시킨다.
+    // 게스트는 호스트가 보내는 H_LoadScene을 받아 따라오므로 별도 처리가 필요 없다.
+    private void CheckRaidWipe()
+    {
+        if (_raidWipeHandled || !RoomManager.IsHost) return;
+        if (!SceneManager.GetActiveScene().name.StartsWith("SC_Raid_")) return;
+
+        // 로컬+원격 통틀어 살아있는 플레이어가 하나라도 있으면 아직 전멸이 아니다
+        if (ObjectManager.Instance == null || ObjectManager.Instance.HasLivingPlayerExcept(null)) return;
+
+        _raidWipeHandled = true;
+        Debug.Log("[PlayerController] 레이드 팀 전멸 — 셸터로 복귀");
+
+        SceneTransition.Go(SceneName.Shelter, SpawnId.FromRaid);
+    }
+
     private void HandleDeath()
     {
         // HP/배터리 0 → 기절 상태로 진입. FaintingUI 게이지(30초) 시작.
         // 시간 초과 또는 F 홀드로 게이지가 소진되면 OnFaintingComplete → FinalizeDeath로 완전 사망한다.
         // 그 사이 살아있는 동료가 구조하면 OnRevive → StopFainting으로 취소된다.
+        // 기절 중 동료가 전원 사망하면 Update에서 감지해 즉시 FinalizeDeath로 이어진다.
         if (_faintingUI != null)
         {
+            _isFainting = true;
             _faintingUI.StartFainting();
             return;
         }
@@ -295,18 +332,25 @@ public class PlayerController : MonoBehaviour
     }
 
     // 완전 사망 확정 — 인벤/장착 아이템을 상자에 담아 스폰(호스트)하고 장착을 모두 해제한다.
-    // 상자 스폰이 먼저 실행돼야 장착 중이던 아이템을 조회할 수 있음
+    // 상자 스폰이 먼저 실행돼야 장착 중이던 아이템을 조회할 수 있음. 중복 실행은 _finalized로 막는다.
     private void FinalizeDeath()
     {
+        if (_finalized) return;
+        _finalized = true;
+        _isFainting = false;
+        _faintingUI?.StopFainting();
+
         GetComponent<PlayerItemBoxDropper>()?.SpawnLootBox();
 
         foreach (var equip in GetComponents<EquipableController>())
             equip.UnequipAll();
     }
 
-    // 구조되어 부활하면 기절 게이지를 중단한다
+    // 구조되어 부활하면 기절 게이지를 중단하고 상태를 초기화한다 (다음 사망을 다시 처리할 수 있도록)
     private void HandleRevive()
     {
+        _isFainting = false;
+        _finalized = false;
         _faintingUI?.StopFainting();
     }
 

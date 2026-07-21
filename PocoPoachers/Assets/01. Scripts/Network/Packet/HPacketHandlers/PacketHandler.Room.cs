@@ -70,20 +70,10 @@ public static partial class PacketHandlers
 
         MainThreadDispatcher.Enqueue(() =>
         {
-            SceneLoader loader = SceneLoader.Instance;
-            if (loader == null) return;
-
             if (packet.SpawnId != 0)
                 GameManager.Instance?.SetSpawnId((SpawnId)packet.SpawnId);
 
-            if (sceneName == SceneName.Shelter)
-                loader.LoadShelterScene();
-            else if (sceneName.StartsWith("SC_Raid_") &&
-                     int.TryParse(sceneName.Substring("SC_Raid_".Length), out int planetId))
-            {
-                GameManager.Instance?.SetSelectedPlanet(planetId);
-                loader.LoadPlanetScene(planetId);
-            }
+            SceneTransition.LoadLocal(sceneName);
         });
     }
 }
