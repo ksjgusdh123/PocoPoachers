@@ -165,8 +165,9 @@ public class Inventory : MonoBehaviour
             }
             else if (_slots[i].ItemData.id == itemData.id)
             {
-                if (firstAvailableIndex < 0) firstAvailableIndex = i;
-                remaining -= itemData.MaxStack - _slots[i].Amount;
+                int space = itemData.MaxStack - _slots[i].Amount;
+                if (space > 0 && firstAvailableIndex < 0) firstAvailableIndex = i;
+                remaining -= space;
             }
 
             if (remaining <= 0) return firstAvailableIndex;
