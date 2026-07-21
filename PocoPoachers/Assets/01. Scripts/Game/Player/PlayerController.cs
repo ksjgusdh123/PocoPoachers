@@ -38,6 +38,7 @@ public class PlayerController : MonoBehaviour
     private Inventory _inventory;
     private InventoryUI _playerBagInventoryUI;
     private PlayerStat _playerStat;
+    private FaintingUI _faintingUI;
     private SaveManager _saveManager;
     private PlayerInputHandler _inputHander;
     private QuickSlotDropHandler[] _quickSlots;
@@ -83,7 +84,14 @@ public class PlayerController : MonoBehaviour
 
         _playerStat = GetComponent<PlayerStat>();
         if (_playerStat != null)
+        {
             _playerStat.OnDie += HandleDeath;
+            _playerStat.OnRevive += HandleRevive;
+        }
+
+        _faintingUI = FindAnyObjectByType<FaintingUI>(FindObjectsInactive.Include);
+        if (_faintingUI != null)
+            _faintingUI.OnFaintingComplete += FinalizeDeath;
 
         // 코옵 게스트는 개인 세이브를 쓰지 않는다 — 방 세계(호스트 소유)에서 상태를 받는다.
         // 호스트/솔로만 자기 개인 세이브에서 복원한다(호스트 세이브 = 방 세계).
@@ -273,22 +281,45 @@ public class PlayerController : MonoBehaviour
     // 단, 살아있는 다른 플레이어가 있으면 구출 가능하므로 상자를 만들지 않고 인벤토리/장비를 그대로 둔다
     private void HandleDeath()
     {
-        if (ObjectManager.Instance != null && ObjectManager.Instance.HasLivingPlayerExcept(_playerStat))
+        // HP/배터리 0 → 기절 상태로 진입. FaintingUI 게이지(30초) 시작.
+        // 시간 초과 또는 F 홀드로 게이지가 소진되면 OnFaintingComplete → FinalizeDeath로 완전 사망한다.
+        // 그 사이 살아있는 동료가 구조하면 OnRevive → StopFainting으로 취소된다.
+        if (_faintingUI != null)
         {
-            Debug.Log("구출!");
+            _faintingUI.StartFainting();
             return;
         }
 
+        // 게이지 UI가 없으면(안전장치) 기절 없이 즉시 최종 사망 처리로 폴백
+        FinalizeDeath();
+    }
+
+    // 완전 사망 확정 — 인벤/장착 아이템을 상자에 담아 스폰(호스트)하고 장착을 모두 해제한다.
+    // 상자 스폰이 먼저 실행돼야 장착 중이던 아이템을 조회할 수 있음
+    private void FinalizeDeath()
+    {
         GetComponent<PlayerItemBoxDropper>()?.SpawnLootBox();
 
         foreach (var equip in GetComponents<EquipableController>())
             equip.UnequipAll();
     }
 
+    // 구조되어 부활하면 기절 게이지를 중단한다
+    private void HandleRevive()
+    {
+        _faintingUI?.StopFainting();
+    }
+
     private void OnDestroy()
     {
         if (_playerStat != null)
+        {
             _playerStat.OnDie -= HandleDeath;
+            _playerStat.OnRevive -= HandleRevive;
+        }
+
+        if (_faintingUI != null)
+            _faintingUI.OnFaintingComplete -= FinalizeDeath;
 
         // 코옵 게스트는 개인 세이브에 저장하지 않는다(방 세계는 호스트가 저장). 호스트/솔로만 자기 개인 세이브에 저장.
         if (RoomManager.IsHost)

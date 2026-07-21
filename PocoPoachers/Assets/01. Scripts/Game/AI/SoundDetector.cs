@@ -32,7 +32,6 @@ public class SoundDetector : MonoBehaviour
         float sqrToSound = (transform.position - soundPosition).sqrMagnitude;
         if (sqrToSound > soundRange * soundRange)
         {
-            Debug.Log($"[Sound] {name}: '{source.name}' 소리 범위 밖 (dist={Mathf.Sqrt(sqrToSound):F1} > range={soundRange})");
             return; // 소음 반경 밖이면 무시
         }
 
