@@ -37,6 +37,8 @@ public class ObjectManager : Singleton<ObjectManager>
 
     public IReadOnlyList<H_ItemSpawnT> SpawnedBoxes => _spawnedBoxes;
     public void RegisterSpawnedBox(H_ItemSpawnT data) => _spawnedBoxes.Add(data);
+    // 비워져 디스폰된 박스를 late-join 게스트 스냅샷 대상에서 제거
+    public void UnregisterSpawnedBox(int uid) => _spawnedBoxes.RemoveAll(b => b.Uid == uid);
 
     readonly object _moveLock = new object();
     readonly List<PendingMove> _pending = new();

@@ -7,7 +7,9 @@ using UnityEngine;
 // 반드시 UnequipAll보다 먼저 호출해야 장착 중인 아이템을 조회할 수 있음 (PlayerController.HandleDeath 참고)
 public class PlayerItemBoxDropper : MonoBehaviour
 {
-    private const int BoxTypeId = 301;
+    // LootBox 전용 TypeId — 필드/적 박스(301)·창고(302)와 구분해 호스트·게스트 양쪽이 "비면 사라지는 박스"로 식별한다.
+    // ItemTable에 이 id로 LootBox 프리팹이 매핑돼 있어야 한다.
+    private const int BoxTypeId = 303;
     private static int _nextUid = 9000; // 필드 스포너(1000+), 적 드롭(5000+)과 겹치지 않는 범위
 
     private Inventory _inventory;
