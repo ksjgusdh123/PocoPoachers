@@ -57,6 +57,7 @@ GameObject:
   - component: {fileID: 1530058014355757222}
   - component: {fileID: 5952940342102689204}
   - component: {fileID: 3972652447877463515}
+  - component: {fileID: 1609504111525019161}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -378,11 +379,28 @@ MonoBehaviour:
   _maxBatteryLevel: 0
   _maxStaminaLevel: 0
   _moveSpeedLevel: 0
-  _maxLevel: 10
-  _maxHpIncreasePerLevel: 10
-  _maxBatteryIncreasePerLevel: 10
-  _maxStaminaIncreasePerLevel: 10
+  _maxLevel: 4
+  _maxHpIncreasePerLevel: 4
+  _maxBatteryIncreasePerLevel: 4
+  _maxStaminaIncreasePerLevel: 4
   _moveSpeedIncreasePerLevel: 0.25
+--- !u!114 &1609504111525019161
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1500275326456394333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 11f33d49750b7b34c83a8a4ad569f394, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkinnedOutline
+  _color: {r: 0, g: 7.596242, b: 15.999998, a: 1}
+  _width: 0.1
+  _waveSpeed: 3
+  _waveFrequency: 5
+  _waveAmplitude: 0.05
 --- !u!1001 &1880491612229794325
 PrefabInstance:
   m_ObjectHideFlags: 0
