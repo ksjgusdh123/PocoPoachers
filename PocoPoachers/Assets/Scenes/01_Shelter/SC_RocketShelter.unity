@@ -1032,22 +1032,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Player
       objectReference: {fileID: 0}
-    - target: {fileID: 3972652447877463515, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
-      propertyPath: _maxLevel
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 3972652447877463515, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
-      propertyPath: _maxHpIncreasePerLevel
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 3972652447877463515, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
-      propertyPath: _maxBatteryIncreasePerLevel
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 3972652447877463515, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
-      propertyPath: _maxStaminaIncreasePerLevel
-      value: 4
-      objectReference: {fileID: 0}
     - target: {fileID: 6953031429018234555, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
       propertyPath: m_LocalPosition.x
       value: 8.013954
@@ -1131,10 +1115,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 1500275326456394333, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 652699355}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
 --- !u!1 &107927373
 GameObject:
@@ -6632,28 +6613,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 469248, guid: 3845c7234a0ed4843ba4e38e2404f54d, type: 3}
   m_PrefabInstance: {fileID: 652061056}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &652699337 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 1500275326456394333, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
-  m_PrefabInstance: {fileID: 104357293}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &652699355
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 652699337}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 11f33d49750b7b34c83a8a4ad569f394, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::SkinnedOutline
-  _color: {r: 0, g: 7.596242, b: 15.999998, a: 1}
-  _width: 0.1
-  _waveSpeed: 3
-  _waveFrequency: 5
-  _waveAmplitude: 0.05
 --- !u!1001 &655048778
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18356,6 +18315,14 @@ PrefabInstance:
     - target: {fileID: 412728, guid: 5f8552cfeac0c29428f4d3d1362bacae, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 19930300, guid: 5f8552cfeac0c29428f4d3d1362bacae, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 19953252, guid: 5f8552cfeac0c29428f4d3d1362bacae, type: 3}
+      propertyPath: m_Materials.Array.size
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
