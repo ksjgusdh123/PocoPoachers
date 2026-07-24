@@ -138,6 +138,8 @@ public class GunEnhancementTableUI : MonoBehaviour
 
         ConsumeCost(cost);
         WorldEquipmentManager.SetEnhancementLevel(uid, level + 1, itemId);
+        // 게스트면 강화 즉시 호스트에 반영 — 장착 여부와 무관하게 강화 상태가 유지된다
+        RoomSync.EnhanceItem(uid, itemId, level + 1);
         Refresh();
     }
 

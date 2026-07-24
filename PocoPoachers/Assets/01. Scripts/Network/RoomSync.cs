@@ -155,6 +155,20 @@ public static class RoomSync
         }
     }
 
+    // 아이템 강화 즉시 동기화 — 게스트가 강화한 순간 호스트에 알려 uid 기준으로 레벨을 저장하게 한다.
+    // 호스트/솔로는 이미 로컬 WEM에 반영돼 있으므로 보내지 않는다.
+    public static void EnhanceItem(int itemUid, int itemId, int level)
+    {
+        if (RoomManager.IsHost) return;
+
+        PacketBuilder.SendReliableToHost(new G_EnhanceItemT
+        {
+            ItemUid = itemUid,
+            ItemId  = itemId,
+            Level   = level,
+        }, G_EnhanceItem.Pack, PacketType.G_EnhanceItem);
+    }
+
     public static void ItemGain(bool isPlayerGained, int boxUid, int itemTypeId, int itemUid, int amount, int addedSlotIndex, int removedSlotIndex)
     {
         if (IsSolo) return;
