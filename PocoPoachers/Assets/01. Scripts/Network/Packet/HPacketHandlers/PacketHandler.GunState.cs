@@ -10,9 +10,22 @@ public static partial class PacketHandlers
         // 파츠를 먼저 — EquipPart가 RecalculateStat을 호출해 최대 장탄수를 갱신하므로 탄약 복원보다 앞서야 한다
         for (int i = 0; i < packet.PartIdsLength; i++)
         {
-            var part = GunPartTable.Instance.Get(packet.PartIds(i));
+            int partId = packet.PartIds(i);
+            var part = GunPartTable.Instance.Get(partId);
             if (part == null) continue;
-            gun.EquipPart(WorldEquipmentManager.BuildEnhancedGunPart(part, packet.PartLevels(i)));
+
+            int level = packet.PartLevels(i);
+            int partUid = i < packet.PartUidsLength ? packet.PartUids(i) : 0;
+
+            // 게스트 로컬 WEM에도 파츠 매핑/강화 레벨을 저장해, 이후 파츠 패널의 uid 복원(GetPartUid)과
+            // 해제 시 강화 유지가 게스트에서도 동작하게 한다 (씬 리로드로 복원된 총도 포함)
+            if (partUid != 0)
+            {
+                WorldEquipmentManager.SetPart(packet.GunUid, part.SlotType, partId, partUid);
+                WorldEquipmentManager.SetEnhancementLevel(partUid, level, partId);
+            }
+
+            gun.EquipPart(WorldEquipmentManager.BuildEnhancedGunPart(part, level));
         }
 
         // 저장된 탄약이 없으면 장착 시점의 풀장전 기본값을 그대로 둔다

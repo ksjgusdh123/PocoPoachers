@@ -22,6 +22,7 @@ public struct G_GunPartEquip : IFlatbufferObject
   public int CurrentAmmo { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int MaxMagazine { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int PartUid { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int PartLevel { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<G_GunPartEquip> CreateG_GunPartEquip(FlatBufferBuilder builder,
       int gun_uid = 0,
@@ -29,8 +30,10 @@ public struct G_GunPartEquip : IFlatbufferObject
       int part_id = 0,
       int current_ammo = 0,
       int max_magazine = 0,
-      int part_uid = 0) {
-    builder.StartTable(6);
+      int part_uid = 0,
+      int part_level = 0) {
+    builder.StartTable(7);
+    G_GunPartEquip.AddPartLevel(builder, part_level);
     G_GunPartEquip.AddPartUid(builder, part_uid);
     G_GunPartEquip.AddMaxMagazine(builder, max_magazine);
     G_GunPartEquip.AddCurrentAmmo(builder, current_ammo);
@@ -40,13 +43,14 @@ public struct G_GunPartEquip : IFlatbufferObject
     return G_GunPartEquip.EndG_GunPartEquip(builder);
   }
 
-  public static void StartG_GunPartEquip(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartG_GunPartEquip(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddGunUid(FlatBufferBuilder builder, int gunUid) { builder.AddInt(0, gunUid, 0); }
   public static void AddSlotType(FlatBufferBuilder builder, int slotType) { builder.AddInt(1, slotType, 0); }
   public static void AddPartId(FlatBufferBuilder builder, int partId) { builder.AddInt(2, partId, 0); }
   public static void AddCurrentAmmo(FlatBufferBuilder builder, int currentAmmo) { builder.AddInt(3, currentAmmo, 0); }
   public static void AddMaxMagazine(FlatBufferBuilder builder, int maxMagazine) { builder.AddInt(4, maxMagazine, 0); }
   public static void AddPartUid(FlatBufferBuilder builder, int partUid) { builder.AddInt(5, partUid, 0); }
+  public static void AddPartLevel(FlatBufferBuilder builder, int partLevel) { builder.AddInt(6, partLevel, 0); }
   public static Offset<G_GunPartEquip> EndG_GunPartEquip(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<G_GunPartEquip>(o);
@@ -63,6 +67,7 @@ public struct G_GunPartEquip : IFlatbufferObject
     _o.CurrentAmmo = this.CurrentAmmo;
     _o.MaxMagazine = this.MaxMagazine;
     _o.PartUid = this.PartUid;
+    _o.PartLevel = this.PartLevel;
   }
   public static Offset<G_GunPartEquip> Pack(FlatBufferBuilder builder, G_GunPartEquipT _o) {
     if (_o == null) return default(Offset<G_GunPartEquip>);
@@ -73,7 +78,8 @@ public struct G_GunPartEquip : IFlatbufferObject
       _o.PartId,
       _o.CurrentAmmo,
       _o.MaxMagazine,
-      _o.PartUid);
+      _o.PartUid,
+      _o.PartLevel);
   }
 }
 
@@ -85,6 +91,7 @@ public class G_GunPartEquipT
   public int CurrentAmmo { get; set; }
   public int MaxMagazine { get; set; }
   public int PartUid { get; set; }
+  public int PartLevel { get; set; }
 
   public G_GunPartEquipT() {
     this.GunUid = 0;
@@ -93,6 +100,7 @@ public class G_GunPartEquipT
     this.CurrentAmmo = 0;
     this.MaxMagazine = 0;
     this.PartUid = 0;
+    this.PartLevel = 0;
   }
 }
 
@@ -108,6 +116,7 @@ static public class G_GunPartEquipVerify
       && verifier.VerifyField(tablePos, 10 /*CurrentAmmo*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 12 /*MaxMagazine*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 14 /*PartUid*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 16 /*PartLevel*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

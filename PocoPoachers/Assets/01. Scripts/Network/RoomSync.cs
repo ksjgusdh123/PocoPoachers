@@ -128,7 +128,9 @@ public static class RoomSync
 
     // 총 파츠 장착/해제 — partId=0이면 해제. 호스트는 직접 저장하고, 게스트는 호스트에게 요청한다
     // currentAmmo/maxMagazine은 파츠 변경 직후 호출자(자기 자신) 총의 실제 값을 그대로 전달한다
-    public static void GunPartEquip(int gunUid, SlotType slotType, int partId, int partUid, int currentAmmo, int maxMagazine)
+    // partLevel: 파츠의 강화 레벨. 게스트가 로컬에서 계산해 호스트에 알려준다(호스트는 partUid 기준으로 저장).
+    // 호스트가 직접 호출할 땐 이미 자기 WEM에 레벨이 있으므로 무시된다.
+    public static void GunPartEquip(int gunUid, SlotType slotType, int partId, int partUid, int partLevel, int currentAmmo, int maxMagazine)
     {
         if (gunUid == 0) return;
 
@@ -146,6 +148,7 @@ public static class RoomSync
                 SlotType    = (int)slotType,
                 PartId      = partId,
                 PartUid     = partUid,
+                PartLevel   = partLevel,
                 CurrentAmmo = currentAmmo,
                 MaxMagazine = maxMagazine,
             }, G_GunPartEquip.Pack, PacketType.G_GunPartEquip);

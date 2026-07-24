@@ -19,9 +19,20 @@ public class GunPartDropHandler : ItemHolderDropHandler
 
         GunPartData equipped = gun != null ? gun.GetPart(_slotType) : null;
         if (equipped != null)
+        {
             SetDisplay(ItemTable.Instance.Get(equipped.id), 1);
+            // 저장된 파츠 uid를 복원해 해제 시 강화/상태를 잃지 않도록 한다.
+            // 호스트: WEM에서 실제 uid를 얻는다. 게스트: WEM에 파츠가 없어 0이 나오므로,
+            // 이번 세션에 직접 장착해 이미 들고 있는 _droppedPartUid를 그대로 유지한다.
+            int restoredUid = gun.Uid != 0 ? WorldEquipmentManager.GetPartUid(gun.Uid, _slotType) : 0;
+            if (restoredUid != 0)
+                _droppedPartUid = restoredUid;
+        }
         else
+        {
             ClearDisplay();
+            _droppedPartUid = 0;
+        }
     }
 
     protected override bool OnItemDropped(ItemData data, int amount, int uid)
@@ -44,6 +55,9 @@ public class GunPartDropHandler : ItemHolderDropHandler
         return true;
     }
 
+    // 해제 시 base가 인벤토리로 반납할 때 이 uid로 되돌려야 파츠의 강화/상태가 유지된다
+    protected override int GetUnequipUid() => _droppedPartUid;
+
     public override void Unequip()
     {
         base.Unequip();              // 인벤토리로 반납
@@ -58,6 +72,8 @@ public class GunPartDropHandler : ItemHolderDropHandler
     // 호스트 본인이면 즉시 로컬 저장, 게스트면 호스트에게 패킷으로 요청한다
     private void SyncPart(int partId, int partUid)
     {
-        RoomSync.GunPartEquip(_gun.Uid, _slotType, partId, partUid, _gun.CurrentAmmo, _gun.Stat.MaxMagazine);
+        // 게스트가 로컬에서 강화한 레벨을 호스트에 함께 알린다 (호스트가 partUid 기준으로 저장·복원)
+        int partLevel = partId != 0 ? WorldEquipmentManager.GetEnhancementLevel(partUid, partId) : 0;
+        RoomSync.GunPartEquip(_gun.Uid, _slotType, partId, partUid, partLevel, _gun.CurrentAmmo, _gun.Stat.MaxMagazine);
     }
 }
