@@ -99,6 +99,37 @@ public class SaveManager : Singleton<SaveManager>
         ItemSpawner.SeedItemUid(WorldEquipmentManager.MaxUid());
     }
 
+    // 활력치(체력/스태미나/배터리) 저장 — 맵 전환 시 유지되도록 로컬에 영속화. 인벤/장비와 동일하게 게스트도 로컬 저장.
+    public void SaveVitals(float hp, float stamina, float battery)
+    {
+        var data = GetOrLoad(_activeSlot);
+        data.hasVitals = true;
+        data.hp = hp;
+        data.stamina = stamina;
+        data.battery = battery;
+        data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    // 사망 등으로 저장값을 버리고 다음 스폰을 최대치로 시작시키고 싶을 때 호출
+    public void ClearVitals()
+    {
+        var data = GetOrLoad(_activeSlot);
+        if (!data.hasVitals) return;
+        data.hasVitals = false;
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    // 저장된 활력치가 있으면 true. 없으면(새 게임 등) false — 호출측이 최대치로 폴백한다.
+    public bool TryLoadVitals(out float hp, out float stamina, out float battery)
+    {
+        var data = GetOrLoad(_activeSlot);
+        hp = data.hp;
+        stamina = data.stamina;
+        battery = data.battery;
+        return data.hasVitals;
+    }
+
     public bool HasSave(int slotIndex) =>
         !string.IsNullOrEmpty(GetOrLoad(slotIndex).lastSavedAt);
 
@@ -145,12 +176,23 @@ public class SaveManager : Singleton<SaveManager>
     }
 
     [Serializable]
-    private class SlotSaveEntry
+    public class SlotSaveEntry
     {
         public int slotIndex;
         public int itemId;
         public int amount;
         public int uid; // 스택 불가 아이템(무기/방어구)의 개체 식별자. 0이면 미배정(소모품 등)
+    }
+
+    // 방 세계(호스트 소유)에 보관하는 게스트별 상태 — playerId로 구분.
+    // 코옵 게스트는 개인 세이브 대신 이걸로 복원된다. (uid 충돌 없음: 게스트는 빈손 시작해 호스트 월드에서만 물건을 얻음)
+    [Serializable]
+    public class GuestRoomState
+    {
+        public int playerId;
+        public List<SlotSaveEntry> inventory = new List<SlotSaveEntry>();
+        public List<EquipSlotEntry> equipSlots = new List<EquipSlotEntry>();
+        public WorldEquipmentManager.SaveData equipment = new WorldEquipmentManager.SaveData();
     }
 
     [Serializable]
@@ -178,6 +220,22 @@ public class SaveManager : Singleton<SaveManager>
 
     public int LoadShelterLevel() => GetOrLoad(_activeSlot).shelterLevel;
 
+    // 호스트 전용 — 방 세계에 게스트 상태를 playerId 기준으로 갱신 저장한다.
+    public void SaveGuestRoomState(GuestRoomState state)
+    {
+        if (!RoomManager.IsHost || state == null) return;
+        var data = GetOrLoad(_activeSlot);
+        int idx = data.guestStates.FindIndex(g => g.playerId == state.playerId);
+        if (idx >= 0) data.guestStates[idx] = state;
+        else data.guestStates.Add(state);
+        data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    // 접속한 게스트의 저장된 방 상태 (없으면 null → 빈손 시작)
+    public GuestRoomState LoadGuestRoomState(int playerId)
+        => GetOrLoad(_activeSlot).guestStates.Find(g => g.playerId == playerId);
+
     [Serializable]
     private class GameSaveData
     {
@@ -186,6 +244,15 @@ public class SaveManager : Singleton<SaveManager>
         public List<InventorySaveEntry> inventories = new List<InventorySaveEntry>();
         public List<EquipSlotEntry> equipSlots = new List<EquipSlotEntry>();
         public WorldEquipmentManager.SaveData equipment = new WorldEquipmentManager.SaveData();
+
+        // 방 세계에 참여한 게스트들의 상태 (호스트 세이브 = 방 세계이므로 여기 함께 보관)
+        public List<GuestRoomState> guestStates = new List<GuestRoomState>();
+
+        // 활력치 — hasVitals가 false면 미저장(새 게임)이라 최대치로 시작
+        public bool hasVitals;
+        public float hp;
+        public float stamina;
+        public float battery;
 
         public void SetInventory(string key, List<SlotSaveEntry> entries)
         {

@@ -31,6 +31,7 @@ table H_EnemyHit
 table H_EnemyDie
 {
     enemy_id: int;
+    killer_player_id: int; // 이 적을 처치한 플레이어 id (킬 집계용, 없으면 0)
 }
 
 table H_EnemySpeak

@@ -41,8 +41,6 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.H_EnemyMove         , PacketHandlers.OnH_EnemyMove);
         _onRecv.Add(PacketType.H_EnemyHit          , PacketHandlers.OnH_EnemyHit);
         _onRecv.Add(PacketType.H_EnemyDie          , PacketHandlers.OnH_EnemyDie);
-        _onRecv.Add(PacketType.H_EnemySpeak        , PacketHandlers.OnH_EnemySpeak);
-        _onRecv.Add(PacketType.H_EnemyShoot        , PacketHandlers.OnH_EnemyShoot);
         _onRecv.Add(PacketType.G_Leave             , PacketHandlers.OnG_Leave);
         _onRecv.Add(PacketType.H_Leave             , PacketHandlers.OnH_Leave);
         _onRecv.Add(PacketType.G_ShelterLevel      , PacketHandlers.OnG_ShelterLevel);
@@ -50,5 +48,8 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.H_SandbagDestroy    , PacketHandlers.OnH_SandbagDestroy);
         _onRecv.Add(PacketType.H_LoadScene         , PacketHandlers.OnH_LoadScene);
         _onRecv.Add(PacketType.G_SceneReady        , PacketHandlers.OnG_SceneReady);
+        _onRecv.Add(PacketType.H_EnemySpeak        , PacketHandlers.OnH_EnemySpeak);
+        _onRecv.Add(PacketType.H_EnemyShoot        , PacketHandlers.OnH_EnemyShoot);
+        _onRecv.Add(PacketType.H_GuestRestore      , PacketHandlers.OnH_GuestRestore);
     }
 }

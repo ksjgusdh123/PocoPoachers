@@ -14,6 +14,14 @@ public static class GuestInventoryTracker
 
     public static void ClearGuest(int guestId) => _guestSlots.Remove(guestId);
 
+    // 방 세계 저장용 — 게스트 인벤 슬롯 전체 열거
+    public static IEnumerable<(int Slot, int ItemId, int Amount, int Uid)> GetSlots(int guestId)
+    {
+        if (_guestSlots.TryGetValue(guestId, out var slots))
+            foreach (var kv in slots)
+                yield return (kv.Key, kv.Value.ItemId, kv.Value.Amount, kv.Value.Uid);
+    }
+
     public static void SetSlot(int guestId, int slotIndex, int itemId, int amount, int uid = 0)
     {
         if (!_guestSlots.TryGetValue(guestId, out var slots))

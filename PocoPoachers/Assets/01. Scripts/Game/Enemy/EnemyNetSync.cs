@@ -113,15 +113,36 @@ public class EnemyNetSync : MonoBehaviour
         }
     }
 
+    GameObject _lastAttacker; // 마지막으로 이 적을 때린 대상 (킬 집계용)
+
     void OnHostDamaged(float damage, Vector3 pos, GameObject attacker)
     {
         if (_stat == null) return;
+        if (attacker != null) _lastAttacker = attacker;
         RoomSync.EnemyHit(EnemyId, _stat.CurrentHp, _stat.MaxHp, damage);
     }
 
     void OnHostDie()
     {
-        RoomSync.EnemyDie(EnemyId);
+        int killerId = ResolveKillerPlayerId(_lastAttacker);
+
+        // 호스트 자신이 처치했으면 로컬 집계 (게스트는 H_EnemyDie의 killerId로 각자 집계)
+        if (killerId != 0 && killerId == (NetworkManager.Instance?.MyPlayerId ?? -1))
+            RaidStats.Instance.AddKill();
+
+        RoomSync.EnemyDie(EnemyId, killerId);
+    }
+
+    // 적을 처치한 총알의 발사자 playerId를 구한다.
+    // 로컬(호스트) 플레이어는 PlayerController 보유 → 내 id, 게스트는 원격 WorldObject → 그 Id.
+    int ResolveKillerPlayerId(GameObject attacker)
+    {
+        if (attacker == null) return 0;
+        if (attacker.TryGetComponent<PlayerController>(out _))
+            return NetworkManager.Instance?.MyPlayerId ?? 0;
+        if (attacker.TryGetComponent<WorldObject>(out var wo) && wo.Kind == ObjectKind.Player)
+            return wo.Id;
+        return 0;
     }
 
     public static void SendAllToGuest(int guestPlayerId)

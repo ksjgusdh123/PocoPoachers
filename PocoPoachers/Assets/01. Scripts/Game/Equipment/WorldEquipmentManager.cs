@@ -261,6 +261,43 @@ public static class WorldEquipmentManager
         return data;
     }
 
+    // 지정한 uid들의 상태만 내보낸다 (방 세계에 게스트 소유 물건만 저장할 때 사용).
+    // 파츠 강화레벨은 partUid의 State에 들어있으므로, 참조된 partUid State도 함께 포함한다.
+    public static SaveData ExportSubset(ICollection<int> uids)
+    {
+        var data = new SaveData();
+        if (uids == null) return data;
+
+        var toExport = new HashSet<int>(uids);
+        foreach (var uid in uids)
+            if (_states.TryGetValue(uid, out var s))
+                foreach (var pu in s.PartUids.Values)
+                    if (pu != 0) toExport.Add(pu);
+
+        foreach (var uid in toExport)
+        {
+            if (!_states.TryGetValue(uid, out var s)) continue;
+            var entry = new StateEntry
+            {
+                uid = uid,
+                itemId = s.ItemId,
+                current = s.Current,
+                max = s.Max,
+                currentAmmo = s.CurrentAmmo,
+                maxAmmo = s.MaxAmmo,
+                ammoSet = s.AmmoSet,
+                enhancementLevel = s.EnhancementLevel,
+            };
+            foreach (var p in s.Parts)
+            {
+                int partUid = s.PartUids.TryGetValue(p.Key, out var pu) ? pu : 0;
+                entry.parts.Add(new PartEntry { slotType = (int)p.Key, partId = p.Value, partUid = partUid });
+            }
+            data.states.Add(entry);
+        }
+        return data;
+    }
+
     // 저장 데이터로 상태를 통째로 교체 (게임 로드 시 1회, 게임플레이 시작 전에 호출)
     public static void Import(SaveData data)
     {

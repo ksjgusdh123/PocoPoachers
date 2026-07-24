@@ -50,6 +50,18 @@ public static partial class PacketHandlers
         ShelterManager.GetInstance()?.SetLevel(packet.Level);
     }
 
+    // 접속 시 호스트가 보낸 방 세계 상태를 로컬 플레이어에 복원한다.
+    public static void OnH_GuestRestore(FlatPacket root)
+    {
+        var packet = root.TypeAsH_GuestRestore().UnPack();
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            var player = UnityEngine.Object.FindAnyObjectByType<PlayerController>();
+            if (player == null) return;
+            player.ApplyRoomRestore(packet.Equips, packet.Inventory);
+        });
+    }
+
     public static void OnH_LoadScene(FlatPacket root)
     {
         var packet = root.TypeAsH_LoadScene();
@@ -58,20 +70,10 @@ public static partial class PacketHandlers
 
         MainThreadDispatcher.Enqueue(() =>
         {
-            SceneLoader loader = SceneLoader.Instance;
-            if (loader == null) return;
-
             if (packet.SpawnId != 0)
                 GameManager.Instance?.SetSpawnId((SpawnId)packet.SpawnId);
 
-            if (sceneName == SceneName.Shelter)
-                loader.LoadShelterScene();
-            else if (sceneName.StartsWith("SC_Raid_") &&
-                     int.TryParse(sceneName.Substring("SC_Raid_".Length), out int planetId))
-            {
-                GameManager.Instance?.SetSelectedPlanet(planetId);
-                loader.LoadPlanetScene(planetId);
-            }
+            SceneTransition.LoadLocal(sceneName);
         });
     }
 }

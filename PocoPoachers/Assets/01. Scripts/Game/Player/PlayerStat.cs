@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 public class PlayerStat : StatBase
@@ -211,5 +212,26 @@ public class PlayerStat : StatBase
     private float GetCalculatedMaxHp()
     {
         return _maxHp + _totalMaxHpBonus + _enhancementMaxHpBonus;
+    }
+
+    // 맵 전환 시 저장된 활력치를 복원한다.
+    // 방어구/강화의 Start()가 MaxHp를 확정한 뒤(다음 프레임) 적용해야 저장값에 보너스가 덧붙지 않는다.
+    public void RestoreVitals(float hp, float stamina, float battery)
+    {
+        StartCoroutine(RestoreVitalsRoutine(hp, stamina, battery));
+    }
+
+    private IEnumerator RestoreVitalsRoutine(float hp, float stamina, float battery)
+    {
+        yield return null; // 모든 Start()(방어구/강화 적용) 이후로 미룬다
+
+        CurrentHp = Mathf.Clamp(hp, 0f, MaxHp);
+        CurrentStamina = Mathf.Clamp(stamina, 0f, MaxStamina);
+        CurrentBattery = Mathf.Clamp(battery, 0f, MaxBattery);
+
+        RaiseHpChanged();
+        OnStaminaChanged?.Invoke(CurrentStamina, MaxStamina);
+        OnBatteryChanged?.Invoke(CurrentBattery, MaxBattery);
+        OnLocalHpChanged(CurrentHp, MaxHp);
     }
 }

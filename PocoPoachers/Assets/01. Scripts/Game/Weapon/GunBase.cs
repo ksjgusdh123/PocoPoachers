@@ -17,6 +17,8 @@ public abstract class GunBase : EquippableItemBase
     public GunStatData Stat => _stat;
     // 원격 사격 재현용 — 수신측이 이 총의 실제 총알 프리팹으로 스폰해 총기별 비주얼을 맞춘다
     public GameObject BulletPrefab => _bulletPrefab;
+    // 원격 사격 재현용 — 수신측이 이 총의 총구 화염을 총기 색으로 재생한다 (방아쇠 1회당 1번)
+    public void PlayMuzzleFlash() => _muzzleFlash?.Play(_stat.MuzzleColor);
     public float DurabilityPerShot => _durabilityDecreasePerShot;
     public Transform Muzzle => _muzzle;
     public int CurrentAmmo => _currentAmmo;

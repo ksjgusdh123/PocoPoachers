@@ -37,6 +37,8 @@ public class ObjectManager : Singleton<ObjectManager>
 
     public IReadOnlyList<H_ItemSpawnT> SpawnedBoxes => _spawnedBoxes;
     public void RegisterSpawnedBox(H_ItemSpawnT data) => _spawnedBoxes.Add(data);
+    // 비워져 디스폰된 박스를 late-join 게스트 스냅샷 대상에서 제거
+    public void UnregisterSpawnedBox(int uid) => _spawnedBoxes.RemoveAll(b => b.Uid == uid);
 
     readonly object _moveLock = new object();
     readonly List<PendingMove> _pending = new();
@@ -166,6 +168,21 @@ public class ObjectManager : Singleton<ObjectManager>
             if (stat.CurrentHp > 0f) return true;
         }
         return false;
+    }
+
+    // excluded를 제외하고 살아있는 플레이어의 WorldObject를 하나 반환 (없으면 null). 관전 대상 선택용.
+    // 로컬 플레이어는 _objects에 없으므로 여기서 나오는 건 항상 원격 플레이어(동료)다.
+    public WorldObject GetLivingPlayer(StatBase excluded)
+    {
+        foreach (var kv in _objects)
+        {
+            if (kv.Key.kind != ObjectKind.Player || kv.Value == null) continue;
+
+            var stat = kv.Value.GetComponent<StatBase>();
+            if (stat == null || ReferenceEquals(stat, excluded)) continue;
+            if (stat.CurrentHp > 0f) return kv.Value;
+        }
+        return null;
     }
 
     public List<PlayerInfoT> GetAllPlayerInfos(int excludeId = -1)

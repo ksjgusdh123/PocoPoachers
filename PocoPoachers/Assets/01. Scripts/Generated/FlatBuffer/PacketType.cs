@@ -54,6 +54,7 @@ public enum PacketType : byte
   G_SceneReady = 47,
   H_EnemySpeak = 48,
   H_EnemyShoot = 49,
+  H_GuestRestore = 50,
 };
 
 public class PacketTypeUnion {
@@ -164,6 +165,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_EnemySpeak(H_EnemySpeakT _h_enemyspeak) { return new PacketTypeUnion{ Type = PacketType.H_EnemySpeak, Value = _h_enemyspeak }; }
   public H_EnemyShootT AsH_EnemyShoot() { return this.As<H_EnemyShootT>(); }
   public static PacketTypeUnion FromH_EnemyShoot(H_EnemyShootT _h_enemyshoot) { return new PacketTypeUnion{ Type = PacketType.H_EnemyShoot, Value = _h_enemyshoot }; }
+  public H_GuestRestoreT AsH_GuestRestore() { return this.As<H_GuestRestoreT>(); }
+  public static PacketTypeUnion FromH_GuestRestore(H_GuestRestoreT _h_guestrestore) { return new PacketTypeUnion{ Type = PacketType.H_GuestRestore, Value = _h_guestrestore }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -217,6 +220,7 @@ public class PacketTypeUnion {
       case PacketType.G_SceneReady: return G_SceneReady.Pack(builder, _o.AsG_SceneReady()).Value;
       case PacketType.H_EnemySpeak: return H_EnemySpeak.Pack(builder, _o.AsH_EnemySpeak()).Value;
       case PacketType.H_EnemyShoot: return H_EnemyShoot.Pack(builder, _o.AsH_EnemyShoot()).Value;
+      case PacketType.H_GuestRestore: return H_GuestRestore.Pack(builder, _o.AsH_GuestRestore()).Value;
     }
   }
 }
@@ -376,6 +380,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_EnemyShoot:
         result = H_EnemyShootVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_GuestRestore:
+        result = H_GuestRestoreVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

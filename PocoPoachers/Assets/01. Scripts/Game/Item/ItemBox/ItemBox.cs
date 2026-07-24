@@ -74,9 +74,14 @@ public class ItemBox : MonoBehaviour, IInteractable
             if (noReveal && inven.Slots[slotIndex] is BoxItemSlot boxSlot)
                 boxSlot.skipReveal = true;
         }
+
+        AfterInitialize(inven);
     }
 
-    public void OnInteract(PlayerController player)
+    // 파생 클래스(LootBox 등)가 내용물 채움이 끝난 인벤토리를 받아 후처리할 수 있는 훅
+    protected virtual void AfterInitialize(Inventory inventory) { }
+
+    public virtual void OnInteract(PlayerController player)
     {
         var inven = GetComponent<Inventory>();
 
@@ -97,7 +102,7 @@ public class ItemBox : MonoBehaviour, IInteractable
         player.SwitchInputMap(PlayerInputMapType.ItemBox);
     }
 
-    public void OnInteractExit(PlayerController player)
+    public virtual void OnInteractExit(PlayerController player)
     {
         var inven = GetComponent<Inventory>();
 
