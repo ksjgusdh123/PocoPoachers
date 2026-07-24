@@ -40,7 +40,7 @@ public class CheatConsole : Singleton<CheatConsole>
     {
         _commands["give"] = new CheatEntry { Usage = "give <itemId> [amount]", Handler = CmdGive };
         _commands["clear"] = new CheatEntry { Usage = "clear", Handler = _ => CmdClear() };
-        _commands["items"] = new CheatEntry { Usage = "items [limit]", Handler = CmdItems };
+        _commands["items"] = new CheatEntry { Usage = "items [filter]", Handler = CmdItems };
         _commands["shelter"] = new CheatEntry { Usage = "shelter [level <n>|upgrade|need]", Handler = CmdShelter };
         _commands["god"] = new CheatEntry { Usage = "god [on|off]", Handler = CmdGod };
     }
@@ -270,26 +270,31 @@ public class CheatConsole : Singleton<CheatConsole>
         Log("[CHEAT] 인벤토리를 비웠습니다.");
     }
 
+    // 전체 아이템 테이블(CSV)의 모든 아이템을 "이름 - 아이디"로 출력
+    // filter 인자가 있으면 이름/아이디에 해당 문자열이 포함된 것만 표시
     void CmdItems(string[] args)
     {
-        int limit = 20;
-        if (args.Length >= 1 && int.TryParse(args[0], out int parsed))
-            limit = Mathf.Clamp(parsed, 1, 100);
+        string filter = args.Length >= 1 ? args[0] : null;
+        var localization = LocalizationManager.GetInstance();
 
         var sb = new StringBuilder();
         int count = 0;
 
         foreach (var item in ItemTable.Instance.All)
         {
-            if (count >= limit)
-                break;
+            string displayName = localization != null ? localization.GetString(item.ItemName) : item.name;
 
-            sb.AppendLine($"{item.id}\t{item.name}");
+            if (filter != null &&
+                displayName.IndexOf(filter, StringComparison.OrdinalIgnoreCase) < 0 &&
+                item.id.ToString().IndexOf(filter, StringComparison.OrdinalIgnoreCase) < 0)
+                continue;
+
+            sb.AppendLine($"{displayName} - {item.id}");
             count++;
         }
 
-        Log(sb.ToString().TrimEnd());
-        Log($"총 {count}개 표시 (items [limit])");
+        Log(count > 0 ? sb.ToString().TrimEnd() : "일치하는 아이템이 없습니다.");
+        Log($"총 {count}개");
     }
 
     void CmdShelter(string[] args)
