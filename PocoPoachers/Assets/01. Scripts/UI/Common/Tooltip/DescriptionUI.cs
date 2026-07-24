@@ -22,6 +22,10 @@ public class DescriptionUI : MonoBehaviour
     [SerializeField] private GameObject _statRoot;
     [SerializeField] private TextMeshProUGUI _statText;
 
+    // 강화 단계 표기 영역 — 강화 가능 아이템(무기/파츠/방어구)에서만 활성화된다
+    [SerializeField] private GameObject _enhancementRoot;
+    [SerializeField] private TextMeshProUGUI _enhancementText;
+
     // 호버 중 실시간 갱신을 위해 구독해둔 대상 (다른 슬롯으로 옮기거나 닫을 때 해제)
     private EquippableItemBase _durabilityTarget;
 
@@ -64,6 +68,7 @@ public class DescriptionUI : MonoBehaviour
         if (_icon != null) _icon.sprite = ResourceManager.Instance.LoadSprite(data.icon);
         BindDurability(data, uid);
         BindStats(data, uid);
+        BindEnhancement(data, uid);
 
         // 내용에 따라 크기가 달라지므로 모든 텍스트를 채운 뒤에 위치를 보정한다
         ClampInsideCanvas();
@@ -99,6 +104,7 @@ public class DescriptionUI : MonoBehaviour
         if (_icon != null) _icon.sprite = null;
         UnbindDurability();
         _statRoot?.SetActive(false);
+        _enhancementRoot?.SetActive(false);
         gameObject.SetActive(false);
     }
 
@@ -168,6 +174,26 @@ public class DescriptionUI : MonoBehaviour
         _ => string.Empty,
     };
 
+    private static bool IsEnhanceable(ItemType type) =>
+        type is ItemType.Armor or ItemType.Helmet or ItemType.Weapon or ItemType.GunPart;
+
+    // 강화 가능 아이템이면 전용 텍스트에 "강화: +N"을 표시(+0 포함), 그 외엔 영역을 숨긴다
+    private void BindEnhancement(ItemData data, int uid)
+    {
+        if (_enhancementText == null) return;
+
+        if (!IsEnhanceable(data.ItemType))
+        {
+            _enhancementText.text = string.Empty;
+            _enhancementRoot?.SetActive(false);
+            return;
+        }
+
+        int level = WorldEquipmentManager.GetEnhancementLevel(uid, data.Id);
+        _enhancementText.text = $"+{level}";
+        _enhancementRoot?.SetActive(true);
+    }
+
     private static string BuildGunStatText(ItemData data)
     {
         var stat = GunStatTable.Instance.Get(data.Id);
@@ -191,7 +217,6 @@ public class DescriptionUI : MonoBehaviour
 
         var part = WorldEquipmentManager.GetEnhancedGunPart(basePart, uid);
         var sb = new StringBuilder();
-        AppendLevel(sb, WorldEquipmentManager.GetEnhancementLevel(uid, data.Id));
         AppendMultiplier(sb, "산탄 확산", part.SpreadMultiplier);
         AppendMultiplier(sb, "조준 속도", part.AimFovMultiplier);
         AppendMultiplier(sb, "재장전 속도", part.ReloadTimeMultiplier);
@@ -208,16 +233,10 @@ public class DescriptionUI : MonoBehaviour
 
         var stat = WorldEquipmentManager.GetEnhancedArmorStat(uid, baseStat);
         var sb = new StringBuilder();
-        AppendLevel(sb, WorldEquipmentManager.GetEnhancementLevel(uid, data.Id));
         if (stat.DefenseRate > 0f) sb.AppendLine($"방어율: {stat.DefenseRate * 100f:F0}%");
         if (stat.MaxHpBonus > 0f) sb.AppendLine($"HP 보너스: +{stat.MaxHpBonus:F0}");
         AppendMultiplier(sb, "이동속도", stat.MoveSpeedMultiplier);
         return sb.ToString().TrimEnd();
-    }
-
-    private static void AppendLevel(StringBuilder sb, int level)
-    {
-        if (level > 0) sb.AppendLine($"강화: +{level}");
     }
 
     // 효과가 없는(배율 1) 스탯은 줄을 만들지 않는다
