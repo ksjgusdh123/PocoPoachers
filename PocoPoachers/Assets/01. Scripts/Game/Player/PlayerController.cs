@@ -86,6 +86,12 @@ public class PlayerController : MonoBehaviour
             equipMenu?.gameObject.SetActive(true);
         }
 
+        if (ui.GetPanel(UIType.InventoryContextMenu) == null)
+        {
+            var invenMenu = FindAnyObjectByType<InventoryContextMenuUI>(FindObjectsInactive.Include);
+            invenMenu?.gameObject.SetActive(true);
+        }
+
         _playerWeaponController = GetComponent<WeaponController>();
         _saveManager = SaveManager.GetInstance();
 
@@ -135,6 +141,8 @@ public class PlayerController : MonoBehaviour
         ui.OnPanelClosed += OnPanelClosed;
 
         SlotInteractionManager.GetInstance().OnGunPartRequest += OnGunPartRequested;
+        SlotInteractionManager.GetInstance().OnInventoryGunPartRequest += OnInventoryGunPartRequested;
+        SlotInteractionManager.GetInstance().OnInventoryItemUseRequest += StartConsumingInventory;
 
         InitEquipSlots();
 
@@ -173,6 +181,13 @@ public class PlayerController : MonoBehaviour
     {
         if (_gunPartPanel != null)
             _gunPartPanel.Open(gun);
+    }
+
+    // 인벤토리(미장착) 무기 우클릭 "파츠창 보기" → 임시 총으로 파츠 패널 열기
+    private void OnInventoryGunPartRequested(int itemId, int uid)
+    {
+        if (_gunPartPanel != null)
+            _gunPartPanel.OpenForItem(itemId, uid);
     }
 
     private void InitEquipSlots()
@@ -455,7 +470,11 @@ public class PlayerController : MonoBehaviour
 
         var slotManager = SlotInteractionManager.GetInstance();
         if (slotManager != null)
+        {
             slotManager.OnGunPartRequest -= OnGunPartRequested;
+            slotManager.OnInventoryGunPartRequest -= OnInventoryGunPartRequested;
+            slotManager.OnInventoryItemUseRequest -= StartConsumingInventory;
+        }
 
         var ui = UIManager.GetInstance();
         if (ui == null) return;
@@ -626,6 +645,25 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(_useItemDuration);
 
         _quickSlots[index].ConsumeItem();
+        _useCoroutine = null;
+    }
+
+    // 인벤토리 컨텍스트 메뉴의 "사용" — 퀵슬롯과 동일하게 사용 시간 UI를 거쳐 소비한다
+    private void StartConsumingInventory(ItemData item, Inventory inventory)
+    {
+        if (item == null || inventory == null) return;
+        if (_useCoroutine != null) return; // 이미 사용 중이면 무시
+
+        _useCoroutine = StartCoroutine(UseInventoryItemRoutine(item, inventory));
+    }
+
+    private IEnumerator UseInventoryItemRoutine(ItemData item, Inventory inventory)
+    {
+        OnUseStarted?.Invoke(_useItemDuration);
+
+        yield return new WaitForSeconds(_useItemDuration);
+
+        ItemUseSystem.TryUse(item, inventory);
         _useCoroutine = null;
     }
 }

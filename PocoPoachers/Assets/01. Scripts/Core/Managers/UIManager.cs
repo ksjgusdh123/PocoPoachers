@@ -23,6 +23,7 @@ public enum UIType
     CraftingTable,
     MainGameUI,
     Generator,
+    InventoryContextMenu,
 }
 
 public class UIManager : Singleton<UIManager>

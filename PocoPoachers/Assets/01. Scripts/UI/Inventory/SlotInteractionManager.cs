@@ -19,8 +19,17 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     // 장비 슬롯 우클릭 상태
     public event Action<ItemHolderDropHandler> OnEquipRightClick;
 
+    // 인벤토리 슬롯(착용 전 아이템) 우클릭 상태
+    public event Action<ItemSlotUI> OnInventoryRightClick;
+
     // 무기 슬롯에서 파츠 패널을 요청 (파츠 패널이 구독해 해당 총으로 열림)
     public event Action<GunBase> OnGunPartRequest;
+
+    // 인벤토리(미장착) 무기에서 파츠 패널을 요청 (itemId, uid)
+    public event Action<int, int> OnInventoryGunPartRequest;
+
+    // 인벤토리에서 아이템 사용 요청 (item, inventory) — PlayerController가 사용 시간 UI를 거쳐 소비
+    public event Action<ItemData, Inventory> OnInventoryItemUseRequest;
 
     // 슬롯 간 드래그로 아이템이 배치(스왑/이동/장착) 완료됨
     public event Action OnItemPlaced;
@@ -260,9 +269,24 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
         OnEquipRightClick?.Invoke(handler);
     }
 
+    public void InvokeInventoryRightClick(ItemSlotUI slot)
+    {
+        OnInventoryRightClick?.Invoke(slot);
+    }
+
     public void InvokeGunPartRequest(GunBase gun)
     {
         OnGunPartRequest?.Invoke(gun);
+    }
+
+    public void InvokeInventoryGunPartRequest(int itemId, int uid)
+    {
+        OnInventoryGunPartRequest?.Invoke(itemId, uid);
+    }
+
+    public void InvokeInventoryItemUseRequest(ItemData item, Inventory inventory)
+    {
+        OnInventoryItemUseRequest?.Invoke(item, inventory);
     }
 
     public void InvokeItemPlaced()

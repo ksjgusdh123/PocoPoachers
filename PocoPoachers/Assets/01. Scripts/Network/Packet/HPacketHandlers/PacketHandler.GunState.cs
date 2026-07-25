@@ -31,5 +31,8 @@ public static partial class PacketHandlers
         // 저장된 탄약이 없으면 장착 시점의 풀장전 기본값을 그대로 둔다
         if (packet.HasAmmo)
             gun.SetAmmo(packet.CurrentAmmo);
+
+        // 인벤 무기 파츠 패널이 프리뷰 총을 갱신할 수 있도록 알린다
+        GunBase.RaiseGunStateSynced(packet.GunUid);
     }
 }

@@ -168,3 +168,12 @@ table G_EnhanceItem
     item_id:  int; // uid=0(스택형)일 때의 폴백 저장용
     level:    int; // 강화 후 절대 레벨
 }
+
+// 인벤토리(미장착) 무기의 파츠 상태 조회 요청 (게스트→호스트).
+// 게스트는 WorldEquipmentManager를 신뢰할 수 없어 미장착 총의 파츠를 스스로 복원 못 한다.
+// 호스트가 보관 중인 파츠/탄약을 기존 H_GunState로 되돌려준다 (요청한 게스트에게만).
+table G_RequestGunState
+{
+    player_id: int;
+    gun_uid:   int;
+}

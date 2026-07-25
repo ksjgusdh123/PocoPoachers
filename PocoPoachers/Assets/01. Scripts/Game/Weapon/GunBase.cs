@@ -50,6 +50,11 @@ public abstract class GunBase : EquippableItemBase
     public static event Action<float> OnReloadStarted;
     public static event Action OnReloadEnded;
 
+    // 호스트로부터 총 상태(H_GunState)가 적용된 직후 발생 (uid).
+    // 인벤 무기 파츠 패널이 프리뷰 총을 새로고침하는 데 사용
+    public static event Action<int> OnGunStateSynced;
+    public static void RaiseGunStateSynced(int uid) => OnGunStateSynced?.Invoke(uid);
+
     public event Action<Vector2> OnShoot;
     public event Action OnReloadRequested;
     public event Action<int> OnReloadComplete;

@@ -169,6 +169,19 @@ public static class RoomSync
         }, G_EnhanceItem.Pack, PacketType.G_EnhanceItem);
     }
 
+    // 인벤토리(미장착) 무기의 파츠 상태를 호스트에 요청 (게스트 전용).
+    // 응답은 H_GunState로 오고, uid가 일치하는 프리뷰 총에 적용된다.
+    public static void RequestGunState(int gunUid)
+    {
+        if (RoomManager.IsHost || gunUid == 0) return;
+
+        PacketBuilder.SendReliableToHost(new G_RequestGunStateT
+        {
+            PlayerId = MyId,
+            GunUid   = gunUid,
+        }, G_RequestGunState.Pack, PacketType.G_RequestGunState);
+    }
+
     public static void ItemGain(bool isPlayerGained, int boxUid, int itemTypeId, int itemUid, int amount, int addedSlotIndex, int removedSlotIndex)
     {
         if (IsSolo) return;
