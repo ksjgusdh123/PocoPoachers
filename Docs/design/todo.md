@@ -1,65 +1,14 @@
 # TODO (향후 기획·구현)
 
-미구현·부분 구현·코드 내 `TODO`를 한곳에 모은 목록입니다.  
+미구현·부분 구현·코드 내 발견된 이상 동작을 한곳에 모은 목록. 코드 전수 분석(2026-07) 기준으로 재작성됨 — **수리·무기 강화·제작은 이미 구현되어 있어 과거 목록에서 제외됨.**
+
 구현 현황 요약: [../README.md#구현-현황](../README.md#구현-현황)
 
 **우선순위:** P0 필수 · P1 중요 · P2 개선·후순위
 
 ---
 
-## P0 — 게임플레이 핵심
-
-### 수리 시스템
-
-현재: `RepairWorkbenchUI` — 재료 표시만, 수리 버튼 미동작.
-
-- [ ] `OnClickRepair()` 수리 로직 구현 (`RepairWorkbenchUI.cs`)
-- [ ] 인벤 슬롯·장착 무기 **내구도 표시** (`? / ?` → 실제 값)
-- [ ] 재료 차감 + 내구도 복구 (`RepairCostTable`, `WorldEquipmentManager` 연동)
-- [ ] 수리 불가 조건 처리 (내구도 만땅, 재료 부족, 수리 대상 아님)
-
-관련: [progression.md](progression.md) · `repair_cost.csv` · `RepairWorkbenchUI.cs:53,86`
-
-### 무기 강화
-
-현재: `GunEnhancementTable` 상호작용 + 드롭 슬롯만 존재.
-
-- [ ] `GunEnhancementTableUI` (또는 동등 UI) 구현
-- [ ] 강화 비용 테이블 설계·연동 (현재 전용 CSV 없음)
-- [ ] 강화 로직 (내구도/스탯 상승 등 기획 확정 필요)
-- [ ] `GunEnhancementDropHandler` ↔ 강화 실행 연결
-
-관련: [progression.md](progression.md) · `GunEnhancementTable.cs`
-
-### 세이브 확장
-
-현재: 플레이어 인벤 + 창고 + 쉘터 레벨만 저장.
-
-- [ ] `PlayerEnhancement` 강화 레벨 저장/로드
-- [ ] 장착 장비 (무기·헬멧·갑옷·가방) 저장/로드
-- [ ] Vital 현재값 (HP·배터리·스태미나) 저장 여부 기획 확정 후 구현
-- [ ] `WorldEquipmentManager` 내구도(uid별) 저장/로드
-- [ ] 자동 저장 시점 정의 (쉘터 복귀, 업그레이드, 종료 등)
-
-관련: [save.md](save.md) · `SaveManager.cs`
-
----
-
-## P1 — 레이드·데이터
-
-### 행성 런타임 규칙 (`planet.csv`)
-
-데이터는 있으나 레이드 진입 후 미적용.
-
-| 필드 | 의도 | 작업 |
-|------|------|------|
-| `need_power` | 진입 전력 요구 | [ ] 검증 로직 |
-| `use_time_limit` | 시간 제한 on/off | [ ] 플래그 처리 |
-| `max_session_time` | 세션 제한 시간 | [ ] 타이머 + 실패/퇴장 |
-| `fog_density` | 안개 밀도 | [ ] `FogOfWarRenderer` 연동 |
-| `draw_distance` | 시야 거리 | [ ] `PlayerVision` 연동 |
-
-관련: [shelter-raid.md](shelter-raid.md) · [data-tables.md](data-tables.md)
+## P0 — 데이터 정합성
 
 ### DataTable ID 마이그레이션
 
@@ -79,82 +28,110 @@ ID 범위 규칙과 실제 데이터 불일치. 상세: [datatable/id-ranges.md]
 
 ---
 
+## P1 — 레이드·행성
+
+### 행성 런타임 규칙 (`planet.csv`)
+
+데이터는 있으나 레이드 진입 후 미적용 (`tier`도 포함해 확인된 것보다 더 많은 필드가 미사용):
+
+| 필드 | 의도 | 작업 |
+|------|------|------|
+| `tier` | 행성 티어 | [ ] 사용처 결정 (표시용? 배율용?) |
+| `need_power` | 진입 전력 요구 | [ ] 검증 로직 |
+| `use_time_limit` | 시간 제한 on/off | [ ] 플래그 처리 |
+| `max_session_time` | 세션 제한 시간 | [ ] 타이머 + 실패/퇴장, `RaidStats`와 연동 |
+| `fog_density` | 안개 밀도 | [ ] `FogOfWarRenderer`/`VisionConfig` 행성별 파라미터화 |
+| `draw_distance` | 시야 거리 | [ ] `PlayerVision`/`VisionConfig` 연동 |
+
+관련: [shelter-raid.md](shelter-raid.md) · [planet-sectors.md](planet-sectors.md) · [data-tables.md](data-tables.md)
+
+### enemy.csv 탐지 필드 미배선
+
+- [ ] `EnemyStat.Awake()`가 `detect_range`/`forget_range`/`fov_angle`/`attack_range`를 읽지 않음 — 현재는 장착 무기 사거리(`AIWeaponController.UpdateBlackboardGunStat`)가 탐지 사거리를 대신 결정. 의도된 설계인지 확인 필요, CSV 컬럼이 죽은 데이터라면 제거 또는 배선 필요
+
+관련: [enemy-ai.md](enemy-ai.md#데이터-배선-갭)
+
+### 섹터 04(미지의 심연) 미등록
+
+- [ ] `planet.csv`에 Tier 4 행 추가, 보스 코어 소비 조건 설계·구현
+
+### 채광 오브젝트가 소멸하지 않음
+
+- [ ] `BaseOre` 채광 완료 후 오브젝트가 파괴/비활성화되지 않아 반복 채광이 가능해 보임 — 의도 확인 후 (a) 1회성이면 소멸/비활성 처리, (b) 다회성이 목표면 `MineralTable.max_hp` 기반 HP 차감 로직 구현
+
+관련: [shelter-raid.md](shelter-raid.md#채광-baseore)
+
+---
+
 ## P1 — 멀티플레이
 
 ### 기능 버그
 
-- [x] **게스트 입장 시 장비 내구도 미전달** (`RoomManager.SendHostEquipToGuest`) — ItemUid + H_Durability 전송
-- [x] **게스트 입장 시 아이템 박스 ItemUid 누락** (`RoomManager.SendWorldStateToGuest`) — H_ItemSpawnT.ItemUids 전송
-- [x] **게스트 입장 시 방어구/가방 장착 상태 누락** (`SendHostEquipToGuest`) — ArmorMount·BagMount H_Equip 포함
-- [x] **게스트 입장 시 호스트 HP/스탯 초기값 누락** (`SendAllPlayerStatsToGuest`) — late join 시 H_StatSync 즉시 전송
-- [x] **장비 능력치 미동기화** — `ApplyRemoteArmorStats`, `ApplyNetworkStats`로 MaxHp·방어력 반영
-- [x] **Sandbag 파괴 미동기화** (`Sandbag.HandleDie`) — H_SandbagDestroy 브로드캐스트
-- [x] **쉘터 업그레이드 미동기화** (`RoomSync.ShelterLevel`) — H_ShelterLevel 브로드캐스트
-- [x] **H_ConsumeItemResult 핸들러 비어있음** (`OnH_ConsumeItemResult`) — `ApplyConsumableEffect` 연동
-
-### 비주얼
-
-- [ ] **총기 발사 사운드 미동기화** (`PacketHandler.Combat.cs OnH_Shoot`) — H_ShootT에 SoundId 추가 후 3D 재생
+- [ ] **총기 발사 사운드 범위 미동기화** (`Combat.fbs`, `PacketHandler.Combat.cs`) — `G_Shoot`엔 `sound_range`가 있으나 `H_Shoot`엔 없어 다른 게스트에게 전파 안 됨
 - [ ] 발자국 사운드 미전달
 
 ### UX
 
-- [ ] 게스트 이탈 시 **호스트 재입장 대기** 처리 (`IngameMenuUI.cs:100`)
+- [ ] 게스트 이탈 시 **호스트 재입장 대기** 처리 (`IngameMenuUI.OnHostLeft` — `onCancel`이 빈 스텁)
 - [ ] 플레이어 이름 UI 입력 (`NetworkManager.cs` — 현재 `"Player"` 고정)
 
-관련: [multiplayer.md](multiplayer.md)
+### 코드 정리
+
+- [ ] `RoomSync.GunAmmoSave` 디버그 로그 제거 (`// TODO: 디버그 후 제거`)
+- [ ] `PlayerController.RestoreEquippedSlots` 디버그 로그 제거
+- [ ] `CraftingTableUI.HasRecipesOfType()` 죽은 코드 제거 또는 카테고리 버튼 활성화 판정에 사용
+- [ ] `GunEnhancementTableUI`의 강화 배율 미리보기 공식이 `WorldEquipmentManager`와 중복 구현됨 — 공용 헬퍼로 통합 고려
+
+관련: [multiplayer.md](multiplayer.md) · [network-packets.md](../development/network-packets.md)
+
+---
+
+## P2 — 맵 자동 생성
+
+- [ ] 생성 결과(적 스폰 지점 등)를 실제 게임플레이 스폰 시스템과 연결 — 현재 완전히 미연동
+- [ ] 재현 가능한 시드 옵션 추가 (현재 `Random` 무시드)
+- [ ] Road Map 레이어
+- [ ] `NavMeshModifier` 자동 부착 (배치 오브젝트 장애물 처리)
+- [ ] 더미 프리팹 → 실제 아트 프리팹 교체
+
+관련: [map-generation.md](map-generation.md) · [development/map-generator.md](../development/map-generator.md)
 
 ---
 
 ## P2 — 신규 시스템
 
-### 제작 (Crafting)
+### 레이드 보스
 
-- [ ] 기획: 레시피 구조, 재료 소스, UI 위치
-- [ ] `craft` 테이블 (또는 기존 테이블 확장) 설계
-- [ ] 워크벤치 상호작용 + UI 구현
-
-### 결과 화면
-
-- [ ] `SC_Result` 씬 연동 (레이드 클리어/사망/시간 초과)
-- [ ] `SceneLoader` 진입점 추가
-- [ ] 획득 요약, 경험/보상 표시 기획
-
-### 레이드 탈출·보스
-
-핵심 루프 4단계(탈출·보스) 미구현.
+핵심 루프 마지막 단계(보스) 미구현.
 
 - [ ] 최종 보스 전투/클리어 조건 정의
-- [ ] 탈출 포털 vs 우주선 복귀 흐름 정리
-- [ ] `SC_Result` 또는 쉘터 직행 분기
+- [ ] 보스 코어 소비형 섹터 04 진입 조건과 연계 설계
 
 관련: [game-flow.md](game-flow.md) · [shelter-raid.md](shelter-raid.md)
+
+> 레이드 결과 화면 자체는 `RaidResultUI` 오버레이로 이미 구현되어 있음 — 과거 문서의 "`SC_Result` 씬 미연동"은 오해였음(별도 씬을 쓰지 않는 방식으로 이미 대체 구현됨). 미사용 `SC_Result` 씬 에셋의 처리 여부만 결정하면 됨.
 
 ---
 
 ## P2 — 개선·폴리시
 
-### 채광
-
-현재: 1회 상호작용 완료형. `MineralTable.max_hp` 미사용.
-
-- [ ] HP 기반 다회 채굴 여부 기획 확정
-- [ ] 채굴 도구/무기 연동 필요 시 설계
-
 ### 내구도 UX
 
-런타임 내구도는 `WorldEquipmentManager` + 네트 동기화 존재. UI 미연결.
+런타임 내구도는 `WorldEquipmentManager` + 네트 동기화 존재, 툴팁에도 표시됨. 인벤 슬롯 아이콘 자체에 내구도 바가 있는지는 추가 확인 필요.
 
-- [ ] 인벤·장비 슬롯 내구도 바 표시
-- [ ] 수리대·무기 강화대와 데이터 연결
+### 인벤토리 무게 제한
+
+- [ ] `Inventory.AddItem`/`CanAddItem`이 `MaxWeight`를 강제하지 않음 — UI 표시용으로만 쓰이는지, 실제 제약으로 만들지 결정
+
+관련: [inventory-exchange.md](inventory-exchange.md)
 
 ### 기타 코드 TODO
 
-- [ ] `PacketGenerator` 생성 스텁 핸들러 실제 구현 (`PacketGenerator.cs:242,251`) — 신규 패킷 추가 시
+- [ ] `PacketGenerator` 생성 스텁 핸들러 실제 구현 — 신규 패킷 추가 시마다 반복 확인 필요
 
 ### 테스트 씬 정리
 
-- [ ] `SC_Raid_Test`, `SC_ShelterTest` 용도 문서화 또는 제거
+- [ ] `SC_Raid_Test`, `SC_ShelterTest`, `SC_Result` 용도 문서화 또는 제거
 - [ ] `SC_Raid_1001` 테스트 씬 vs `LoadPlanetScene` 통합 검토
 
 ---

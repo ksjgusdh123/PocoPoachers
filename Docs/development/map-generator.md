@@ -1,27 +1,41 @@
 # 맵 자동 생성 (Map Generator)
 
-이미지 레이어(Height/Biome/Object/Resource/Enemy Spawn Map)를 읽어 Terrain + 프리팹 배치 + NavMesh를 자동 생성하는 에디터 툴.
+이미지 레이어(Height/Biome/Object/Resource/Enemy Spawn Map)를 읽어 Terrain + 프리팹 배치 + NavMesh를 자동 생성하는 **에디터 전용** 툴.
 기획 배경: [design/map-generation.md](../design/map-generation.md)
 
 메뉴: **Tools → Generator → Map**
 
 ---
 
-## 파일 위치
+## 핵심 구조
+
+생성 로직은 전부 `Core/Editor/MapGeneratorWindow.cs`(에디터 윈도우) 안에 있다. `Core/MapGen/` 폴더에는 데이터 정의(`MapLayerPalette`) 하나만 있고 런타임 `MonoBehaviour` 생성기는 존재하지 않는다 — **빌드된 게임에서는 맵을 생성할 수 없다.**
 
 | 파일 | 역할 |
 |------|------|
-| `Assets/01. Scripts/Core/Editor/MapGeneratorWindow.cs` | 에디터 윈도우 + 생성 파이프라인 |
-| `Assets/01. Scripts/Core/MapGen/MapLayerPalette.cs` | 색상↔프리팹/TerrainLayer 매핑 ScriptableObject |
+| `Assets/01. Scripts/Core/Editor/MapGeneratorWindow.cs` | 에디터 윈도우 + 생성 파이프라인 (유일한 진입점) |
+| `Assets/01. Scripts/Core/MapGen/MapLayerPalette.cs` | 색상↔프리팹/TerrainLayer 매핑 `ScriptableObject` |
 | `Assets/_Data/Map/LayerPalette/MapLayerPalette.asset` | 현재 사용 중인 팔레트 에셋 |
 | `Assets/_Data/Map/TerrainLayers/*.terrainlayer` | 바이옴별 TerrainLayer (단색 틴트, 텍스처 아트 없음) |
 | `Assets/_Art/Environment/Textures/White.png` | TerrainLayer가 공유하는 흰색 텍스처 (DiffuseRemap으로 색 틴트) |
 | `Assets/02. Prefabs/Environment/*.prefab` | 아트 없는 더미 프리팹 (Tree/Building/DungeonEntrance/PlantResource/RareResource) |
 | `Assets/_Generated/MapGen/` | 생성될 때마다 갱신되는 산출물 (TerrainData, Terrain 머티리얼) — **수동 편집 금지** |
 | `Assets/_Art/Map/*.png` | 테스트용 샘플 레이어 이미지 (5종) |
-| `Tools/MapGen/generate_layers.py` | 위 샘플 이미지를 재생성하는 Python 스크립트 (Unity 밖, `DataTable/`·`FlatBuffer/`와 동급의 도구 폴더) |
+| `Tools/MapGen/generate_layers.py` | 위 샘플 이미지를 재생성하는 Python 스크립트 (Unity 밖) |
 
----
+## 생성 순서 (고정, 순차 실행)
+
+`MapGeneratorWindow.TryGenerate()`:
+
+1. **Terrain 생성** — Height Map을 그레이스케일로 샘플링해 `TerrainData.SetHeights`. `AddComponent<Terrain>()`은 URP 머티리얼을 자동 할당하지 않아 코드에서 직접 패치
+2. **바이옴 페인팅** — Biome Map 픽셀을 팔레트 색상과 매칭해 `SetAlphamaps`
+3. **오브젝트/자원 배치** — Object/Resource Map을 **고정 그리드 간격**(기본: 오브젝트 4, 자원 6, 적 스폰 8 월드 유닛)으로 샘플링, 색상 매칭 후 `density` 확률로 `PrefabUtility.InstantiatePrefab`, 지형 높이에 스냅, Y회전/스케일 랜덤 적용
+4. **NavMesh 베이크** — `NavMeshSurface`로 생성된 자식들 위에 베이크
+5. **적 스폰 지점 생성** — Enemy Spawn Map 밝기가 임계값(기본 0.5) 이상인 그리드 지점 중 NavMesh 유효 지점만 채택, `EnemySpawnPoints` 컨테이너 아래 빈 오브젝트로 생성
+
+**시드 없음** — 밀도/회전/스케일 랜덤에 `UnityEngine.Random`을 시드 지정 없이 사용해, 같은 이미지로 재생성해도 결과가 매번 달라진다.
+
+색상 매칭은 `MapLayerPalette.FindClosest`(RGB 유클리드 거리, 허용오차 `colorMatchTolerance` 기본 0.15)로 이뤄진다.
 
 ## 워크플로
 
@@ -30,8 +44,8 @@
 2. 각 텍스처 Import Settings: Read/Write Enabled 켜기, Compression None
 3. MapLayerPalette 에셋에 색상↔TerrainLayer/프리팹 매핑 채우기 (아래 표 참고)
 4. Tools → Generator → Map 에서 5개 텍스처 + 팔레트 연결, 지형 크기 설정
-5. "맵 생성" 클릭 → 완료 다이얼로그 확인
-6. 재수정 시: 이미지만 바꾸고 다시 "맵 생성" (기존 GeneratedMap 삭제 확인창 뜸)
+5. "맵 생성" 클릭 → 완료 다이얼로그 확인 (기존 GeneratedMap 있으면 삭제 확인창)
+6. 재수정 시: 이미지만 바꾸고 다시 "맵 생성"
 ```
 
 ---
@@ -89,10 +103,13 @@
 
 | 항목 | 설명 |
 |------|------|
+| 런타임 미연동 | 생성 결과를 참조하는 게임플레이 스크립트가 없음 — [design/map-generation.md](../design/map-generation.md#구현-현황) |
+| 시드 없음 | 동일 입력이라도 재생성 시 배치 결과가 매번 달라짐 |
 | Road Map 레이어 | 제안서에는 있으나 샘플 이미지·구현 모두 없음 |
 | NavMesh 장애물 처리 | 배치된 오브젝트(나무 등)에 `NavMeshModifier`를 자동으로 붙이지 않음 — NavMesh가 오브젝트를 뚫고 지나감 |
 | Biome 미설정 시 | `biomes` 배열이 비어있으면 지형 텍스처링을 조용히 스킵 (Unity 기본 텍스처로 나옴, 에러 아님) |
 | TerrainLayer 텍스처 | Wrap Mode가 Repeat가 아니면 Unity가 경고 + 지형이 핑크로 렌더링됨 |
+| 오류 처리 없음 | 픽셀/그리드 루프에 try-catch 없음 — 크기 0인 텍스처 등 잘못된 입력은 예외로 그대로 튐 |
 
 ---
 
@@ -101,15 +118,17 @@
 | 증상 | 원인 | 조치 |
 |------|------|------|
 | "맵 생성" 버튼 비활성화 | 레이어 텍스처 Read/Write Enabled 꺼짐 | Import Settings → Advanced → Read/Write Enabled 켜고 Apply |
-| 지형이 핑크 | ① TerrainLayer 텍스처 Wrap Mode가 Clamp<br>② (해결됨) 스크립트로 만든 Terrain은 URP 머티리얼이 비어있음 | ① 텍스처 Wrap Mode를 Repeat로<br>② 코드에서 `GetOrCreateTerrainMaterial()`로 자동 할당하도록 이미 수정됨 — 최신 스크립트인지 확인 |
-| 바이옴 색이 안 칠해짐 | (해결됨) `TerrainData.alphamapResolution` 기본값이 0이라 페인팅 루프가 0회 실행됨 | 코드에서 512로 강제 설정하도록 이미 수정됨 |
+| 지형이 핑크 | ① TerrainLayer 텍스처 Wrap Mode가 Clamp<br>② 스크립트로 만든 Terrain은 URP 머티리얼이 비어있음 | ① 텍스처 Wrap Mode를 Repeat로<br>② `GetOrCreateTerrainMaterial()`로 자동 할당됨 — 최신 스크립트인지 확인 |
+| 바이옴 색이 안 칠해짐 | `TerrainData.alphamapResolution` 기본값이 0이면 페인팅 루프가 0회 실행됨 | 코드에서 512로 강제 설정하는지 확인 |
 | Object/Resource가 하나도 안 보임 | 팔레트의 `color`/`density`/`uniformScaleRange`가 기본값 | 위 "팔레트 필드 채울 때 주의" 표 참고 |
 
 ---
 
 ## 향후 확장 아이디어
 
+- 생성 결과를 실제 스폰 시스템(`EnemySpawner`, `ItemSpawner`)과 연결
+- 재현 가능한 시드 옵션 추가
 - Road Map 레이어 추가 (경로/이동로 생성)
 - 오브젝트 배치 시 `NavMeshModifier` 자동 부착 (장애물 회피)
 - 더미 프리팹 → 실제 아트 프리팹 교체
-- PSD 레이어 직접 Import, AI 기반 레이어 이미지 생성 연동 (제안서 9장 참고)
+- PSD 레이어 직접 Import, AI 기반 레이어 이미지 생성 연동

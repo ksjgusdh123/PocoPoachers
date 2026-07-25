@@ -1,6 +1,6 @@
 # 맵 자동 생성 (기획)
 
-이미지 레이어를 색상/명도로 해석해 3D 월드(지형·오브젝트·자원·적 스폰)를 자동 생성하는 파이프라인의 기획 배경.
+이미지 레이어를 색상/명도로 해석해 3D 월드(지형·오브젝트·자원·적 스폰 지점)를 자동 생성하는 파이프라인의 기획 배경.
 사용법·팔레트 설정·트러블슈팅은 [development/map-generator.md](../development/map-generator.md) 참고.
 
 ---
@@ -28,17 +28,17 @@
 | Biome Map | 지역 환경 | 색상 → `TerrainLayer` (숲/초원/황무지/설원/호수) |
 | Object Map | 오브젝트 배치 | 색상 → 프리팹 (나무/바위/건물/던전 입구) |
 | Resource Map | 자원 배치 | 색상 → 자원 프리팹 (식물/광물/희귀) |
-| Enemy Spawn Map | 적 스폰 위치 | 명도 → 스폰 후보(흰색=허용, 검정=금지) |
+| Enemy Spawn Map | 적 스폰 위치 | 명도 → 스폰 후보(흰색=허용, 검정=금지), NavMesh 유효 지점만 채택 |
 | Road Map | 이동 경로 | 미구현 |
 
-## 제작 파이프라인
+## 제작 파이프라인 (에디터 전용)
 
 ```
 1. 디자이너가 이미지 레이어 수정
 2. Unity Import (Tools → Generator → Map)
 3. 픽셀 색상/명도 분석 → 팔레트 매칭
 4. Terrain 생성 (Height Map)
-5. 프리팹 자동 배치 (Object/Resource Map)
+5. 프리팹 자동 배치 (Object/Resource Map, 고정 그리드 간격으로 샘플링 — 픽셀 단위 아님)
 6. NavMesh 베이크
 7. 결과 즉시 확인
 ```
@@ -57,10 +57,14 @@
 
 | 항목 | 상태 |
 |------|------|
-| Height/Biome/Object/Resource/Enemy Spawn Map | ✅ [development/map-generator.md](../development/map-generator.md) |
+| Height/Biome/Object/Resource/Enemy Spawn Map 생성 | ✅ 에디터 도구로 동작 확인됨 |
+| 시드 기반 재현성 | ❌ `Random.value`/`Random.Range`가 시드 없이 호출됨 — 같은 이미지를 다시 생성해도 배치 결과가 매번 달라짐 |
+| **런타임 게임플레이 연동** | ❌ **생성 결과(지형·적 스폰 지점·자원)를 참조하는 런타임 스크립트가 코드베이스에 전혀 없음.** `EnemySpawner`/`ItemSpawner` 등 실제 스폰 시스템은 별도의 씬 배치 데이터를 쓴다 — 생성기는 현재 오프라인 지형 제작 도구에 가깝고, 생성된 스폰 포인트는 이름만 있는 빈 오브젝트로 남아 소비되지 않음 |
 | Road Map | ❌ 미구현 |
-| NavMeshModifier 자동 부착 (배치 오브젝트 장애물 처리) | ❌ 미구현 |
+| NavMeshModifier 자동 부착 (배치 오브젝트 장애물 처리) | ❌ 미구현 — 배치된 오브젝트를 NavMesh가 그대로 관통 |
 | PSD 레이어 직접 Import | ❌ 미구현 (향후 확장 아이디어) |
 | AI 기반 레이어 이미지 생성 연동 | ❌ 미구현 (향후 확장 아이디어) |
 
-행성별 안개 밀도·가시거리·수직성 테마를 이 파이프라인에 대입하는 설계 기준은 [planet-sectors.md](planet-sectors.md) 참고.
+최근 커밋(`e7545ce`, "맵 임시")에서 실제로 1회 생성을 돌려 산출물(`Assets/_Generated/MapGen/GeneratedTerrainData.asset` 등)을 커밋했고, 이와 별도로 커스텀 하이트맵을 만드는 Python 스크립트(`Tools/MapGen/generate_ring_valley_heightmap.py`)도 추가됨 — 파이프라인 자체는 실사용되고 있으나 결과물이 아직 게임플레이에 통합되지는 않은 상태.
+
+행성별 안개 밀도·가시거리·수직성 테마를 이 파이프라인에 대입하는 설계 기준은 [planet-sectors.md](planet-sectors.md) 참고 (해당 필드들도 런타임 미적용).
