@@ -36,6 +36,14 @@ public struct H_GunState : IFlatbufferObject
   public ArraySegment<byte>? GetPartLevelsBytes() { return __p.__vector_as_arraysegment(14); }
 #endif
   public int[] GetPartLevelsArray() { return __p.__vector_as_array<int>(14); }
+  public int PartUids(int j) { int o = __p.__offset(16); return o != 0 ? __p.bb.GetInt(__p.__vector(o) + j * 4) : (int)0; }
+  public int PartUidsLength { get { int o = __p.__offset(16); return o != 0 ? __p.__vector_len(o) : 0; } }
+#if ENABLE_SPAN_T
+  public Span<int> GetPartUidsBytes() { return __p.__vector_as_span<int>(16, 4); }
+#else
+  public ArraySegment<byte>? GetPartUidsBytes() { return __p.__vector_as_arraysegment(16); }
+#endif
+  public int[] GetPartUidsArray() { return __p.__vector_as_array<int>(16); }
 
   public static Offset<H_GunState> CreateH_GunState(FlatBufferBuilder builder,
       int gun_uid = 0,
@@ -43,8 +51,10 @@ public struct H_GunState : IFlatbufferObject
       int current_ammo = 0,
       int max_magazine = 0,
       VectorOffset part_idsOffset = default(VectorOffset),
-      VectorOffset part_levelsOffset = default(VectorOffset)) {
-    builder.StartTable(6);
+      VectorOffset part_levelsOffset = default(VectorOffset),
+      VectorOffset part_uidsOffset = default(VectorOffset)) {
+    builder.StartTable(7);
+    H_GunState.AddPartUids(builder, part_uidsOffset);
     H_GunState.AddPartLevels(builder, part_levelsOffset);
     H_GunState.AddPartIds(builder, part_idsOffset);
     H_GunState.AddMaxMagazine(builder, max_magazine);
@@ -54,7 +64,7 @@ public struct H_GunState : IFlatbufferObject
     return H_GunState.EndH_GunState(builder);
   }
 
-  public static void StartH_GunState(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartH_GunState(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddGunUid(FlatBufferBuilder builder, int gunUid) { builder.AddInt(0, gunUid, 0); }
   public static void AddHasAmmo(FlatBufferBuilder builder, bool hasAmmo) { builder.AddBool(1, hasAmmo, false); }
   public static void AddCurrentAmmo(FlatBufferBuilder builder, int currentAmmo) { builder.AddInt(2, currentAmmo, 0); }
@@ -71,6 +81,12 @@ public struct H_GunState : IFlatbufferObject
   public static VectorOffset CreatePartLevelsVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreatePartLevelsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartPartLevelsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddPartUids(FlatBufferBuilder builder, VectorOffset partUidsOffset) { builder.AddOffset(6, partUidsOffset.Value, 0); }
+  public static VectorOffset CreatePartUidsVector(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddInt(data[i]); return builder.EndVector(); }
+  public static VectorOffset CreatePartUidsVectorBlock(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreatePartUidsVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreatePartUidsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartPartUidsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<H_GunState> EndH_GunState(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_GunState>(o);
@@ -89,6 +105,8 @@ public struct H_GunState : IFlatbufferObject
     for (var _j = 0; _j < this.PartIdsLength; ++_j) {_o.PartIds.Add(this.PartIds(_j));}
     _o.PartLevels = new List<int>();
     for (var _j = 0; _j < this.PartLevelsLength; ++_j) {_o.PartLevels.Add(this.PartLevels(_j));}
+    _o.PartUids = new List<int>();
+    for (var _j = 0; _j < this.PartUidsLength; ++_j) {_o.PartUids.Add(this.PartUids(_j));}
   }
   public static Offset<H_GunState> Pack(FlatBufferBuilder builder, H_GunStateT _o) {
     if (_o == null) return default(Offset<H_GunState>);
@@ -102,6 +120,11 @@ public struct H_GunState : IFlatbufferObject
       var __part_levels = _o.PartLevels.ToArray();
       _part_levels = CreatePartLevelsVector(builder, __part_levels);
     }
+    var _part_uids = default(VectorOffset);
+    if (_o.PartUids != null) {
+      var __part_uids = _o.PartUids.ToArray();
+      _part_uids = CreatePartUidsVector(builder, __part_uids);
+    }
     return CreateH_GunState(
       builder,
       _o.GunUid,
@@ -109,7 +132,8 @@ public struct H_GunState : IFlatbufferObject
       _o.CurrentAmmo,
       _o.MaxMagazine,
       _part_ids,
-      _part_levels);
+      _part_levels,
+      _part_uids);
   }
 }
 
@@ -121,6 +145,7 @@ public class H_GunStateT
   public int MaxMagazine { get; set; }
   public List<int> PartIds { get; set; }
   public List<int> PartLevels { get; set; }
+  public List<int> PartUids { get; set; }
 
   public H_GunStateT() {
     this.GunUid = 0;
@@ -129,6 +154,7 @@ public class H_GunStateT
     this.MaxMagazine = 0;
     this.PartIds = null;
     this.PartLevels = null;
+    this.PartUids = null;
   }
 }
 
@@ -144,6 +170,7 @@ static public class H_GunStateVerify
       && verifier.VerifyField(tablePos, 10 /*MaxMagazine*/, 4 /*int*/, 4, false)
       && verifier.VerifyVectorOfData(tablePos, 12 /*PartIds*/, 4 /*int*/, false)
       && verifier.VerifyVectorOfData(tablePos, 14 /*PartLevels*/, 4 /*int*/, false)
+      && verifier.VerifyVectorOfData(tablePos, 16 /*PartUids*/, 4 /*int*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

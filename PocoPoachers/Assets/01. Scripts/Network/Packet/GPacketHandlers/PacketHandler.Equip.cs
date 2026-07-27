@@ -53,6 +53,7 @@ public static partial class PacketHandlers
     {
         var partIds    = new List<int>();
         var partLevels = new List<int>();
+        var partUids   = new List<int>();
 
         foreach (var kv in WorldEquipmentManager.GetParts(gunUid))
         {
@@ -62,6 +63,8 @@ public static partial class PacketHandlers
             partIds.Add(kv.Value);
             // 강화 레벨은 호스트가 계산해서 보낸다 (게스트 로컬 강화 상태는 호스트 월드와 무관)
             partLevels.Add(WorldEquipmentManager.GetEnhancementLevel(partUid, kv.Value));
+            // partUid를 함께 보내 게스트가 해제 시 강화 상태를 복원할 수 있게 한다
+            partUids.Add(partUid);
         }
 
         bool hasAmmo = WorldEquipmentManager.TryGetAmmo(gunUid, out int curAmmo, out int maxMag);
@@ -75,6 +78,7 @@ public static partial class PacketHandlers
             MaxMagazine = maxMag,
             PartIds     = partIds,
             PartLevels  = partLevels,
+            PartUids    = partUids,
         }, H_GunState.Pack, PacketType.H_GunState);
     }
 }

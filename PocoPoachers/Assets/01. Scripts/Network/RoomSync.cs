@@ -128,7 +128,9 @@ public static class RoomSync
 
     // 총 파츠 장착/해제 — partId=0이면 해제. 호스트는 직접 저장하고, 게스트는 호스트에게 요청한다
     // currentAmmo/maxMagazine은 파츠 변경 직후 호출자(자기 자신) 총의 실제 값을 그대로 전달한다
-    public static void GunPartEquip(int gunUid, SlotType slotType, int partId, int partUid, int currentAmmo, int maxMagazine)
+    // partLevel: 파츠의 강화 레벨. 게스트가 로컬에서 계산해 호스트에 알려준다(호스트는 partUid 기준으로 저장).
+    // 호스트가 직접 호출할 땐 이미 자기 WEM에 레벨이 있으므로 무시된다.
+    public static void GunPartEquip(int gunUid, SlotType slotType, int partId, int partUid, int partLevel, int currentAmmo, int maxMagazine)
     {
         if (gunUid == 0) return;
 
@@ -146,10 +148,38 @@ public static class RoomSync
                 SlotType    = (int)slotType,
                 PartId      = partId,
                 PartUid     = partUid,
+                PartLevel   = partLevel,
                 CurrentAmmo = currentAmmo,
                 MaxMagazine = maxMagazine,
             }, G_GunPartEquip.Pack, PacketType.G_GunPartEquip);
         }
+    }
+
+    // 아이템 강화 즉시 동기화 — 게스트가 강화한 순간 호스트에 알려 uid 기준으로 레벨을 저장하게 한다.
+    // 호스트/솔로는 이미 로컬 WEM에 반영돼 있으므로 보내지 않는다.
+    public static void EnhanceItem(int itemUid, int itemId, int level)
+    {
+        if (RoomManager.IsHost) return;
+
+        PacketBuilder.SendReliableToHost(new G_EnhanceItemT
+        {
+            ItemUid = itemUid,
+            ItemId  = itemId,
+            Level   = level,
+        }, G_EnhanceItem.Pack, PacketType.G_EnhanceItem);
+    }
+
+    // 인벤토리(미장착) 무기의 파츠 상태를 호스트에 요청 (게스트 전용).
+    // 응답은 H_GunState로 오고, uid가 일치하는 프리뷰 총에 적용된다.
+    public static void RequestGunState(int gunUid)
+    {
+        if (RoomManager.IsHost || gunUid == 0) return;
+
+        PacketBuilder.SendReliableToHost(new G_RequestGunStateT
+        {
+            PlayerId = MyId,
+            GunUid   = gunUid,
+        }, G_RequestGunState.Pack, PacketType.G_RequestGunState);
     }
 
     public static void ItemGain(bool isPlayerGained, int boxUid, int itemTypeId, int itemUid, int amount, int addedSlotIndex, int removedSlotIndex)

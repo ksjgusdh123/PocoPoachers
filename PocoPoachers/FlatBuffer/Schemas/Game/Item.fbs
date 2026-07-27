@@ -131,6 +131,7 @@ table G_GunPartEquip
     current_ammo: int;
     max_magazine: int;
     part_uid:     int; // 파츠 인스턴스 uid (강화 레벨 연결용, 없으면 0)
+    part_level:   int; // 게스트가 로컬에서 계산한 파츠 강화 레벨 — 호스트가 partUid 기준으로 저장한다
 }
 
 // 무기 해제 시점의 탄약 저장 요청 (게스트→호스트). 마찬가지로 다른 플레이어 화면에는 영향 없어 브로드캐스트 없음
@@ -155,4 +156,24 @@ table H_GunState
     part_ids:    [int];
     // 강화 레벨을 호스트가 계산해 보낸다 — 게스트 로컬의 강화 상태는 호스트 월드와 무관하다
     part_levels: [int]; // part_ids와 같은 순서
+    // 파츠 인스턴스 uid — 게스트가 파츠 해제 시 강화 상태를 잃지 않도록 복원용으로 저장한다
+    part_uids:   [int]; // part_ids와 같은 순서
+}
+
+// 아이템 강화 즉시 동기화 (게스트→호스트). 강화한 순간 호스트가 uid 기준으로 레벨을 저장해
+// 장착 여부와 무관하게 강화 상태를 곧바로 반영한다. 다른 플레이어 화면엔 영향 없어 브로드캐스트 없음
+table G_EnhanceItem
+{
+    item_uid: int;
+    item_id:  int; // uid=0(스택형)일 때의 폴백 저장용
+    level:    int; // 강화 후 절대 레벨
+}
+
+// 인벤토리(미장착) 무기의 파츠 상태 조회 요청 (게스트→호스트).
+// 게스트는 WorldEquipmentManager를 신뢰할 수 없어 미장착 총의 파츠를 스스로 복원 못 한다.
+// 호스트가 보관 중인 파츠/탄약을 기존 H_GunState로 되돌려준다 (요청한 게스트에게만).
+table G_RequestGunState
+{
+    player_id: int;
+    gun_uid:   int;
 }

@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -5,6 +6,7 @@ public class EquipDropHandler : ItemHolderDropHandler, IPointerEnterHandler, IPo
 {
     [SerializeField] private GameObject _itemVisual;
     [SerializeField] private int _slotIndex;
+    [SerializeField] private TextMeshProUGUI _enhancementText; // 장비/파츠 강화 단계 표시 (없으면 표시 안 함)
     private EquipableController _controller;
     private DescriptionUI _descriptionUI;
 
@@ -58,11 +60,44 @@ public class EquipDropHandler : ItemHolderDropHandler, IPointerEnterHandler, IPo
             return;
         }
 
-        if (_isSetted && DroppedItemData != null && DroppedItemData.id == itemId) return; // 이미 동일 표시
+        if (_isSetted && DroppedItemData != null && DroppedItemData.id == itemId)
+        {
+            UpdateEnhancementText(); // 같은 아이템이어도 강화 레벨이 바뀌었을 수 있어 갱신
+            return;
+        }
 
         SetDisplay(data, 1);
+        UpdateEnhancementText();
         if (_itemVisual != null)
             _itemVisual.SetActive(true);
+    }
+
+    // 장비/파츠면 현재 강화 단계를 "+N"으로 표시, 그 외 타입이거나 미강화(0)면 숨김
+    private void UpdateEnhancementText()
+    {
+        if (_enhancementText == null) return;
+
+        if (!_isSetted || DroppedItemData == null || !IsEnhanceable(DroppedItemData.ItemType))
+        {
+            _enhancementText.text = string.Empty;
+            return;
+        }
+
+        int level = WorldEquipmentManager.GetEnhancementLevel(GetUnequipUid(), DroppedItemData.id);
+        _enhancementText.text = $"+{level}";
+    }
+
+    private static bool IsEnhanceable(ItemType type) =>
+        type == ItemType.Armor ||
+        type == ItemType.Helmet ||
+        type == ItemType.Weapon ||
+        type == ItemType.GunPart;
+
+    protected override void ClearDisplay()
+    {
+        base.ClearDisplay();
+        if (_enhancementText != null)
+            _enhancementText.text = string.Empty;
     }
 
     private void OnDisable()
@@ -94,6 +129,7 @@ public class EquipDropHandler : ItemHolderDropHandler, IPointerEnterHandler, IPo
         }
 
         _controller.Equip(data, _slotIndex, uid);
+        UpdateEnhancementText();
 
         if (_itemVisual != null)
             _itemVisual.SetActive(true);

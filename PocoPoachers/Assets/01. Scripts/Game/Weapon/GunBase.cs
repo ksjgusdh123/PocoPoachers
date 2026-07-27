@@ -50,6 +50,11 @@ public abstract class GunBase : EquippableItemBase
     public static event Action<float> OnReloadStarted;
     public static event Action OnReloadEnded;
 
+    // 호스트로부터 총 상태(H_GunState)가 적용된 직후 발생 (uid).
+    // 인벤 무기 파츠 패널이 프리뷰 총을 새로고침하는 데 사용
+    public static event Action<int> OnGunStateSynced;
+    public static void RaiseGunStateSynced(int uid) => OnGunStateSynced?.Invoke(uid);
+
     public event Action<Vector2> OnShoot;
     public event Action OnReloadRequested;
     public event Action<int> OnReloadComplete;
@@ -72,6 +77,8 @@ public abstract class GunBase : EquippableItemBase
     private Vector3 _soundGizmoPosition;
     private float _soundGizmoRange;
 
+    private Camera _mainCamera;
+
     protected virtual void Awake()
     {
         _baseStat = DataManager.GetGunStat(_itemId).Clone();
@@ -80,6 +87,7 @@ public abstract class GunBase : EquippableItemBase
         _currentAmmo = _stat.MaxMagazine;
         if (_maxDurability <= 0f) Initialize(_uid, _itemId, 100f);
         _originLocalPos = transform.localPosition;
+        _mainCamera = Camera.main;
     }
 
     protected virtual void OnDisable()
@@ -126,8 +134,8 @@ public abstract class GunBase : EquippableItemBase
             RoomSync.Durability(Uid, ItemId, -_durabilityDecreasePerShot, MaxDurability);
         _nextFireTime = Time.time + 60f / _stat.Rpm;
         _recoilDist = _stat.RecoilForce;
-        Vector2 muzzleScreen = Camera.main.WorldToScreenPoint(_muzzle.position);
-        Vector2 muzzleTipScreen = Camera.main.WorldToScreenPoint(_muzzle.position + _muzzle.up);
+        Vector2 muzzleScreen    = _mainCamera.WorldToScreenPoint(_muzzle.position);
+        Vector2 muzzleTipScreen = _mainCamera.WorldToScreenPoint(_muzzle.position + _muzzle.up);
         Vector2 forwardDir = (muzzleTipScreen - muzzleScreen).normalized;
         Vector2 rightDir = new Vector2(forwardDir.y, -forwardDir.x);
         Vector2 kickVector = forwardDir * _stat.CrosshairKickV

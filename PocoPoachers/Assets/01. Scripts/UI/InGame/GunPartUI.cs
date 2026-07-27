@@ -12,6 +12,7 @@ public class GunPartUI : MonoBehaviour
 
     private GunPartDropHandler[] _slots;
     private GunBase _gun;   // 현재 패널이 다루는 총 (uid=_gun.Uid, 데이터=_gun.Stat)
+    private GunBase _previewGun;   // 인벤토리(미장착) 총을 볼 때 임시 생성, Close에서 파괴
 
     private void Awake()
     {
@@ -20,8 +21,24 @@ public class GunPartUI : MonoBehaviour
             _closeButton.onClick.AddListener(Close);
     }
 
-    private void OnEnable() => WeaponController.OnWeaponChanged += OnWeaponChanged;
-    private void OnDisable() => WeaponController.OnWeaponChanged -= OnWeaponChanged;
+    private void OnEnable()
+    {
+        WeaponController.OnWeaponChanged += OnWeaponChanged;
+        GunBase.OnGunStateSynced += OnGunStateSynced;
+    }
+
+    private void OnDisable()
+    {
+        WeaponController.OnWeaponChanged -= OnWeaponChanged;
+        GunBase.OnGunStateSynced -= OnGunStateSynced;
+    }
+
+    // 게스트: 호스트가 프리뷰 총의 파츠 상태(H_GunState)를 돌려주면 패널을 다시 바인딩해 반영한다
+    private void OnGunStateSynced(int uid)
+    {
+        if (_previewGun != null && _previewGun.Uid == uid)
+            Open(_previewGun);
+    }
 
     // 무기 해제(data == null) 시 열려 있던 파츠 패널을 닫는다
     private void OnWeaponChanged(int slotIndex, ItemData data)
@@ -33,6 +50,9 @@ public class GunPartUI : MonoBehaviour
     public void Open(GunBase gun)
     {
         if (gun == null) return;
+
+        // 실장착 총으로 다시 열릴 때 이전 프리뷰가 남아있으면 정리
+        if (gun != _previewGun) DestroyPreview();
 
         _gun = gun;
         gameObject.SetActive(true);
@@ -49,7 +69,57 @@ public class GunPartUI : MonoBehaviour
         }
     }
 
-    public void Close() => gameObject.SetActive(false);
+    // 인벤토리(미장착) 무기용 — 임시 총을 만들어 저장된 파츠를 복원한 뒤 패널을 연다.
+    // 파츠 변경은 uid 기준으로 저장되므로, 이후 이 총을 장착하면 그대로 복원된다.
+    public void OpenForItem(int itemId, int uid)
+    {
+        ItemData data = ItemTable.Instance.Get(itemId);
+        if (data == null) return;
+
+        GunBase gun = ResourceManager.Instance.Spawn<GunBase>(data.prefab, transform);
+        if (gun == null) return;
+
+        gun.SetUid(uid);
+        gun.gameObject.SetActive(false);   // 시뮬레이션/렌더 없이 데이터 용도로만 사용
+
+        // 호스트/솔로는 로컬 WEM에서 바로 복원. 게스트는 WEM을 신뢰할 수 없어 호스트에 요청 →
+        // H_GunState 응답이 OnGunStateSynced로 들어와 프리뷰 총을 갱신한다.
+        if (RoomManager.IsHost)
+            RestorePartsFromWEM(gun, uid);
+
+        DestroyPreview();   // 이전 프리뷰가 남아있으면 정리
+        _previewGun = gun;
+        Open(gun);
+
+        if (!RoomManager.IsHost)
+            RoomSync.RequestGunState(uid);
+    }
+
+    // WorldEquipmentManager에 저장된 파츠를 총에 복원한다 (호스트 권위) — EquipPart가 스탯을 재계산한다
+    private static void RestorePartsFromWEM(GunBase gun, int uid)
+    {
+        foreach (var kv in WorldEquipmentManager.GetParts(uid))
+        {
+            GunPartData part = GunPartTable.Instance.Get(kv.Value);
+            if (part == null) continue;
+
+            int partUid = WorldEquipmentManager.GetPartUid(uid, kv.Key);
+            gun.EquipPart(WorldEquipmentManager.GetEnhancedGunPart(part, partUid));
+        }
+    }
+
+    public void Close()
+    {
+        gameObject.SetActive(false);
+        DestroyPreview();
+    }
+
+    private void DestroyPreview()
+    {
+        if (_previewGun == null) return;
+        Destroy(_previewGun.gameObject);
+        _previewGun = null;
+    }
 
     private void ShowGunImage(GunBase gun)
     {

@@ -51,5 +51,10 @@ public class SlotClickHandler : MonoBehaviour, IPointerClickHandler, IPointerEnt
             manager.SetPending(_slotUI, _slotUI.SavedAmountItem / 2);
             DragIcon.Instance.Show(ResourceManager.Instance.LoadSprite(_slotUI.SlotItemData.icon), eventData.position, manager.PendingAmount);
         }
+        else
+        {
+            // 수식키 없는 일반 우클릭: 컨텍스트 메뉴(사용 등) 요청
+            manager.InvokeInventoryRightClick(_slotUI);
+        }
     }
 }

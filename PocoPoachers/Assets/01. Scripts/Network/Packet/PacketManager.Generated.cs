@@ -51,5 +51,7 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.H_EnemySpeak        , PacketHandlers.OnH_EnemySpeak);
         _onRecv.Add(PacketType.H_EnemyShoot        , PacketHandlers.OnH_EnemyShoot);
         _onRecv.Add(PacketType.H_GuestRestore      , PacketHandlers.OnH_GuestRestore);
+        _onRecv.Add(PacketType.G_EnhanceItem       , PacketHandlers.OnG_EnhanceItem);
+        _onRecv.Add(PacketType.G_RequestGunState   , PacketHandlers.OnG_RequestGunState);
     }
 }

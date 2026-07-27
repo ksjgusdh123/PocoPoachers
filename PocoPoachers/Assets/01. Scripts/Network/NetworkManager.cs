@@ -11,6 +11,9 @@ public class NetworkManager : Singleton<NetworkManager>
     [SerializeField] int port = 7000;
     [SerializeField] bool remoteConnection = false;
 
+    private const float HeartbeatIntervalSeconds = 3.0f;
+    private const long  HighPingThresholdMs       = 200L;
+
     public Session Session { get; private set; }
 
     public int MyPlayerId { get; private set; }
@@ -107,7 +110,7 @@ public class NetworkManager : Singleton<NetworkManager>
         {
             if (Session != null && Session.IsConnected)
                 SendHeartbeat();
-            yield return new WaitForSeconds(3.0f);
+            yield return new WaitForSeconds(HeartbeatIntervalSeconds);
         }
     }
 
@@ -115,7 +118,7 @@ public class NetworkManager : Singleton<NetworkManager>
     {
         Rtt = calculatedRtt;
 
-        if (Rtt > 200) Debug.LogWarning($"[Network] High Ping: {Rtt}ms");
+        if (Rtt > HighPingThresholdMs) Debug.LogWarning($"[Network] High Ping: {Rtt}ms");
     }
 
     public void OnLoginResult(bool success, int playerId)

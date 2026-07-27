@@ -47,7 +47,7 @@ public class PlayerController : MonoBehaviour
     private bool _spectating;      // 완전 사망 후 동료 시점 관전 중인지
     private StatBase _spectateStat; // 현재 관전 중인 동료의 스탯 (사망/이탈 시 다른 동료로 전환)
     private SaveManager _saveManager;
-    private PlayerInputHandler _inputHander;
+    private PlayerInputHandler _inputHandler;
     private QuickSlotDropHandler[] _quickSlots;
     private GunPartDropHandler[] _gunPartSlots;
     private EquipDropHandler[] _equipHandlers;
@@ -56,6 +56,12 @@ public class PlayerController : MonoBehaviour
     private Coroutine _useCoroutine;
 
     private const string PlayerSaveKey = "player_inventory";
+
+    // 장착 슬롯 인덱스 — SaveManager.EquipSlotEntry / ApplyRoomRestore / GatherEquippedSlots와 일치해야 함
+    private const int WeaponSlot0  = 0;
+    private const int WeaponSlot1  = 1;
+    private const int ArmorSlot    = 2;
+    private const int BagSlot      = 4;
 
     private void Awake()
     {
@@ -84,6 +90,12 @@ public class PlayerController : MonoBehaviour
         {
             var equipMenu = FindAnyObjectByType<EquipContextMenuUI>(FindObjectsInactive.Include);
             equipMenu?.gameObject.SetActive(true);
+        }
+
+        if (ui.GetPanel(UIType.InventoryContextMenu) == null)
+        {
+            var invenMenu = FindAnyObjectByType<InventoryContextMenuUI>(FindObjectsInactive.Include);
+            invenMenu?.gameObject.SetActive(true);
         }
 
         _playerWeaponController = GetComponent<WeaponController>();
@@ -119,12 +131,12 @@ public class PlayerController : MonoBehaviour
         InitQuickSlots();
         InitGunPartSlots();
 
-        _inputHander = GetComponent<PlayerInputHandler>();
-        _inputHander.GoInventory += ShowInventory;
-        _inputHander.RegisterItemNumberKey += RegisterItem;
-        _inputHander.ConsumeItemNumberKey += StartConsuming;
-        _inputHander.StartInteraction += Interaction;
-        _inputHander.CancelItemUse += CancelConsuming;
+        _inputHandler = GetComponent<PlayerInputHandler>();
+        _inputHandler.GoInventory += ShowInventory;
+        _inputHandler.RegisterItemNumberKey += RegisterItem;
+        _inputHandler.ConsumeItemNumberKey += StartConsuming;
+        _inputHandler.StartInteraction += Interaction;
+        _inputHandler.CancelItemUse += CancelConsuming;
 
         if (_cameraController == null)
             _cameraController = FindObjectOfType<CameraController>();
@@ -135,6 +147,8 @@ public class PlayerController : MonoBehaviour
         ui.OnPanelClosed += OnPanelClosed;
 
         SlotInteractionManager.GetInstance().OnGunPartRequest += OnGunPartRequested;
+        SlotInteractionManager.GetInstance().OnInventoryGunPartRequest += OnInventoryGunPartRequested;
+        SlotInteractionManager.GetInstance().OnInventoryItemUseRequest += StartConsumingInventory;
 
         InitEquipSlots();
 
@@ -175,6 +189,13 @@ public class PlayerController : MonoBehaviour
             _gunPartPanel.Open(gun);
     }
 
+    // 인벤토리(미장착) 무기 우클릭 "파츠창 보기" → 임시 총으로 파츠 패널 열기
+    private void OnInventoryGunPartRequested(int itemId, int uid)
+    {
+        if (_gunPartPanel != null)
+            _gunPartPanel.OpenForItem(itemId, uid);
+    }
+
     private void InitEquipSlots()
     {
         var weaponController = GetComponent<WeaponController>();
@@ -184,8 +205,8 @@ public class PlayerController : MonoBehaviour
         _equipHandlers = PlayerBagUI.GetComponentsInChildren<EquipDropHandler>(true);
         foreach (var handler in _equipHandlers)
         {
-            if (handler.SlotIndex <= 1) handler.SetController(weaponController);
-            else if (handler.SlotIndex <= 3) handler.SetController(armorController);
+            if (handler.SlotIndex <= WeaponSlot1) handler.SetController(weaponController);
+            else if (handler.SlotIndex <= ArmorSlot) handler.SetController(armorController);
             else handler.SetController(bagController);
 
             // 복원된 장착 상태를 슬롯 표시에 반영 (드래그드롭이 아닌 경로로 장착됐으므로 명시적 동기화 필요)
@@ -198,7 +219,6 @@ public class PlayerController : MonoBehaviour
     private void RestoreEquippedSlots()
     {
         var entries = _saveManager?.LoadEquipSlots();
-        Debug.Log($"[EquipRestore] 복원 항목 수={entries?.Count ?? 0}, IsHost={RoomManager.IsHost}"); // TODO: 디버그 후 제거
         if (entries == null || entries.Count == 0) return;
 
         var weaponController = GetComponent<WeaponController>();
@@ -211,8 +231,8 @@ public class PlayerController : MonoBehaviour
             if (data == null) continue;
 
             EquipableController controller =
-                e.slotIndex <= 1 ? (EquipableController)weaponController :
-                e.slotIndex <= 3 ? armorController : bagController;
+                e.slotIndex <= WeaponSlot1 ? (EquipableController)weaponController :
+                e.slotIndex <= ArmorSlot   ? armorController : bagController;
 
             controller?.Equip(data, e.slotIndex, e.uid);
         }
@@ -235,8 +255,8 @@ public class PlayerController : MonoBehaviour
                 if (data == null) continue;
 
                 EquipableController controller =
-                    e.SlotIndex <= 1 ? (EquipableController)weaponController :
-                    e.SlotIndex <= 3 ? armorController : bagController;
+                    e.SlotIndex <= WeaponSlot1 ? (EquipableController)weaponController :
+                    e.SlotIndex <= ArmorSlot   ? armorController : bagController;
                 controller?.Equip(data, e.SlotIndex, e.ItemUid);
             }
 
@@ -265,11 +285,11 @@ public class PlayerController : MonoBehaviour
 
         if (weapon != null)
         {
-            AddEquipEntry(result, seenUids, weapon, 0);
-            AddEquipEntry(result, seenUids, weapon, 1);
+            AddEquipEntry(result, seenUids, weapon, WeaponSlot0);
+            AddEquipEntry(result, seenUids, weapon, WeaponSlot1);
         }
-        if (armor != null) AddEquipEntry(result, seenUids, armor, 2); // 방어구(헬멧) — 단일
-        if (bag != null) AddEquipEntry(result, seenUids, bag, 4);
+        if (armor != null) AddEquipEntry(result, seenUids, armor, ArmorSlot); // 방어구(헬멧) — 단일
+        if (bag != null)   AddEquipEntry(result, seenUids, bag,   BagSlot);
 
         return result;
     }
@@ -444,18 +464,22 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (_inputHander != null)
+        if (_inputHandler != null)
         {
-            _inputHander.GoInventory -= ShowInventory;
-            _inputHander.RegisterItemNumberKey -= RegisterItem;
-            _inputHander.ConsumeItemNumberKey -= StartConsuming;
-            _inputHander.StartInteraction -= Interaction;
-            _inputHander.CancelItemUse -= CancelConsuming;
+            _inputHandler.GoInventory -= ShowInventory;
+            _inputHandler.RegisterItemNumberKey -= RegisterItem;
+            _inputHandler.ConsumeItemNumberKey -= StartConsuming;
+            _inputHandler.StartInteraction -= Interaction;
+            _inputHandler.CancelItemUse -= CancelConsuming;
         }
 
         var slotManager = SlotInteractionManager.GetInstance();
         if (slotManager != null)
+        {
             slotManager.OnGunPartRequest -= OnGunPartRequested;
+            slotManager.OnInventoryGunPartRequest -= OnInventoryGunPartRequested;
+            slotManager.OnInventoryItemUseRequest -= StartConsumingInventory;
+        }
 
         var ui = UIManager.GetInstance();
         if (ui == null) return;
@@ -471,7 +495,7 @@ public class PlayerController : MonoBehaviour
             return;
 
         LockCamera(true);
-        _inputHander.SwitchInputActionMap(type == UIType.EnhancementTable
+        _inputHandler.SwitchInputActionMap(type == UIType.EnhancementTable
             ? PlayerInputMapType.ItemBox
             : PlayerInputMapType.Inventory);
     }
@@ -499,7 +523,7 @@ public class PlayerController : MonoBehaviour
             PlayerMainGameUI.SetActive(true);
 
         LockCamera(false);
-        _inputHander.SwitchInputActionMap(PlayerInputMapType.Game);
+        _inputHandler.SwitchInputActionMap(PlayerInputMapType.Game);
     }
 
     private void OnTriggerEnter(Collider other)
@@ -557,7 +581,7 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public void SwitchInputMap(PlayerInputMapType type)
     {
-        _inputHander.SwitchInputActionMap(type);
+        _inputHandler.SwitchInputActionMap(type);
     }
 
     public void LockCamera(bool locked)
@@ -626,6 +650,25 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(_useItemDuration);
 
         _quickSlots[index].ConsumeItem();
+        _useCoroutine = null;
+    }
+
+    // 인벤토리 컨텍스트 메뉴의 "사용" — 퀵슬롯과 동일하게 사용 시간 UI를 거쳐 소비한다
+    private void StartConsumingInventory(ItemData item, Inventory inventory)
+    {
+        if (item == null || inventory == null) return;
+        if (_useCoroutine != null) return; // 이미 사용 중이면 무시
+
+        _useCoroutine = StartCoroutine(UseInventoryItemRoutine(item, inventory));
+    }
+
+    private IEnumerator UseInventoryItemRoutine(ItemData item, Inventory inventory)
+    {
+        OnUseStarted?.Invoke(_useItemDuration);
+
+        yield return new WaitForSeconds(_useItemDuration);
+
+        ItemUseSystem.TryUse(item, inventory);
         _useCoroutine = null;
     }
 }
