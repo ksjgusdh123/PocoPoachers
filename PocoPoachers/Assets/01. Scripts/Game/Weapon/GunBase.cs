@@ -77,6 +77,8 @@ public abstract class GunBase : EquippableItemBase
     private Vector3 _soundGizmoPosition;
     private float _soundGizmoRange;
 
+    private Camera _mainCamera;
+
     protected virtual void Awake()
     {
         _baseStat = DataManager.GetGunStat(_itemId).Clone();
@@ -85,6 +87,7 @@ public abstract class GunBase : EquippableItemBase
         _currentAmmo = _stat.MaxMagazine;
         if (_maxDurability <= 0f) Initialize(_uid, _itemId, 100f);
         _originLocalPos = transform.localPosition;
+        _mainCamera = Camera.main;
     }
 
     protected virtual void OnDisable()
@@ -131,8 +134,8 @@ public abstract class GunBase : EquippableItemBase
             RoomSync.Durability(Uid, ItemId, -_durabilityDecreasePerShot, MaxDurability);
         _nextFireTime = Time.time + 60f / _stat.Rpm;
         _recoilDist = _stat.RecoilForce;
-        Vector2 muzzleScreen = Camera.main.WorldToScreenPoint(_muzzle.position);
-        Vector2 muzzleTipScreen = Camera.main.WorldToScreenPoint(_muzzle.position + _muzzle.up);
+        Vector2 muzzleScreen    = _mainCamera.WorldToScreenPoint(_muzzle.position);
+        Vector2 muzzleTipScreen = _mainCamera.WorldToScreenPoint(_muzzle.position + _muzzle.up);
         Vector2 forwardDir = (muzzleTipScreen - muzzleScreen).normalized;
         Vector2 rightDir = new Vector2(forwardDir.y, -forwardDir.x);
         Vector2 kickVector = forwardDir * _stat.CrosshairKickV

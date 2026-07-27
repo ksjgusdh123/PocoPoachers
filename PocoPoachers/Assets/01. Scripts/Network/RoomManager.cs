@@ -19,7 +19,7 @@ public class RoomManager : Singleton<RoomManager>
     public static bool HasGuests => Instance != null && Instance._hasGuests;
     public static int CurrentUdpSenderId => Instance != null ? Instance._udpSenderId : 0;
 
-    public bool _hasGuests => _guests.Count > 0;
+    private bool _hasGuests => _guests.Count > 0;
     private bool _isHost = true;
     int _udpSenderId;
 
@@ -253,22 +253,43 @@ public class RoomManager : Singleton<RoomManager>
 
     public void HandleReliablePacket(ArraySegment<byte> data, IPEndPoint sender)
     {
-        int guestId = 0;
-        foreach (var kv in _guests)
-            if (kv.Value.Equals(sender)) { guestId = kv.Key; break; }
+        int guestId = ResolveGuestId(sender);
+        UpdateLastSeen(guestId, sender);
+        EnqueuePacketDispatch(data, guestId, sender);
+    }
 
+    private void OnUdpReceived(ArraySegment<byte> data, IPEndPoint sender)
+    {
+        int guestId = ResolveGuestId(sender);
+        UpdateLastSeen(guestId, sender);
+        EnqueuePacketDispatch(data, guestId, sender);
+    }
+
+    // 발신자 EndPoint로 guestId를 조회한다. 호스트가 아니거나 매핑이 없으면 0을 반환한다.
+    private int ResolveGuestId(IPEndPoint sender)
+    {
+        foreach (var kv in _guests)
+            if (kv.Value.Equals(sender)) return kv.Key;
+        return 0;
+    }
+
+    // 마지막 수신 시각을 갱신한다 (타임아웃 감지용).
+    private void UpdateLastSeen(int guestId, IPEndPoint sender)
+    {
         long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (_isHost && guestId != 0)
             _guestLastSeen[guestId] = now;
         else if (!_isHost && _hostEp != null && sender.Equals(_hostEp))
             _hostLastSeen = now;
+    }
 
-        int capturedGuestId = guestId;
-        IPEndPoint capturedEp = sender;
+    // 패킷 처리를 메인 스레드 큐에 등록한다.
+    private void EnqueuePacketDispatch(ArraySegment<byte> data, int guestId, IPEndPoint sender)
+    {
         MainThreadDispatcher.Enqueue(() =>
         {
-            _udpSenderId = capturedGuestId;
-            _currentSenderEndPoint = capturedEp;
+            _udpSenderId = guestId;
+            _currentSenderEndPoint = sender;
             PacketManager.HandlePacket(data);
             _udpSenderId = 0;
             _currentSenderEndPoint = null;
@@ -291,30 +312,6 @@ public class RoomManager : Singleton<RoomManager>
         {
             _hostLastSeen = now;
         }
-    }
-
-    private void OnUdpReceived(ArraySegment<byte> data, IPEndPoint sender)
-    {
-        int guestId = 0;
-        foreach (var kv in _guests)
-            if (kv.Value.Equals(sender)) { guestId = kv.Key; break; }
-
-        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        if (_isHost && guestId != 0)
-            _guestLastSeen[guestId] = now;
-        else if (!_isHost && _hostEp != null && sender.Equals(_hostEp))
-            _hostLastSeen = now;
-
-        int capturedGuestId = guestId;
-        IPEndPoint capturedEp = sender;
-        MainThreadDispatcher.Enqueue(() =>
-        {
-            _udpSenderId = capturedGuestId;
-            _currentSenderEndPoint = capturedEp;
-            PacketManager.HandlePacket(data);
-            _udpSenderId = 0;
-            _currentSenderEndPoint = null;
-        });
     }
 
     public static bool TryGetGuestIdFromPacket(int playerIdInPacket, bool autoRegister, out int guestId)

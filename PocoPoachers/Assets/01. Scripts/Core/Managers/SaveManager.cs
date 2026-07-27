@@ -8,6 +8,8 @@ public class SaveManager : Singleton<SaveManager>
     private string SlotPath(int slotIndex) =>
         Path.Combine(Application.persistentDataPath, $"save_{slotIndex}.json");
 
+    private static string NowTimestamp() => DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+
     private readonly Dictionary<int, GameSaveData> _cache = new();
     private int _activeSlot;
 
@@ -51,7 +53,7 @@ public class SaveManager : Singleton<SaveManager>
                 entries.Add(new SlotSaveEntry { slotIndex = i, itemId = slot.ItemData.id, amount = slot.Amount, uid = slot.Uid });
         }
         data.SetInventory(key, entries);
-        data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        data.lastSavedAt = NowTimestamp();
         SaveSlotToDisk(_activeSlot);
     }
 
@@ -74,7 +76,7 @@ public class SaveManager : Singleton<SaveManager>
     {
         var data = GetOrLoad(_activeSlot);
         data.equipSlots = slots ?? new List<EquipSlotEntry>();
-        data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        data.lastSavedAt = NowTimestamp();
         SaveSlotToDisk(_activeSlot);
     }
 
@@ -86,7 +88,7 @@ public class SaveManager : Singleton<SaveManager>
         if (!RoomManager.IsHost) return;
         var data = GetOrLoad(_activeSlot);
         data.equipment = WorldEquipmentManager.Export();
-        data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        data.lastSavedAt = NowTimestamp();
         SaveSlotToDisk(_activeSlot);
     }
 
@@ -107,7 +109,7 @@ public class SaveManager : Singleton<SaveManager>
         data.hp = hp;
         data.stamina = stamina;
         data.battery = battery;
-        data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        data.lastSavedAt = NowTimestamp();
         SaveSlotToDisk(_activeSlot);
     }
 
@@ -214,7 +216,7 @@ public class SaveManager : Singleton<SaveManager>
     {
         var data = GetOrLoad(_activeSlot);
         data.shelterLevel = level;
-        data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        data.lastSavedAt = NowTimestamp();
         SaveSlotToDisk(_activeSlot);
     }
 
@@ -228,7 +230,7 @@ public class SaveManager : Singleton<SaveManager>
         int idx = data.guestStates.FindIndex(g => g.playerId == state.playerId);
         if (idx >= 0) data.guestStates[idx] = state;
         else data.guestStates.Add(state);
-        data.lastSavedAt = DateTime.Now.ToString("yyyy-MM-dd HH:mm");
+        data.lastSavedAt = NowTimestamp();
         SaveSlotToDisk(_activeSlot);
     }
 
