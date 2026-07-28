@@ -12,6 +12,7 @@ table G_Move
     is_rolling:   bool;
     is_aiming:    bool;
     is_reloading: bool;
+    is_down:      bool; // HP 0으로 쓰러진 상태 — 원격 쓰러짐 애니메이션 동기화
 }
 
 table H_Move
@@ -26,4 +27,5 @@ table H_Move
     is_rolling:   bool;
     is_aiming:    bool;
     is_reloading: bool;
+    is_down:      bool; // HP 0으로 쓰러진 상태 — 원격 쓰러짐 애니메이션 동기화
 }

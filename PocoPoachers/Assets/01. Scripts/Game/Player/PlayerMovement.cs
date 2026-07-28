@@ -38,6 +38,7 @@ public class PlayerMovement : MonoBehaviour
     private float _lastSentYaw;
     private sbyte _lastMoveType = -1;
     private bool _hasSent;
+    private bool _lastSentDown;
 
     private float _localVelX;
     private float _localVelZ;
@@ -63,6 +64,12 @@ public class PlayerMovement : MonoBehaviour
         PlayerController.OnUseStarted  += OnItemUseStarted;
         PlayerController.OnUseCancelled += ResetItemUseMultiplier;
         ItemUseSystem.OnItemUsed        += OnItemUsed;
+
+        if (_playerStat != null)
+        {
+            _playerStat.OnDie    += HandleDowned;
+            _playerStat.OnRevive += HandleRevived;
+        }
     }
 
     private void OnDestroy()
@@ -70,6 +77,22 @@ public class PlayerMovement : MonoBehaviour
         PlayerController.OnUseStarted  -= OnItemUseStarted;
         PlayerController.OnUseCancelled -= ResetItemUseMultiplier;
         ItemUseSystem.OnItemUsed        -= OnItemUsed;
+
+        if (_playerStat != null)
+        {
+            _playerStat.OnDie    -= HandleDowned;
+            _playerStat.OnRevive -= HandleRevived;
+        }
+    }
+
+    private void HandleDowned()  => SetDown(true);
+    private void HandleRevived() => SetDown(false);
+
+    // 쓰러짐 상태 토글 — Animator의 IsDown 파라미터로 쓰러짐 애니메이션을 재생/해제한다.
+    // 이동은 막지 않는다 (다운 시 PlayerStat.DownedMultiplier가 0.1배로 느리게 유지).
+    public void SetDown(bool down)
+    {
+        if (_animator != null) _animator.SetBool("IsDown", down);
     }
 
     private void OnItemUseStarted(float _) => _currentItemUseMultiplier = _itemUseSpeedMultiplier;
@@ -94,6 +117,15 @@ public class PlayerMovement : MonoBehaviour
           _verticalVelocity = _groundedGravity;
       else
           _verticalVelocity += _gravity * Time.deltaTime;
+
+      // 쓰러진 상태(HP 0): 수평 이동을 막고 중력만 적용해 그 자리에 눕는다.
+      // 쓰러짐 애니메이션은 SetDown이 켠 IsDown 파라미터로 재생된다.
+      if (_playerStat != null && _playerStat.IsDead)
+      {
+          _currentVelocity = Vector3.zero;
+          _characterController.Move(Vector3.up * (_verticalVelocity * Time.deltaTime));
+          return;
+      }
 
       if (_playerDodge.IsRolling)
       {
@@ -167,20 +199,24 @@ public class PlayerMovement : MonoBehaviour
         Vector3 pos = transform.position;
         float yaw = transform.eulerAngles.y;
         sbyte moveType = _inputHandler != null && _inputHandler.MoveInput.sqrMagnitude > 0.01f ? (sbyte)1 : (sbyte)0;
+        bool isDown = _playerStat != null && _playerStat.IsDead;
 
+        // 정지 중이라도 쓰러짐 상태가 바뀌면 전송해야 원격에 즉시 반영된다 (제자리 쓰러짐 대응)
         if (_hasSent &&
             (pos - _lastSentPos).sqrMagnitude < _minMoveSqrEpsilon &&
             Mathf.Abs(Mathf.DeltaAngle(yaw, _lastSentYaw)) < _minYawDelta &&
-            moveType == _lastMoveType)
+            moveType == _lastMoveType &&
+            isDown == _lastSentDown)
             return;
 
         bool isAiming    = _weaponController != null && _weaponController.IsAiming;
         bool isReloading = _weaponController != null && _weaponController.IsReloading;
-        RoomSync.Move(pos, yaw, moveType, _localVelX, _localVelZ, _isSprinting, _playerDodge.IsRolling, isAiming, isReloading);
+        RoomSync.Move(pos, yaw, moveType, _localVelX, _localVelZ, _isSprinting, _playerDodge.IsRolling, isAiming, isReloading, isDown);
 
         _lastSentPos  = pos;
         _lastSentYaw  = yaw;
         _lastMoveType = moveType;
+        _lastSentDown = isDown;
         _hasSent      = true;
     }
 }
