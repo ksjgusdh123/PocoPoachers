@@ -3,6 +3,7 @@ using UnityEngine;
 public class PlayerSpawner : MonoBehaviour
 {
     [SerializeField] private SpawnId _spawnId = SpawnId.None;
+    [SerializeField] private GameObject _playerPrefab;
 
     private void Start()
     {
@@ -16,7 +17,7 @@ public class PlayerSpawner : MonoBehaviour
             return;
         }
 
-        var prefab = GameManager.Instance.PlayerPrefab;
+        var prefab = _playerPrefab != null ? _playerPrefab : GameManager.Instance.PlayerPrefab;
         if (prefab == null) return;
         Instantiate(prefab, transform.position, transform.rotation);
         GameManager.Instance.SetSpawnId(SpawnId.None);
