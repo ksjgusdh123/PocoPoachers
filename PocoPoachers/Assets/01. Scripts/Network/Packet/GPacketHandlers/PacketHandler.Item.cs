@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public static partial class PacketHandlers
 {
@@ -154,5 +155,33 @@ public static partial class PacketHandlers
             PlayerId = guestId,
             ItemId   = packet.ItemId,
         }, H_ConsumeItemResult.Pack, PacketType.H_ConsumeItemResult);
+    }
+
+    // 게스트가 인벤 아이템을 월드에 버림 — 호스트가 권위적으로 LootBox를 스폰하고 H_ItemSpawn으로 전파한다.
+    // 게스트 개인 인벤은 호스트가 추적하지 않으므로 요청 내용을 신뢰한다(소비/재료 위주, 장비 uid는 내구도 동기화 한계 있음).
+    public static void OnG_DropItem(FlatPacket root)
+    {
+        var packet = root.TypeAsG_DropItem();
+        if (!RoomManager.IsHost) return;
+
+        int itemId  = packet.ItemId;
+        int amount  = packet.Amount;
+        int itemUid = packet.ItemUid;
+        if (ItemTable.Instance.Get(itemId) == null || amount <= 0) return;
+
+        float x = packet.Pos?.X ?? 0f;
+        float y = packet.Pos?.Y ?? 0f;
+        float z = packet.Pos?.Z ?? 0f;
+        Vector3 pos = new Vector3(x, y, z);
+        float rot = packet.Rotation;
+
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            PlayerItemBoxDropper.SpawnLootBoxAt(
+                new List<int> { itemId },
+                new List<int> { amount },
+                new List<int> { itemUid },
+                pos, rot);
+        });
     }
 }

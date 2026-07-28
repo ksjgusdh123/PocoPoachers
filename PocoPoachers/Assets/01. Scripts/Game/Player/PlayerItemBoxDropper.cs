@@ -47,7 +47,6 @@ public class PlayerItemBoxDropper : MonoBehaviour
     // v1: 호스트/솔로만 지원 — 게스트는 아무것도 하지 않는다(아이템 그대로 유지).
     public void DropSlotToWorld(int slotIndex, int amount)
     {
-        if (!RoomManager.IsHost) return;
         if (_inventory == null) return;
         if (slotIndex < 0 || slotIndex >= _inventory.Slots.Count) return;
 
@@ -55,17 +54,29 @@ public class PlayerItemBoxDropper : MonoBehaviour
         if (slot.IsEmpty) return;
 
         int dropCount = Mathf.Clamp(amount, 1, slot.Amount);
+        int itemId = slot.ItemData.id;
+        int itemUid = slot.Uid;
 
-        var itemIds = new List<int> { slot.ItemData.id };
-        var itemCounts = new List<int> { dropCount };
-        var itemUids = new List<int> { slot.Uid };
-
+        // 로컬 인벤에서 먼저 제거 (호스트/게스트 공통, 낙관적)
         _inventory.RemoveItemAtSlot(slotIndex, slot.ItemData, dropCount);
-        SpawnBox(itemIds, itemCounts, itemUids);
+
+        Vector3 pos = transform.position;
+        float rot = transform.eulerAngles.y;
+
+        if (RoomManager.IsHost)
+            SpawnLootBoxAt(new List<int> { itemId }, new List<int> { dropCount }, new List<int> { itemUid }, pos, rot);
+        else
+            // 게스트: 호스트에 요청 → 호스트가 스폰 후 H_ItemSpawn으로 되받아 로컬 생성
+            RoomSync.DropItem(itemId, dropCount, itemUid, pos, rot);
     }
 
-    // 지정한 아이템들을 플레이어 위치에 LootBox로 스폰하고, 스냅샷 등록 + 게스트 전파까지 처리한다.
+    // 이 플레이어 위치에 LootBox로 스폰 (사망 드롭 등 호스트 로컬 경로)
     private void SpawnBox(List<int> itemIds, List<int> itemCounts, List<int> itemUids)
+        => SpawnLootBoxAt(itemIds, itemCounts, itemUids, transform.position, transform.eulerAngles.y);
+
+    // 지정 위치에 LootBox를 스폰하고 스냅샷 등록 + 게스트 전파까지 처리한다. 호스트 권위 —
+    // 호스트 로컬 드롭과 게스트 드롭 요청(OnG_DropItem) 양쪽에서 재사용해 uid 할당을 한 곳에 모은다.
+    public static void SpawnLootBoxAt(List<int> itemIds, List<int> itemCounts, List<int> itemUids, Vector3 pos, float rot)
     {
         if (itemIds.Count == 0) return;
 
@@ -73,8 +84,6 @@ public class PlayerItemBoxDropper : MonoBehaviour
         if (omgr == null) return;
 
         int uid = _nextUid++;
-        Vector3 pos = transform.position;
-        float rot = transform.eulerAngles.y;
 
         omgr.SpawnItemBox(uid, BoxTypeId, pos, rot)
             ?.Initialize(itemIds.ToArray(), itemCounts.ToArray(), itemUids.ToArray(), capacity: itemIds.Count, skipReveal: true);

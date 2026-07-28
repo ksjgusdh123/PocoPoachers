@@ -177,3 +177,14 @@ table G_RequestGunState
     player_id: int;
     gun_uid:   int;
 }
+
+// 게스트가 인벤 아이템을 월드에 버리기 요청 (게스트→호스트).
+// 호스트가 권위적으로 LootBox를 스폰하고 H_ItemSpawn으로 전체에 전파한다.
+table G_DropItem
+{
+    item_id:  int;
+    amount:   int;
+    item_uid: int; // 인스턴스 uid (없으면 0)
+    pos:      Vec3;
+    rotation: float;
+}

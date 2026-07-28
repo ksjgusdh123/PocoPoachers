@@ -214,6 +214,20 @@ public static class RoomSync
         }, G_ItemExchange.Pack, PacketType.G_ItemExchange);
     }
 
+    // 게스트가 인벤 아이템을 월드에 버리기 요청 (게스트→호스트). 호스트가 LootBox를 스폰하고 H_ItemSpawn으로 전파한다.
+    public static void DropItem(int itemId, int amount, int itemUid, Vector3 pos, float rotation)
+    {
+        if (IsSolo) return;
+        PacketBuilder.SendReliableToHost(new G_DropItemT
+        {
+            ItemId   = itemId,
+            Amount   = amount,
+            ItemUid  = itemUid,
+            Pos      = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+            Rotation = rotation,
+        }, G_DropItem.Pack, PacketType.G_DropItem);
+    }
+
     public static void ItemBoxUpdate(int boxUid, int itemTypeId, int amount, int slotIndex, int itemUid = 0)
     {
         if (!RoomManager.HasGuests) return;
