@@ -13,6 +13,6 @@ public class Spaceship : MonoBehaviour, IInteractable
     {
         UIManager.GetInstance().Hide(UIType.PlanetSelect);
         player.LockCamera(false);
-        player.SwitchInputMap(PlayerInputMapType.Game);
+        player.SwitchToGameplayInputMap();
     }
 }

@@ -115,7 +115,7 @@ public class ItemBox : MonoBehaviour, IInteractable
         player.SetInventoryOpen(false);
 
         GetComponent<ItemBoxAnimation>()?.SetOpen(false);
-        player.SwitchInputMap(PlayerInputMapType.Game);
+        player.SwitchToGameplayInputMap();
         UIManager.GetInstance().ChangeMouseCursor(true);
     }
 

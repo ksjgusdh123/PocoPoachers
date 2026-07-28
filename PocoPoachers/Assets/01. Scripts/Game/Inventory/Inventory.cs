@@ -22,6 +22,10 @@ public class Inventory : MonoBehaviour
     public int MaxWeight => _maxWeight;
     public int CurrentWeight => CalculateWeight();
 
+    // 플레이어 소유 인벤토리 여부 — 박스/창고와 구분. 플레이어도 WorldObject가 붙으므로
+    // WorldObject 존재만으로 박스를 판별하면 안 된다.
+    public bool IsPlayer => isPlayer;
+
     // 현재 사용 중인 슬롯 수 (갭 포함)
     public int ItemCount => CountItems();
 

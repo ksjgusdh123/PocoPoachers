@@ -17,7 +17,8 @@ public class InventoryUI : MonoBehaviour
 
     public Inventory Inventory => _inventory;
     public WorldObject Box => _inventory.GetComponent<WorldObject>();
-    public bool IsBox => _inventory.TryGetComponent<WorldObject>(out _);
+    // 플레이어 인벤토리는 WorldObject가 붙어도 박스가 아니다 (코옵 동기화용으로 플레이어에도 WorldObject가 붙음)
+    public bool IsBox => !_inventory.IsPlayer && _inventory.TryGetComponent<WorldObject>(out _);
 
     protected virtual void Awake()
     {
@@ -65,7 +66,7 @@ public class InventoryUI : MonoBehaviour
 
         GameManager.GetInstance().SaveChangeInventorys(_inventory, target);
 
-        Inventory boxInventory = _inventory.TryGetComponent<WorldObject>(out _) ? _inventory : target;
+        Inventory boxInventory = IsBox ? _inventory : target;
         bool isNetworked = boxInventory.TryGetComponent<WorldObject>(out var boxWo);
         int itemUid = _inventory.Slots[targetSlot.SlotIndex].Uid;
 

@@ -20,7 +20,7 @@ public class EnhancementTable : MonoBehaviour, IInteractable
 
         UIManager.GetInstance().Hide(UIType.EnhancementTable);
 
-        player.SwitchInputMap(PlayerInputMapType.Game);
+        player.SwitchToGameplayInputMap();
         UIManager.GetInstance().ChangeMouseCursor(true);
     }
 }

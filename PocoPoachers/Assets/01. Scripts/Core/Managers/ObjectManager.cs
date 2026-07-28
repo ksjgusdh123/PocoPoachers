@@ -25,6 +25,7 @@ public class ObjectManager : Singleton<ObjectManager>
         public bool IsRolling;
         public bool IsAiming;
         public bool IsReloading;
+        public bool IsDown;
     }
 
     [SerializeField] Entry[] _entries;
@@ -122,8 +123,8 @@ public class ObjectManager : Singleton<ObjectManager>
             _pending.Add(move);
     }
 
-    public void QueueMove(ObjectKind kind, int id, Vector3 pos, float rotation, sbyte moveType, float velX = 0f, float velZ = 0f, bool isSprinting = false, bool isRolling = false, bool isAiming = false, bool isReloading = false) =>
-        Enqueue(new PendingMove { Kind = kind, Id = id, Pos = pos, Rotation = rotation, MoveType = moveType, VelocityX = velX, VelocityZ = velZ, IsSprinting = isSprinting, IsRolling = isRolling, IsAiming = isAiming, IsReloading = isReloading });
+    public void QueueMove(ObjectKind kind, int id, Vector3 pos, float rotation, sbyte moveType, float velX = 0f, float velZ = 0f, bool isSprinting = false, bool isRolling = false, bool isAiming = false, bool isReloading = false, bool isDown = false) =>
+        Enqueue(new PendingMove { Kind = kind, Id = id, Pos = pos, Rotation = rotation, MoveType = moveType, VelocityX = velX, VelocityZ = velZ, IsSprinting = isSprinting, IsRolling = isRolling, IsAiming = isAiming, IsReloading = isReloading, IsDown = isDown });
 
 
     void ApplyMove(in PendingMove m)
@@ -141,7 +142,7 @@ public class ObjectManager : Singleton<ObjectManager>
             _objects.Add(key, obj);
         }
 
-        obj.SetMoveTarget(m.Pos, m.Rotation, m.VelocityX, m.VelocityZ, m.IsSprinting, m.IsRolling, m.IsAiming, m.IsReloading);
+        obj.SetMoveTarget(m.Pos, m.Rotation, m.VelocityX, m.VelocityZ, m.IsSprinting, m.IsRolling, m.IsAiming, m.IsReloading, m.IsDown);
     }
 
     static bool IsLocalPlayer(ObjectKind kind, int id)

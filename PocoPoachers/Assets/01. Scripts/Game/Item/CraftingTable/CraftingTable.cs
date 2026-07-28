@@ -15,7 +15,7 @@ public class CraftingTable : MonoBehaviour, IInteractable
     public void OnInteractExit(PlayerController player)
     {
         UIManager.GetInstance().Hide(UIType.CraftingTable);
-        player.SwitchInputMap(PlayerInputMapType.Game);
+        player.SwitchToGameplayInputMap();
         UIManager.GetInstance().ChangeMouseCursor(true);
     }
 }

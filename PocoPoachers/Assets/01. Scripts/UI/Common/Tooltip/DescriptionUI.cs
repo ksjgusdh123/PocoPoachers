@@ -11,7 +11,6 @@ public class DescriptionUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _name;
     [SerializeField] private TextMeshProUGUI _description;
     [SerializeField] private Image _icon;
-    [SerializeField] private Vector3 _offset;
 
     // 내구도가 있는 장비(무기/방어구)를 호버했을 때만 활성화되는 영역
     [SerializeField] private GameObject _durabilityRoot;
@@ -29,72 +28,31 @@ public class DescriptionUI : MonoBehaviour
     // 호버 중 실시간 갱신을 위해 구독해둔 대상 (다른 슬롯으로 옮기거나 닫을 때 해제)
     private EquippableItemBase _durabilityTarget;
 
-    private RectTransform _rect;
-    private RectTransform _canvasRect;
-
-    // 매 호버마다 배열을 새로 만들지 않도록 재사용
-    private readonly Vector3[] _corners = new Vector3[4];
-    private readonly Vector3[] _canvasCorners = new Vector3[4];
-
-    private void Awake()
-    {
-        _rect = transform as RectTransform;
-
-        var canvas = GetComponentInParent<Canvas>(true);
-        if (canvas != null) _canvasRect = canvas.rootCanvas.transform as RectTransform;
-    }
-
     public void ShowDescription(ItemSlotUI slot)
     {
         if (!slot.IsSettedItem) return;
         // 아직 공개되지 않은(리빌 진행 중) 박스 슬롯은 설명 미표시
         if (slot.InventoryUI != null && slot.InventoryUI.IsSlotUnrevealed(slot.SlotIndex)) return;
-        Show(slot.SlotItemData, slot.SlotUid, slot.transform.position);
+        Show(slot.SlotItemData, slot.SlotUid);
     }
 
     // 장비 슬롯(EquipDropHandler) 등 ItemSlotUI가 아닌 곳에서 호버할 때 사용
-    public void ShowDescription(ItemData data, int uid, Vector3 anchorPosition)
+    public void ShowDescription(ItemData data, int uid)
     {
         if (data == null) return;
-        Show(data, uid, anchorPosition);
+        Show(data, uid);
     }
 
-    private void Show(ItemData data, int uid, Vector3 anchorPosition)
+    // 고정 위치 툴팁 — 위치는 에디터에서 RectTransform으로 잡고, 여기선 내용만 채우고 켠다.
+    private void Show(ItemData data, int uid)
     {
         if (!gameObject.activeSelf) gameObject.SetActive(true);
-        transform.position = anchorPosition + _offset;
         _name.text = LocalizationManager.GetInstance().GetString(data.ItemName);
         _description.text = LocalizationManager.GetInstance().GetString(data.Description);
         if (_icon != null) _icon.sprite = ResourceManager.Instance.LoadSprite(data.icon);
         BindDurability(data, uid);
         BindStats(data, uid);
         BindEnhancement(data, uid);
-
-        // 내용에 따라 크기가 달라지므로 모든 텍스트를 채운 뒤에 위치를 보정한다
-        ClampInsideCanvas();
-    }
-
-    // 툴팁이 화면(루트 캔버스) 밖으로 나가면 안쪽으로 밀어 넣는다
-    // 두 RectTransform의 코너를 같은 월드 공간에서 비교하므로 캔버스 렌더 모드와 무관하게 동작한다
-    private void ClampInsideCanvas()
-    {
-        if (_rect == null || _canvasRect == null) return;
-
-        // 방금 바꾼 텍스트가 크기에 반영되기 전에 재면 어긋난다
-        LayoutRebuilder.ForceRebuildLayoutImmediate(_rect);
-
-        _rect.GetWorldCorners(_corners);
-        _canvasRect.GetWorldCorners(_canvasCorners);
-
-        // 0 = 좌하단, 2 = 우상단
-        Vector3 push = Vector3.zero;
-        if (_corners[0].x < _canvasCorners[0].x) push.x = _canvasCorners[0].x - _corners[0].x;
-        else if (_corners[2].x > _canvasCorners[2].x) push.x = _canvasCorners[2].x - _corners[2].x;
-
-        if (_corners[0].y < _canvasCorners[0].y) push.y = _canvasCorners[0].y - _corners[0].y;
-        else if (_corners[2].y > _canvasCorners[2].y) push.y = _canvasCorners[2].y - _corners[2].y;
-
-        _rect.position += push;
     }
 
     public void HideDescription()

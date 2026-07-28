@@ -17,6 +17,7 @@ public class WorldObject : MonoBehaviour
     static readonly int HashRoll       = Animator.StringToHash("Roll");
     static readonly int HashAiming     = Animator.StringToHash("IsAiming");
     static readonly int HashReloading  = Animator.StringToHash("IsReloading");
+    static readonly int HashDown       = Animator.StringToHash("IsDown");
 
     [SerializeField] float _smooth = 14f;
     [SerializeField] float _animSmooth = 0.1f;
@@ -64,7 +65,7 @@ public class WorldObject : MonoBehaviour
 
     bool HasParam(int hash) => _animParams != null && _animParams.Contains(hash);
 
-    public void SetMoveTarget(Vector3 worldPos, float yawDegrees, float velX = 0f, float velZ = 0f, bool isSprinting = false, bool isRolling = false, bool isAiming = false, bool isReloading = false)
+    public void SetMoveTarget(Vector3 worldPos, float yawDegrees, float velX = 0f, float velZ = 0f, bool isSprinting = false, bool isRolling = false, bool isAiming = false, bool isReloading = false, bool isDown = false)
     {
         _targetPos       = worldPos;
         _targetYaw       = yawDegrees;
@@ -86,6 +87,7 @@ public class WorldObject : MonoBehaviour
             }
             if (HasParam(HashAiming))    _animator.SetBool(HashAiming,    isAiming);
             if (HasParam(HashReloading)) _animator.SetBool(HashReloading, isReloading);
+            if (HasParam(HashDown))      _animator.SetBool(HashDown,      isDown);
         }
         _wasRolling = isRolling;
     }

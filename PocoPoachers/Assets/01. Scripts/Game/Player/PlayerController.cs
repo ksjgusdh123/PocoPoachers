@@ -523,7 +523,7 @@ public class PlayerController : MonoBehaviour
             PlayerMainGameUI.SetActive(true);
 
         LockCamera(false);
-        _inputHandler.SwitchInputActionMap(PlayerInputMapType.Game);
+        _inputHandler.SwitchToGameplayMap();
     }
 
     private void OnTriggerEnter(Collider other)
@@ -582,6 +582,14 @@ public class PlayerController : MonoBehaviour
     public void SwitchInputMap(PlayerInputMapType type)
     {
         _inputHandler.SwitchInputActionMap(type);
+    }
+
+    /// <summary>
+    /// 상호작용 종료 후 이 플레이어의 기본 게임플레이 맵으로 복귀 (Raid=Game, 쉘터=Shelter)
+    /// </summary>
+    public void SwitchToGameplayInputMap()
+    {
+        _inputHandler.SwitchToGameplayMap();
     }
 
     public void LockCamera(bool locked)

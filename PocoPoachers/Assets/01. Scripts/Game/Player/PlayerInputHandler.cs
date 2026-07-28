@@ -1,13 +1,15 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using static UnityEngine.Rendering.DebugUI;
 
 public enum PlayerInputMapType
 {
     Game,
     Inventory,
-    ItemBox
+    ItemBox,
+    Shelter
 }
 
 [RequireComponent(typeof(PlayerInput))]
@@ -34,9 +36,25 @@ public class PlayerInputHandler : MonoBehaviour
     private readonly Key[] _numberKeys = { Key.Digit3, Key.Digit4, Key.Digit5, Key.Digit6, Key.Digit7, Key.Digit8 };
     private PlayerInputMapType _inputType;
 
+    // 이 플레이어가 있는 씬의 기본 게임플레이 맵 — 상호작용(창고 등)을 닫고 복귀할 맵.
+    // 이동해 온 씬으로 자동 판별한다: 쉘터=Shelter(전투 입력 없음), 그 외=Game.
+    public PlayerInputMapType GameplayMap =>
+        SceneName.IsShelter(SceneManager.GetActiveScene().name)
+            ? PlayerInputMapType.Shelter
+            : PlayerInputMapType.Game;
+
+    public void SwitchToGameplayMap() => SwitchInputActionMap(GameplayMap);
+
     private void Awake()
     {
         _inputMap = GetComponent<PlayerInput>();
+    }
+
+    private void Start()
+    {
+        // PlayerInput.Default Map 설정에 의존하지 않고, 이 플레이어의 게임플레이 맵으로 시작을 통일한다.
+        // PlayerInput의 OnEnable(기본 맵 활성화) 이후인 Start에서 덮어써야 안전하다.
+        SwitchToGameplayMap();
     }
 
     public void SwitchInputActionMap(PlayerInputMapType type)
@@ -75,7 +93,7 @@ public class PlayerInputHandler : MonoBehaviour
     {
         if (value.isPressed)
         {
-            if (_inputType == PlayerInputMapType.Inventory) SwitchInputActionMap(PlayerInputMapType.Game);
+            if (_inputType == PlayerInputMapType.Inventory) SwitchToGameplayMap();
             else SwitchInputActionMap(PlayerInputMapType.Inventory);
             GoInventory?.Invoke();
         }
@@ -100,7 +118,7 @@ public class PlayerInputHandler : MonoBehaviour
         {
             if (keyboard[_numberKeys[i]].wasPressedThisFrame)
             {
-                if (_inputType == PlayerInputMapType.Game) ConsumeItemNumberKey?.Invoke(i);
+                if (_inputType == GameplayMap) ConsumeItemNumberKey?.Invoke(i);
                 else RegisterItemNumberKey?.Invoke(i);
                 break;
             }

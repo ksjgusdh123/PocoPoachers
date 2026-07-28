@@ -18,6 +18,6 @@ public class ShelterUpgradeTerminal : MonoBehaviour, IInteractable
     {
         UIManager.GetInstance().Hide(UIType.ShelterUpgrade);
         player.LockCamera(false);
-        player.SwitchInputMap(PlayerInputMapType.Game);
+        player.SwitchToGameplayInputMap();
     }
 }

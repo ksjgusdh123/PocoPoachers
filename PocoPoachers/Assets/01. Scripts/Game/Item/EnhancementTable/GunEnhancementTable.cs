@@ -18,7 +18,7 @@ public class GunEnhancementTable : MonoBehaviour, IInteractable
         UIManager.GetInstance().Hide(UIType.GunEnhancementTable);
         player.SetInventoryOpen(false);
 
-        player.SwitchInputMap(PlayerInputMapType.Game);
+        player.SwitchToGameplayInputMap();
         UIManager.GetInstance().ChangeMouseCursor(true);
     }
 }

@@ -82,7 +82,7 @@ public class Generator : MonoBehaviour, IInteractable
         UIManager.GetInstance().Hide(UIType.Generator);
         player.SetInventoryOpen(false);
 
-        player.SwitchInputMap(PlayerInputMapType.Game);
+        player.SwitchToGameplayInputMap();
         UIManager.GetInstance().ChangeMouseCursor(true);
     }
 }

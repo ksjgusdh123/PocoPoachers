@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class CrosshairUI : MonoBehaviour
@@ -103,6 +104,17 @@ public class CrosshairUI : MonoBehaviour
 
     private void Awake()
     {
+        // 쉘터(전투 없는 씬)에서는 크로스헤어를 띄우지 않는다. 이동해 온 씬 이름으로 자동 판별하므로
+        // 씬마다 수동 설정이 필요 없다. Instance를 남기지 않아 모든 참조가 마우스 폴백으로 동작하고,
+        // 오브젝트를 꺼 일반 커서를 유지한다. Instance가 null이라 UIManager.RefreshCursor도 되살리지 않는다.
+        if (SceneName.IsShelter(SceneManager.GetActiveScene().name))
+        {
+            Cursor.visible = true;
+            Cursor.lockState = CursorLockMode.None;
+            gameObject.SetActive(false);
+            return;
+        }
+
         Instance = this;
         _rectTransform = GetComponent<RectTransform>();
         CacheCrosshairLineRotations();
