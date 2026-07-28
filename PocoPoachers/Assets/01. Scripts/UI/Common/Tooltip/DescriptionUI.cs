@@ -1,4 +1,4 @@
-using System.Text;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -17,9 +17,12 @@ public class DescriptionUI : MonoBehaviour
     [SerializeField] private Slider _durabilitySlider;
     [SerializeField] private TextMeshProUGUI _durabilityText;
 
-    // 타입별 스탯 표기 영역 — 표기할 스탯이 있는 아이템(무기/파츠/방어구)에서만 활성화된다
+    // 타입별 스탯 표기 영역 — 표기할 스탯이 있는 아이템(무기/파츠/방어구)에서만 활성화된다.
+    // 스탯 한 개마다 _statRowPrefab을 _statContainer 아래에 생성한다.
+    // 정렬·높이는 Content의 VerticalLayoutGroup + ContentSizeFitter가 자동 처리한다.
     [SerializeField] private GameObject _statRoot;
-    [SerializeField] private TextMeshProUGUI _statText;
+    [SerializeField] private Transform _statContainer;   // ScrollView의 Content (VerticalLayoutGroup + ContentSizeFitter)
+    [SerializeField] private StatRowUI _statRowPrefab;
 
     // 강화 단계 표기 영역 — 강화 가능 아이템(무기/파츠/방어구)에서만 활성화된다
     [SerializeField] private GameObject _enhancementRoot;
@@ -27,6 +30,9 @@ public class DescriptionUI : MonoBehaviour
 
     // 호버 중 실시간 갱신을 위해 구독해둔 대상 (다른 슬롯으로 옮기거나 닫을 때 해제)
     private EquippableItemBase _durabilityTarget;
+
+    // 현재 표시 중인 스탯 행들 — 다음 호버/숨김 때 파괴한다
+    private readonly List<StatRowUI> _statRows = new();
 
     public void ShowDescription(ItemSlotUI slot)
     {
@@ -61,6 +67,7 @@ public class DescriptionUI : MonoBehaviour
         _description.text = "";
         if (_icon != null) _icon.sprite = null;
         UnbindDurability();
+        ClearStatRows();
         _statRoot?.SetActive(false);
         _enhancementRoot?.SetActive(false);
         gameObject.SetActive(false);
@@ -114,22 +121,39 @@ public class DescriptionUI : MonoBehaviour
             _durabilityText.text = $"{Mathf.CeilToInt(current)} / {Mathf.CeilToInt(max)}";
     }
 
-    // 표기할 스탯이 없는 타입(음식/재료 등)이면 영역을 통째로 숨겨 설명만 남긴다
+    // 스탯 한 개마다 행 프리팹을 생성해 채운다. 정렬·높이는 Content의 레이아웃 그룹이 처리한다.
+    // 표기할 스탯이 없으면(음식/재료 등) 영역을 숨긴다.
     private void BindStats(ItemData data, int uid)
     {
-        if (_statText == null) return;
+        ClearStatRows();
 
-        string text = BuildStatText(data, uid);
-        _statText.text = text;
-        _statRoot?.SetActive(!string.IsNullOrEmpty(text));
+        var stats = BuildStats(data, uid);
+        if (_statRowPrefab != null && _statContainer != null)
+        {
+            foreach (var (label, value) in stats)
+            {
+                var row = Instantiate(_statRowPrefab, _statContainer);
+                row.Set(label, value);
+                _statRows.Add(row);
+            }
+        }
+
+        _statRoot?.SetActive(stats.Count > 0);
     }
 
-    private static string BuildStatText(ItemData data, int uid) => data.ItemType switch
+    private void ClearStatRows()
     {
-        ItemType.Weapon => BuildGunStatText(data),
-        ItemType.GunPart => BuildGunPartStatText(data, uid),
-        ItemType.Helmet or ItemType.Armor => BuildArmorStatText(data, uid),
-        _ => string.Empty,
+        foreach (var row in _statRows)
+            if (row != null) Destroy(row.gameObject);
+        _statRows.Clear();
+    }
+
+    private static List<(string label, string value)> BuildStats(ItemData data, int uid) => data.ItemType switch
+    {
+        ItemType.Weapon => BuildGunStats(data),
+        ItemType.GunPart => BuildGunPartStats(data, uid),
+        ItemType.Helmet or ItemType.Armor => BuildArmorStats(data, uid),
+        _ => new List<(string, string)>(),
     };
 
     private static bool IsEnhanceable(ItemType type) =>
@@ -152,57 +176,57 @@ public class DescriptionUI : MonoBehaviour
         _enhancementRoot?.SetActive(true);
     }
 
-    private static string BuildGunStatText(ItemData data)
+    private static List<(string, string)> BuildGunStats(ItemData data)
     {
+        var list = new List<(string, string)>();
         var stat = GunStatTable.Instance.Get(data.Id);
-        if (stat == null) return string.Empty;
+        if (stat == null) return list;
 
-        var sb = new StringBuilder();
-        sb.AppendLine($"데미지: {stat.Damage:F0}");
-        if (stat.PelletCount > 1) sb.AppendLine($"탄자 수: {stat.PelletCount}");
-        sb.AppendLine($"연사: {stat.Rpm:F0} RPM");
-        sb.AppendLine($"탄창: {stat.MaxMagazine}");
-        sb.AppendLine($"장전: {stat.ReloadTime:F1}초");
-        sb.AppendLine($"사거리: {stat.BulletRange:F0}");
-        return sb.ToString().TrimEnd();
+        list.Add(("데미지", $"{stat.Damage:F0}"));
+        if (stat.PelletCount > 1) list.Add(("탄자 수", $"{stat.PelletCount}"));
+        list.Add(("연사", $"{stat.Rpm:F0} RPM"));
+        list.Add(("탄창", $"{stat.MaxMagazine}"));
+        list.Add(("장전", $"{stat.ReloadTime:F1}초"));
+        list.Add(("사거리", $"{stat.BulletRange:F0}"));
+        return list;
     }
 
     // 강화 수치는 WorldEquipmentManager가 실제 적용하는 값을 그대로 조회한다 (공식 중복 방지)
-    private static string BuildGunPartStatText(ItemData data, int uid)
+    private static List<(string, string)> BuildGunPartStats(ItemData data, int uid)
     {
+        var list = new List<(string, string)>();
         var basePart = GunPartTable.Instance.Get(data.Id);
-        if (basePart == null) return string.Empty;
+        if (basePart == null) return list;
 
         var part = WorldEquipmentManager.GetEnhancedGunPart(basePart, uid);
-        var sb = new StringBuilder();
-        AppendMultiplier(sb, "산탄 확산", part.SpreadMultiplier);
-        AppendMultiplier(sb, "조준 속도", part.AimFovMultiplier);
-        AppendMultiplier(sb, "재장전 속도", part.ReloadTimeMultiplier);
-        AppendMultiplier(sb, "반동", part.RecoilMultiplier);
-        AppendMultiplier(sb, "소음 범위", part.SoundRangeMultiplier);
-        if (part.MaxMagazineBonus != 0) sb.AppendLine($"탄창 용량: +{part.MaxMagazineBonus}");
-        return sb.ToString().TrimEnd();
+        AddMultiplier(list, "산탄 확산", part.SpreadMultiplier);
+        AddMultiplier(list, "조준 속도", part.AimFovMultiplier);
+        AddMultiplier(list, "재장전 속도", part.ReloadTimeMultiplier);
+        AddMultiplier(list, "반동", part.RecoilMultiplier);
+        AddMultiplier(list, "소음 범위", part.SoundRangeMultiplier);
+        if (part.MaxMagazineBonus != 0) list.Add(("탄창 용량", $"+{part.MaxMagazineBonus}"));
+        return list;
     }
 
-    private static string BuildArmorStatText(ItemData data, int uid)
+    private static List<(string, string)> BuildArmorStats(ItemData data, int uid)
     {
+        var list = new List<(string, string)>();
         var baseStat = ArmorStatTable.Instance.Get(data.Id);
-        if (baseStat == null) return string.Empty;
+        if (baseStat == null) return list;
 
         var stat = WorldEquipmentManager.GetEnhancedArmorStat(uid, baseStat);
-        var sb = new StringBuilder();
-        if (stat.DefenseRate > 0f) sb.AppendLine($"방어율: {stat.DefenseRate * 100f:F0}%");
-        if (stat.MaxHpBonus > 0f) sb.AppendLine($"HP 보너스: +{stat.MaxHpBonus:F0}");
-        AppendMultiplier(sb, "이동속도", stat.MoveSpeedMultiplier);
-        return sb.ToString().TrimEnd();
+        if (stat.DefenseRate > 0f) list.Add(("방어율", $"{stat.DefenseRate * 100f:F0}%"));
+        if (stat.MaxHpBonus > 0f) list.Add(("HP 보너스", $"+{stat.MaxHpBonus:F0}"));
+        AddMultiplier(list, "이동속도", stat.MoveSpeedMultiplier);
+        return list;
     }
 
-    // 효과가 없는(배율 1) 스탯은 줄을 만들지 않는다
-    private static void AppendMultiplier(StringBuilder sb, string label, float value)
+    // 효과가 없는(배율 1) 스탯은 행을 만들지 않는다
+    private static void AddMultiplier(List<(string, string)> list, string label, float value)
     {
         if (Mathf.Approximately(value, 1f)) return;
 
         int pct = Mathf.RoundToInt((value - 1f) * 100f);
-        sb.AppendLine($"{label}: {(pct >= 0 ? "+" : "")}{pct}%");
+        list.Add((label, $"{(pct >= 0 ? "+" : "")}{pct}%"));
     }
 }
