@@ -18,6 +18,7 @@ public class PlayerStat : StatBase
     [Header("배터리")]
     [SerializeField] private float _maxBattery = 100f;
     [SerializeField] private float _reduceBatteryRate = 1f;  // 초당 감소량
+    [SerializeField] private bool _drainBattery = true;      // 쉘터 등에서는 false — 방전/사망 없이 UI만 표시
 
     public float MaxStamina => _maxStamina + _enhancementMaxStaminaBonus;
     public float CurrentStamina { get; private set; }
@@ -110,6 +111,7 @@ public class PlayerStat : StatBase
 
     private void DrainBattery()
     {
+        if (!_drainBattery) return;
         if (CurrentBattery <= 0f) return;
 
         CurrentBattery = Mathf.Max(0f, CurrentBattery - _reduceBatteryRate * Time.deltaTime);

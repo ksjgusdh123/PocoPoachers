@@ -18,7 +18,7 @@ public class RepairWorkbench : MonoBehaviour, IInteractable
         UIManager.GetInstance().Hide(UIType.RepairWorkbench);
         player.SetInventoryOpen(false);
 
-        player.SwitchInputMap(PlayerInputMapType.Game);
+        player.SwitchToGameplayInputMap();
         UIManager.GetInstance().ChangeMouseCursor(true);
     }
 }

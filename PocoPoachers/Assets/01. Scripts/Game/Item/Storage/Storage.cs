@@ -96,7 +96,7 @@ public class Storage : MonoBehaviour, IInteractable
         player.GetStorageUI.SetActive(false);
         player.SetInventoryOpen(false);
 
-        player.SwitchInputMap(PlayerInputMapType.Game);
+        player.SwitchToGameplayInputMap();
         UIManager.GetInstance().ChangeMouseCursor(true);
         // 저장은 슬롯 변경 이벤트(LateUpdate) 기반으로 호스트만 수행 — 게스트가 로컬 파일에 덮어쓰지 않도록 여기서는 저장하지 않는다
     }
