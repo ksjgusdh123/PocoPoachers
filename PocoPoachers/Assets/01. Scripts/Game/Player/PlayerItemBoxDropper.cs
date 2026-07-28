@@ -40,6 +40,33 @@ public class PlayerItemBoxDropper : MonoBehaviour
         CollectEquippedItems(itemIds, itemCounts, itemUids);
 
         _inventory.Clear();
+        SpawnBox(itemIds, itemCounts, itemUids);
+    }
+
+    // UI 밖으로 드래그해 버린 슬롯 아이템(드래그한 수량)을 플레이어 위치에 상자로 스폰한다.
+    // v1: 호스트/솔로만 지원 — 게스트는 아무것도 하지 않는다(아이템 그대로 유지).
+    public void DropSlotToWorld(int slotIndex, int amount)
+    {
+        if (!RoomManager.IsHost) return;
+        if (_inventory == null) return;
+        if (slotIndex < 0 || slotIndex >= _inventory.Slots.Count) return;
+
+        var slot = _inventory.Slots[slotIndex];
+        if (slot.IsEmpty) return;
+
+        int dropCount = Mathf.Clamp(amount, 1, slot.Amount);
+
+        var itemIds = new List<int> { slot.ItemData.id };
+        var itemCounts = new List<int> { dropCount };
+        var itemUids = new List<int> { slot.Uid };
+
+        _inventory.RemoveItemAtSlot(slotIndex, slot.ItemData, dropCount);
+        SpawnBox(itemIds, itemCounts, itemUids);
+    }
+
+    // 지정한 아이템들을 플레이어 위치에 LootBox로 스폰하고, 스냅샷 등록 + 게스트 전파까지 처리한다.
+    private void SpawnBox(List<int> itemIds, List<int> itemCounts, List<int> itemUids)
+    {
         if (itemIds.Count == 0) return;
 
         var omgr = ObjectManager.Instance;
