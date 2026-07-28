@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class PlayerStat : StatBase
 {
@@ -18,7 +19,6 @@ public class PlayerStat : StatBase
     [Header("배터리")]
     [SerializeField] private float _maxBattery = 100f;
     [SerializeField] private float _reduceBatteryRate = 1f;  // 초당 감소량
-    [SerializeField] private bool _drainBattery = true;      // 쉘터 등에서는 false — 방전/사망 없이 UI만 표시
 
     public float MaxStamina => _maxStamina + _enhancementMaxStaminaBonus;
     public float CurrentStamina { get; private set; }
@@ -60,9 +60,13 @@ public class PlayerStat : StatBase
     private float _enhancementMaxStaminaBonus;
     private float _enhancementMoveSpeedBonus;
 
+    // 쉘터(전투 없는 씬)에서는 배터리가 닳지 않는다 — 이동해 온 씬으로 판별해 스폰 시 1회 캐싱.
+    private bool _isShelter;
+
     protected override void Awake()
     {
         base.Awake();
+        _isShelter = SceneName.IsShelter(SceneManager.GetActiveScene().name);
         _inventory = GetComponent<Inventory>();
         MaxHp = GetCalculatedMaxHp();
         CurrentHp = MaxHp;
@@ -111,7 +115,7 @@ public class PlayerStat : StatBase
 
     private void DrainBattery()
     {
-        if (!_drainBattery) return;
+        if (_isShelter) return;
         if (CurrentBattery <= 0f) return;
 
         CurrentBattery = Mathf.Max(0f, CurrentBattery - _reduceBatteryRate * Time.deltaTime);

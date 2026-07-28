@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 using static UnityEngine.Rendering.DebugUI;
 
 public enum PlayerInputMapType
@@ -30,17 +31,19 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action CancelItemUse;
     public event Action CancelReload;
 
-    // 이 플레이어의 기본 게임플레이 맵 — 상호작용(창고 등)을 닫고 복귀할 맵.
-    // Raid는 Game, 쉘터 플레이어 프리팹은 Shelter로 지정한다.
-    [SerializeField] private PlayerInputMapType _gameplayMap = PlayerInputMapType.Game;
-
     private PlayerInput _inputMap;
     private readonly Key[] _weaponKeys = { Key.Digit1, Key.Digit2 };
     private readonly Key[] _numberKeys = { Key.Digit3, Key.Digit4, Key.Digit5, Key.Digit6, Key.Digit7, Key.Digit8 };
     private PlayerInputMapType _inputType;
 
-    public PlayerInputMapType GameplayMap => _gameplayMap;
-    public void SwitchToGameplayMap() => SwitchInputActionMap(_gameplayMap);
+    // 이 플레이어가 있는 씬의 기본 게임플레이 맵 — 상호작용(창고 등)을 닫고 복귀할 맵.
+    // 이동해 온 씬으로 자동 판별한다: 쉘터=Shelter(전투 입력 없음), 그 외=Game.
+    public PlayerInputMapType GameplayMap =>
+        SceneName.IsShelter(SceneManager.GetActiveScene().name)
+            ? PlayerInputMapType.Shelter
+            : PlayerInputMapType.Game;
+
+    public void SwitchToGameplayMap() => SwitchInputActionMap(GameplayMap);
 
     private void Awake()
     {
@@ -115,7 +118,7 @@ public class PlayerInputHandler : MonoBehaviour
         {
             if (keyboard[_numberKeys[i]].wasPressedThisFrame)
             {
-                if (_inputType == _gameplayMap) ConsumeItemNumberKey?.Invoke(i);
+                if (_inputType == GameplayMap) ConsumeItemNumberKey?.Invoke(i);
                 else RegisterItemNumberKey?.Invoke(i);
                 break;
             }

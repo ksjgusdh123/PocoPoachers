@@ -76,6 +76,10 @@ public class GunPartUI : MonoBehaviour
         ItemData data = ItemTable.Instance.Get(itemId);
         if (data == null) return;
 
+        // 프리뷰 총은 이 패널의 자식으로 생성되는데, 패널이 비활성이면 총이 계층상 비활성이라
+        // Awake(_stat 초기화)가 실행되지 않아 이후 gun.Stat 접근 시 NRE가 난다. 먼저 패널을 켜 둔다.
+        gameObject.SetActive(true);
+
         GunBase gun = ResourceManager.Instance.Spawn<GunBase>(data.prefab, transform);
         if (gun == null) return;
 
