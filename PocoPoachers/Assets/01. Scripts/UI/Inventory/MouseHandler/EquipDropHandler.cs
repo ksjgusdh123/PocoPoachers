@@ -29,7 +29,7 @@ public class EquipDropHandler : ItemHolderDropHandler, IPointerEnterHandler, IPo
     public void OnPointerEnter(PointerEventData eventData)
     {
         if (!_isSetted) return;
-        _descriptionUI?.ShowDescription(DroppedItemData, GetUnequipUid(), transform.position);
+        _descriptionUI?.ShowDescription(DroppedItemData, GetUnequipUid());
     }
 
     public void OnPointerExit(PointerEventData eventData) => _descriptionUI?.HideDescription();
