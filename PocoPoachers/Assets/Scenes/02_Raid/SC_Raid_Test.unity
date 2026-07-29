@@ -1330,10 +1330,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1000000000000033, guid: 7aec457f1c77a5c40b734ec2c8b48604, type: 3}
-      propertyPath: m_fontSize
-      value: 28.3
-      objectReference: {fileID: 0}
     - target: {fileID: 253742367922858354, guid: 7aec457f1c77a5c40b734ec2c8b48604, type: 3}
       propertyPath: m_fontSize
       value: 25
@@ -1745,7 +1741,6 @@ MonoBehaviour:
   remoteHost: 34.50.21.90
   port: 7000
   remoteConnection: 1
-  userName: Player
 --- !u!114 &101107512
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3992,6 +3987,7 @@ GameObject:
   - component: {fileID: 308264527}
   - component: {fileID: 308264526}
   - component: {fileID: 308264525}
+  - component: {fileID: 308264529}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -4054,13 +4050,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_NormalColor: {r: 0.8627451, g: 0.8627451, b: 0.8627451, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 0.6039216, g: 0.89411765, b: 0.9372549, a: 1}
+    m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_DisabledColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 0.47058824}
     m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
+    m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -4115,6 +4111,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 308264523}
   m_CullTransparentMesh: 1
+--- !u!114 &308264529
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 308264523}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c46766e441318ca4e92891a786e05cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
+  _style: 0
+  _theme: {fileID: 0}
 --- !u!1 &308822257
 GameObject:
   m_ObjectHideFlags: 0
@@ -11053,6 +11063,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSpawner
   _spawnId: 2
+  _playerPrefab: {fileID: 0}
 --- !u!1 &768693831
 GameObject:
   m_ObjectHideFlags: 0
@@ -11326,6 +11337,7 @@ GameObject:
   - component: {fileID: 779400861}
   - component: {fileID: 779400860}
   - component: {fileID: 779400859}
+  - component: {fileID: 779400863}
   m_Layer: 5
   m_Name: Button (2)
   m_TagString: Untagged
@@ -11388,13 +11400,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_NormalColor: {r: 0.8627451, g: 0.8627451, b: 0.8627451, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 0.6039216, g: 0.89411765, b: 0.9372549, a: 1}
+    m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_DisabledColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 0.47058824}
     m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
+    m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -11449,6 +11461,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 779400857}
   m_CullTransparentMesh: 1
+--- !u!114 &779400863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 779400857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c46766e441318ca4e92891a786e05cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
+  _style: 0
+  _theme: {fileID: 0}
 --- !u!1 &782754821
 GameObject:
   m_ObjectHideFlags: 0
@@ -18773,6 +18799,7 @@ MonoBehaviour:
   _sortButton: {fileID: 0}
   _countText: {fileID: 1124286529}
   _miniCountText: {fileID: 1124286528}
+  _weightText: {fileID: 0}
 --- !u!1 &1151230601
 GameObject:
   m_ObjectHideFlags: 0
@@ -21328,6 +21355,7 @@ MonoBehaviour:
   _target: {fileID: 0}
   _baseOffset: {x: 0, y: 15, z: -10.5}
   _smoothTime: 0.1
+  _spectateSmoothTime: 0.35
 --- !u!114 &1328951009
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -32087,6 +32115,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5762559705918465416, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5762559705918465416, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5762559705918465416, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5762559705918465416, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5762559705918465416, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6130376949508540674, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -32097,6 +32145,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6130376949508540674, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
       propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6130376949508540674, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6130376949508540674, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
@@ -32284,6 +32336,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScenePortal
   _targetScene: 0
   _spawnId: 3
+  _showResultUI: 0
 --- !u!135 &1977825187
 SphereCollider:
   m_ObjectHideFlags: 0
@@ -33940,6 +33993,7 @@ GameObject:
   - component: {fileID: 2099842193}
   - component: {fileID: 2099842192}
   - component: {fileID: 2099842191}
+  - component: {fileID: 2099842195}
   m_Layer: 5
   m_Name: Button (1)
   m_TagString: Untagged
@@ -34002,13 +34056,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_NormalColor: {r: 0.8627451, g: 0.8627451, b: 0.8627451, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 0.6039216, g: 0.89411765, b: 0.9372549, a: 1}
+    m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_DisabledColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 0.47058824}
     m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
+    m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -34063,6 +34117,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2099842189}
   m_CullTransparentMesh: 1
+--- !u!114 &2099842195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2099842189}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c46766e441318ca4e92891a786e05cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
+  _style: 0
+  _theme: {fileID: 0}
 --- !u!1 &2102111907
 GameObject:
   m_ObjectHideFlags: 0

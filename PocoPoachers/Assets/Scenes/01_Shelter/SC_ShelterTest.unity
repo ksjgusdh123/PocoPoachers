@@ -361,6 +361,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSpawner
   _spawnId: 3
+  _playerPrefab: {fileID: 0}
 --- !u!224 &82791581 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 1732129200971910290, guid: c909ae7c8eb0930458f7566ffc208136, type: 3}
@@ -559,10 +560,6 @@ PrefabInstance:
     - target: {fileID: 1000000000000002, guid: 7aec457f1c77a5c40b734ec2c8b48604, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 1000000000000033, guid: 7aec457f1c77a5c40b734ec2c8b48604, type: 3}
-      propertyPath: m_fontSize
-      value: 28.3
       objectReference: {fileID: 0}
     - target: {fileID: 253742367922858354, guid: 7aec457f1c77a5c40b734ec2c8b48604, type: 3}
       propertyPath: m_fontSize
@@ -930,6 +927,7 @@ MonoBehaviour:
   _sortButton: {fileID: 0}
   _countText: {fileID: 2128370852}
   _miniCountText: {fileID: 816009696}
+  _weightText: {fileID: 0}
 --- !u!1 &197065542
 GameObject:
   m_ObjectHideFlags: 0
@@ -1682,7 +1680,6 @@ MonoBehaviour:
   remoteHost: 34.50.21.90
   port: 7000
   remoteConnection: 1
-  userName: Player
 --- !u!114 &265637690
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4147,6 +4144,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerSpawner
   _spawnId: 1
+  _playerPrefab: {fileID: 0}
 --- !u!224 &1065655769 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2608160925952683912, guid: 6e96fa5848cac87438fc3f04b81b7cf5, type: 3}
@@ -7176,6 +7174,7 @@ GameObject:
   - component: {fileID: 1478686815}
   - component: {fileID: 1478686814}
   - component: {fileID: 1478686813}
+  - component: {fileID: 1478686817}
   m_Layer: 5
   m_Name: Button (1)
   m_TagString: Untagged
@@ -7238,13 +7237,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_NormalColor: {r: 0.8627451, g: 0.8627451, b: 0.8627451, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 0.6039216, g: 0.89411765, b: 0.9372549, a: 1}
+    m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_DisabledColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 0.47058824}
     m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
+    m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -7299,6 +7298,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1478686811}
   m_CullTransparentMesh: 1
+--- !u!114 &1478686817
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1478686811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c46766e441318ca4e92891a786e05cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
+  _style: 0
+  _theme: {fileID: 0}
 --- !u!114 &1493607497 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6044460246266960544, guid: 681ca827dade38d43a1cebb294d342c5, type: 3}
@@ -8039,6 +8052,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ScenePortal
   _targetScene: 1
   _spawnId: 2
+  _showResultUI: 0
 --- !u!1001 &1623869544
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -8071,6 +8085,14 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 485416414534306138, guid: f5cf6d2ae5ea4f8468e3a42d9c3cac09, type: 3}
+      propertyPath: m_fontSize
+      value: 26.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 488579138848215782, guid: f5cf6d2ae5ea4f8468e3a42d9c3cac09, type: 3}
+      propertyPath: m_fontSize
+      value: 26.8
+      objectReference: {fileID: 0}
     - target: {fileID: 615886859721222327, guid: f5cf6d2ae5ea4f8468e3a42d9c3cac09, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -8166,6 +8188,10 @@ PrefabInstance:
     - target: {fileID: 1603604048323863979, guid: f5cf6d2ae5ea4f8468e3a42d9c3cac09, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1716807982055921566, guid: f5cf6d2ae5ea4f8468e3a42d9c3cac09, type: 3}
+      propertyPath: m_fontSize
+      value: 26.8
       objectReference: {fileID: 0}
     - target: {fileID: 3334540266659465775, guid: f5cf6d2ae5ea4f8468e3a42d9c3cac09, type: 3}
       propertyPath: m_AnchorMax.y
@@ -8339,6 +8365,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 6971937429290106479, guid: f5cf6d2ae5ea4f8468e3a42d9c3cac09, type: 3}
+      propertyPath: m_fontSize
+      value: 26.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 7607096516068818988, guid: f5cf6d2ae5ea4f8468e3a42d9c3cac09, type: 3}
+      propertyPath: m_fontSize
+      value: 26.8
+      objectReference: {fileID: 0}
     - target: {fileID: 7673097587961397353, guid: f5cf6d2ae5ea4f8468e3a42d9c3cac09, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -8366,6 +8400,10 @@ PrefabInstance:
     - target: {fileID: 8333032151988872257, guid: f5cf6d2ae5ea4f8468e3a42d9c3cac09, type: 3}
       propertyPath: m_Name
       value: ShelterUpgradeUI
+      objectReference: {fileID: 0}
+    - target: {fileID: 8529168593474129979, guid: f5cf6d2ae5ea4f8468e3a42d9c3cac09, type: 3}
+      propertyPath: m_fontSize
+      value: 26.8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -8858,6 +8896,7 @@ GameObject:
   - component: {fileID: 1802827510}
   - component: {fileID: 1802827509}
   - component: {fileID: 1802827508}
+  - component: {fileID: 1802827512}
   m_Layer: 5
   m_Name: Button
   m_TagString: Untagged
@@ -8920,13 +8959,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_NormalColor: {r: 0.8627451, g: 0.8627451, b: 0.8627451, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 0.6039216, g: 0.89411765, b: 0.9372549, a: 1}
+    m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_DisabledColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 0.47058824}
     m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
+    m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -8981,6 +9020,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1802827506}
   m_CullTransparentMesh: 1
+--- !u!114 &1802827512
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1802827506}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c46766e441318ca4e92891a786e05cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
+  _style: 0
+  _theme: {fileID: 0}
 --- !u!1 &1829564046
 GameObject:
   m_ObjectHideFlags: 0
@@ -9019,6 +9072,7 @@ MonoBehaviour:
   _target: {fileID: 0}
   _baseOffset: {x: 0, y: 15, z: -10.5}
   _smoothTime: 0.1
+  _spectateSmoothTime: 0.35
 --- !u!114 &1829564048
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9189,6 +9243,7 @@ GameObject:
   - component: {fileID: 1892943847}
   - component: {fileID: 1892943846}
   - component: {fileID: 1892943845}
+  - component: {fileID: 1892943849}
   m_Layer: 5
   m_Name: Button (2)
   m_TagString: Untagged
@@ -9251,13 +9306,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_NormalColor: {r: 0.8627451, g: 0.8627451, b: 0.8627451, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 0.6039216, g: 0.89411765, b: 0.9372549, a: 1}
+    m_SelectedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_DisabledColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 0.47058824}
     m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
+    m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -9312,6 +9367,20 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1892943843}
   m_CullTransparentMesh: 1
+--- !u!114 &1892943849
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1892943843}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c46766e441318ca4e92891a786e05cc1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
+  _style: 0
+  _theme: {fileID: 0}
 --- !u!1001 &1918274594
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -9771,6 +9840,26 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5762559705918465416, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5762559705918465416, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5762559705918465416, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5762559705918465416, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5762559705918465416, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6130376949508540674, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -9781,6 +9870,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6130376949508540674, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
       propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6130376949508540674, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      propertyPath: m_SizeDelta.y
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6130376949508540674, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
