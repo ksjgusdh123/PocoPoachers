@@ -28,11 +28,30 @@ public class DescriptionUI : MonoBehaviour
     [SerializeField] private GameObject _enhancementRoot;
     [SerializeField] private TextMeshProUGUI _enhancementText;
 
+    // 총에 장착된 파츠를 아이콘 이미지로 보여주는 영역 — 무기에서만 활성화된다.
+    // 아이콘 이미지는 슬롯 타입별로 에디터에서 미리 배치해두고, 장착된 파츠의 아이콘만 채운다.
+    [SerializeField] private GameObject _partsRoot;
+    [SerializeField] private PartIconSlot[] _partIconSlots;
+
+    // 슬롯 타입 ↔ 사전 배치된 아이콘 Image + 강화도 텍스트 매핑
+    [System.Serializable]
+    private struct PartIconSlot
+    {
+        public SlotType slotType;
+        public Image icon;
+        public TextMeshProUGUI enhancementText;   // 아이콘 자식에 둔 강화도 표기 (없으면 미사용)
+    }
+
     // 호버 중 실시간 갱신을 위해 구독해둔 대상 (다른 슬롯으로 옮기거나 닫을 때 해제)
     private EquippableItemBase _durabilityTarget;
 
     // 현재 표시 중인 스탯 행들 — 다음 호버/숨김 때 파괴한다
     private readonly List<StatRowUI> _statRows = new();
+
+    // 현재 표시 중인 아이템 — 게스트에서 파츠 상태가 늦게 동기화되면 이 값으로 스탯을 다시 그린다
+    private ItemData _currentData;
+    private int _currentUid;
+    private bool _subscribedGunState;
 
     public void ShowDescription(ItemSlotUI slot)
     {
@@ -56,9 +75,13 @@ public class DescriptionUI : MonoBehaviour
         _name.text = LocalizationManager.GetInstance().GetString(data.ItemName);
         _description.text = LocalizationManager.GetInstance().GetString(data.Description);
         if (_icon != null) _icon.sprite = ResourceManager.Instance.LoadSprite(data.icon);
+        _currentData = data;
+        _currentUid = uid;
         BindDurability(data, uid);
         BindStats(data, uid);
         BindEnhancement(data, uid);
+        BindGunParts(data, uid);
+        BindGunPartsSync(data, uid);
     }
 
     public void HideDescription()
@@ -67,13 +90,98 @@ public class DescriptionUI : MonoBehaviour
         _description.text = "";
         if (_icon != null) _icon.sprite = null;
         UnbindDurability();
+        UnbindGunPartsSync();
         ClearStatRows();
+        ClearPartIcons();
+        _currentData = null;
+        _currentUid = 0;
         _statRoot?.SetActive(false);
         _enhancementRoot?.SetActive(false);
+        _partsRoot?.SetActive(false);
         gameObject.SetActive(false);
     }
 
-    private void OnDestroy() => UnbindDurability();
+    private void OnDestroy()
+    {
+        UnbindDurability();
+        UnbindGunPartsSync();
+    }
+
+    // 게스트는 로컬 WEM에 인벤토리 총의 파츠가 없을 수 있어, 호스트에 상태를 요청하고
+    // H_GunState 응답(OnGunStateSynced)이 오면 스탯을 다시 그려 파츠를 반영한다.
+    private void BindGunPartsSync(ItemData data, int uid)
+    {
+        UnbindGunPartsSync();
+        if (data.ItemType != ItemType.Weapon || uid == 0 || RoomManager.IsHost) return;
+
+        GunBase.OnGunStateSynced += OnGunStateSynced;
+        _subscribedGunState = true;
+        RoomSync.RequestGunState(uid);
+    }
+
+    private void UnbindGunPartsSync()
+    {
+        if (!_subscribedGunState) return;
+        GunBase.OnGunStateSynced -= OnGunStateSynced;
+        _subscribedGunState = false;
+    }
+
+    private void OnGunStateSynced(int uid)
+    {
+        if (_currentData == null || uid != _currentUid) return;
+        BindGunParts(_currentData, _currentUid);
+    }
+
+    // 사전 배치된 슬롯별 아이콘 이미지에, 장착된 파츠의 아이콘을 채운다.
+    // 무기가 아니면 영역을 숨기고, 무기여도 장착되지 않은 슬롯의 아이콘은 비워 끈다.
+    private void BindGunParts(ItemData data, int uid)
+    {
+        ClearPartIcons();
+
+        if (data.ItemType != ItemType.Weapon || _partIconSlots == null)
+        {
+            _partsRoot?.SetActive(false);
+            return;
+        }
+
+        var parts = WorldEquipmentManager.GetParts(uid);
+        foreach (var slot in _partIconSlots)
+        {
+            if (parts.TryGetValue(slot.slotType, out int partId))
+            {
+                var partData = ItemTable.Instance.Get(partId);
+                int partUid = WorldEquipmentManager.GetPartUid(uid, slot.slotType);
+                int level = WorldEquipmentManager.GetEnhancementLevel(partUid, partId);
+                SetPartSlot(slot, partData, level);
+            }
+            else
+            {
+                SetPartSlot(slot, null, 0);
+            }
+        }
+
+        _partsRoot?.SetActive(true);
+    }
+
+    // 아이콘 sprite와 강화도 텍스트를 채운다. partData가 null이면(장착 안 됨) 아이콘/텍스트 모두 비운다.
+    private static void SetPartSlot(PartIconSlot slot, ItemData partData, int level)
+    {
+        if (slot.icon != null)
+        {
+            slot.icon.sprite = partData != null ? ResourceManager.Instance.LoadSprite(partData.icon) : null;
+            slot.icon.enabled = slot.icon.sprite != null;
+        }
+        if (slot.enhancementText != null)
+            slot.enhancementText.text = partData != null ? $"+{level}" : "";
+    }
+
+    // 모든 사전 배치 아이콘/텍스트를 비운다 (다른 아이템으로 옮기거나 숨길 때)
+    private void ClearPartIcons()
+    {
+        if (_partIconSlots == null) return;
+        foreach (var slot in _partIconSlots)
+            SetPartSlot(slot, null, 0);
+    }
 
     // 1) 장착 중이면 실제 인스턴스를 구독해 실시간 갱신
     // 2) 장착 해제 상태(인벤토리)면 WorldEquipmentManager에 저장된 값을 1회성으로 표시
