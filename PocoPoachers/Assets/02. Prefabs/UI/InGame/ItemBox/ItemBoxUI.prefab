@@ -58,6 +58,7 @@ MonoBehaviour:
   _sortButton: {fileID: 0}
   _countText: {fileID: 1375748297956990841}
   _miniCountText: {fileID: 6411414543807141593}
+  _weightText: {fileID: 0}
 --- !u!114 &4889700805955350148
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -71,6 +72,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemBoxRevealUI
   _revealInterval: 0.5
+--- !u!114 &1813819360865027348
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1543996304318118662}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdae18ac66bb8af43bea799e999aaa0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _uiType: 5
 --- !u!1 &1929883387905795939
 GameObject:
   m_ObjectHideFlags: 0
@@ -201,8 +215,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 31.5
-  m_fontSizeBase: 31.5
+  m_fontSize: 30
+  m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -1762,16 +1776,3 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 5716066768571258880, guid: a1278209dca3c164eb662f12316d496f, type: 3}
   m_PrefabInstance: {fileID: 7645951467949758179}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1813819360865027348
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1543996304318118662}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cdae18ac66bb8af43bea799e999aaa0d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _uiType: 5
