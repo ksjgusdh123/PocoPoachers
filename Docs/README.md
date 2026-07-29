@@ -18,6 +18,8 @@ Escape From Duckov 스타일 **탈출·파밍·성장** 게임. 쉘터 거점 �
 
 | 작업 | 읽을 문서 |
 |------|-----------|
+| 게임 컨셉·비전·엔딩 | [design/overview.md](design/overview.md) |
+| 레이드 맵 배치 규칙 (POI·동선·길찾기) | [design/map-composition.md](design/map-composition.md) |
 | 처음 / 범위·미구현 | [design/todo.md](design/todo.md) |
 | 씬·매니저·플로우 | [design/game-flow.md](design/game-flow.md) |
 | 플레이어·전투·장비 | [design/player-combat.md](design/player-combat.md) |

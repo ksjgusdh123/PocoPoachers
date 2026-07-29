@@ -76,6 +76,8 @@
 | `CrosshairUI`, `ProgressUI` | 조준선, 재장전/채광/아이템 사용 공용 게이지 — [player-combat.md](player-combat.md) |
 
 > `AmmoUI`는 `UI/InGame/HUD`가 아니라 `Game/Weapon/AmmoUI.cs`에 있다 — 무기 스크립트와 함께 배치. 미니맵/컴퍼스 클래스는 존재하지 않는다.
+>
+> 설계상 필요한 건 전체 미니맵이 아니라 **착지 포드 복귀 방향만 가리키는 최소 화살표**(다른 POI 길찾기는 의도적으로 미지원) — [map-composition.md#5-길찾기--비대칭-설계](map-composition.md#5-길찾기--비대칭-설계) 참고. 아직 미구현.
 
 `RaidResultUI`는 씬 전환 없이 레이드 씬 위에 페이드인되는 결과 오버레이 — [shelter-raid.md](shelter-raid.md#레이드-종료).
 
