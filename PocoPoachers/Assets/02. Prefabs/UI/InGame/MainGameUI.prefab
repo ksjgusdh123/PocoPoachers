@@ -176,7 +176,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -313,7 +313,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -450,7 +450,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.TextMeshPro::TMPro.TextMeshProUGUI
   m_Material: {fileID: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_RaycastTarget: 1
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -570,6 +570,19 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1146963715720778589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4093028082131294709}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdae18ac66bb8af43bea799e999aaa0d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _uiType: 15
 --- !u!1001 &3437952782316458231
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1355,15 +1368,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6639533138157881024, guid: 3eda557494b42f64397bd9765ce41a08, type: 3}
       propertyPath: m_Color.b
-      value: 0.109803915
-      objectReference: {fileID: 0}
-    - target: {fileID: 6639533138157881024, guid: 3eda557494b42f64397bd9765ce41a08, type: 3}
-      propertyPath: m_Color.g
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6639533138157881024, guid: 3eda557494b42f64397bd9765ce41a08, type: 3}
+      propertyPath: m_Color.g
+      value: 0.47058824
+      objectReference: {fileID: 0}
+    - target: {fileID: 6639533138157881024, guid: 3eda557494b42f64397bd9765ce41a08, type: 3}
       propertyPath: m_Color.r
-      value: 0.978877
+      value: 0.23529412
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1375,16 +1388,3 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 3977223105297985260, guid: 3eda557494b42f64397bd9765ce41a08, type: 3}
   m_PrefabInstance: {fileID: 6914057440484642222}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1146963715720778589
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4093028082131294709}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cdae18ac66bb8af43bea799e999aaa0d, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  _uiType: 15
