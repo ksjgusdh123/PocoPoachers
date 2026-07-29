@@ -70,6 +70,21 @@ public class UITheme : ScriptableObject
 
     [Range(0f, 0.5f)] public float ButtonFadeDuration = 0.08f;
 
+    [Header("Button Motion")]
+    [Tooltip("호버 시 버튼 확대 배율")]
+    [Range(1f, 1.15f)] public float ButtonHoverScale = 1.03f;
+
+    [Tooltip("누를 때 축소 배율")]
+    [Range(0.85f, 1f)] public float ButtonPressScale = 0.97f;
+
+    [Range(0f, 0.3f)] public float ButtonMotionDuration = 0.08f;
+
+    [Header("Slot Hover")]
+    [Tooltip("슬롯에 마우스를 올렸을 때 테두리 강조색")]
+    public Color SlotHoverBorder = new Color32(0x9A, 0xF4, 0xFF, 0xFF);
+
+    [Range(1f, 1.15f)] public float SlotHoverScale = 1.04f;
+
     [Header("Button Style Overrides")]
     [Tooltip("Secondary 스타일의 기본 색 — 보조 버튼은 더 차분하게")]
     public Color SecondaryNormal = new Color32(0xB4, 0xB4, 0xB4, 0xFF);

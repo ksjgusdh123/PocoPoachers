@@ -46,6 +46,12 @@ public class UIManager : Singleton<UIManager>
     [SerializeField, Range(0.5f, 1f), Tooltip("열릴 때 시작 스케일 배율")]
     private float _openAnimationScaleFrom = 0.94f;
 
+    [SerializeField, Range(0f, 0.5f), Tooltip("닫힐 때 페이드아웃 시간. 0이면 즉시 닫는다.")]
+    private float _closeAnimationDuration = 0.08f;
+
+    // 닫힘 연출이 진행 중인 패널. 연출 도중 다시 열리면 취소해야 한다.
+    private readonly HashSet<GameObject> _closing = new();
+
     // 패널의 원래 스케일. 연출이 중간에 끊겨도 원래 값으로 되돌릴 수 있게 기억한다.
     private readonly Dictionary<RectTransform, Vector3> _panelBaseScales = new();
 
@@ -265,7 +271,15 @@ public class UIManager : Singleton<UIManager>
 
     public void Show(UIType type)
     {
-        if (!_panels.TryGetValue(type, out var panel) || panel == null || panel.activeSelf) return;
+        if (!_panels.TryGetValue(type, out var panel) || panel == null) return;
+
+        // 닫힘 연출 중인 패널은 아직 active라 그냥 return하면 다시 열 수 없다. 연출을 취소하고 이어서 연다.
+        bool wasClosing = _closing.Remove(panel);
+        if (panel.activeSelf && !wasClosing) return;
+
+        // 닫히는 동안 껐던 클릭 수신을 되돌린다. 놓치면 다시 열린 패널이 클릭을 못 받는다.
+        if (wasClosing && panel.TryGetComponent<CanvasGroup>(out var closingGroup))
+            closingGroup.blocksRaycasts = true;
 
         // 활성화보다 스택 등록을 먼저 한다. 씬에 비활성으로 배치된 패널은 SetActive(true) 시점에
         // Awake가 처음 호출되는데, UIBase가 "열림 스택에 있는가"로 초기 비활성 처리를 건너뛴다.
@@ -288,6 +302,7 @@ public class UIManager : Singleton<UIManager>
         {
             DG.Tweening.DOTween.Kill(group);
             group.alpha = 1f;
+            group.blocksRaycasts = true;
         }
 
         if (panel.transform is RectTransform rt)
@@ -330,16 +345,48 @@ public class UIManager : Singleton<UIManager>
     public void Hide(UIType type)
     {
         if (!_panels.TryGetValue(type, out var panel) || panel == null || !panel.activeSelf) return;
+        if (_closing.Contains(panel)) return;   // 이미 닫히는 중
 
         _stack.Remove(type);
 
         if (panel.TryGetComponent<UIBase>(out var ui)) ui.NotifyHidden();
-        RestorePanelVisual(panel);
-        panel.SetActive(false);
+
+        // 닫힘도 즉시 사라지면 딸깍거린다. 짧게 페이드아웃하되 상태(스택/이벤트/커서)는 즉시 갱신한다.
+        if (_closeAnimationDuration > 0f && isActiveAndEnabled)
+            PlayCloseAnimation(panel);
+        else
+        {
+            RestorePanelVisual(panel);
+            panel.SetActive(false);
+        }
 
         RefreshPanelOrder();
         OnPanelClosed?.Invoke(type);
         RefreshCursor();
+    }
+
+    private void PlayCloseAnimation(GameObject panel)
+    {
+        if (!panel.TryGetComponent<CanvasGroup>(out var group))
+            group = panel.AddComponent<CanvasGroup>();
+
+        var rt = panel.transform as RectTransform;
+        DG.Tweening.DOTween.Kill(group);
+        if (rt != null) DG.Tweening.DOTween.Kill(rt);
+
+        _closing.Add(panel);
+        group.blocksRaycasts = false;   // 사라지는 동안 클릭을 먹지 않게
+
+        group.DOFade(0f, _closeAnimationDuration)
+             .SetEase(DG.Tweening.Ease.InQuad)
+             .SetUpdate(true)
+             .OnComplete(() =>
+             {
+                 if (!_closing.Remove(panel)) return;   // 도중에 다시 열렸다
+                 group.blocksRaycasts = true;
+                 RestorePanelVisual(panel);
+                 panel.SetActive(false);
+             });
     }
 
     // 그리기 순서를 씬 하이어라키 순서가 아니라 "열린 순서"로 맞춘다.
