@@ -28,6 +28,12 @@ public enum UIType
 
 public class UIManager : Singleton<UIManager>
 {
+    // 패널 정렬 순서 기준값. 열림 순서대로 이 값부터 1씩 올려 배정한다.
+    [SerializeField] private int _panelSortingOrderBase = 100;
+
+    // 드래그 아이콘처럼 항상 모든 패널 위에 떠야 하는 요소가 쓰는 정렬 순서.
+    public const int OverlaySortingOrder = 1000;
+
     private readonly Dictionary<UIType, GameObject> _panels = new();
     private readonly List<UIType> _stack = new();
 
@@ -208,6 +214,7 @@ public class UIManager : Singleton<UIManager>
         panel.SetActive(true);
         if (panel.TryGetComponent<UIBase>(out var ui)) ui.NotifyShown();
 
+        RefreshPanelOrder();
         OnPanelOpened?.Invoke(type);
         RefreshCursor();
     }
@@ -221,8 +228,29 @@ public class UIManager : Singleton<UIManager>
         if (panel.TryGetComponent<UIBase>(out var ui)) ui.NotifyHidden();
         panel.SetActive(false);
 
+        RefreshPanelOrder();
         OnPanelClosed?.Invoke(type);
         RefreshCursor();
+    }
+
+    // 그리기 순서를 씬 하이어라키 순서가 아니라 "열린 순서"로 맞춘다.
+    // 자체 Canvas가 있으면 sortingOrder로, 없으면 형제 순서로 올린다.
+    private void RefreshPanelOrder()
+    {
+        for (int i = 0; i < _stack.Count; i++)
+        {
+            if (!_panels.TryGetValue(_stack[i], out var panel) || panel == null) continue;
+
+            if (panel.TryGetComponent<Canvas>(out var canvas))
+            {
+                canvas.overrideSorting = true;
+                canvas.sortingOrder = _panelSortingOrderBase + i;
+            }
+            else
+            {
+                panel.transform.SetAsLastSibling();
+            }
+        }
     }
 
     public void Toggle(UIType type)
