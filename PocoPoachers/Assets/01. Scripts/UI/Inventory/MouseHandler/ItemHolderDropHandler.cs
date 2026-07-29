@@ -70,6 +70,7 @@ public abstract class ItemHolderDropHandler : BaseDropHandler, IPointerClickHand
         DroppedAmount = amount;
         _nameText.text = LocalizationManager.GetInstance().GetString(data.ItemName);
         _icon.sprite = ResourceManager.Instance.LoadSprite(data.icon);
+        _icon.enabled = true;   // 읽기전용 표시(ItemInfoPanel)가 Image.enabled를 꺼둔 경우 다시 켜 즉시 그려지게 한다
         _icon.gameObject.SetActive(true);
         _isSetted = true;
     }

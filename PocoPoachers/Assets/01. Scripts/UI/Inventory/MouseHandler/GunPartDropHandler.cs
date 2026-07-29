@@ -27,6 +27,7 @@ public class GunPartDropHandler : ItemHolderDropHandler
             int restoredUid = gun.Uid != 0 ? WorldEquipmentManager.GetPartUid(gun.Uid, _slotType) : 0;
             if (restoredUid != 0)
                 _droppedPartUid = restoredUid;
+            ShowEnhancementLabel(equipped.id, _droppedPartUid);
         }
         else
         {
@@ -52,7 +53,16 @@ public class GunPartDropHandler : ItemHolderDropHandler
         GunPartData enhanced = WorldEquipmentManager.GetEnhancedGunPart(part, uid);
         _gun.EquipPart(enhanced);
         SyncPart(part.id, uid);
+        ShowEnhancementLabel(part.id, uid);
         return true;
+    }
+
+    // 슬롯의 이름 텍스트 자리에 파츠 이름 대신 강화도(+N)를 표시한다
+    private void ShowEnhancementLabel(int partId, int partUid)
+    {
+        if (_nameText == null) return;
+        int level = WorldEquipmentManager.GetEnhancementLevel(partUid, partId);
+        _nameText.text = $"+{level}";
     }
 
     // 해제 시 base가 인벤토리로 반납할 때 이 uid로 되돌려야 파츠의 강화/상태가 유지된다

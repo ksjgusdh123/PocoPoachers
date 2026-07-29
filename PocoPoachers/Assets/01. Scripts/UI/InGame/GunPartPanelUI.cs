@@ -1,24 +1,32 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 총기 파츠 장착 패널. 무기 우클릭 → "파츠 장착"으로 열린다(PlayerController가 Open 호출).
-// 씬에 비활성으로 둬도 됨 — 활성 객체가 Open을 부르면 그때 켜진다.
-// 슬롯(GunPartDropHandler)은 SlotType별로 프리팹에 고정 배치.
-public class GunPartUI : MonoBehaviour
+// 파츠 장착용 고정 패널. 표시 내용(이름/설명/스탯/강화 등)은 base(ItemInfoPanel)가 채우고,
+// 여기에 "뒤로가기" 버튼 + 파츠 장착(드롭 슬롯/프리뷰 총/호스트·게스트 동기화)을 얹는다.
+// DescriptionUI와 다른 타입이라 호버 툴팁 탐색과 충돌하지 않으며, 호버가 아니라 버튼으로 열고/닫는다.
+//
+// 슬롯(GunPartDropHandler)은 SlotType별로 이 패널 자식에 고정 배치. 대상 총은 Open이 주입한다.
+public class GunPartPanelUI : ItemInfoPanel
 {
-    [SerializeField] private Button _closeButton;
-    [SerializeField] private Image _gunImage;
+    [SerializeField] private Button _backButton;
+
+    // 뒤로가기를 눌렀을 때 호출측(예: 인벤토리)이 이전 화면 복귀를 처리하도록 알린다
+    public event Action OnBack;
+
+    // 게스트 파츠 동기화는 OpenForItem/OnGunStateSynced에서 직접 처리하므로 base 자동 요청은 끈다
+    protected override bool AutoSyncGunPartsOnShow => false;
 
     private GunPartDropHandler[] _slots;
-    private GunBase _gun;   // 현재 패널이 다루는 총 (uid=_gun.Uid, 데이터=_gun.Stat)
+    private GunBase _gun;          // 현재 패널이 다루는 총 (uid=_gun.Uid, 데이터=_gun.Stat)
     private GunBase _previewGun;   // 인벤토리(미장착) 총을 볼 때 임시 생성, Close에서 파괴
 
-    private void Awake()
+    protected virtual void Awake()
     {
         CacheSlots();
-        if (_closeButton != null)
-            _closeButton.onClick.AddListener(Close);
+        if (_backButton != null)
+            _backButton.onClick.AddListener(Back);
     }
 
     private void OnEnable()
@@ -46,7 +54,7 @@ public class GunPartUI : MonoBehaviour
         if (data == null) Close();
     }
 
-    // 해당 총으로 패널을 연다. 지원 슬롯만 켜고, 각 슬롯에 총+장착 파츠를 Bind.
+    // 장착된 총으로 패널을 연다. 정보 표시는 base가, 지원 슬롯 바인딩은 여기가 담당.
     public void Open(GunBase gun)
     {
         if (gun == null) return;
@@ -55,9 +63,11 @@ public class GunPartUI : MonoBehaviour
         if (gun != _previewGun) DestroyPreview();
 
         _gun = gun;
-        gameObject.SetActive(true);
         CacheSlots();
-        ShowGunImage(gun);
+
+        // base가 gameObject를 켜고 이름/설명/아이콘/스탯/강화를 채운다
+        ItemData data = ItemTable.Instance.Get(gun.ItemId);
+        if (data != null) ShowDescription(data, gun.Uid);
 
         HashSet<SlotType> supported = GetSupportedSlots(gun);
         foreach (GunPartDropHandler slot in _slots)
@@ -112,10 +122,17 @@ public class GunPartUI : MonoBehaviour
         }
     }
 
+    // 뒤로가기 — 패널을 닫고 복귀를 알린다
+    public void Back()
+    {
+        Close();
+        OnBack?.Invoke();
+    }
+
     public void Close()
     {
-        gameObject.SetActive(false);
         DestroyPreview();
+        HideDescription();   // base가 내용 정리 + gameObject 비활성
     }
 
     private void DestroyPreview()
@@ -123,15 +140,6 @@ public class GunPartUI : MonoBehaviour
         if (_previewGun == null) return;
         Destroy(_previewGun.gameObject);
         _previewGun = null;
-    }
-
-    private void ShowGunImage(GunBase gun)
-    {
-        if (_gunImage == null) return;
-
-        ItemData data = ItemTable.Instance.Get(gun.ItemId);
-        _gunImage.sprite = data != null ? ResourceManager.Instance.LoadSprite(data.icon) : null;
-        _gunImage.enabled = _gunImage.sprite != null;
     }
 
     private void CacheSlots()
@@ -149,5 +157,12 @@ public class GunPartUI : MonoBehaviour
             if (GunPartUtil.IsCompatible(part, type))
                 set.Add(part.slot_type);
         return set;
+    }
+
+    protected override void OnDestroy()
+    {
+        if (_backButton != null)
+            _backButton.onClick.RemoveListener(Back);
+        base.OnDestroy();
     }
 }

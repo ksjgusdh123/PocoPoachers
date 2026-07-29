@@ -21,7 +21,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject RepairWorkbenchUI;
     [SerializeField] private GameObject CraftingTableUI;
     [SerializeField] private GameObject GeneratorUI;
-    [SerializeField] private GunPartUI _gunPartPanel;   // 비활성으로 둬도 됨 (이벤트로 열림)
+    [SerializeField] private GunPartPanelUI _gunPartPanel;   // 비활성으로 둬도 됨 (이벤트로 열림)
     [SerializeField] private CameraController _cameraController;
     [SerializeField] private float _useItemDuration = 1.5f;
 
@@ -81,7 +81,7 @@ public class PlayerController : MonoBehaviour
         if (CraftingTableUI == null) CraftingTableUI = ui.GetPanel(UIType.CraftingTable);
         if (GeneratorUI == null) GeneratorUI = ui.GetPanel(UIType.Generator);
 
-        if (_gunPartPanel == null) _gunPartPanel = FindAnyObjectByType<GunPartUI>(FindObjectsInactive.Include);
+        if (_gunPartPanel == null) _gunPartPanel = FindAnyObjectByType<GunPartPanelUI>(FindObjectsInactive.Include);
 
         // EquipContextMenuUI는 우클릭 이벤트 구독을 자기 Awake에서 하는데, 씬에 비활성으로 배치되면
         // Awake가 실행되지 않아 우클릭 메뉴가 뜨지 않는다. 아직 등록 전이면 한 번 활성화해서 Awake를
