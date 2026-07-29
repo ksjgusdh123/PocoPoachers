@@ -61,9 +61,12 @@ public class UIManager : Singleton<UIManager>
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => RegisterScenePanels();
 
     // 대부분의 UI 패널은 기본 비활성 상태라 Awake가 씬 로드 시 호출되지 않는다.
-    // 그래서 비활성 오브젝트까지 포함해 직접 스캔하여 등록한다 (SceneUIRegistrar 참고).
+    // 그래서 비활성 오브젝트까지 포함해 직접 스캔하여 등록한다 (UIBase / SceneUIRegistrar 참고).
     private void RegisterScenePanels()
     {
+        foreach (var panel in FindObjectsByType<UIBase>(FindObjectsInactive.Include))
+            panel.RegisterSelf();
+
         foreach (var registrar in FindObjectsByType<SceneUIRegistrar>(FindObjectsInactive.Include))
             registrar.RegisterSelf();
     }
@@ -161,6 +164,17 @@ public class UIManager : Singleton<UIManager>
 
     public void Register(UIType type, GameObject panel)
     {
+        if (panel == null)
+        {
+            Debug.LogWarning($"[UIManager] {type} 등록에 null 패널이 전달되었습니다.");
+            return;
+        }
+
+        // 같은 UIType을 서로 다른 오브젝트가 등록하면 나중 것이 이전 것을 조용히 덮어써
+        // 열리지 않는 패널이 생긴다. 원인을 추적할 수 있게 경고를 남긴다.
+        if (_panels.TryGetValue(type, out var existing) && existing != null && existing != panel)
+            Debug.LogWarning($"[UIManager] {type} 패널이 이미 '{existing.name}'으로 등록되어 있어 '{panel.name}'으로 교체됩니다.");
+
         _panels[type] = panel;
     }
 
@@ -168,6 +182,14 @@ public class UIManager : Singleton<UIManager>
     {
         if (!_panels.Remove(type)) return;
         _stack.Remove(type);
+    }
+
+    // 같은 UIType을 다른 오브젝트가 덮어쓴 뒤 먼저 파괴되는 경우, 현재 살아있는 등록을
+    // 지워버리지 않도록 소유자가 일치할 때만 해제한다.
+    public void Unregister(UIType type, GameObject owner)
+    {
+        if (!_panels.TryGetValue(type, out var panel) || panel != owner) return;
+        Unregister(type);
     }
 
     // 씬에 자기등록된 UI 패널을 이름 검색 없이 조회 (SceneUIRegistrar 참고)
@@ -178,8 +200,14 @@ public class UIManager : Singleton<UIManager>
     {
         if (!_panels.TryGetValue(type, out var panel) || panel == null || panel.activeSelf) return;
 
-        panel.SetActive(true);
+        // 활성화보다 스택 등록을 먼저 한다. 씬에 비활성으로 배치된 패널은 SetActive(true) 시점에
+        // Awake가 처음 호출되는데, UIBase가 "열림 스택에 있는가"로 초기 비활성 처리를 건너뛴다.
+        _stack.Remove(type);
         _stack.Add(type);
+
+        panel.SetActive(true);
+        if (panel.TryGetComponent<UIBase>(out var ui)) ui.NotifyShown();
+
         OnPanelOpened?.Invoke(type);
         RefreshCursor();
     }
@@ -188,8 +216,11 @@ public class UIManager : Singleton<UIManager>
     {
         if (!_panels.TryGetValue(type, out var panel) || panel == null || !panel.activeSelf) return;
 
-        panel.SetActive(false);
         _stack.Remove(type);
+
+        if (panel.TryGetComponent<UIBase>(out var ui)) ui.NotifyHidden();
+        panel.SetActive(false);
+
         OnPanelClosed?.Invoke(type);
         RefreshCursor();
     }
@@ -210,15 +241,21 @@ public class UIManager : Singleton<UIManager>
 
     public void HideAll()
     {
-        for (int i = _stack.Count - 1; i >= 0; i--)
+        // Hide()가 _stack을 수정하므로 스냅샷을 떠서 위에서부터 닫는다.
+        var open = _stack.ToArray();
+        for (int i = open.Length - 1; i >= 0; i--)
+            Hide(open[i]);
+
+        // 닫히지 못한(파괴된) 항목이 남아 스택이 오염되는 것을 막는다.
+        if (_stack.Count > 0)
         {
-            if (_panels.TryGetValue(_stack[i], out var panel) && panel != null)
-                panel.SetActive(false);
-            OnPanelClosed?.Invoke(_stack[i]);
+            _stack.Clear();
+            RefreshCursor();
         }
-        _stack.Clear();
-        RefreshCursor();
     }
+
+    // UIBase가 초기 비활성 처리를 건너뛸지 판단하는 데 사용한다.
+    public bool IsInOpenStack(UIType type) => _stack.Contains(type);
 
     public bool IsOpen(UIType type)
         => _panels.TryGetValue(type, out var panel) && panel != null && panel.activeSelf;

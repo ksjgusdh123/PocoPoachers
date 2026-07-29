@@ -28,6 +28,6 @@ public class NoticePopupUI : PopupUIBase
         _btnOk.onClick.AddListener(() => OnOk?.Invoke());
     }
 
-    protected override void RegisterSelf()   => UIManager.GetInstance().RegisterNoticePopup(this);
-    protected override void UnregisterSelf() => UIManager.GetInstance().UnregisterNoticePopup();
+    protected override void RegisterToManager() => UIManager.GetInstance().RegisterNoticePopup(this);
+    protected override void UnregisterSelf()    => UIManager.GetInstance().UnregisterNoticePopup();
 }

@@ -18,6 +18,6 @@ public class SceneUIRegistrar : MonoBehaviour
     private void OnDestroy()
     {
         var ui = UIManager.GetInstance();
-        if (ui != null) ui.Unregister(_uiType);
+        if (ui != null) ui.Unregister(_uiType, gameObject);
     }
 }

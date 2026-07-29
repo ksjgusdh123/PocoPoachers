@@ -32,6 +32,6 @@ public class WarningPopupUI : PopupUIBase
         _btnCancel .onClick.AddListener(() => OnCancelled?.Invoke());
     }
 
-    protected override void RegisterSelf()   => UIManager.GetInstance().RegisterWarningPopup(this);
-    protected override void UnregisterSelf() => UIManager.GetInstance().UnregisterWarningPopup();
+    protected override void RegisterToManager() => UIManager.GetInstance().RegisterWarningPopup(this);
+    protected override void UnregisterSelf()    => UIManager.GetInstance().UnregisterWarningPopup();
 }
