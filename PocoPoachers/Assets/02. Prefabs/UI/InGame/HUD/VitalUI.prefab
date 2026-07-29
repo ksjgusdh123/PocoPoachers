@@ -52,7 +52,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::VitalUI
   _fillImage: {fileID: 6639533138157881024}
-  _isHunger: 0
 --- !u!1 &3431178836246071216
 GameObject:
   m_ObjectHideFlags: 0
@@ -139,6 +138,7 @@ GameObject:
   - component: {fileID: 2909606458098524880}
   - component: {fileID: 8351998284823687251}
   - component: {fileID: 6639533138157881024}
+  - component: {fileID: 3053819677223829498}
   m_Layer: 5
   m_Name: 'Gage '
   m_TagString: Untagged
@@ -186,7 +186,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 2100000, guid: c3ceec0ed33a60a4da5a17d61e5ba3c3, type: 2}
-  m_Color: {r: 0.11006278, g: 0.121902816, b: 1, a: 1}
+  m_Color: {r: 0.23529412, g: 0.47058824, b: 1, a: 1}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 0
@@ -203,6 +203,21 @@ MonoBehaviour:
   m_FillOrigin: 2
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &3053819677223829498
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4185066970156933724}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedGraphicUI
+  _role: 5
+  _keepAlpha: 1
+  _theme: {fileID: 0}
 --- !u!1 &8143066302459454668
 GameObject:
   m_ObjectHideFlags: 0

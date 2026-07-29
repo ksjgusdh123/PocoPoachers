@@ -342,6 +342,18 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: -25
       objectReference: {fileID: 0}
+    - target: {fileID: 5844736749830599004, guid: 1c6eb868924aa7d45b5c959fd2aeb566, type: 3}
+      propertyPath: m_Color.b
+      value: 0.83137256
+      objectReference: {fileID: 0}
+    - target: {fileID: 5844736749830599004, guid: 1c6eb868924aa7d45b5c959fd2aeb566, type: 3}
+      propertyPath: m_Color.g
+      value: 0.79607844
+      objectReference: {fileID: 0}
+    - target: {fileID: 5844736749830599004, guid: 1c6eb868924aa7d45b5c959fd2aeb566, type: 3}
+      propertyPath: m_Color.r
+      value: 0.7607843
+      objectReference: {fileID: 0}
     - target: {fileID: 6770840741252863482, guid: 1c6eb868924aa7d45b5c959fd2aeb566, type: 3}
       propertyPath: m_Name
       value: SlotFrame
@@ -358,10 +370,33 @@ PrefabInstance:
     m_RemovedGameObjects:
     - {fileID: 91364954737558244, guid: 1c6eb868924aa7d45b5c959fd2aeb566, type: 3}
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 9191291826496465880, guid: 1c6eb868924aa7d45b5c959fd2aeb566, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1079656509517603834}
   m_SourcePrefab: {fileID: 100100000, guid: 1c6eb868924aa7d45b5c959fd2aeb566, type: 3}
 --- !u!224 &699816795022931962 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 590311816396566792, guid: 1c6eb868924aa7d45b5c959fd2aeb566, type: 3}
   m_PrefabInstance: {fileID: 110068617117812466}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &9081805400792902954 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 9191291826496465880, guid: 1c6eb868924aa7d45b5c959fd2aeb566, type: 3}
+  m_PrefabInstance: {fileID: 110068617117812466}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1079656509517603834
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9081805400792902954}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedGraphicUI
+  _role: 2
+  _keepAlpha: 1
+  _theme: {fileID: 0}

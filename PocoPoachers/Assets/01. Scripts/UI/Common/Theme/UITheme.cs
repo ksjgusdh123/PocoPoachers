@@ -37,6 +37,19 @@ public class UITheme : ScriptableObject
     [Tooltip("경고/위험 강조색")]
     public Color Danger = new Color32(0xEA, 0x00, 0x00, 0xFF);
 
+    [Header("Graphic Roles")]
+    [Tooltip("아이템 슬롯 배경 — 팔레트 밖의 녹색 기운을 뺀 중성 톤")]
+    public Color SlotSurface = new Color32(0xC2, 0xCB, 0xD4, 0xB1);
+
+    [Tooltip("진행도/게이지 채움 기본색")]
+    public Color ProgressFill = new Color32(0x00, 0xE5, 0xFF, 0xFF);
+
+    [Tooltip("체력 게이지 색")]
+    public Color HealthFill = new Color32(0xEA, 0x00, 0x00, 0xFF);
+
+    [Tooltip("스태미나 게이지 색")]
+    public Color StaminaFill = new Color32(0x3C, 0x78, 0xFF, 0xFF);
+
     [Header("Typography (px)")]
     public float FontSizeCaption = 15f;
     public float FontSizeBody = 18f;
