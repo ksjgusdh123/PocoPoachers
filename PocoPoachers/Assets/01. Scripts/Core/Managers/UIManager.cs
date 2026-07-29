@@ -160,15 +160,28 @@ public class UIManager : Singleton<UIManager>
 
     public void ShowWarning(string title, string message, Action onConfirm, Action onCancel = null)
     {
+        // 팝업이 씬에 없으면 콜백만 저장되고 아무것도 뜨지 않아 원인 파악이 어렵다.
+        if (_warningPopup == null)
+        {
+            Debug.LogWarning($"[UIManager] WarningPopup이 등록되지 않아 '{title}' 경고를 표시할 수 없습니다.");
+            return;
+        }
+
         _warningConfirmAction = onConfirm;
         _warningCancelAction  = onCancel;
-        _warningPopup?.SetContent(title, message);
+        _warningPopup.SetContent(title, message);
         Show(UIType.WarningPopup);
     }
 
     public void ShowNotice(string title, string message)
     {
-        _noticePopup?.SetContent(title, message);
+        if (_noticePopup == null)
+        {
+            Debug.LogWarning($"[UIManager] NoticePopup이 등록되지 않아 '{title}' 알림을 표시할 수 없습니다.");
+            return;
+        }
+
+        _noticePopup.SetContent(title, message);
         Show(UIType.NoticePopup);
     }
 

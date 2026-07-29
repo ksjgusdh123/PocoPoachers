@@ -50,9 +50,12 @@ public abstract class ContextMenuUIBase : UIBase
 
     private void Update()
     {
-        if (Mouse.current.leftButton.wasPressedThisFrame || Mouse.current.rightButton.wasPressedThisFrame)
+        var mouse = Mouse.current;
+        if (mouse == null || _rectTransform == null) return;
+
+        if (mouse.leftButton.wasPressedThisFrame || mouse.rightButton.wasPressedThisFrame)
         {
-            Vector2 mousePos = Mouse.current.position.ReadValue();
+            Vector2 mousePos = mouse.position.ReadValue();
             if (!RectTransformUtility.RectangleContainsScreenPoint(_rectTransform, mousePos))
                 Hide();
         }

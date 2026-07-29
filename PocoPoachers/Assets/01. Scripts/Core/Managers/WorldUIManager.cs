@@ -64,8 +64,21 @@ public class WorldUIManager : Singleton<WorldUIManager>
 
     public void Return(WorldUIBase element)
     {
+        if (element == null) return;
+
+        if (!_pools.TryGetValue(element.UIType, out var pool))
+        {
+            // Init을 거치지 않았거나 등록되지 않은 타입 — 풀에 넣을 수 없으므로 파괴한다.
+            Debug.LogWarning($"[WorldUIManager] {element.UIType} 풀이 없어 '{element.name}'을 반환할 수 없습니다.", element);
+            Destroy(element.gameObject);
+            return;
+        }
+
+        // 같은 요소를 두 번 반환하면 풀에 중복으로 들어가 두 곳에서 동시에 쓰이게 된다.
+        if (pool.Contains(element)) return;
+
         element.gameObject.SetActive(false);
-        _pools[element.UIType].Enqueue(element);
+        pool.Enqueue(element);
     }
 
     private T Get<T>(WorldUIType type) where T : WorldUIBase
