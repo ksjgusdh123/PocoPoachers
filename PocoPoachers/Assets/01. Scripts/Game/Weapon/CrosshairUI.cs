@@ -75,6 +75,16 @@ public class CrosshairUI : MonoBehaviour
     private float _leftPulseProgress;
     private float _rightPulseProgress;
 
+    // ApplySpread가 실제로 반영한 마지막 값 — 변화가 없는 프레임의 레이아웃 갱신을 건너뛰는 데 쓴다.
+    private bool _hasAppliedSpread;
+    private float _appliedSpread;
+    private float _appliedAngle;
+    private float _appliedSizeProgress;
+    private float _appliedTopPulse;
+    private float _appliedRightPulse;
+    private float _appliedBottomPulse;
+    private float _appliedLeftPulse;
+
     [Header("Hit Marker")]
     [SerializeField] private CanvasGroup _hitMarkerGroup;
     [SerializeField] private Color _hitMarkerColor = Color.white;
@@ -130,6 +140,8 @@ public class CrosshairUI : MonoBehaviour
 
     private void Update()
     {
+        if (Mouse.current == null) return;
+
         _recoilTarget = Vector2.MoveTowards(_recoilTarget, Vector2.zero, _kickRecovery * Time.deltaTime);
         _recoilOffset = Vector2.MoveTowards(_recoilOffset, _recoilTarget, _kickSpeed * Time.deltaTime);
 
@@ -365,6 +377,12 @@ public class CrosshairUI : MonoBehaviour
             _currentSpread,
             Mathf.Max(_currentSpread, _reloadCrosshairMinSpread),
             _reloadCrosshairSizeProgress);
+
+        // 매 프레임 8회 SetSizeWithCurrentAnchors를 호출하면 값이 그대로여도 레이아웃이 갱신된다.
+        // 스프레드/회전/펄스가 실제로 바뀐 프레임에만 반영한다.
+        if (!IsSpreadDirty(spread)) return;
+        CacheAppliedSpread(spread);
+
         float radians = _reloadCrosshairCurrentAngle * Mathf.Deg2Rad;
         float sin = Mathf.Sin(radians);
         float cos = Mathf.Cos(radians);
@@ -388,6 +406,30 @@ public class CrosshairUI : MonoBehaviour
         ApplyReloadCrosshairLineSize(_bottom, _bottomBaseSize, _bottomPulseProgress);
         ApplyReloadCrosshairLineSize(_left, _leftBaseSize, _leftPulseProgress);
         ApplyReloadCrosshairLineSize(_right, _rightBaseSize, _rightPulseProgress);
+    }
+
+    private bool IsSpreadDirty(float spread)
+    {
+        return !_hasAppliedSpread
+            || !Mathf.Approximately(spread, _appliedSpread)
+            || !Mathf.Approximately(_reloadCrosshairCurrentAngle, _appliedAngle)
+            || !Mathf.Approximately(_reloadCrosshairSizeProgress, _appliedSizeProgress)
+            || !Mathf.Approximately(_topPulseProgress, _appliedTopPulse)
+            || !Mathf.Approximately(_rightPulseProgress, _appliedRightPulse)
+            || !Mathf.Approximately(_bottomPulseProgress, _appliedBottomPulse)
+            || !Mathf.Approximately(_leftPulseProgress, _appliedLeftPulse);
+    }
+
+    private void CacheAppliedSpread(float spread)
+    {
+        _hasAppliedSpread = true;
+        _appliedSpread = spread;
+        _appliedAngle = _reloadCrosshairCurrentAngle;
+        _appliedSizeProgress = _reloadCrosshairSizeProgress;
+        _appliedTopPulse = _topPulseProgress;
+        _appliedRightPulse = _rightPulseProgress;
+        _appliedBottomPulse = _bottomPulseProgress;
+        _appliedLeftPulse = _leftPulseProgress;
     }
 
     public void StartReloadGauge(float duration)

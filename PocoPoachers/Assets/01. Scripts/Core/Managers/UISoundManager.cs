@@ -59,20 +59,32 @@ public class UISoundManager : Singleton<UISoundManager>
         if (type == UIType.Inventory) SoundManager.GetInstance().PlaySfx("ui_inventory_close");
     }
 
+    // 호버 사운드를 위해 UI 레이캐스트가 필요하지만, 매 프레임 전체 레이캐스트 + PointerEventData
+    // 할당은 낭비다. 포인터가 실제로 움직였거나 클릭이 발생한 프레임에만 검사하고,
+    // PointerEventData는 하나를 재사용한다.
+    private const float PointerMoveThresholdSqr = 0.01f;
+
+    private PointerEventData _pointerData;
+    private EventSystem _pointerDataOwner;
+    private Vector2 _lastPointerPosition;
+    private bool _hasLastPointerPosition;
+
     private void Update()
     {
-        if (EventSystem.current == null || Mouse.current == null) return;
+        var eventSystem = EventSystem.current;
+        if (eventSystem == null || Mouse.current == null) return;
 
-        var pointerData = new PointerEventData(EventSystem.current) { position = Mouse.current.position.ReadValue() };
-        _raycastResults.Clear();
-        EventSystem.current.RaycastAll(pointerData, _raycastResults);
+        Vector2 position = Mouse.current.position.ReadValue();
+        bool clicked = Mouse.current.leftButton.wasPressedThisFrame;
+        bool moved = !_hasLastPointerPosition
+            || (position - _lastPointerPosition).sqrMagnitude > PointerMoveThresholdSqr;
 
-        Button button = null;
-        if (_raycastResults.Count > 0)
-        {
-            var hit = _raycastResults[0].gameObject.GetComponentInParent<Button>();
-            if (hit != null && hit.interactable) button = hit;
-        }
+        if (!moved && !clicked) return;
+
+        _lastPointerPosition = position;
+        _hasLastPointerPosition = true;
+
+        Button button = RaycastButton(eventSystem, position);
 
         if (button != _hoveredButton)
         {
@@ -81,7 +93,26 @@ public class UISoundManager : Singleton<UISoundManager>
             _hoveredButton = button;
         }
 
-        if (Mouse.current.leftButton.wasPressedThisFrame && button != null)
+        if (clicked && button != null)
             SoundManager.GetInstance().PlayButtonClick();
+    }
+
+    private Button RaycastButton(EventSystem eventSystem, Vector2 position)
+    {
+        if (_pointerData == null || _pointerDataOwner != eventSystem)
+        {
+            _pointerData = new PointerEventData(eventSystem);
+            _pointerDataOwner = eventSystem;
+        }
+
+        _pointerData.Reset();
+        _pointerData.position = position;
+
+        _raycastResults.Clear();
+        eventSystem.RaycastAll(_pointerData, _raycastResults);
+        if (_raycastResults.Count == 0) return null;
+
+        var hit = _raycastResults[0].gameObject.GetComponentInParent<Button>();
+        return hit != null && hit.interactable ? hit : null;
     }
 }
