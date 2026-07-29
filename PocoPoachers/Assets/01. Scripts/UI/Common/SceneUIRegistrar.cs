@@ -11,6 +11,11 @@ public class SceneUIRegistrar : MonoBehaviour
 {
     [SerializeField] private UIType _uiType;
 
+    [SerializeField, Tooltip("체크하면 이 패널이 열릴 때 UIManager가 패널 뒤에 공용 딤머를 깔고 뒤쪽 클릭을 막는다. 패널이 자체 딤머를 갖고 있으면 체크하지 않는다.")]
+    private bool _useSharedDimmer = false;
+
+    public bool UseSharedDimmer => _useSharedDimmer;
+
     private void Awake() => RegisterSelf();
 
     public void RegisterSelf() => UIManager.GetInstance().Register(_uiType, gameObject);

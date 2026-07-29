@@ -9,6 +9,11 @@ public abstract class UIBase : MonoBehaviour
     [SerializeField, Tooltip("체크하면 씬 로드 시 열린 상태로 둔다. 기본은 닫힌 상태.")]
     private bool _startVisible = false;
 
+    [SerializeField, Tooltip("체크하면 이 패널이 열릴 때 UIManager가 패널 뒤에 공용 딤머를 깔고 뒤쪽 클릭을 막는다. 패널이 자체 딤머를 갖고 있으면 체크하지 않는다.")]
+    private bool _useSharedDimmer = false;
+
+    public bool UseSharedDimmer => _useSharedDimmer;
+
     protected abstract UIType UiType { get; }
 
     protected virtual void Awake()

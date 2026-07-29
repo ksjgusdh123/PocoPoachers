@@ -1,3 +1,4 @@
+using DG.Tweening;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -38,6 +39,16 @@ public class UIManager : Singleton<UIManager>
     [SerializeField]
     private InputAction _cancelAction = new InputAction("UICancel", InputActionType.Button, "<Keyboard>/escape");
 
+    [Header("Open Animation")]
+    [SerializeField, Range(0f, 0.5f), Tooltip("0이면 연출을 끈다.")]
+    private float _openAnimationDuration = 0.12f;
+
+    [SerializeField, Range(0.5f, 1f), Tooltip("열릴 때 시작 스케일 배율")]
+    private float _openAnimationScaleFrom = 0.94f;
+
+    // 패널의 원래 스케일. 연출이 중간에 끊겨도 원래 값으로 되돌릴 수 있게 기억한다.
+    private readonly Dictionary<RectTransform, Vector3> _panelBaseScales = new();
+
     private readonly Dictionary<UIType, GameObject> _panels = new();
     private readonly List<UIType> _stack = new();
 
@@ -48,6 +59,10 @@ public class UIManager : Singleton<UIManager>
 
     private WarningPopupUI _warningPopup;
     private NoticePopupUI  _noticePopup;
+
+    // 모달 패널 뒤에 깔리는 공용 딤머 (런타임 생성)
+    private GameObject _dimmer;
+    private UnityEngine.UI.Image _dimmerImage;
 
     private Action _warningConfirmAction;
     private Action _warningCancelAction;
@@ -89,6 +104,15 @@ public class UIManager : Singleton<UIManager>
     }
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => RegisterScenePanels();
+
+    // Awake 시점 스캔은 매니저 생성 순서에 따라(예: Bootstrapper가 먼저 UIManager를 만드는 경우)
+    // 아직 아무것도 못 찾을 수 있고, 에디터에서 씬을 직접 실행하면 첫 씬의 sceneLoaded도 놓칠 수 있다.
+    // 모든 오브젝트의 Awake가 끝난 첫 프레임에 한 번 더 스캔해 등록을 보장한다.
+    private void Start()
+    {
+        if (_instance != this) return;
+        RegisterScenePanels();
+    }
 
     // 대부분의 UI 패널은 기본 비활성 상태라 Awake가 씬 로드 시 호출되지 않는다.
     // 그래서 비활성 오브젝트까지 포함해 직접 스캔하여 등록한다 (UIBase / SceneUIRegistrar 참고).
@@ -252,8 +276,55 @@ public class UIManager : Singleton<UIManager>
         if (panel.TryGetComponent<UIBase>(out var ui)) ui.NotifyShown();
 
         RefreshPanelOrder();
+        PlayOpenAnimation(panel);
         OnPanelOpened?.Invoke(type);
         RefreshCursor();
+    }
+
+    // 연출 도중 닫히면 알파/스케일이 중간값으로 남는다. 다음에 열 때 정상으로 보이도록 되돌린다.
+    private void RestorePanelVisual(GameObject panel)
+    {
+        if (panel.TryGetComponent<CanvasGroup>(out var group))
+        {
+            DG.Tweening.DOTween.Kill(group);
+            group.alpha = 1f;
+        }
+
+        if (panel.transform is RectTransform rt)
+        {
+            DG.Tweening.DOTween.Kill(rt);
+            if (_panelBaseScales.TryGetValue(rt, out var baseScale)) rt.localScale = baseScale;
+        }
+    }
+
+    // 패널이 즉시 나타나면 어디가 바뀐지 알기 어렵다. 열릴 때만 짧은 페이드 + 살짝 커지는 연출을 준다.
+    // 닫기는 즉시 처리한다(SetActive(false) 이후 트윈을 돌릴 수 없고, 닫힘은 즉각 반응이 더 낫다).
+    private void PlayOpenAnimation(GameObject panel)
+    {
+        if (_openAnimationDuration <= 0f) return;
+
+        if (!panel.TryGetComponent<CanvasGroup>(out var group))
+            group = panel.AddComponent<CanvasGroup>();
+
+        var rt = panel.transform as RectTransform;
+
+        DG.Tweening.DOTween.Kill(group);
+        if (rt != null) DG.Tweening.DOTween.Kill(rt);
+
+        group.alpha = 0f;
+        group.DOFade(1f, _openAnimationDuration)
+             .SetEase(DG.Tweening.Ease.OutQuad)
+             .SetUpdate(true);   // 일시정지(timeScale 0) 중에도 재생
+
+        if (rt == null) return;
+
+        Vector3 target = _panelBaseScales.TryGetValue(rt, out var saved) ? saved : rt.localScale;
+        _panelBaseScales[rt] = target;
+
+        rt.localScale = target * _openAnimationScaleFrom;
+        rt.DOScale(target, _openAnimationDuration)
+          .SetEase(DG.Tweening.Ease.OutBack)
+          .SetUpdate(true);
     }
 
     public void Hide(UIType type)
@@ -263,6 +334,7 @@ public class UIManager : Singleton<UIManager>
         _stack.Remove(type);
 
         if (panel.TryGetComponent<UIBase>(out var ui)) ui.NotifyHidden();
+        RestorePanelVisual(panel);
         panel.SetActive(false);
 
         RefreshPanelOrder();
@@ -288,6 +360,60 @@ public class UIManager : Singleton<UIManager>
                 panel.transform.SetAsLastSibling();
             }
         }
+
+        RefreshDimmer();
+    }
+
+    // 패널마다 딤머를 따로 두면 있는 패널과 없는 패널이 섞인다.
+    // 공용 딤머 하나를 UIManager가 관리해, 필요한 패널 바로 뒤에 깔고 뒤쪽 클릭을 막는다.
+    private void RefreshDimmer()
+    {
+        GameObject target = null;
+        for (int i = _stack.Count - 1; i >= 0; i--)
+        {
+            if (!_panels.TryGetValue(_stack[i], out var panel) || panel == null) continue;
+            if (!NeedsSharedDimmer(panel)) continue;
+            target = panel;
+            break;
+        }
+
+        if (target == null || target.transform.parent == null)
+        {
+            if (_dimmer != null) _dimmer.SetActive(false);
+            return;
+        }
+
+        EnsureDimmer();
+        _dimmer.transform.SetParent(target.transform.parent, false);
+
+        var rt = (RectTransform)_dimmer.transform;
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
+
+        _dimmer.SetActive(true);
+        // 대상 패널의 자리에 끼워 넣으면 패널이 한 칸 뒤로 밀려 딤머보다 위에 그려진다.
+        _dimmer.transform.SetSiblingIndex(target.transform.GetSiblingIndex());
+    }
+
+    private static bool NeedsSharedDimmer(GameObject panel)
+    {
+        if (panel.TryGetComponent<UIBase>(out var ui)) return ui.UseSharedDimmer;
+        if (panel.TryGetComponent<SceneUIRegistrar>(out var reg)) return reg.UseSharedDimmer;
+        return false;
+    }
+
+    private void EnsureDimmer()
+    {
+        if (_dimmer != null) return;
+
+        _dimmer = new GameObject("SharedDimmer", typeof(RectTransform), typeof(UnityEngine.UI.Image));
+        _dimmerImage = _dimmer.GetComponent<UnityEngine.UI.Image>();
+        _dimmerImage.raycastTarget = true;   // 뒤쪽 UI/월드 클릭 차단
+
+        var theme = UITheme.Default;
+        _dimmerImage.color = theme != null ? theme.Dimmer : new Color(0.04f, 0.06f, 0.11f, 0.6f);
     }
 
     public void Toggle(UIType type)
@@ -317,6 +443,8 @@ public class UIManager : Singleton<UIManager>
             _stack.Clear();
             RefreshCursor();
         }
+
+        RefreshDimmer();
     }
 
     // UIBase가 초기 비활성 처리를 건너뛸지 판단하는 데 사용한다.

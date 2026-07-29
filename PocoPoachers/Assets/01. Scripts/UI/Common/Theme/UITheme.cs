@@ -50,6 +50,9 @@ public class UITheme : ScriptableObject
     [Tooltip("스태미나 게이지 색")]
     public Color StaminaFill = new Color32(0x3C, 0x78, 0xFF, 0xFF);
 
+    [Tooltip("모달 패널 뒤를 덮는 딤머 색")]
+    public Color Dimmer = new Color32(0x0A, 0x0F, 0x1D, 0x99);
+
     [Header("Typography (px)")]
     public float FontSizeCaption = 15f;
     public float FontSizeBody = 18f;
