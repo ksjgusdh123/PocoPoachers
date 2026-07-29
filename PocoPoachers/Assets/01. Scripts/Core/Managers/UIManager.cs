@@ -34,6 +34,10 @@ public class UIManager : Singleton<UIManager>
     // 드래그 아이콘처럼 항상 모든 패널 위에 떠야 하는 요소가 쓰는 정렬 순서.
     public const int OverlaySortingOrder = 1000;
 
+    [Header("Input")]
+    [SerializeField]
+    private InputAction _cancelAction = new InputAction("UICancel", InputActionType.Button, "<Keyboard>/escape");
+
     private readonly Dictionary<UIType, GameObject> _panels = new();
     private readonly List<UIType> _stack = new();
 
@@ -64,6 +68,26 @@ public class UIManager : Singleton<UIManager>
         base.OnDestroy();
     }
 
+    private void OnEnable()
+    {
+        if (_instance != this) return;
+
+        // 인스펙터에서 바인딩이 비어 있어도(기존 인스턴스 등) 기본값으로 동작하게 보정한다.
+        if (_cancelAction.bindings.Count == 0)
+            _cancelAction.AddBinding("<Keyboard>/escape");
+
+        _cancelAction.performed += OnCancelPerformed;
+        _cancelAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        if (_instance != this) return;
+
+        _cancelAction.performed -= OnCancelPerformed;
+        _cancelAction.Disable();
+    }
+
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => RegisterScenePanels();
 
     // 대부분의 UI 패널은 기본 비활성 상태라 Awake가 씬 로드 시 호출되지 않는다.
@@ -77,10 +101,10 @@ public class UIManager : Singleton<UIManager>
             registrar.RegisterSelf();
     }
 
-    private void Update()
+    // 취소(ESC) 입력. 매 프레임 키보드를 폴링하는 대신 InputSystem 액션으로 받아
+    // 리바인딩과 게임패드 바인딩 추가가 가능하도록 한다.
+    private void OnCancelPerformed(InputAction.CallbackContext _)
     {
-        if (Keyboard.current == null || !Keyboard.current.escapeKey.wasPressedThisFrame) return;
-
         if (_stack.Count > 0)
             HideTop();
         else
