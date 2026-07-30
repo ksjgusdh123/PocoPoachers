@@ -167,6 +167,6 @@ public class StorageUI : InventoryUI
             ? subtitleTransform.GetComponent<TextMeshProUGUI>()
             : null;
         if (subtitle != null)
-            subtitle.text = $"{Inventory.ItemCount} / {Inventory.CurrentCapacity} ITEMS  ·  PAGE {page}";
+            subtitle.text = $"{Inventory.ItemCount} / {Inventory.CurrentCapacity} ITEMS  /  PAGE {page}";
     }
 }

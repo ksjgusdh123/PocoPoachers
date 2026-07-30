@@ -15,7 +15,10 @@ public class MainThreadDispatcher : Singleton<MainThreadDispatcher>
     protected override void Awake()
     {
         base.Awake();
-        DontDestroyOnLoad(gameObject);      
+        if (_instance != this) return;
+
+        transform.SetParent(null);
+        DontDestroyOnLoad(gameObject);
     }
 
     void Update()

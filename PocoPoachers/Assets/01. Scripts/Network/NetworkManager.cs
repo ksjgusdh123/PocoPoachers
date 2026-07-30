@@ -31,7 +31,10 @@ public class NetworkManager : Singleton<NetworkManager>
     {
         base.Awake();
         if (_instance != this) return;
+
+        transform.SetParent(null);
         DontDestroyOnLoad(gameObject);
+
         if (GetComponent<ObjectManager>() == null)
             gameObject.AddComponent<ObjectManager>();
         StartCoroutine(CoHeartbeatLoop());

@@ -245,7 +245,6 @@ GameObject:
   - component: {fileID: 5465277659268569218}
   - component: {fileID: 2641462913852480923}
   - component: {fileID: 7265654135327120672}
-  - component: {fileID: 265538011821720513}
   - component: {fileID: 8561351626125882580}
   m_Layer: 5
   m_Name: Detail
@@ -317,32 +316,6 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
---- !u!114 &265538011821720513
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 576873935713448369}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 59f8146938fff824cb5fd77236b75775, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
-  m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
-  m_ChildAlignment: 4
-  m_Spacing: 0
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
 --- !u!114 &8561351626125882580
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -391,11 +364,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 5465277659268569218}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.55, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 160, y: -116}
-  m_SizeDelta: {x: -120, y: 48}
-  m_Pivot: {x: 0.5, y: 1}
+  m_AnchorMin: {x: 0.48, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 56}
+  m_SizeDelta: {x: -80, y: 48}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5481462201177623414
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -546,8 +519,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.55, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 24, y: 8}
-  m_SizeDelta: {x: -24, y: -18}
+  m_AnchoredPosition: {x: -24, y: 8}
+  m_SizeDelta: {x: -48, y: -18}
   m_Pivot: {x: 1, y: 0.5}
 --- !u!222 &427418538441110917
 CanvasRenderer:
@@ -577,7 +550,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "DROP EQUIPMENT \xB7 REVIEW GAINS \xB7 ENHANCE"
+  m_text: DROP EQUIPMENT / REVIEW GAINS / ENHANCE
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 5b49de6228ad48141bf9858646bbd6ba, type: 2}
   m_sharedMaterial: {fileID: -2280722913069362485, guid: 5b49de6228ad48141bf9858646bbd6ba, type: 2}
@@ -697,10 +670,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 5465277659268569218}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.55, y: 0.5}
+  m_AnchorMin: {x: 0.48, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 160, y: 96}
-  m_SizeDelta: {x: -120, y: 96}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: -80, y: 72}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4672199395579752025
 CanvasRenderer:
@@ -1252,8 +1225,8 @@ RectTransform:
   - {fileID: 956029035527843339}
   m_Father: {fileID: 5465277659268569218}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.75, y: 0}
-  m_AnchorMax: {x: 0.75, y: 0}
+  m_AnchorMin: {x: 0.74, y: 0}
+  m_AnchorMax: {x: 0.74, y: 0}
   m_AnchoredPosition: {x: 0, y: 32}
   m_SizeDelta: {x: 300, y: 64}
   m_Pivot: {x: 0.5, y: 0}
@@ -1535,7 +1508,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7524288062752803237}
-  - component: {fileID: 6570269807308536463}
   - component: {fileID: 4367333989731669307}
   - component: {fileID: 5085232785027829953}
   - component: {fileID: 1450588153244783183}
@@ -1562,37 +1534,11 @@ RectTransform:
   - {fileID: 4352781041106606023}
   m_Father: {fileID: 5465277659268569218}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.55, y: 0}
+  m_AnchorMin: {x: 0.48, y: 0.5}
   m_AnchorMax: {x: 1, y: 0.5}
-  m_AnchoredPosition: {x: 160, y: -48}
-  m_SizeDelta: {x: -120, y: -56}
+  m_AnchoredPosition: {x: 0, y: -76}
+  m_SizeDelta: {x: -80, y: 176}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &6570269807308536463
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7219829267562203933}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 30649d3a9faa99c48a7b1166b86bf2a0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.HorizontalLayoutGroup
-  m_Padding:
-    m_Left: 0
-    m_Right: 0
-    m_Top: 0
-    m_Bottom: 0
-  m_ChildAlignment: 4
-  m_Spacing: 0
-  m_ChildForceExpandWidth: 1
-  m_ChildForceExpandHeight: 1
-  m_ChildControlWidth: 0
-  m_ChildControlHeight: 0
-  m_ChildScaleWidth: 0
-  m_ChildScaleHeight: 0
-  m_ReverseArrangement: 0
 --- !u!222 &4367333989731669307
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2441,11 +2387,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 5465277659268569218}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.55, y: 1}
-  m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 160, y: -44}
-  m_SizeDelta: {x: -120, y: 56}
-  m_Pivot: {x: 0.5, y: 1}
+  m_AnchorMin: {x: 0.48, y: 0.5}
+  m_AnchorMax: {x: 1, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 120}
+  m_SizeDelta: {x: -80, y: 56}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &5597322474031851921
 CanvasRenderer:
   m_ObjectHideFlags: 0
