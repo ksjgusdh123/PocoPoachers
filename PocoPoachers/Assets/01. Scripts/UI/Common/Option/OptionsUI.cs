@@ -32,6 +32,9 @@ public class OptionsUI : UIBase
     [SerializeField] private Slider _masterSlider;
     [SerializeField] private Slider _bgmSlider;
     [SerializeField] private Slider _sfxSlider;
+    [SerializeField] private TextMeshProUGUI _masterValueLabel;
+    [SerializeField] private TextMeshProUGUI _bgmValueLabel;
+    [SerializeField] private TextMeshProUGUI _sfxValueLabel;
 
     [Header("Language")]
     [SerializeField] private TMP_Dropdown _languageDropdown;
@@ -43,14 +46,9 @@ public class OptionsUI : UIBase
         base.Awake();
 
         var sound = SoundManager.GetInstance();
-
-        _masterSlider.SetValueWithoutNotify(sound.MasterVolume);
-        _bgmSlider.SetValueWithoutNotify(sound.BgmVolume);
-        _sfxSlider.SetValueWithoutNotify(sound.SfxVolume);
-
-        _masterSlider.onValueChanged.AddListener(sound.SetMasterVolume);
-        _bgmSlider.onValueChanged.AddListener(sound.SetBgmVolume);
-        _sfxSlider.onValueChanged.AddListener(sound.SetSfxVolume);
+        BindVolumeSlider(_masterSlider, _masterValueLabel, sound.MasterVolume, sound.SetMasterVolume);
+        BindVolumeSlider(_bgmSlider, _bgmValueLabel, sound.BgmVolume, sound.SetBgmVolume);
+        BindVolumeSlider(_sfxSlider, _sfxValueLabel, sound.SfxVolume, sound.SetSfxVolume);
 
         var localization = LocalizationManager.GetInstance();
 
@@ -65,4 +63,26 @@ public class OptionsUI : UIBase
 
         _frame.BtnClose.onClick.AddListener(Hide);
     }
+
+    private static void BindVolumeSlider(
+        Slider slider,
+        TextMeshProUGUI valueLabel,
+        float initialValue,
+        Action<float> applyValue)
+    {
+        slider.SetValueWithoutNotify(initialValue);
+        UpdateVolumeLabel(valueLabel, initialValue);
+        slider.onValueChanged.AddListener(value =>
+        {
+            applyValue(value);
+            UpdateVolumeLabel(valueLabel, value);
+        });
+    }
+
+    private static void UpdateVolumeLabel(TextMeshProUGUI label, float value)
+    {
+        if (label != null)
+            label.text = $"{Mathf.RoundToInt(value * 100f):00}%";
+    }
+
 }

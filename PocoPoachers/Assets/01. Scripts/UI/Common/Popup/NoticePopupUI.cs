@@ -25,7 +25,20 @@ public class NoticePopupUI : PopupUIBase
     {
         base.Awake();
 
-        _btnOk.onClick.AddListener(() => OnOk?.Invoke());
+        _btnOk.onClick.AddListener(OnClickOk);
+    }
+
+    private void OnClickOk()
+    {
+        OnOk?.Invoke();
+
+        // UIManager의 팝업 콜백 등록 순서와 무관하게 확인 버튼은 항상 닫힌다.
+        if (!gameObject.activeSelf) return;
+
+        if (UIManager.GetInstance() != null)
+            Hide();
+        else
+            gameObject.SetActive(false);
     }
 
     protected override void RegisterToManager() => UIManager.GetInstance().RegisterNoticePopup(this);

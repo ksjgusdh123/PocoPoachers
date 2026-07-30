@@ -440,8 +440,10 @@ public class UIManager : Singleton<UIManager>
         rt.offsetMax = Vector2.zero;
 
         _dimmer.SetActive(true);
-        // 대상 패널의 자리에 끼워 넣으면 패널이 한 칸 뒤로 밀려 딤머보다 위에 그려진다.
+        // 딤머가 기존에 대상보다 앞에 있던 경우 같은 인덱스로 이동하면 오히려 대상 위로 올라간다.
+        // 배치 후 대상 패널을 딤머 바로 다음 형제로 강제해 렌더링과 raycast 순서를 보장한다.
         _dimmer.transform.SetSiblingIndex(target.transform.GetSiblingIndex());
+        target.transform.SetSiblingIndex(_dimmer.transform.GetSiblingIndex() + 1);
     }
 
     private static bool NeedsSharedDimmer(GameObject panel)
