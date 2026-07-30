@@ -22,7 +22,18 @@ public class StorageUI : InventoryUI
     private ItemType _filterType = ItemType.None;
     private readonly List<int> _visibleIndices = new();
 
-    public int PageCount => Mathf.CeilToInt((float)Inventory.CurrentCapacity / _pageSize);
+    public int PageCount
+    {
+        get
+        {
+            if (Inventory == null || _pageSize <= 0) return 1;
+
+            int visibleCount = _filterType == ItemType.None
+                ? Inventory.CurrentCapacity
+                : GetVisibleIndices().Count;
+            return Mathf.Max(1, Mathf.CeilToInt((float)visibleCount / _pageSize));
+        }
+    }
 
     // 창고는 리빌 연출이 없으므로 항상 공개 상태로 취급 (더블클릭/설명 차단 해제)
     public override bool IsSlotUnrevealed(int slotIndex) => false;
@@ -32,6 +43,7 @@ public class StorageUI : InventoryUI
     {
         _filterType = _filterType == type ? ItemType.None : type;
         _currentPage = 0;
+        RefreshFilterSelection();
         Refresh();
     }
 
@@ -47,9 +59,29 @@ public class StorageUI : InventoryUI
             var type = entry.Type;
             entry.Button.onClick.AddListener(() => SetFilter(type));
         }
+
+        RefreshFilterSelection();
     }
 
-public void NextPage()
+    private void RefreshFilterSelection()
+    {
+        foreach (var entry in _filterButtons)
+        {
+            if (entry.Button == null) continue;
+
+            Transform accent = entry.Button.transform.Find("SelectionAccent");
+            if (accent != null)
+                accent.gameObject.SetActive(_filterType == entry.Type);
+
+            TextMeshProUGUI label = entry.Button.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (label != null)
+                label.color = _filterType == entry.Type
+                    ? Color.white
+                    : new Color32(0xA8, 0xB9, 0xCC, 0xFF);
+        }
+    }
+
+    public void NextPage()
     {
         _currentPage = Mathf.Min(_currentPage + 1, PageCount - 1);
         Refresh();
@@ -87,6 +119,11 @@ public void NextPage()
                 _slotUIs[i].SetSlot(Inventory.Slots[visibleIndices[visibleIndex]]);
         }
 
+        if (_prevButton != null)
+            _prevButton.interactable = _currentPage > 0;
+        if (_nextButton != null)
+            _nextButton.interactable = _currentPage < PageCount - 1;
+
         RefreshCountText();
     }
 
@@ -117,8 +154,19 @@ public void NextPage()
         // 아이템 수 / 용량 텍스트는 부모에서 처리
         base.RefreshCountText();
 
-        // 페이지 텍스트 갱신
+        string page = $"{_currentPage + 1} / {PageCount}";
         if (_pageText != null)
-            _pageText.text = $"{_currentPage + 1} / {PageCount}";
+        {
+            _pageText.text = page;
+            return;
+        }
+
+        // 기존 prefab은 전용 page text가 없으므로 개선된 header meta 영역을 fallback으로 사용한다.
+        Transform subtitleTransform = transform.Find("BoxNameUI/PolishHeader/Subtitle");
+        TextMeshProUGUI subtitle = subtitleTransform != null
+            ? subtitleTransform.GetComponent<TextMeshProUGUI>()
+            : null;
+        if (subtitle != null)
+            subtitle.text = $"{Inventory.ItemCount} / {Inventory.CurrentCapacity} ITEMS  ·  PAGE {page}";
     }
 }

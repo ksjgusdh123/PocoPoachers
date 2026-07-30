@@ -91,7 +91,27 @@ public class CraftingTableUI : MonoBehaviour
         _selectedCategory = type;
         _selectedRecipe = null;
         _detailPanel?.SetActive(false);
+        RefreshCategorySelection();
         RefreshList();
+    }
+
+    private void RefreshCategorySelection()
+    {
+        Color selectedColor = Color.white;
+        Color normalColor = new Color32(0xA8, 0xB9, 0xCC, 0xFF);
+
+        for (int i = 0; i < _categoryButtons.Length; i++)
+        {
+            Button button = _categoryButtons[i];
+            if (button == null) continue;
+
+            bool selected = i < _categoryTypes.Length && _categoryTypes[i] == _selectedCategory;
+            Transform accent = button.transform.Find("SelectionAccent");
+            if (accent != null) accent.gameObject.SetActive(selected);
+
+            TextMeshProUGUI label = button.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (label != null) label.color = selected ? selectedColor : normalColor;
+        }
     }
 
     private void RefreshList()

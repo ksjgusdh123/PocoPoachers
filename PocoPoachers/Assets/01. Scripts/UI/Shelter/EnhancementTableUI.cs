@@ -109,7 +109,36 @@ public class EnhancementTableUI : MonoBehaviour
     private void SelectStat(EnhancementStatType statType)
     {
         _selectedStatType = statType;
+        RefreshStatSelection();
         Refresh();
+    }
+
+    private void RefreshStatSelection()
+    {
+        Button[] buttons = { _hpButton, _batteryButton, _staminaButton, _speedButton };
+        EnhancementStatType[] types =
+        {
+            EnhancementStatType.MaxHp,
+            EnhancementStatType.MaxBattery,
+            EnhancementStatType.MaxStamina,
+            EnhancementStatType.MoveSpeed
+        };
+
+        Color selectedColor = Color.white;
+        Color normalColor = new Color32(0xA8, 0xB9, 0xCC, 0xFF);
+
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            Button button = buttons[i];
+            if (button == null) continue;
+
+            bool selected = types[i] == _selectedStatType;
+            Transform accent = button.transform.Find("SelectionAccent");
+            if (accent != null) accent.gameObject.SetActive(selected);
+
+            TextMeshProUGUI label = button.GetComponentInChildren<TextMeshProUGUI>(true);
+            if (label != null) label.color = selected ? selectedColor : normalColor;
+        }
     }
 
     private void OnClickEnhance()

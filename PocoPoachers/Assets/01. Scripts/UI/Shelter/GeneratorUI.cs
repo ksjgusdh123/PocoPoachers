@@ -90,7 +90,7 @@ public class GeneratorUI : MonoBehaviour
     private void SetPlainText(float ratio)
     {
         string hex = ColorUtility.ToHtmlStringRGB(GetColorForRatio(ratio));
-        _powerText.text = $"<color=#{hex}>{Mathf.RoundToInt(ratio * 100f)}</color><color=#000000>%</color>";
+        _powerText.text = $"<color=#{hex}>{Mathf.RoundToInt(ratio * 100f)}</color><color=#B8C7D9>%</color>";
     }
 
     // 슬롯에 연료가 올라와 있는 동안, 지금 넣으면 도달할 퍼센트를 "52 -> 57%" 형태로 실시간으로 보여준다.
@@ -108,7 +108,7 @@ public class GeneratorUI : MonoBehaviour
         string beforeHex = ColorUtility.ToHtmlStringRGB(GetColorForRatio(beforeRatio));
         string afterHex = ColorUtility.ToHtmlStringRGB(GetColorForRatio(afterRatio));
 
-        _powerText.text = $"<color=#{beforeHex}>{before}</color> <color=#000000>-></color> <color=#{afterHex}>{after}</color><color=#000000>%</color>";
+        _powerText.text = $"<color=#{beforeHex}>{before}</color> <color=#B8C7D9>-></color> <color=#{afterHex}>{after}</color><color=#B8C7D9>%</color>";
     }
 
     private static Color GetColorForRatio(float ratio)

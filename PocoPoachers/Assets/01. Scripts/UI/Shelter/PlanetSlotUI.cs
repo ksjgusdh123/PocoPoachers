@@ -9,6 +9,18 @@ public class PlanetSlotUI : MonoBehaviour
     [SerializeField] private Button _button;
 
     private PlanetData _data;
+    private GameObject _lockOverlay;
+    private TextMeshProUGUI _lockText;
+    private bool _isUnlocked = true;
+
+    private void Awake()
+    {
+        Transform lockTransform = transform.Find("Group/LockOverlay");
+        if (lockTransform == null) return;
+
+        _lockOverlay = lockTransform.gameObject;
+        _lockText = lockTransform.GetComponentInChildren<TextMeshProUGUI>(true);
+    }
 
     private void OnEnable()
     {
@@ -26,16 +38,25 @@ public class PlanetSlotUI : MonoBehaviour
     public void Setup(PlanetData data, bool isUnlocked)
     {
         _data = data;
-        RefreshName();
+        _isUnlocked = isUnlocked;
         _icon.sprite = ResourceManager.Instance.LoadSprite(data.IconPath);
         _button.interactable = isUnlocked;
+        _lockOverlay?.SetActive(!isUnlocked);
         _button.onClick.AddListener(OnClick);
+        RefreshName();
     }
 
     private void RefreshName()
     {
         if (_data == null) return;
-        _nameText.text = LocalizationManager.GetInstance().GetString(_data.PlanetName);
+
+        var localization = LocalizationManager.GetInstance();
+        _nameText.text = localization.GetString(_data.PlanetName);
+
+        if (_lockText == null || _isUnlocked) return;
+        _lockText.text = localization.CurrentLanguage == SystemLanguage.Korean
+            ? $"쉘터 Lv.{_data.NeedShelterLevel} 필요"
+            : $"REQUIRES SHELTER LV.{_data.NeedShelterLevel}";
     }
 
     private void OnClick()

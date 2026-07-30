@@ -76,7 +76,7 @@ public class CrankGaugeUI : MonoBehaviour
         if (_powerText == null) return;
 
         string hex = ColorUtility.ToHtmlStringRGB(GetColorForRatio(ratio));
-        _powerText.text = $"<color=#{hex}>{Mathf.RoundToInt(ratio * 100f)}</color><color=#000000>%</color>";
+        _powerText.text = $"<color=#{hex}>{Mathf.RoundToInt(ratio * 100f)}</color><color=#B8C7D9>%</color>";
     }
 
     private static Color GetColorForRatio(float ratio)
