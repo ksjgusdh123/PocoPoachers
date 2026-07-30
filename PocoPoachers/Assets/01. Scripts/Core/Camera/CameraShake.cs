@@ -14,6 +14,13 @@ public class CameraShake : MonoBehaviour, ICameraEffect
         Instance = this;
     }
 
+    // 씬 언로드로 파괴된 뒤에도 static Instance가 파괴된 참조를 가리키면
+    // 다음 씬에서 Shake 호출 시 MissingReferenceException이 난다.
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
     private Vector3 _direction;
 
     public void Shake(float intensity, float duration, Vector3 direction)

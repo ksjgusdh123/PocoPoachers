@@ -27,7 +27,14 @@ public class FogOfWarRenderer : MonoBehaviour
     private Transform _circleMeshTrans;
     private Mesh _circleMesh;
     private Transform _overlayTrans;
+    private Mesh _overlayMesh;
     private CommandBuffer _cmd;
+
+    // Update에서 매 프레임 new 하면 프레임당 4개의 배열이 GC로 흘러가므로 재사용한다.
+    private Vector3[] _fovVertices;
+    private int[] _fovTriangles;
+    private Vector3[] _circleVertices;
+    private int[] _circleTriangles;
 
     private static readonly int FogMaskProp  = Shader.PropertyToID("_FogMask");
     private static readonly int BlurSizeProp = Shader.PropertyToID("_BlurSize");
@@ -36,6 +43,14 @@ public class FogOfWarRenderer : MonoBehaviour
     {
         _wallLayer = 1 << LayerMask.NameToLayer("Wall");
         _mainCam   = Camera.main;
+
+        if (_mainCam == null)
+        {
+            // 메인 카메라가 없으면 렌더 대상 자체가 없다 — 아래 cullingMask 접근에서 NRE가 나므로 중단한다.
+            Debug.LogError("[FogOfWarRenderer] MainCamera를 찾을 수 없어 안개 렌더링을 비활성화합니다.");
+            enabled = false;
+            return;
+        }
 
         CreateRenderTextures();
         CreateDepthOnlyMaterial();
@@ -61,7 +76,15 @@ public class FogOfWarRenderer : MonoBehaviour
         if (_fogMaskRT  != null) { _fogMaskRT.Release();  Destroy(_fogMaskRT); }
         if (_blurTempRT != null) { _blurTempRT.Release(); Destroy(_blurTempRT); }
 
-        if (_depthOnlyMat != null) Destroy(_depthOnlyMat);
+        // new Material / new Mesh 로 만든 것은 GameObject를 파괴해도 함께 해제되지 않는다.
+        if (_depthOnlyMat   != null) Destroy(_depthOnlyMat);
+        if (_blurMat        != null) Destroy(_blurMat);
+        if (_fovMaskMat     != null) Destroy(_fovMaskMat);
+        if (_darkOverlayMat != null) Destroy(_darkOverlayMat);
+
+        if (_fovMesh     != null) Destroy(_fovMesh);
+        if (_circleMesh  != null) Destroy(_circleMesh);
+        if (_overlayMesh != null) Destroy(_overlayMesh);
 
         _cmd?.Release();
     }
@@ -123,7 +146,8 @@ public class FogOfWarRenderer : MonoBehaviour
 
     public void RefreshWallRenderers()
     {
-        var allRenderers = FindObjectsByType<Renderer>();
+        // 정렬은 필요 없으므로 SortMode.None — 렌더러가 많은 씬에서 InstanceID 정렬 비용을 없앤다.
+        var allRenderers = FindObjectsByType<Renderer>(FindObjectsSortMode.None);
         var wallRenderers = new System.Collections.Generic.List<Renderer>();
 
         foreach (var targetRenderer in allRenderers)
@@ -188,16 +212,16 @@ public class FogOfWarRenderer : MonoBehaviour
         _overlayTrans = go.transform;
 
         float s = _overlaySize * 0.5f;
-        var overlayMesh = new Mesh { name = "DarkOverlayMesh" };
-        overlayMesh.vertices = new Vector3[]
+        _overlayMesh = new Mesh { name = "DarkOverlayMesh" };
+        _overlayMesh.vertices = new Vector3[]
         {
             new(-s, 0, -s), new(-s, 0, s),
             new( s, 0,  s), new( s, 0, -s)
         };
-        overlayMesh.triangles = new int[] { 0, 1, 2, 0, 2, 3 };
-        overlayMesh.RecalculateNormals();
+        _overlayMesh.triangles = new int[] { 0, 1, 2, 0, 2, 3 };
+        _overlayMesh.RecalculateNormals();
 
-        go.AddComponent<MeshFilter>().mesh = overlayMesh;
+        go.AddComponent<MeshFilter>().mesh = _overlayMesh;
 
         var mr = go.AddComponent<MeshRenderer>();
         _darkOverlayMat = new Material(Shader.Find("Custom/DarkOverlay"));
@@ -213,9 +237,23 @@ public class FogOfWarRenderer : MonoBehaviour
         Vector3 origin   = _fovMeshTrans.position;
         float   half     = _visionConfig.fovAngle * 0.5f;
         int     segments = _visionConfig.arcSegments;
+        if (segments < 1) return;
 
-        Vector3[] vertices = new Vector3[segments + 2];
-        vertices[0] = Vector3.zero;
+        // 세그먼트 수가 바뀔 때만 재할당 — 평소에는 기존 배열 내용만 갱신한다.
+        if (_fovVertices == null || _fovVertices.Length != segments + 2)
+        {
+            _fovVertices  = new Vector3[segments + 2];
+            _fovTriangles = new int[segments * 3];
+            for (int i = 0; i < segments; i++)
+            {
+                _fovTriangles[i * 3]     = 0;
+                _fovTriangles[i * 3 + 1] = i + 1;
+                _fovTriangles[i * 3 + 2] = i + 2;
+            }
+            _fovMesh.Clear();
+        }
+
+        _fovVertices[0] = Vector3.zero;
 
         for (int i = 0; i <= segments; i++)
         {
@@ -226,20 +264,11 @@ public class FogOfWarRenderer : MonoBehaviour
                 ? hit.distance
                 : _visionConfig.detectRange;
 
-            vertices[i + 1] = dir * dist;
+            _fovVertices[i + 1] = dir * dist;
         }
 
-        int[] triangles = new int[segments * 3];
-        for (int i = 0; i < segments; i++)
-        {
-            triangles[i * 3]     = 0;
-            triangles[i * 3 + 1] = i + 1;
-            triangles[i * 3 + 2] = i + 2;
-        }
-
-        _fovMesh.Clear();
-        _fovMesh.vertices  = vertices;
-        _fovMesh.triangles = triangles;
+        _fovMesh.vertices  = _fovVertices;
+        _fovMesh.triangles = _fovTriangles;
         _fovMesh.RecalculateNormals();
     }
 
@@ -249,8 +278,20 @@ public class FogOfWarRenderer : MonoBehaviour
         float     radius   = _visionConfig.circleRadius;
         Vector3   origin   = _circleMeshTrans.position;
 
-        Vector3[] vertices  = new Vector3[segments + 2];
-        vertices[0] = Vector3.zero;
+        if (_circleVertices == null)
+        {
+            _circleVertices  = new Vector3[segments + 2];
+            _circleTriangles = new int[segments * 3];
+            for (int i = 0; i < segments; i++)
+            {
+                _circleTriangles[i * 3]     = 0;
+                _circleTriangles[i * 3 + 1] = i + 1;
+                _circleTriangles[i * 3 + 2] = i + 2;
+            }
+            _circleMesh.Clear();
+        }
+
+        _circleVertices[0] = Vector3.zero;
 
         for (int i = 0; i <= segments; i++)
         {
@@ -261,20 +302,11 @@ public class FogOfWarRenderer : MonoBehaviour
                 ? hit.distance
                 : radius;
 
-            vertices[i + 1] = dir * dist;
+            _circleVertices[i + 1] = dir * dist;
         }
 
-        int[] triangles = new int[segments * 3];
-        for (int i = 0; i < segments; i++)
-        {
-            triangles[i * 3]     = 0;
-            triangles[i * 3 + 1] = i + 1;
-            triangles[i * 3 + 2] = i + 2;
-        }
-
-        _circleMesh.Clear();
-        _circleMesh.vertices  = vertices;
-        _circleMesh.triangles = triangles;
+        _circleMesh.vertices  = _circleVertices;
+        _circleMesh.triangles = _circleTriangles;
         _circleMesh.RecalculateNormals();
     }
 }

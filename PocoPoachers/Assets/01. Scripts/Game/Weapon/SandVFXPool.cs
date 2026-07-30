@@ -26,7 +26,11 @@ public class SandVFXPool : Singleton<SandVFXPool>
 
         VisualEffect vfx = _pool.Get();
         Transform vfxTransform = vfx.transform;
-        vfxTransform.SetParent(hit.collider.transform, true);
+
+        // 피격 대상의 자식으로 붙이면(예: 파괴되는 샌드백) 대상이 사라질 때 풀 오브젝트까지 함께
+        // 파괴되어 Release되지 못한다. 풀 루트 아래에 두고 월드 좌표만 맞춘다.
+        // (수명 1초 동안 움직이는 대상을 따라가지 않게 되는 대신 풀 누수가 사라진다.)
+        vfxTransform.SetParent(transform, true);
         vfxTransform.SetPositionAndRotation(position, rotation);
         vfxTransform.localScale = Vector3.one;
 

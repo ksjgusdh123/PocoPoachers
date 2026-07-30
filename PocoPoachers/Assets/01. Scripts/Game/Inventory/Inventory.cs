@@ -75,7 +75,11 @@ public class Inventory : MonoBehaviour
 
         if (slot.IsEmpty)
         {
-            slot.Set(itemData, Mathf.Min(amount, itemData.MaxStack), uid);
+            int clamped = Mathf.Min(amount, itemData.MaxStack);
+            if (clamped < amount)
+                Debug.LogWarning($"[Inventory] MaxStack 초과분이 버려집니다. item={itemData.id}, 요청={amount}, 반영={clamped}");
+
+            slot.Set(itemData, clamped, uid);
             OnItemAdded?.Invoke(itemData);
             return true;
         }
@@ -83,7 +87,12 @@ public class Inventory : MonoBehaviour
         if (slot.ItemData.id != itemData.id) return false;
         if (slot.Amount >= itemData.MaxStack) return false;
 
-        slot.AddAmount(amount);
+        // AddAmount는 MaxStack까지만 채우고 초과분을 반환한다. 호출측이 남은 수량을 처리할 수 없으므로
+        // 조용히 사라지지 않도록 알린다(정상 경로에서는 CanAddItem이 먼저 분배해 0이 나온다).
+        int overflow = slot.AddAmount(amount);
+        if (overflow > 0)
+            Debug.LogWarning($"[Inventory] MaxStack 초과분이 버려집니다. item={itemData.id}, 초과={overflow}");
+
         OnItemAdded?.Invoke(itemData);
         return true;
     }

@@ -101,9 +101,27 @@ public class Session
         if (Interlocked.Exchange(ref _disconnected, 1) == 1)
             return;
 
-        OnDisconnected(_socket.RemoteEndPoint);
-        _socket.Shutdown(SocketShutdown.Both);
-        _socket.Close();
+        Socket socket = _socket;
+
+        // Start() 이전(_socket이 null!)이거나 이미 닫힌 소켓에서는 RemoteEndPoint 접근과
+        // Shutdown이 NullReference/SocketException/ObjectDisposedException을 던진다.
+        EndPoint remote = null;
+        try { remote = socket?.RemoteEndPoint; }
+        catch { /* 연결 전이거나 이미 끊긴 상태 — 주소를 알 수 없어도 통지는 해야 한다 */ }
+
+        OnDisconnected(remote);
+
+        try { socket?.Shutdown(SocketShutdown.Both); }
+        catch { /* 이미 닫힌 경우 무시 */ }
+
+        try { socket?.Close(); }
+        catch { /* 무시 */ }
+
+        // 진행 중인 비동기 I/O의 완료 콜백이 끊긴 세션 상태를 건드리지 않게 핸들러를 떼어둔다.
+        // (SocketAsyncEventArgs 자체는 Dispose하지 않는다 — 대기 중인 I/O가 있으면
+        //  ObjectDisposedException으로 이어지고, 이 세션은 프로세스당 소수만 생성된다.)
+        _recvArgs.Completed -= OnRecvCompleted;
+        _sendArgs.Completed -= OnSendCompleted;
     }
 
     void RegisterSend()

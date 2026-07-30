@@ -12,6 +12,13 @@ public class TargetDetector : MonoBehaviour
     private BehaviorGraphAgent _behaviorAgent;
     private GameObject _currentTarget;
 
+    // 매 프레임 GetComponentInParent를 호출하지 않도록 현재 타겟의 스탯을 캐싱한다.
+    // 적이 많을 때 Update × 적 수만큼 계층 탐색이 발생하던 비용을 없앤다.
+    private StatBase _currentTargetStat;
+
+    // TryDetect가 매 호출 배열을 새로 만들지 않도록 재사용하는 버퍼.
+    private Collider[] _overlapBuffer = new Collider[16];
+
     // 현재 타겟 (없으면 null) — 스킬 등 외부에서 조회
     public GameObject CurrentTarget => _currentTarget;
 
@@ -24,7 +31,10 @@ public class TargetDetector : MonoBehaviour
     // 타겟이 죽으면(HP 0 이하) 즉시 무효화 — 행동 그래프에서 어떤 노드가 도는지와 무관하게 보장한다
     private void Update()
     {
-        if (_currentTarget != null && !IsAlive(_currentTarget))
+        if (_currentTarget == null) return;
+
+        // 파괴됐거나(fake null 포함) 캐싱된 스탯의 HP가 0 이하면 해제
+        if (_currentTargetStat != null && _currentTargetStat.CurrentHp <= 0f)
             ClearTarget();
     }
 
@@ -34,7 +44,14 @@ public class TargetDetector : MonoBehaviour
     {
         if (!IsAlive(target)) return;
 
+        SetTarget(target);
+    }
+
+    // 타겟 지정을 한 곳으로 모아 스탯 캐시와 블랙보드가 어긋나지 않게 한다.
+    private void SetTarget(GameObject target)
+    {
         _currentTarget = target;
+        _currentTargetStat = target != null ? target.GetComponentInParent<StatBase>() : null;
         _behaviorAgent.BlackboardReference.SetVariableValue(_blackboardTarget, _currentTarget);
     }
 
@@ -52,6 +69,7 @@ public class TargetDetector : MonoBehaviour
     private void ClearTarget()
     {
         _currentTarget = null;
+        _currentTargetStat = null;
         _behaviorAgent.BlackboardReference.SetVariableValue(_blackboardTarget, (GameObject)null);
     }
 
@@ -61,17 +79,29 @@ public class TargetDetector : MonoBehaviour
         if (_currentTarget != null)
             return true;
 
-        var colliders = Physics.OverlapSphere(transform.position, _detectRange, _targetLayer);
-        foreach (var col in colliders)
+        // OverlapSphere는 매 호출 배열을 할당한다 — AI가 매 프레임 호출하므로 NonAlloc으로 대체.
+        Collider[] buffer = _overlapBuffer;
+        int count = Physics.OverlapSphereNonAlloc(
+            transform.position, _detectRange, buffer, _targetLayer);
+
+        // 버퍼가 꽉 찼으면 후보가 잘렸을 수 있으므로 다음 호출을 위해 키운다.
+        // 이번 결과는 방금 채워진 기존 버퍼(buffer)로 처리한다.
+        if (count == buffer.Length)
+            _overlapBuffer = new Collider[buffer.Length * 2];
+
+        for (int i = 0; i < count; i++)
         {
+            var col = buffer[i];
+            if (col == null)
+                continue;
+
             if (!IsInFov(col.transform))
                 continue;
 
             if (!IsAlive(col.gameObject))
                 continue;
 
-            _currentTarget = col.gameObject;
-            _behaviorAgent.BlackboardReference.SetVariableValue(_blackboardTarget, _currentTarget);
+            SetTarget(col.gameObject);
             return true;
         }
         return false;

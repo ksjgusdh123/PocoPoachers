@@ -26,7 +26,10 @@ public class BloodVFXPool : Singleton<BloodVFXPool>
 
         VisualEffect vfx = _pool.Get();
         Transform vfxTransform = vfx.transform;
-        vfxTransform.SetParent(hit.collider.transform, true);
+
+        // 피격 대상(적)의 자식으로 붙이면 적이 사망/디스폰될 때 풀 오브젝트까지 함께 파괴되어
+        // Release되지 못하고 풀이 고갈된다. 풀 루트 아래에 두고 월드 좌표만 맞춘다.
+        vfxTransform.SetParent(transform, true);
         vfxTransform.SetPositionAndRotation(position, rotation);
         vfxTransform.localScale = Vector3.one;
 

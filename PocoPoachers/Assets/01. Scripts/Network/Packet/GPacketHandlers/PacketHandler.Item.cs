@@ -158,16 +158,25 @@ public static partial class PacketHandlers
     }
 
     // 게스트가 인벤 아이템을 월드에 버림 — 호스트가 권위적으로 LootBox를 스폰하고 H_ItemSpawn으로 전파한다.
-    // 게스트 개인 인벤은 호스트가 추적하지 않으므로 요청 내용을 신뢰한다(소비/재료 위주, 장비 uid는 내구도 동기화 한계 있음).
+    // 게스트 개인 인벤은 호스트가 추적하지 않으므로 어떤 아이템을 버렸는지는 요청 내용을 신뢰한다
+    // (소비/재료 위주, 장비 uid는 내구도 동기화 한계 있음).
+    // 단, 발신자가 방에 등록된 게스트인지와 수량 상한은 다른 G_ 핸들러와 동일하게 검증한다.
     public static void OnG_DropItem(FlatPacket root)
     {
         var packet = root.TypeAsG_DropItem();
         if (!RoomManager.IsHost) return;
+        if (!RoomManager.TryGetGuestIdFromPacket(0, autoRegister: false, out _))
+            return;
 
         int itemId  = packet.ItemId;
         int amount  = packet.Amount;
         int itemUid = packet.ItemUid;
-        if (ItemTable.Instance.Get(itemId) == null || amount <= 0) return;
+
+        var itemData = ItemTable.Instance.Get(itemId);
+        if (itemData == null || amount <= 0) return;
+
+        // 상한을 두지 않으면 조작된 패킷 한 통으로 임의 수량의 LootBox를 만들 수 있다.
+        if (amount > itemData.MaxStack) return;
 
         float x = packet.Pos?.X ?? 0f;
         float y = packet.Pos?.Y ?? 0f;

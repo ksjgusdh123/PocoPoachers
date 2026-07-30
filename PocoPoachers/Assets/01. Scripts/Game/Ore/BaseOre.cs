@@ -14,6 +14,7 @@ public class BaseOre : MonoBehaviour, IInteractable
     private Coroutine _mineCoroutine;
     private UIScalePulse _pulseUI;
     private bool _isPlayerNearby;
+    private bool _isDepleted;   // 채광이 끝나 더 이상 캘 수 없는 상태
 
     public int Id => _id;
     public MineralData Data => _data;
@@ -62,6 +63,7 @@ public class BaseOre : MonoBehaviour, IInteractable
     // 펄스 UI 표시 (ItemBox와 동일 방식)
     private void ShowPulse()
     {
+        if (_isDepleted) return;        // 고갈된 광물에는 상호작용 안내를 띄우지 않는다
         if (_pulseUI != null) return;   // 중복 생성 방지
         _pulseUI = WorldUIManager.Instance.Create<UIScalePulse>(WorldUIType.ScalePulse, transform);
     }
@@ -84,11 +86,13 @@ public class BaseOre : MonoBehaviour, IInteractable
         }
 
         _currentHp = _data.MaxHp;
+        _isDepleted = false;
         OnSetup();
     }
 
     public void OnInteract(PlayerController player)
     {
+        if (_isDepleted) return;              // 이미 캐낸 광물은 재상호작용 불가
         if (_mineCoroutine != null) return;   // 이미 채광 중이면 무시
         HidePulse();                          // 채광 시작 시 펄스 끄기
         OnMineStarted?.Invoke(_mineDuration); // 채광 게이지 표시
@@ -98,29 +102,45 @@ public class BaseOre : MonoBehaviour, IInteractable
     // 채광 진행: _mineDuration 초 뒤 완료하고 플레이어 상호작용을 해제시킨다.
     private IEnumerator MineRoutine(PlayerController player)
     {
-        Debug.Log("채광중");
-
         yield return new WaitForSeconds(_mineDuration);
 
         _mineCoroutine = null;
-        Debug.Log("채광 완료");
-        OnMineEnded?.Invoke();         // 채광 게이지 숨김
-        GiveDrop(player);              // 드롭템을 상호작용한 플레이어 인벤토리에 지급
-        player.EndInteraction(this);   // PlayerController가 _currentInteractable을 null로 비움
+        OnMineEnded?.Invoke();                    // 채광 게이지 숨김
+        bool given = GiveDrop(player);            // 드롭템을 상호작용한 플레이어 인벤토리에 지급
+        player.EndInteraction(this);              // PlayerController가 _currentInteractable을 null로 비움
 
-        if (_isPlayerNearby) ShowPulse();   // 완료 후 근처에 있으면 펄스 재등장
+        // 인벤토리가 가득 차 지급에 실패했다면 광물을 소모하지 않고 남겨둔다.
+        if (!given)
+        {
+            if (_isPlayerNearby) ShowPulse();
+            yield break;
+        }
+
+        // 채광은 _mineDuration 기반 1회 완료형 상호작용이다(mineral.max_hp는 이 모델에서 쓰이지 않음).
+        // 고갈 처리를 하지 않으면 같은 광물을 무한 반복 채광할 수 있다.
+        _currentHp = 0;
+        Deplete();
     }
 
-    // 채광 완료 시 드롭템(drop_item_id × drop_amount)을 플레이어 인벤토리에 넣는다.
-    private void GiveDrop(PlayerController player)
+    // 고갈 처리: 펄스를 정리하고 오브젝트를 비활성화한다.
+    // Destroy 대신 비활성화를 쓰는 이유는 씬에 배치된 광물을 세이브/리스폰에서 되살릴 여지를 남기기 위함이다.
+    private void Deplete()
     {
-        if (_data == null) return;
+        _isDepleted = true;
+        HidePulse();
+        gameObject.SetActive(false);
+    }
+
+    // 채광 완료 시 드롭템(drop_item_id × drop_amount)을 플레이어 인벤토리에 넣는다. 지급 성공 여부 반환.
+    private bool GiveDrop(PlayerController player)
+    {
+        if (_data == null) return false;
 
         ItemData dropData = ItemTable.Instance.Get(_data.DropItemId);
         if (dropData == null)
         {
             Debug.LogWarning($"[BaseOre] 드롭 아이템을 찾을 수 없습니다. drop_item_id={_data.DropItemId}");
-            return;
+            return false;
         }
 
         Inventory inventory = player.PlayerInventory;
@@ -128,10 +148,10 @@ public class BaseOre : MonoBehaviour, IInteractable
         if (slotIndex < 0)
         {
             Debug.Log("[BaseOre] 인벤토리가 가득 차 드롭을 지급하지 못했습니다.");
-            return;
+            return false;
         }
 
-        inventory.AddItemAtSlot(slotIndex, dropData, _data.DropAmount);
+        return inventory.AddItemAtSlot(slotIndex, dropData, _data.DropAmount);
     }
 
     public void OnInteractExit(PlayerController player)

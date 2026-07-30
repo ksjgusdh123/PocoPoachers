@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net;
 
@@ -12,7 +11,12 @@ public sealed class UdpReliable
     readonly UdpSession _session;
     readonly object _pendingLock = new();
     readonly List<PendingSend> _pending = new();
-    readonly ConcurrentDictionary<string, byte> _receivedKeys = new();
+
+    // 수신 중복 제거 캐시. OnReliablePacketReceived는 UdpSession의 수신 스레드에서 호출되고
+    // Clear()는 메인 스레드에서 호출되므로 두 컨테이너를 하나의 lock으로 함께 보호해야 한다.
+    // (이전에는 Queue가 무보호 상태여서 게스트 2명의 패킷이 동시 도착하면 자료구조가 깨졌다.)
+    readonly object _receivedLock = new();
+    readonly Dictionary<string, byte> _receivedKeys = new();
     readonly Queue<string> _receivedKeyOrder = new();
     uint _nextSequence = 1;
 
@@ -42,8 +46,11 @@ public sealed class UdpReliable
             _pending.Clear();
             _nextSequence = 1;
         }
-        _receivedKeys.Clear();
-        _receivedKeyOrder.Clear();
+        lock (_receivedLock)
+        {
+            _receivedKeys.Clear();
+            _receivedKeyOrder.Clear();
+        }
     }
 
     public void Unsubscribe()
@@ -127,14 +134,18 @@ public sealed class UdpReliable
         _session.SendAck(sequence, sender);
 
         string key = $"{sender}:{sequence}";
-        if (!_receivedKeys.TryAdd(key, 0))
-            return;
-
-        _receivedKeyOrder.Enqueue(key);
-        while (_receivedKeyOrder.Count > MaxReceivedCache)
+        lock (_receivedLock)
         {
-            string old = _receivedKeyOrder.Dequeue();
-            _receivedKeys.TryRemove(old, out _);
+            if (_receivedKeys.ContainsKey(key))
+                return;
+
+            _receivedKeys[key] = 0;
+            _receivedKeyOrder.Enqueue(key);
+            while (_receivedKeyOrder.Count > MaxReceivedCache)
+            {
+                string old = _receivedKeyOrder.Dequeue();
+                _receivedKeys.Remove(old);
+            }
         }
 
         byte[] copy = new byte[payload.Count];

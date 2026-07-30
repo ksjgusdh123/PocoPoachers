@@ -40,6 +40,9 @@ public class RaidResultUI : MonoBehaviour
     private void OnDestroy()
     {
         if (_confirmButton != null) _confirmButton.onClick.RemoveListener(OnConfirmClicked);
+
+        // 진행 중인 페이드 트윈이 파괴된 CanvasGroup을 계속 건드리면 NRE가 난다.
+        if (_group != null) _group.DOKill();
     }
 
     // 탈출 성공 표시. onConfirm: 확정 시 실행할 동작(예: 셸터로 이동)
@@ -71,6 +74,7 @@ public class RaidResultUI : MonoBehaviour
 
         _group.interactable = true;
         _group.blocksRaycasts = true;
+        _group.DOKill();                   // 이전 페이드가 남아 있으면 알파가 튀므로 먼저 정리
         _group.alpha = 0f;
         _group.DOFade(1f, _fadeDuration); // 페이드 인
     }
@@ -85,9 +89,11 @@ public class RaidResultUI : MonoBehaviour
 
     private IEnumerator FadeOutThenConfirm()
     {
+        _group.DOKill();                   // 진행 중인 페이드 인과 겹치지 않게 정리
         _group.DOFade(0f, _fadeDuration); // 페이드 아웃
         yield return new WaitForSeconds(_fadeDuration);
 
+        _group.DOKill();                   // 비활성화 이후 콜백이 남지 않도록 정리
         gameObject.SetActive(false);
         _onConfirm?.Invoke();
     }

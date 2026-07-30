@@ -23,6 +23,7 @@ public class UdpSession
 
     Socket _socket;
     Thread _recvThread;
+    volatile bool _running;
 
     public event Action<uint, ArraySegment<byte>, IPEndPoint> OnReliableReceived;
     public event Action<uint, IPEndPoint> OnReliableAckReceived;
@@ -53,6 +54,7 @@ public class UdpSession
     public void StartReceive()
     {
         if (_recvThread?.IsAlive ?? false) return;
+        _running = true;
         _recvThread = new Thread(ReceiveLoop) { IsBackground = true, Name = "Udp-Recv" };
         _recvThread.Start();
     }
@@ -86,20 +88,36 @@ public class UdpSession
 
     public void Close()
     {
-        _socket?.Close();
+        _running = false;
+
+        // 소켓을 먼저 닫아 Poll에서 대기 중인 수신 스레드를 깨운다.
+        Socket socket = _socket;
         _socket = null;
+        socket?.Close();
+
+        Thread thread = _recvThread;
+        _recvThread = null;
+
+        // 스레드를 회수하지 않으면 재연결마다 좀비 스레드가 누적된다.
+        // 수신 스레드 자신이 Close를 호출하는 경우의 자기 Join(데드락)은 피한다.
+        if (thread != null && thread != Thread.CurrentThread && thread.IsAlive)
+            thread.Join(300);
     }
 
     void ReceiveLoop()
     {
         byte[] buffer = new byte[2048];
         EndPoint remote = new IPEndPoint(IPAddress.Any, 0);
-        while (_socket != null)
+        while (_running)
         {
+            // Close()가 _socket을 null로 바꾸는 것과 겹치지 않도록 지역 변수로 고정한다.
+            Socket socket = _socket;
+            if (socket == null) break;
+
             try
             {
-                if (!_socket.Poll(100_000, SelectMode.SelectRead)) continue;
-                int len = _socket.ReceiveFrom(buffer, ref remote);
+                if (!socket.Poll(100_000, SelectMode.SelectRead)) continue;
+                int len = socket.ReceiveFrom(buffer, ref remote);
                 if (len <= 0) continue;
 
                 var ep = (IPEndPoint)remote;
@@ -131,7 +149,7 @@ public class UdpSession
                 Buffer.BlockCopy(buffer, 0, copy, 0, len);
                 OnReceived?.Invoke(new ArraySegment<byte>(copy), ep);
             }
-            catch (Exception) { if (_socket == null) break; }
+            catch (Exception) { if (!_running || _socket == null) break; }
         }
     }
 }

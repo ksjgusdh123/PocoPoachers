@@ -24,10 +24,22 @@ public class PlayerVision : MonoBehaviour
     private readonly List<GameObject> _detectedTargets = new();
     private LineRenderer _lineRenderer;
 
+    // 스캔마다 새로 만들면 0.2초 간격으로 GC 쓰레기가 쌓이므로 재사용한다.
+    private readonly List<GameObject> _nextTargets = new();
+    private Collider[] _overlapBuffer = new Collider[32];
+
+    // new Material(...)로 만든 인스턴스는 Unity 오브젝트라 GC 대상이 아니다 — 직접 Destroy해야 한다.
+    private Material _lineMaterial;
+
     private void Awake()
     {
         if (_showVision)
             InitLineRenderer();
+    }
+
+    private void OnDestroy()
+    {
+        if (_lineMaterial != null) Destroy(_lineMaterial);
     }
 
     private void Start()
@@ -49,7 +61,8 @@ public class PlayerVision : MonoBehaviour
         _lineRenderer.loop = false;
         _lineRenderer.startWidth = _lineWidth;
         _lineRenderer.endWidth = _lineWidth;
-        _lineRenderer.material = new Material(Shader.Find("Sprites/Default"));
+        _lineMaterial = new Material(Shader.Find("Sprites/Default"));
+        _lineRenderer.material = _lineMaterial;
         _lineRenderer.startColor = _visionColor;
         _lineRenderer.endColor = _visionColor;
 
@@ -96,18 +109,28 @@ public class PlayerVision : MonoBehaviour
 
     private void Scan()
     {
-        var colliders = Physics.OverlapSphere(transform.position, _visionConfig.detectRange, _targetLayer);
+        // OverlapSphere는 매 호출 배열을 새로 만든다 — NonAlloc + 재사용 버퍼로 대체.
+        Collider[] buffer = _overlapBuffer;
+        int count = Physics.OverlapSphereNonAlloc(
+            transform.position, _visionConfig.detectRange, buffer, _targetLayer);
 
-        var nextTargets = new List<GameObject>();
-        foreach (var col in colliders)
+        // 버퍼가 꽉 찼으면 감지 대상이 잘렸을 수 있으므로 다음 스캔을 위해 키운다.
+        // 이번 결과는 방금 채워진 기존 버퍼(buffer)로 처리한다.
+        if (count == buffer.Length)
+            _overlapBuffer = new Collider[buffer.Length * 2];
+
+        _nextTargets.Clear();
+        for (int i = 0; i < count; i++)
         {
+            var col = buffer[i];
+            if (col == null) continue;
             if (!IsInFovAngle(col.transform)) continue;
             if (!HasLineOfSight(col.gameObject)) continue;
-            nextTargets.Add(col.gameObject);
+            _nextTargets.Add(col.gameObject);
         }
 
         // 이번에 새로 감지된 타겟: 렌더러 활성화
-        foreach (var target in nextTargets)
+        foreach (var target in _nextTargets)
         {
             if (!_detectedTargets.Contains(target))
             {
@@ -119,7 +142,8 @@ public class PlayerVision : MonoBehaviour
         // 이번에 시야에서 벗어난 타겟: 렌더러 비활성화
         foreach (var target in _detectedTargets)
         {
-            if (!nextTargets.Contains(target))
+            if (target == null) continue;   // 파괴된 대상은 건너뜀
+            if (!_nextTargets.Contains(target))
             {
                 SetRenderersEnabled(target, false);
                 OnTargetLost?.Invoke(target);
@@ -127,7 +151,7 @@ public class PlayerVision : MonoBehaviour
         }
 
         _detectedTargets.Clear();
-        _detectedTargets.AddRange(nextTargets);
+        _detectedTargets.AddRange(_nextTargets);
     }
 
     private void SetRenderersEnabled(GameObject target, bool enabled)

@@ -14,6 +14,8 @@ public class ItemRevealCard : MonoBehaviour
     [SerializeField] Image _backFrameImage;
     [SerializeField] Image _itemImage;
 
+    Tween _revealTween;   // 진행 중인 뒤집기 페이드 (파괴 시 Kill 대상)
+
     public bool isFlip { get; private set; } = true;
 
     private void Awake()
@@ -43,13 +45,32 @@ public class ItemRevealCard : MonoBehaviour
 
     public void Reveal()
     {
-        _backFrameImage.DOFade(0f, 0.3f)
-            .OnComplete(() => 
+        _revealTween?.Kill();
+        _revealTween = _backFrameImage.DOFade(0f, 0.3f)
+            .OnComplete(() =>
             {
+                _revealTween = null;
+
+                // 0.3초 사이에 카드가 파괴/비활성화될 수 있으므로 콜백에서 다시 확인한다.
+                if (_backFrameImage == null || _itemImage == null) return;
+
                 _backFrameImage.sprite = originFrameImage;
                 _backFrameImage.color = originFrameColor;
                 _itemImage.gameObject.SetActive(true);
-                _currentSlot.isOpen = true;
+                if (_currentSlot != null) _currentSlot.isOpen = true;
             });
+    }
+
+    // 트윈이 파괴된 Image를 계속 건드리면 NRE가 나므로 파괴/비활성화 시 정리한다.
+    private void OnDisable()
+    {
+        _revealTween?.Kill();
+        _revealTween = null;
+    }
+
+    private void OnDestroy()
+    {
+        _revealTween?.Kill();
+        _revealTween = null;
     }
 }

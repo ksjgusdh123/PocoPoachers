@@ -22,6 +22,13 @@ public class CameraZoom : MonoBehaviour
         _targetFOV = _defaultFOV;
     }
 
+    // 씬이 언로드되면 이 컴포넌트는 파괴되지만 static Instance에는 파괴된 참조가 남는다.
+    // 다음 씬에서 새 카메라가 생기기 전에 접근하면 MissingReferenceException이 난다.
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
     public float ZoomProgress
     {
         get

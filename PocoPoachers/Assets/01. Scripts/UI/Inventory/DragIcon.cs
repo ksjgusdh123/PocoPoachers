@@ -26,6 +26,13 @@ public class DragIcon : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    // 씬 전환으로 파괴된 뒤 Instance가 파괴된 오브젝트를 가리키면
+    // SlotClickHandler 등에서 Hide() 호출 시 MissingReferenceException이 난다.
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
     private void ApplyOverlaySorting()
     {
         if (!TryGetComponent(out Canvas ownCanvas))
