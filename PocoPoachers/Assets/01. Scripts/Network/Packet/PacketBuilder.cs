@@ -61,14 +61,33 @@ public static class PacketBuilder
         Offset<FlatPacket> rootOffset = FlatPacket.CreateFlatPacket(builder, type, innerOffset);
         FlatPacket.FinishFlatPacketBuffer(builder, rootOffset);
 
-        byte[] payload = builder.SizedByteArray();
-        int totalSize = payload.Length + Session.HeaderSize;
+        // SizedByteArray()는 완성된 페이로드를 새 배열로 한 번 더 복사한다.
+        // DataBuffer를 직접 참조하면 그 복사를 없애고 전송 버퍼로의 복사 1회만 남는다.
+        // (Move 등 주기 전송 패킷에서 패킷당 할당 2회 → 1회)
+        var dataBuffer = builder.DataBuffer;
+        int payloadStart = dataBuffer.Position;
+        int payloadLen   = dataBuffer.Length - payloadStart;
+
+        int totalSize = payloadLen + Session.HeaderSize;
         if (totalSize > ushort.MaxValue)
             throw new InvalidOperationException($"Packet too large: {totalSize} bytes (type={type}).");
 
         byte[] sendBuffer = new byte[totalSize];
-        BitConverter.GetBytes((ushort)totalSize).CopyTo(sendBuffer, 0);
-        Buffer.BlockCopy(payload, 0, sendBuffer, Session.HeaderSize, payload.Length);
+
+        // BitConverter.GetBytes는 byte[2]를 새로 할당한다 — 직접 기록해 동일 바이트를 만든다.
+        if (BitConverter.IsLittleEndian)
+        {
+            sendBuffer[0] = (byte)totalSize;
+            sendBuffer[1] = (byte)(totalSize >> 8);
+        }
+        else
+        {
+            sendBuffer[0] = (byte)(totalSize >> 8);
+            sendBuffer[1] = (byte)totalSize;
+        }
+
+        var payload = dataBuffer.ToArraySegment(payloadStart, payloadLen);
+        Buffer.BlockCopy(payload.Array, payload.Offset, sendBuffer, Session.HeaderSize, payloadLen);
         return new ArraySegment<byte>(sendBuffer);
     }
 }

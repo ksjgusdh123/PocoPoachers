@@ -239,29 +239,40 @@ public class ItemInfoPanel : MonoBehaviour
 
     // 스탯 한 개마다 행 프리팹을 생성해 채운다. 정렬·높이는 Content의 레이아웃 그룹이 처리한다.
     // 표기할 스탯이 없으면(음식/재료 등) 영역을 숨긴다.
+    // 행은 파괴하지 않고 재사용한다 — 슬롯 사이로 마우스를 움직이면 호버마다 Show가 불려
+    // Instantiate/Destroy가 반복되면서 GC 스파이크가 생긴다.
     private void BindStats(ItemData data, int uid)
     {
-        ClearStatRows();
-
         var stats = BuildStats(data, uid);
+
         if (_statRowPrefab != null && _statContainer != null)
         {
-            foreach (var (label, value) in stats)
+            // 부족한 만큼만 새로 만들고, 남는 행은 비활성화해 둔다.
+            for (int i = _statRows.Count; i < stats.Count; i++)
+                _statRows.Add(Instantiate(_statRowPrefab, _statContainer));
+
+            for (int i = 0; i < _statRows.Count; i++)
             {
-                var row = Instantiate(_statRowPrefab, _statContainer);
-                row.Set(label, value);
-                _statRows.Add(row);
+                var row = _statRows[i];
+                if (row == null) continue;
+
+                bool used = i < stats.Count;
+                if (used) row.Set(stats[i].label, stats[i].value);
+                if (row.gameObject.activeSelf != used) row.gameObject.SetActive(used);
             }
         }
 
         _statRoot?.SetActive(stats.Count > 0);
     }
 
+    // 표시만 끈다(파괴하지 않음) — 다음 호버에서 그대로 재사용한다.
     private void ClearStatRows()
     {
-        foreach (var row in _statRows)
-            if (row != null) Destroy(row.gameObject);
-        _statRows.Clear();
+        for (int i = 0; i < _statRows.Count; i++)
+        {
+            var row = _statRows[i];
+            if (row != null && row.gameObject.activeSelf) row.gameObject.SetActive(false);
+        }
     }
 
     private static List<(string label, string value)> BuildStats(ItemData data, int uid) => data.ItemType switch

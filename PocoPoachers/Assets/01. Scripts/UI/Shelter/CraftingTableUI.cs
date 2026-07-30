@@ -114,22 +114,34 @@ public class CraftingTableUI : MonoBehaviour
         }
     }
 
+    // 엔트리는 파괴하지 않고 재사용한다 — 카테고리를 전환할 때마다 전체 Destroy/Instantiate가
+    // 반복되면서 GC 스파이크가 생긴다.
     private void RefreshList()
     {
-        foreach (var entry in _entries)
-        {
-            if (entry != null) Destroy(entry.gameObject);
-        }
-        _entries.Clear();
+        int used = 0;
 
         foreach (var recipe in CraftingRecipeTable.Instance.All)
         {
             var item = ItemTable.Instance.Get(recipe.ResultItemId);
             if (item == null || item.type != _selectedCategory) continue;
 
-            var entry = Instantiate(_recipeEntryPrefab, _recipeListContent);
+            if (used == _entries.Count)
+                _entries.Add(Instantiate(_recipeEntryPrefab, _recipeListContent));
+
+            var entry = _entries[used];
+            used++;
+            if (entry == null) continue;
+
+            if (!entry.gameObject.activeSelf) entry.gameObject.SetActive(true);
+            entry.transform.SetSiblingIndex(used - 1);   // 표시 순서 유지
             entry.Setup(recipe, OnRecipeSelected);
-            _entries.Add(entry);
+        }
+
+        // 이번 카테고리에서 쓰이지 않은 나머지는 비활성화만 한다.
+        for (int i = used; i < _entries.Count; i++)
+        {
+            var entry = _entries[i];
+            if (entry != null && entry.gameObject.activeSelf) entry.gameObject.SetActive(false);
         }
     }
 

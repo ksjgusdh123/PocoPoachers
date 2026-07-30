@@ -15,9 +15,10 @@ public sealed class UdpReliable
     // 수신 중복 제거 캐시. OnReliablePacketReceived는 UdpSession의 수신 스레드에서 호출되고
     // Clear()는 메인 스레드에서 호출되므로 두 컨테이너를 하나의 lock으로 함께 보호해야 한다.
     // (이전에는 Queue가 무보호 상태여서 게스트 2명의 패킷이 동시 도착하면 자료구조가 깨졌다.)
+    // 키는 값 튜플 — $"{sender}:{sequence}" 문자열 보간은 신뢰 패킷마다 문자열을 할당한다.
     readonly object _receivedLock = new();
-    readonly Dictionary<string, byte> _receivedKeys = new();
-    readonly Queue<string> _receivedKeyOrder = new();
+    readonly Dictionary<(IPEndPoint Sender, uint Sequence), byte> _receivedKeys = new();
+    readonly Queue<(IPEndPoint Sender, uint Sequence)> _receivedKeyOrder = new();
     uint _nextSequence = 1;
 
     public event Action<PacketType, IPEndPoint> OnDeliveryFailed;
@@ -133,7 +134,7 @@ public sealed class UdpReliable
     {
         _session.SendAck(sequence, sender);
 
-        string key = $"{sender}:{sequence}";
+        var key = (Sender: sender, Sequence: sequence);
         lock (_receivedLock)
         {
             if (_receivedKeys.ContainsKey(key))
@@ -143,7 +144,7 @@ public sealed class UdpReliable
             _receivedKeyOrder.Enqueue(key);
             while (_receivedKeyOrder.Count > MaxReceivedCache)
             {
-                string old = _receivedKeyOrder.Dequeue();
+                var old = _receivedKeyOrder.Dequeue();
                 _receivedKeys.Remove(old);
             }
         }

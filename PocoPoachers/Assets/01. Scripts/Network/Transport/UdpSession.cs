@@ -68,22 +68,55 @@ public class UdpSession
 
     public void SendKeepalive(IPEndPoint ep) => Send(new ArraySegment<byte>(KeepalivePayload), ep);
 
+    // Send()는 SendTo로 동기 전송하므로 호출이 끝나면 버퍼를 재사용해도 안전하다.
+    // SendReliable은 메인 스레드(전송·재전송), SendAck은 수신 스레드에서 불리므로 버퍼를 분리한다.
+    byte[] _reliableSendBuffer = new byte[512];
+    readonly byte[] _ackBuffer = new byte[ReliableHeaderSize];
+
     public void SendReliable(uint seq, ArraySegment<byte> payload, IPEndPoint ep)
     {
         if (_socket == null || payload.Count == 0) return;
-        byte[] buffer = new byte[ReliableHeaderSize + payload.Count];
+
+        int total = ReliableHeaderSize + payload.Count;
+        if (_reliableSendBuffer.Length < total)
+        {
+            int size = _reliableSendBuffer.Length;
+            while (size < total) size *= 2;
+            _reliableSendBuffer = new byte[size];
+        }
+
+        byte[] buffer = _reliableSendBuffer;
         buffer[0] = ReliableSignal;
-        BitConverter.GetBytes(seq).CopyTo(buffer, 1);
+        WriteUInt32(buffer, 1, seq);
         Buffer.BlockCopy(payload.Array, payload.Offset, buffer, ReliableHeaderSize, payload.Count);
-        Send(new ArraySegment<byte>(buffer), ep);
+        Send(new ArraySegment<byte>(buffer, 0, total), ep);
     }
 
     public void SendAck(uint seq, IPEndPoint ep)
     {
-        byte[] buffer = new byte[ReliableHeaderSize];
+        byte[] buffer = _ackBuffer;
         buffer[0] = AckSignal;
-        BitConverter.GetBytes(seq).CopyTo(buffer, 1);
-        Send(new ArraySegment<byte>(buffer), ep);
+        WriteUInt32(buffer, 1, seq);
+        Send(new ArraySegment<byte>(buffer, 0, ReliableHeaderSize), ep);
+    }
+
+    // BitConverter.GetBytes(uint)는 호출마다 byte[4]를 할당한다 — 동일 바이트를 직접 기록한다.
+    static void WriteUInt32(byte[] dst, int offset, uint value)
+    {
+        if (BitConverter.IsLittleEndian)
+        {
+            dst[offset]     = (byte)value;
+            dst[offset + 1] = (byte)(value >> 8);
+            dst[offset + 2] = (byte)(value >> 16);
+            dst[offset + 3] = (byte)(value >> 24);
+        }
+        else
+        {
+            dst[offset]     = (byte)(value >> 24);
+            dst[offset + 1] = (byte)(value >> 16);
+            dst[offset + 2] = (byte)(value >> 8);
+            dst[offset + 3] = (byte)value;
+        }
     }
 
     public void Close()

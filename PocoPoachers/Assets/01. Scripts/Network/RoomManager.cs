@@ -49,6 +49,13 @@ public class RoomManager : Singleton<RoomManager>
     IPEndPoint _hostEp;
 
     readonly ConcurrentDictionary<int, IPEndPoint>     _guests        = new();
+
+    // EndPoint → guestId 역방향 맵. 수신 패킷마다 _guests를 순회하면 ConcurrentDictionary
+    // 열거자가 매번 힙에 할당되므로(패킷당 1회) O(1) 조회로 대체한다. _guests와 항상 함께 갱신할 것.
+    readonly ConcurrentDictionary<IPEndPoint, int>     _guestIds      = new();
+
+    // Update의 타임아웃 검사용 재사용 버퍼 (프레임당 List 할당 방지)
+    readonly List<int> _timedOutGuests = new();
     readonly ConcurrentDictionary<int, UdpHolePuncher> _punchers      = new();
     readonly ConcurrentDictionary<int, long>           _guestLastSeen = new();
     readonly ConcurrentDictionary<int, NetInfoT>       _waitingGuests = new();
@@ -85,7 +92,7 @@ public class RoomManager : Singleton<RoomManager>
     public void StartLocalHost()
     {
         _isHost = true;
-        _guests.Clear();
+        ClearGuests();
         _punchers.Clear();
         _guestLastSeen.Clear();
         _waitingGuests.Clear();
@@ -100,7 +107,7 @@ public class RoomManager : Singleton<RoomManager>
 
         _isHost = isHost;
         _memberCount = 1;
-        _guests.Clear();
+        ClearGuests();
         _guestLastSeen.Clear();
         _waitingGuests.Clear();
         _sceneReadyGuests.Clear();
@@ -160,7 +167,7 @@ public class RoomManager : Singleton<RoomManager>
         _punchers[id] = puncher;
 
         puncher.OnSuccess += _ => {
-            _guests[id] = ep;
+            RegisterGuestEndPoint(id, ep);
             _guestLastSeen[id] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             _punchers.TryRemove(id, out UdpHolePuncher _);
             _waitingGuests.TryRemove(id, out NetInfoT _);
@@ -268,9 +275,33 @@ public class RoomManager : Singleton<RoomManager>
     // 발신자 EndPoint로 guestId를 조회한다. 호스트가 아니거나 매핑이 없으면 0을 반환한다.
     private int ResolveGuestId(IPEndPoint sender)
     {
-        foreach (var kv in _guests)
-            if (kv.Value.Equals(sender)) return kv.Key;
-        return 0;
+        return sender != null && _guestIds.TryGetValue(sender, out int id) ? id : 0;
+    }
+
+    // _guests와 역방향 맵을 한 번에 갱신한다. 재접속으로 같은 id가 다른 EndPoint를 받을 수 있어
+    // 기존 EndPoint의 역방향 항목을 먼저 지운다.
+    private void RegisterGuestEndPoint(int guestId, IPEndPoint endPoint)
+    {
+        if (endPoint == null) return;
+
+        if (_guests.TryGetValue(guestId, out IPEndPoint old) && old != null && !old.Equals(endPoint))
+            _guestIds.TryRemove(old, out _);
+
+        _guests[guestId] = endPoint;
+        _guestIds[endPoint] = guestId;
+    }
+
+    private bool UnregisterGuestEndPoint(int guestId)
+    {
+        if (!_guests.TryRemove(guestId, out IPEndPoint ep)) return false;
+        if (ep != null) _guestIds.TryRemove(ep, out _);
+        return true;
+    }
+
+    private void ClearGuests()
+    {
+        _guests.Clear();
+        _guestIds.Clear();
     }
 
     // 마지막 수신 시각을 갱신한다 (타임아웃 감지용).
@@ -301,12 +332,8 @@ public class RoomManager : Singleton<RoomManager>
         long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         if (_isHost)
         {
-            foreach (var kv in _guests)
-            {
-                if (!kv.Value.Equals(sender)) continue;
-                _guestLastSeen[kv.Key] = now;
-                return;
-            }
+            int guestId = ResolveGuestId(sender);
+            if (guestId != 0) _guestLastSeen[guestId] = now;
         }
         else if (_hostEp != null && _hostEp.Equals(sender))
         {
@@ -354,7 +381,7 @@ public class RoomManager : Singleton<RoomManager>
         if (!_waitingGuests.TryGetValue(playerId, out var expected) || !MatchesNetInfo(expected, _currentSenderEndPoint))
             return false;
 
-        _guests[playerId] = _currentSenderEndPoint;
+        RegisterGuestEndPoint(playerId, _currentSenderEndPoint);
         _guestLastSeen[playerId] = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         _waitingGuests.TryRemove(playerId, out NetInfoT _);
         if (_punchers.TryRemove(playerId, out UdpHolePuncher puncher))
@@ -705,11 +732,14 @@ public class RoomManager : Singleton<RoomManager>
 
         if (_isHost)
         {
-            var timedOut = new System.Collections.Generic.List<int>();
+            // 타임아웃은 대부분의 프레임에서 발생하지 않는다 — 매 프레임 List를 새로 만들지 않고
+            // 필요할 때만 재사용 버퍼를 채운다. (열거 중 RemoveGuest로 컬렉션을 바꾸면 안 되므로 버퍼는 필요)
+            _timedOutGuests.Clear();
             foreach (var kv in _guestLastSeen)
-                if (now - kv.Value > TIMEOUT_MS) timedOut.Add(kv.Key);
-            foreach (var id in timedOut)
-                RemoveGuest(id);
+                if (now - kv.Value > TIMEOUT_MS) _timedOutGuests.Add(kv.Key);
+
+            for (int i = 0; i < _timedOutGuests.Count; i++)
+                RemoveGuest(_timedOutGuests[i]);
         }
         else if (_hostEp != null && _hostLastSeen > 0 && now - _hostLastSeen > TIMEOUT_MS)
         {
@@ -739,7 +769,7 @@ public class RoomManager : Singleton<RoomManager>
 
     public void RemoveGuest(int guestId)
     {
-        if (!_guests.TryRemove(guestId, out IPEndPoint _)) return;
+        if (!UnregisterGuestEndPoint(guestId)) return;
         _guestLastSeen.TryRemove(guestId, out long _);
         _waitingGuests.TryRemove(guestId, out NetInfoT _);
 
@@ -828,7 +858,7 @@ public class RoomManager : Singleton<RoomManager>
         // 아직 호스트일 때(_isHost=false 및 Clear 이전) 장비 상태를 최종 저장 — 이후 빈 상태로 덮어쓰기 방지
         SaveManager.GetInstance()?.SaveEquipmentState();
 
-        _guests.Clear();
+        ClearGuests();
         _guestLastSeen.Clear();
         _hostLastSeen = 0;
         _hostEp = null;
