@@ -221,6 +221,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
   _style: 0
   _theme: {fileID: 0}
+  _useMotion: 1
 --- !u!1 &4420297365095552871
 GameObject:
   m_ObjectHideFlags: 0
@@ -296,6 +297,7 @@ GameObject:
   - component: {fileID: 4960498413572427459}
   - component: {fileID: 7227787159517766861}
   - component: {fileID: 8529168593474129979}
+  - component: {fileID: 5343468789277331399}
   m_Layer: 5
   m_Name: txtItemName2
   m_TagString: Untagged
@@ -377,7 +379,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 27
+  m_fontSize: 30
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -422,6 +424,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &5343468789277331399
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4518367267845207184}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 3
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &6715000069396069257
 GameObject:
   m_ObjectHideFlags: 0
@@ -433,6 +450,7 @@ GameObject:
   - component: {fileID: 3334540266659465775}
   - component: {fileID: 5607042164334776868}
   - component: {fileID: 488579138848215782}
+  - component: {fileID: 100322513437239280}
   m_Layer: 5
   m_Name: txtLevel
   m_TagString: Untagged
@@ -514,7 +532,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 27
+  m_fontSize: 30
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -559,6 +577,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &100322513437239280
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6715000069396069257}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 3
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &6935012372067452681
 GameObject:
   m_ObjectHideFlags: 0
@@ -570,6 +603,7 @@ GameObject:
   - component: {fileID: 3903569584161212492}
   - component: {fileID: 4878534454986371853}
   - component: {fileID: 7607096516068818988}
+  - component: {fileID: 3478182623358436098}
   m_Layer: 5
   m_Name: txtMaxLevel
   m_TagString: Untagged
@@ -651,7 +685,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 27
+  m_fontSize: 30
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -696,6 +730,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &3478182623358436098
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6935012372067452681}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 3
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &7233456757064174038
 GameObject:
   m_ObjectHideFlags: 0
@@ -708,6 +757,7 @@ GameObject:
   - component: {fileID: 1901401392793428957}
   - component: {fileID: 6843516753817876242}
   - component: {fileID: 6843516753817876300}
+  - component: {fileID: 5762461256377191668}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -847,6 +897,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _key: shelter.upgrade
+--- !u!114 &5762461256377191668
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7233456757064174038}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 3
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &7245006747441079631
 GameObject:
   m_ObjectHideFlags: 0
@@ -858,6 +923,7 @@ GameObject:
   - component: {fileID: 214172599062320164}
   - component: {fileID: 2915457319084667488}
   - component: {fileID: 6971937429290106479}
+  - component: {fileID: 2366850356603049751}
   m_Layer: 5
   m_Name: txtItemCount1
   m_TagString: Untagged
@@ -939,7 +1005,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 27
+  m_fontSize: 30
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -984,6 +1050,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &2366850356603049751
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7245006747441079631}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 3
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &7329752666115365505
 GameObject:
   m_ObjectHideFlags: 0
@@ -995,6 +1076,7 @@ GameObject:
   - component: {fileID: 615886859721222327}
   - component: {fileID: 6197846217116481368}
   - component: {fileID: 1716807982055921566}
+  - component: {fileID: 7498578942755820459}
   m_Layer: 5
   m_Name: txtItemCount2
   m_TagString: Untagged
@@ -1076,7 +1158,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 27
+  m_fontSize: 30
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1121,6 +1203,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &7498578942755820459
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7329752666115365505}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 3
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &8074659826419243988
 GameObject:
   m_ObjectHideFlags: 0
@@ -1132,6 +1229,7 @@ GameObject:
   - component: {fileID: 934300085077068375}
   - component: {fileID: 3101071129886491085}
   - component: {fileID: 485416414534306138}
+  - component: {fileID: 47285002257870203}
   m_Layer: 5
   m_Name: txtItemName1
   m_TagString: Untagged
@@ -1213,7 +1311,7 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 27
+  m_fontSize: 30
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1258,6 +1356,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &47285002257870203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8074659826419243988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 3
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &8333032151988872257
 GameObject:
   m_ObjectHideFlags: 0
@@ -1348,6 +1461,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ShelterUpgradeUI
   _startVisible: 0
+  _useSharedDimmer: 0
   _levelText: {fileID: 488579138848215782}
   _requirementsPanel: {fileID: 8919585191769351409}
   _item1NameText: {fileID: 485416414534306138}

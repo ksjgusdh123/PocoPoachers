@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5605520421846862485}
   - component: {fileID: 3918298980323550324}
   - component: {fileID: 7000000000000000005}
+  - component: {fileID: 4996992282095461664}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -93,12 +94,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 27
+  m_fontSize: 24
   m_fontSizeBase: 20
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 18
-  m_fontSizeMax: 27
+  m_fontSizeMin: 16
+  m_fontSizeMax: 24
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -151,6 +152,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
   _key: title.join
+--- !u!114 &4996992282095461664
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1215089521580816767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 2
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &3163898309603662604
 GameObject:
   m_ObjectHideFlags: 0
@@ -164,6 +180,7 @@ GameObject:
   - component: {fileID: 7413597565198122861}
   - component: {fileID: 1218338240665975467}
   - component: {fileID: 7000000000000000006}
+  - component: {fileID: 7987969831462262332}
   m_Layer: 5
   m_Name: Placeholder
   m_TagString: Untagged
@@ -245,12 +262,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 27
+  m_fontSize: 24
   m_fontSizeBase: 30
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 18
-  m_fontSizeMax: 27
+  m_fontSizeMin: 16
+  m_fontSizeMax: 24
   m_fontStyle: 2
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -323,6 +340,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
   _key: title.join_code_placeholder
+--- !u!114 &7987969831462262332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3163898309603662604}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 2
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &3746659256832854063
 GameObject:
   m_ObjectHideFlags: 0
@@ -454,7 +486,7 @@ MonoBehaviour:
     m_Top: 0
     m_Bottom: 0
   m_ChildAlignment: 0
-  m_Spacing: 10
+  m_Spacing: 12
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
@@ -599,6 +631,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
   _style: 0
   _theme: {fileID: 0}
+  _useMotion: 1
 --- !u!114 &1369155879511624541
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -613,6 +646,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
   _style: 0
   _theme: {fileID: 0}
+  _useMotion: 1
 --- !u!1 &5739328924109391996
 GameObject:
   m_ObjectHideFlags: 0
@@ -624,6 +658,7 @@ GameObject:
   - component: {fileID: 2330497956347332101}
   - component: {fileID: 3642789564094256966}
   - component: {fileID: 155022819641023564}
+  - component: {fileID: 8140589579376453299}
   m_Layer: 5
   m_Name: Text
   m_TagString: Untagged
@@ -705,12 +740,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 27
+  m_fontSize: 24
   m_fontSizeBase: 20
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 18
-  m_fontSizeMax: 27
+  m_fontSizeMin: 16
+  m_fontSizeMax: 24
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -750,6 +785,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &8140589579376453299
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5739328924109391996}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 2
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &7177269789217964010
 GameObject:
   m_ObjectHideFlags: 0
@@ -801,12 +851,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.VerticalLayoutGroup
   m_Padding:
-    m_Left: 10
-    m_Right: 10
-    m_Top: 10
-    m_Bottom: 10
+    m_Left: 12
+    m_Right: 12
+    m_Top: 12
+    m_Bottom: 12
   m_ChildAlignment: 0
-  m_Spacing: 10
+  m_Spacing: 12
   m_ChildForceExpandWidth: 1
   m_ChildForceExpandHeight: 1
   m_ChildControlWidth: 1
@@ -826,6 +876,7 @@ GameObject:
   - component: {fileID: 82025189267627276}
   - component: {fileID: 74237222262513807}
   - component: {fileID: 7000000000000000007}
+  - component: {fileID: 7355284557596689754}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -907,12 +958,12 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 27
+  m_fontSize: 24
   m_fontSizeBase: 20
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 18
-  m_fontSizeMax: 27
+  m_fontSizeMin: 16
+  m_fontSizeMax: 24
   m_fontStyle: 0
   m_HorizontalAlignment: 2
   m_VerticalAlignment: 512
@@ -965,6 +1016,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
   _key: common.back
+--- !u!114 &7355284557596689754
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7933060181664315990}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 2
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &8225974944774451440
 GameObject:
   m_ObjectHideFlags: 0
@@ -1073,6 +1139,7 @@ GameObject:
   - component: {fileID: 9093238518291397861}
   - component: {fileID: 3931414018701899717}
   - component: {fileID: 1324161600833723332}
+  - component: {fileID: 1555892292018520291}
   m_Layer: 5
   m_Name: InputCode
   m_TagString: Untagged
@@ -1159,13 +1226,13 @@ MonoBehaviour:
     m_SelectOnRight: {fileID: 0}
   m_Transition: 1
   m_Colors:
-    m_NormalColor: {r: 1, g: 1, b: 1, a: 1}
-    m_HighlightedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_PressedColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 1}
-    m_SelectedColor: {r: 0.9607843, g: 0.9607843, b: 0.9607843, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_NormalColor: {r: 0.8627451, g: 0.8627451, b: 0.8627451, a: 1}
+    m_HighlightedColor: {r: 1, g: 1, b: 1, a: 1}
+    m_PressedColor: {r: 0.6039216, g: 0.89411765, b: 0.9372549, a: 1}
+    m_SelectedColor: {r: 0.6039216, g: 0.95686275, b: 1, a: 1}
+    m_DisabledColor: {r: 0.39215687, g: 0.39215687, b: 0.39215687, a: 0.47058824}
     m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
+    m_FadeDuration: 0.08
   m_SpriteState:
     m_HighlightedSprite: {fileID: 0}
     m_PressedSprite: {fileID: 0}
@@ -1259,6 +1326,19 @@ MonoBehaviour:
   m_FlexibleWidth: -1
   m_FlexibleHeight: 2
   m_LayoutPriority: 1
+--- !u!114 &1555892292018520291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8805989173664035430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 65c1aee4c098ead42a2b74a6220152c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedSelectableUI
+  _theme: {fileID: 0}
 --- !u!1 &8867624571502214222
 GameObject:
   m_ObjectHideFlags: 0
@@ -1448,6 +1528,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
   _style: 0
   _theme: {fileID: 0}
+  _useMotion: 1
 --- !u!114 &7971831017560009329
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1462,3 +1543,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
   _style: 0
   _theme: {fileID: 0}
+  _useMotion: 1

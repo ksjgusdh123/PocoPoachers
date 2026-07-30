@@ -136,6 +136,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
   _style: 0
   _theme: {fileID: 0}
+  _useMotion: 1
 --- !u!1 &924472459517957093
 GameObject:
   m_ObjectHideFlags: 0
@@ -148,6 +149,7 @@ GameObject:
   - component: {fileID: 2693019624166986849}
   - component: {fileID: 2482156328985608362}
   - component: {fileID: 7174964127988680147}
+  - component: {fileID: 1222694565245417859}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -287,6 +289,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _key: equip.unequip
+--- !u!114 &1222694565245417859
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 924472459517957093}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 2
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &1043799671745664395
 GameObject:
   m_ObjectHideFlags: 0
@@ -299,6 +316,7 @@ GameObject:
   - component: {fileID: 8577426653256424191}
   - component: {fileID: 3399123261835647784}
   - component: {fileID: 3399123261835647800}
+  - component: {fileID: 8102536222416380334}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -438,6 +456,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _key: equip.unequip
+--- !u!114 &8102536222416380334
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1043799671745664395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 2
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &5187821810913009207
 GameObject:
   m_ObjectHideFlags: 0
@@ -490,6 +523,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EquipContextMenuUI
   _startVisible: 0
+  _useSharedDimmer: 0
   _offset: {x: 100, y: 0}
   _unequipButton: {fileID: 295509335920552226}
   _partButton: {fileID: 2212848718160671771}
@@ -655,3 +689,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
   _style: 0
   _theme: {fileID: 0}
+  _useMotion: 1

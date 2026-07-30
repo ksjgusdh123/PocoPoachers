@@ -27,6 +27,15 @@ public class UITheme : ScriptableObject
         Danger,
     }
 
+    public enum TypographyRole
+    {
+        Caption,
+        Body,
+        Subtitle,
+        Title,
+        Display,
+    }
+
     [Header("Palette")]
     [Tooltip("강조색 — 게이지, 테두리, 활성 상태에 사용")]
     public Color Accent = new Color32(0x00, 0xE5, 0xFF, 0xFF);
@@ -60,6 +69,20 @@ public class UITheme : ScriptableObject
     public float FontSizeTitle = 30f;
     public float FontSizeDisplay = 36f;
 
+    [Header("Typography Auto Size Minimum (px)")]
+    public float FontSizeCaptionMin = 12f;
+    public float FontSizeBodyMin = 14f;
+    public float FontSizeSubtitleMin = 16f;
+    public float FontSizeTitleMin = 18f;
+    public float FontSizeDisplayMin = 24f;
+
+    [Header("Layout")]
+    [Min(1), Tooltip("UI 간격과 패딩을 맞추는 최소 그리드 단위")]
+    public int SpacingGrid = 4;
+
+    [HideInInspector]
+    public int DesignSystemVersion;
+
     [Header("Button Interaction")]
     [Tooltip("ColorTint는 스프라이트 색을 곱하므로, 기본값을 살짝 어둡게 두고 호버에서 흰색(100%)으로 올려 밝아지게 만든다.")]
     public Color ButtonNormal = new Color32(0xDC, 0xDC, 0xDC, 0xFF);
@@ -91,6 +114,38 @@ public class UITheme : ScriptableObject
 
     [Tooltip("Danger 스타일의 눌림 색")]
     public Color DangerPressed = new Color32(0xEA, 0x64, 0x64, 0xFF);
+
+    public float GetFontSize(TypographyRole role)
+    {
+        return role switch
+        {
+            TypographyRole.Caption => FontSizeCaption,
+            TypographyRole.Body => FontSizeBody,
+            TypographyRole.Subtitle => FontSizeSubtitle,
+            TypographyRole.Title => FontSizeTitle,
+            _ => FontSizeDisplay,
+        };
+    }
+
+    public Vector2 GetAutoSizeRange(TypographyRole role)
+    {
+        float minimum = role switch
+        {
+            TypographyRole.Caption => FontSizeCaptionMin,
+            TypographyRole.Body => FontSizeBodyMin,
+            TypographyRole.Subtitle => FontSizeSubtitleMin,
+            TypographyRole.Title => FontSizeTitleMin,
+            _ => FontSizeDisplayMin,
+        };
+        return new Vector2(minimum, GetFontSize(role));
+    }
+
+    public ColorBlock GetSelectableColorBlock()
+    {
+        ColorBlock block = GetColorBlock(ButtonStyle.Primary);
+        block.selectedColor = SlotHoverBorder;
+        return block;
+    }
 
     public ColorBlock GetColorBlock(ButtonStyle style)
     {

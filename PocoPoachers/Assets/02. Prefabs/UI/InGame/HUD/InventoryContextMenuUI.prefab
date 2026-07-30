@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 5828896429996139760}
   - component: {fileID: 738475961744051859}
   - component: {fileID: 959170080245750950}
+  - component: {fileID: 868286395548811087}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -151,6 +152,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _key: equip.unequip
+--- !u!114 &868286395548811087
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1450385597971727579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 2
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &4767367011418970814
 GameObject:
   m_ObjectHideFlags: 0
@@ -287,6 +303,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
   _style: 0
   _theme: {fileID: 0}
+  _useMotion: 1
 --- !u!1 &4770296758541556279
 GameObject:
   m_ObjectHideFlags: 0
@@ -505,6 +522,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ThemedButtonUI
   _style: 0
   _theme: {fileID: 0}
+  _useMotion: 1
 --- !u!1 &8681550140329877274
 GameObject:
   m_ObjectHideFlags: 0
@@ -517,6 +535,7 @@ GameObject:
   - component: {fileID: 5784812230585696014}
   - component: {fileID: 2534837225461372780}
   - component: {fileID: 3307498437464969139}
+  - component: {fileID: 2045289883731802802}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -656,3 +675,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _key: equip.unequip
+--- !u!114 &2045289883731802802
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8681550140329877274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 2
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}

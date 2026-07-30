@@ -135,6 +135,7 @@ GameObject:
   - component: {fileID: 8590276532928711320}
   - component: {fileID: 2416240961999198290}
   - component: {fileID: 2330474462534036909}
+  - component: {fileID: 8676276095119169118}
   m_Layer: 5
   m_Name: NameText
   m_TagString: Untagged
@@ -274,6 +275,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
   _key: inventory.loot
+--- !u!114 &8676276095119169118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1969078585039717211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 3
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &2780285990902530784
 GameObject:
   m_ObjectHideFlags: 0
@@ -285,6 +301,7 @@ GameObject:
   - component: {fileID: 3307691527653387597}
   - component: {fileID: 7943505497329907084}
   - component: {fileID: 6411414543807141593}
+  - component: {fileID: 5402085656361669886}
   m_Layer: 5
   m_Name: CountText
   m_TagString: Untagged
@@ -366,8 +383,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 20
-  m_fontSizeBase: 20
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -411,6 +428,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &5402085656361669886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2780285990902530784}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 1
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &3282765449807390053
 GameObject:
   m_ObjectHideFlags: 0
@@ -650,6 +682,7 @@ GameObject:
   - component: {fileID: 9039906813744847187}
   - component: {fileID: 6779226220134770580}
   - component: {fileID: 1375748297956990841}
+  - component: {fileID: 359750414754944412}
   m_Layer: 5
   m_Name: CountText
   m_TagString: Untagged
@@ -776,6 +809,21 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &359750414754944412
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4878475815739030200}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 4
+  _manageAutoSizeRange: 1
+  _theme: {fileID: 0}
 --- !u!1 &6183514478783351432
 GameObject:
   m_ObjectHideFlags: 0
@@ -912,7 +960,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.GridLayoutGroup
   m_Padding:
-    m_Left: 30
+    m_Left: 32
     m_Right: -5
     m_Top: 60
     m_Bottom: 0
