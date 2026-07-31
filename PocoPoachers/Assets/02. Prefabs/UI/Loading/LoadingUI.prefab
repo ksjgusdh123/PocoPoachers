@@ -178,6 +178,7 @@ GameObject:
   - component: {fileID: 1960422987361618747}
   - component: {fileID: 7701779780379644671}
   - component: {fileID: 7771334365950804254}
+  - component: {fileID: 1709701895391702700}
   m_Layer: 0
   m_Name: txtLoading
   m_TagString: Untagged
@@ -242,7 +243,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 1, b: 1, a: 1}
+  m_fontColor: {r: 0.9490196, g: 0.972549, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -317,8 +318,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 4
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 1
+  _keepAlpha: 1
   _theme: {fileID: 0}
+--- !u!114 &1709701895391702700
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6290182810989671729}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32b9e00930b889b4f8dc12716e1fe8cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
+  _key: ui.loading
 --- !u!1 &6406254369582874672
 GameObject:
   m_ObjectHideFlags: 0

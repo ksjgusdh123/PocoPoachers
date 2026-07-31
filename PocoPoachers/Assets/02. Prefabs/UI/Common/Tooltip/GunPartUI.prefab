@@ -151,7 +151,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 0
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 5
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &645392401720339288
 GameObject:
@@ -304,7 +307,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 0
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 5
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &769451100336512500
 GameObject:
@@ -457,7 +463,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 0
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 5
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &1056827252545143488
 GameObject:
@@ -535,7 +544,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4281479730
-  m_fontColor: {r: 0.19607843, g: 0.19607843, b: 0.19607843, a: 1}
+  m_fontColor: {r: 0.9490196, g: 0.972549, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -610,7 +619,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 2
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 1
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &1280779496954991345
 GameObject:
@@ -921,7 +933,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 0
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 5
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &2909514700146368008
 GameObject:
@@ -1074,7 +1089,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 0
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 5
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1001 &7774468011502850475
 PrefabInstance:
@@ -1425,18 +1443,33 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 3862802653462133142, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6187907498777233509}
+    - targetCorrespondingSourceObject: {fileID: 3862802653462133142, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8416414020399461911}
     - targetCorrespondingSourceObject: {fileID: 8358767738778115194, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3622676057519780138}
+    - targetCorrespondingSourceObject: {fileID: 8358767738778115194, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5318741774678965320}
     - targetCorrespondingSourceObject: {fileID: 7809875866865082026, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4764895365998852990}
+    - targetCorrespondingSourceObject: {fileID: 7809875866865082026, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5749838291627861718}
     - targetCorrespondingSourceObject: {fileID: 1311273639117888300, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1284191647451235324}
+    - targetCorrespondingSourceObject: {fileID: 1311273639117888300, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7937839442343331867}
     - targetCorrespondingSourceObject: {fileID: 6497422875685615653, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6860260333554394658}
+    - targetCorrespondingSourceObject: {fileID: 6497422875685615653, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 546727501314217910}
   m_SourcePrefab: {fileID: 100100000, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
 --- !u!114 &347211820932992575 stripped
 MonoBehaviour:
@@ -1471,6 +1504,20 @@ MonoBehaviour:
   _nameText: {fileID: 1783044846825864984}
   _inventoryUI: {fileID: 0}
   _slotType: 2
+--- !u!114 &5749838291627861718
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 542179972062662401}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cae5196f2719c564892dfb91e2b320fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlotHoverHighlightUI
+  _border: {fileID: 0}
+  _theme: {fileID: 0}
 --- !u!114 &985517913574708317 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 7370481797863589366, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
@@ -1615,6 +1662,20 @@ MonoBehaviour:
   _nameText: {fileID: 3654372444393822709}
   _inventoryUI: {fileID: 0}
   _slotType: 1
+--- !u!114 &5318741774678965320
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2298027199168417233}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cae5196f2719c564892dfb91e2b320fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlotHoverHighlightUI
+  _border: {fileID: 0}
+  _theme: {fileID: 0}
 --- !u!114 &2963782407619078591 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 4811266150877640724, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
@@ -1648,6 +1709,20 @@ MonoBehaviour:
   _nameText: {fileID: 4767388796308035129}
   _inventoryUI: {fileID: 0}
   _slotType: 4
+--- !u!114 &546727501314217910
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3589103753543756174}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cae5196f2719c564892dfb91e2b320fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlotHoverHighlightUI
+  _border: {fileID: 0}
+  _theme: {fileID: 0}
 --- !u!114 &3654372444393822709 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 6436353152610601054, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
@@ -1750,6 +1825,20 @@ MonoBehaviour:
   _nameText: {fileID: 5182415429458498406}
   _inventoryUI: {fileID: 0}
   _slotType: 5
+--- !u!114 &8416414020399461911
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6809191927301810237}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cae5196f2719c564892dfb91e2b320fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlotHoverHighlightUI
+  _border: {fileID: 0}
+  _theme: {fileID: 0}
 --- !u!224 &7114353894764342532 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 675318234951171247, guid: dec8eb77d6377064299fe31cc8119161, type: 3}
@@ -1825,3 +1914,17 @@ MonoBehaviour:
   _nameText: {fileID: 6045206046002540698}
   _inventoryUI: {fileID: 0}
   _slotType: 3
+--- !u!114 &7937839442343331867
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8779452026627508871}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cae5196f2719c564892dfb91e2b320fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlotHoverHighlightUI
+  _border: {fileID: 0}
+  _theme: {fileID: 0}

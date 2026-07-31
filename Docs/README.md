@@ -35,7 +35,8 @@ Escape From Duckov 스타일 **탈출·파밍·성장** 게임. 쉘터 거점 �
 | DataTable 연동 | [design/data-tables.md](design/data-tables.md) |
 | 강화·수리·제작 | [design/progression.md](design/progression.md) |
 | 세이브 | [design/save.md](design/save.md) |
-| UI | [design/ui.md](design/ui.md) |
+| UI · 디자인 시스템(테마·타이포·버튼) | [design/ui.md](design/ui.md) |
+| 씬별 UI 배치 (어느 씬에 어떤 UI 프리팹이 있는지) | [design/ui-placement.md](design/ui-placement.md) |
 | 치트 콘솔 | [development/cheat-console.md](development/cheat-console.md) |
 | 에이전트 규칙 | [agents.md](agents.md) |
 

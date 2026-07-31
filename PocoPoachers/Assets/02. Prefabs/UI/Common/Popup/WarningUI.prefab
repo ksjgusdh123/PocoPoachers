@@ -81,6 +81,7 @@ GameObject:
   - component: {fileID: 1000000000000021}
   - component: {fileID: 1000000000000022}
   - component: {fileID: 1000000000000023}
+  - component: {fileID: 4546834354842547851}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -131,7 +132,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.019607844, g: 0.05490196, b: 0.09803922, a: 0.98039216}
+  m_Color: {r: 0.039215688, g: 0.05882353, b: 0.11372549, a: 0.98039216}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -148,6 +149,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &4546834354842547851
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000000000000020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedGraphicUI
+  _role: 1
+  _keepAlpha: 1
+  _theme: {fileID: 0}
 --- !u!1 &1000000000000030
 GameObject:
   m_ObjectHideFlags: 0
@@ -159,7 +175,6 @@ GameObject:
   - component: {fileID: 1000000000000031}
   - component: {fileID: 1000000000000032}
   - component: {fileID: 1000000000000033}
-  - component: {fileID: 1000000000000034}
   - component: {fileID: 4649610373495102756}
   m_Layer: 5
   m_Name: Txt_Title
@@ -225,7 +240,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294960384
-  m_fontColor: {r: 0.8980392, g: 0.9647059, b: 0.98039216, a: 1}
+  m_fontColor: {r: 0.9490196, g: 0.972549, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -287,19 +302,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &1000000000000034
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000000000000030}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32b9e00930b889b4f8dc12716e1fe8cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
-  _key: 
 --- !u!114 &4649610373495102756
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -313,7 +315,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 3
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 1
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &1000000000000060
 GameObject:
@@ -781,7 +786,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294960384
-  m_fontColor: {r: 0.8980392, g: 0.9647059, b: 0.98039216, a: 1}
+  m_fontColor: {r: 0.9490196, g: 0.972549, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -869,7 +874,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 1
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 1
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &5646875349198375099
 GameObject:
@@ -1023,7 +1031,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294960384
-  m_fontColor: {r: 0.8980392, g: 0.9647059, b: 0.98039216, a: 1}
+  m_fontColor: {r: 0.9490196, g: 0.972549, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1111,7 +1119,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 1
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 1
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &6455683911940320067
 GameObject:
@@ -1268,7 +1279,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontColor: {r: 1, g: 0.44705883, b: 0.23921569, a: 1}
+  m_fontColor: {r: 1, g: 0.7019608, b: 0.2784314, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1343,7 +1354,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 0
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 8
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &7069041673268926006
 GameObject:
@@ -1709,7 +1723,7 @@ MonoBehaviour:
   m_fontColor32:
     serializedVersion: 2
     rgba: 4294960384
-  m_fontColor: {r: 0.8980392, g: 0.9647059, b: 0.98039216, a: 1}
+  m_fontColor: {r: 0.9490196, g: 0.972549, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
   m_fontColorGradient:
@@ -1784,5 +1798,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 1
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 1
+  _keepAlpha: 1
   _theme: {fileID: 0}

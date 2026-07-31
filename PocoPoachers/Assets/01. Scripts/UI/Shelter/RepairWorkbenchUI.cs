@@ -82,7 +82,7 @@ public class RepairWorkbenchUI : MonoBehaviour
         if (_powerCostText != null)
         {
             _powerCostText.text = $"전력 {PowerCost:0}";
-            _powerCostText.color = canAffordPower ? Color.green : Color.red;
+            _powerCostText.color = canAffordPower ? UITheme.InkPositive : UITheme.InkNegative;
         }
 
         _repairButton.interactable = _repairSlot.IsSetted && canAffordPower;

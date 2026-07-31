@@ -93,11 +93,11 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 36
+  m_fontSize: 24
   m_fontSizeBase: 36
   m_fontWeight: 400
   m_enableAutoSizing: 1
-  m_fontSizeMin: 14
+  m_fontSizeMin: 16
   m_fontSizeMax: 24
   m_fontStyle: 0
   m_HorizontalAlignment: 2
@@ -150,8 +150,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
-  _role: 4
-  _manageAutoSizeRange: 0
+  _role: 2
+  _manageFontSize: 1
+  _manageAutoSizeRange: 1
+  _colorRole: 5
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &5398255920036760722
 GameObject:
@@ -164,6 +167,7 @@ GameObject:
   - component: {fileID: 5890710355967773702}
   - component: {fileID: 6590703998689128958}
   - component: {fileID: 8395732591917485157}
+  - component: {fileID: 7567241059250710195}
   m_Layer: 5
   m_Name: key_bgimg
   m_TagString: Untagged
@@ -229,6 +233,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7567241059250710195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5398255920036760722}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedGraphicUI
+  _role: 0
+  _keepAlpha: 1
+  _theme: {fileID: 0}
 --- !u!1 &9159747529879072688
 GameObject:
   m_ObjectHideFlags: 0

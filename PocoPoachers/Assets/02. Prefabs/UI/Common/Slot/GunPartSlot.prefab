@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 3246053493797548276}
   - component: {fileID: 1797173696313639906}
   - component: {fileID: 4022786990420769066}
+  - component: {fileID: 2076269745052631005}
   m_Layer: 5
   m_Name: GunPartSlot
   m_TagString: Untagged
@@ -94,6 +95,20 @@ MonoBehaviour:
   _nameText: {fileID: 2749946495315992867}
   _inventoryUI: {fileID: 0}
   _slotType: 1
+--- !u!114 &2076269745052631005
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1678674778815945941}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cae5196f2719c564892dfb91e2b320fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlotHoverHighlightUI
+  _border: {fileID: 0}
+  _theme: {fileID: 0}
 --- !u!1 &6757239796949102018
 GameObject:
   m_ObjectHideFlags: 0
@@ -245,5 +260,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 1
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 5
+  _keepAlpha: 1
   _theme: {fileID: 0}

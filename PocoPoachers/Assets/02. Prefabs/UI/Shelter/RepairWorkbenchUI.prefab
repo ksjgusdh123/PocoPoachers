@@ -151,7 +151,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 4
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 2
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &432353370806789660
 GameObject:
@@ -165,6 +168,7 @@ GameObject:
   - component: {fileID: 5275303435459472122}
   - component: {fileID: 3602420005720114980}
   - component: {fileID: 67051893436562239}
+  - component: {fileID: 4026550027650789890}
   m_Layer: 5
   m_Name: RepairWorkbenchBackground
   m_TagString: Untagged
@@ -214,7 +218,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.03137255, g: 0.0627451, b: 0.11372549, a: 0.96862745}
+  m_Color: {r: 0.039215688, g: 0.05882353, b: 0.11372549, a: 0.96862745}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -246,6 +250,21 @@ MonoBehaviour:
   m_EffectColor: {r: 0, g: 0.8980392, b: 1, a: 0.32}
   m_EffectDistance: {x: 1, y: -1}
   m_UseGraphicAlpha: 1
+--- !u!114 &4026550027650789890
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 432353370806789660}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedGraphicUI
+  _role: 1
+  _keepAlpha: 1
+  _theme: {fileID: 0}
 --- !u!1 &1303615614626003087
 GameObject:
   m_ObjectHideFlags: 0
@@ -397,7 +416,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 0
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 2
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &1657885859054102101
 GameObject:
@@ -411,6 +433,7 @@ GameObject:
   - component: {fileID: 1491299443217696444}
   - component: {fileID: 7975449264301277714}
   - component: {fileID: 3087478303481304794}
+  - component: {fileID: 4802658950974066419}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -550,8 +573,24 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 2
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 1
+  _keepAlpha: 1
   _theme: {fileID: 0}
+--- !u!114 &4802658950974066419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1657885859054102101}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32b9e00930b889b4f8dc12716e1fe8cb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
+  _key: repair.repair
 --- !u!1 &2687412365443477126
 GameObject:
   m_ObjectHideFlags: 0
@@ -703,7 +742,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 3
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 1
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &3345032086627969481
 GameObject:
@@ -856,7 +898,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 4
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 1
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &4105360429080794775
 GameObject:
@@ -1162,7 +1207,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 0
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 4
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &4394451911314106939
 GameObject:
@@ -1559,7 +1607,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 4
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 1
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &9184121976760785924
 GameObject:
@@ -1572,6 +1623,7 @@ GameObject:
   - component: {fileID: 7835687955127780759}
   - component: {fileID: 5471723328893115749}
   - component: {fileID: 936696714908639942}
+  - component: {fileID: 7743769544066834804}
   m_Layer: 0
   m_Name: AccentLine
   m_TagString: Untagged
@@ -1636,6 +1688,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7743769544066834804
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9184121976760785924}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedGraphicUI
+  _role: 0
+  _keepAlpha: 1
+  _theme: {fileID: 0}
 --- !u!1001 &2856481841765002807
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1730,15 +1797,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5414963190812985321, guid: 35e5555275774a645acae129d835dec0, type: 3}
       propertyPath: m_fontColor.b
-      value: 1
+      value: 0.11372549
       objectReference: {fileID: 0}
     - target: {fileID: 5414963190812985321, guid: 35e5555275774a645acae129d835dec0, type: 3}
       propertyPath: m_fontColor.g
-      value: 0.972549
+      value: 0.05882353
       objectReference: {fileID: 0}
     - target: {fileID: 5414963190812985321, guid: 35e5555275774a645acae129d835dec0, type: 3}
       propertyPath: m_fontColor.r
-      value: 0.9490196
+      value: 0.039215688
       objectReference: {fileID: 0}
     - target: {fileID: 5414963190812985321, guid: 35e5555275774a645acae129d835dec0, type: 3}
       propertyPath: m_fontSizeMax

@@ -319,7 +319,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 0
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 5
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &7879612280129317195
 GameObject:
@@ -331,6 +334,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1969060809706964971}
   - component: {fileID: 743576021371037123}
+  - component: {fileID: 5054724519328012659}
   m_Layer: 5
   m_Name: RepairSlotUI
   m_TagString: Untagged
@@ -374,3 +378,17 @@ MonoBehaviour:
   _icon: {fileID: 114169550214809794}
   _nameText: {fileID: 0}
   _inventoryUI: {fileID: 0}
+--- !u!114 &5054724519328012659
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7879612280129317195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cae5196f2719c564892dfb91e2b320fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlotHoverHighlightUI
+  _border: {fileID: 0}
+  _theme: {fileID: 0}

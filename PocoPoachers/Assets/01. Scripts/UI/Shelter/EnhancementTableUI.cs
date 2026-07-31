@@ -99,7 +99,7 @@ public class EnhancementTableUI : MonoBehaviour
         if (_powerCostText != null)
         {
             _powerCostText.text = $"전력 {PowerCost:0}";
-            _powerCostText.color = canAffordPower ? Color.green : Color.red;
+            _powerCostText.color = canAffordPower ? UITheme.InkPositive : UITheme.InkNegative;
         }
 
         if (_enhanceButton != null)
@@ -124,8 +124,8 @@ public class EnhancementTableUI : MonoBehaviour
             EnhancementStatType.MoveSpeed
         };
 
-        Color selectedColor = Color.white;
-        Color normalColor = new Color32(0xA8, 0xB9, 0xCC, 0xFF);
+        Color selectedColor = UITheme.InkPrimary;
+        Color normalColor = UITheme.InkSecondary;
 
         for (int i = 0; i < buttons.Length; i++)
         {

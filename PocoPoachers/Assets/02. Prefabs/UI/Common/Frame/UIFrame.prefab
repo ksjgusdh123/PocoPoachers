@@ -63,6 +63,7 @@ GameObject:
   - component: {fileID: 1000000000000021}
   - component: {fileID: 1000000000000022}
   - component: {fileID: 1000000000000023}
+  - component: {fileID: 7376788640624127338}
   m_Layer: 5
   m_Name: Panel
   m_TagString: Untagged
@@ -131,6 +132,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7376788640624127338
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000000000000020}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedGraphicUI
+  _role: 1
+  _keepAlpha: 1
+  _theme: {fileID: 0}
 --- !u!1 &1000000000000030
 GameObject:
   m_ObjectHideFlags: 0
@@ -142,7 +158,6 @@ GameObject:
   - component: {fileID: 1000000000000031}
   - component: {fileID: 1000000000000032}
   - component: {fileID: 1000000000000033}
-  - component: {fileID: 1000000000000034}
   - component: {fileID: 3107862324187434016}
   m_Layer: 5
   m_Name: Txt_Title
@@ -270,19 +285,6 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
---- !u!114 &1000000000000034
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1000000000000030}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 32b9e00930b889b4f8dc12716e1fe8cb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::LocalizedTextUI
-  _key: 
 --- !u!114 &3107862324187434016
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -296,7 +298,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 4
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 4
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &1000000000000040
 GameObject:
@@ -312,6 +317,7 @@ GameObject:
   - component: {fileID: 1000000000000044}
   - component: {fileID: 1000000000000045}
   - component: {fileID: 7917054212259115121}
+  - component: {fileID: 2709503592030093047}
   m_Layer: 5
   m_Name: Btn_Close
   m_TagString: Untagged
@@ -450,6 +456,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.AspectRatioFitter
   m_AspectMode: 2
   m_AspectRatio: 1
+--- !u!114 &2709503592030093047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1000000000000040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedGraphicUI
+  _role: 0
+  _keepAlpha: 1
+  _theme: {fileID: 0}
 --- !u!1 &1000000000000050
 GameObject:
   m_ObjectHideFlags: 0
@@ -601,7 +622,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
   _role: 2
+  _manageFontSize: 1
   _manageAutoSizeRange: 1
+  _colorRole: 4
+  _keepAlpha: 1
   _theme: {fileID: 0}
 --- !u!1 &1000000000000060
 GameObject:
@@ -649,6 +673,7 @@ GameObject:
   - component: {fileID: 2886775012724113924}
   - component: {fileID: 1705548715208160561}
   - component: {fileID: 8275197484020638008}
+  - component: {fileID: 293574091417058214}
   m_Layer: 5
   m_Name: outline
   m_TagString: Untagged
@@ -713,6 +738,21 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &293574091417058214
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5117059182917570103}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedGraphicUI
+  _role: 0
+  _keepAlpha: 1
+  _theme: {fileID: 0}
 --- !u!1 &6455683911940320067
 GameObject:
   m_ObjectHideFlags: 0
@@ -724,6 +764,7 @@ GameObject:
   - component: {fileID: 8819985863531591235}
   - component: {fileID: 9196863197244804317}
   - component: {fileID: 187755810650129044}
+  - component: {fileID: 3503701737497931694}
   m_Layer: 5
   m_Name: Title_Background
   m_TagString: Untagged
@@ -789,3 +830,18 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &3503701737497931694
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6455683911940320067}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedGraphicUI
+  _role: 0
+  _keepAlpha: 1
+  _theme: {fileID: 0}

@@ -97,7 +97,7 @@ public class GunEnhancementTableUI : MonoBehaviour
         if (_powerCostText != null)
         {
             _powerCostText.text = $"전력 {PowerCost:0}";
-            _powerCostText.color = canAffordPower ? Color.green : Color.red;
+            _powerCostText.color = canAffordPower ? UITheme.InkPositive : UITheme.InkNegative;
         }
 
         if (!_slot.IsSetted)
@@ -241,7 +241,7 @@ public class GunEnhancementTableUI : MonoBehaviour
 
             int owned = _inventory?.GetItemCount(item) ?? 0;
             _ingredientCountTexts[i].text = $"{owned} / {required}";
-            _ingredientCountTexts[i].color = owned >= required ? Color.green : Color.red;
+            _ingredientCountTexts[i].color = owned >= required ? UITheme.InkPositive : UITheme.InkNegative;
         }
     }
 

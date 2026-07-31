@@ -6,11 +6,6 @@ using UnityEngine.UI;
 // 연료 슬롯/버튼이 있는 GeneratorUI와 별개로, 발전기를 열지 않고도 바로 보여준다.
 public class CrankGaugeUI : MonoBehaviour
 {
-    private static readonly Color CriticalColor = new Color(1f, 0.231f, 0.231f); // < 10%
-    private static readonly Color LowColor = new Color(1f, 0.549f, 0f);          // < 40%
-    private static readonly Color MediumColor = new Color(1f, 0.878f, 0.1f);     // < 70%
-    private static readonly Color HighColor = new Color(0.2f, 0.898f, 0.4f);     // >= 70%
-
     public static CrankGaugeUI Instance { get; private set; }
 
     [SerializeField] private Slider _powerBar;
@@ -81,9 +76,6 @@ public class CrankGaugeUI : MonoBehaviour
 
     private static Color GetColorForRatio(float ratio)
     {
-        if (ratio < 0.1f) return CriticalColor;
-        if (ratio < 0.4f) return LowColor;
-        if (ratio < 0.7f) return MediumColor;
-        return HighColor;
+        return UITheme.GaugeColorFor(ratio);
     }
 }

@@ -89,6 +89,8 @@ public class SlotHoverHighlightUI : MonoBehaviour, IPointerEnterHandler, IPointe
         if (_border != null) _border.color = _baseColor;
     }
 
+    // 테두리를 별도 자식으로 둔 슬롯(InventorySlotUI/SlotFrame 등)은 그 자식을 쓰고,
+    // 루트 Image 자체가 슬롯 프레임인 슬롯(WeaponSlotUI/GunPartSlot 등)은 자기 그래픽을 쓴다.
     private Graphic FindBorder()
     {
         foreach (var g in GetComponentsInChildren<Graphic>(true))
@@ -97,6 +99,6 @@ public class SlotHoverHighlightUI : MonoBehaviour, IPointerEnterHandler, IPointe
             for (int i = 0; i < BorderNames.Length; i++)
                 if (g.name == BorderNames[i]) return g;
         }
-        return null;
+        return GetComponent<Graphic>();
     }
 }

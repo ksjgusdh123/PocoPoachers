@@ -76,8 +76,8 @@ public class StorageUI : InventoryUI
             TextMeshProUGUI label = entry.Button.GetComponentInChildren<TextMeshProUGUI>(true);
             if (label != null)
                 label.color = _filterType == entry.Type
-                    ? Color.white
-                    : new Color32(0xA8, 0xB9, 0xCC, 0xFF);
+                    ? UITheme.InkPrimary
+                    : UITheme.InkSecondary;
         }
     }
 

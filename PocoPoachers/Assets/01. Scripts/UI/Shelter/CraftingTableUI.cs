@@ -97,8 +97,8 @@ public class CraftingTableUI : MonoBehaviour
 
     private void RefreshCategorySelection()
     {
-        Color selectedColor = Color.white;
-        Color normalColor = new Color32(0xA8, 0xB9, 0xCC, 0xFF);
+        Color selectedColor = UITheme.InkPrimary;
+        Color normalColor = UITheme.InkSecondary;
 
         for (int i = 0; i < _categoryButtons.Length; i++)
         {
@@ -185,7 +185,7 @@ public class CraftingTableUI : MonoBehaviour
 
             int owned = _inventory?.GetItemCount(mat) ?? 0;
             _ingredientCountTexts[i].text = $"{owned} / {required}";
-            _ingredientCountTexts[i].color = owned >= required ? Color.green : Color.red;
+            _ingredientCountTexts[i].color = owned >= required ? UITheme.InkPositive : UITheme.InkNegative;
         }
 
         RefreshPowerCostUI();
@@ -198,7 +198,7 @@ public class CraftingTableUI : MonoBehaviour
         if (_powerCostText != null)
         {
             _powerCostText.text = $"전력 {PowerCost:0}";
-            _powerCostText.color = canAffordPower ? Color.green : Color.red;
+            _powerCostText.color = canAffordPower ? UITheme.InkPositive : UITheme.InkNegative;
         }
 
         if (_selectedRecipe != null)

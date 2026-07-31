@@ -34,6 +34,22 @@ public class UITheme : ScriptableObject
         Subtitle,
         Title,
         Display,
+        Hero,
+        Banner,
+    }
+
+    // 텍스트 잉크 색의 역할. None이면 ThemedTextUI가 색을 건드리지 않는다(기존 동작).
+    public enum TextColorRole
+    {
+        None,
+        Primary,
+        Secondary,
+        Muted,
+        Accent,
+        OnAccent,
+        Positive,
+        Negative,
+        Warning,
     }
 
     [Header("Palette")]
@@ -45,6 +61,41 @@ public class UITheme : ScriptableObject
 
     [Tooltip("경고/위험 강조색")]
     public Color Danger = new Color32(0xEA, 0x00, 0x00, 0xFF);
+
+    [Header("Text Ink")]
+    [Tooltip("본문/제목 기본 잉크 — 어두운 배경 위 밝은 텍스트")]
+    public Color TextPrimary = new Color32(0xF2, 0xF8, 0xFF, 0xFF);
+
+    [Tooltip("보조 설명, 비활성 탭 라벨")]
+    public Color TextSecondary = new Color32(0xA8, 0xB9, 0xCC, 0xFF);
+
+    [Tooltip("플레이스홀더처럼 가장 약한 텍스트")]
+    public Color TextMuted = new Color32(0x83, 0xA3, 0xAD, 0xFF);
+
+    [Tooltip("Accent 배경 위에 올라가는 텍스트")]
+    public Color TextOnAccent = new Color32(0x0A, 0x0F, 0x1D, 0xFF);
+
+    [Tooltip("조건 충족/성공 — 순수 green은 어두운 배경에서 튀므로 낮춘 톤")]
+    public Color TextPositive = new Color32(0x33, 0xE5, 0x66, 0xFF);
+
+    [Tooltip("조건 미충족/실패 — 순수 red보다 가독성이 좋은 톤")]
+    public Color TextNegative = new Color32(0xFF, 0x6B, 0x72, 0xFF);
+
+    [Tooltip("주의/잠김 안내")]
+    public Color TextWarning = new Color32(0xFF, 0xB3, 0x47, 0xFF);
+
+    [Header("Gauge Stages")]
+    [Tooltip("게이지 10% 미만")]
+    public Color GaugeCritical = new Color32(0xFF, 0x3B, 0x3B, 0xFF);
+
+    [Tooltip("게이지 40% 미만")]
+    public Color GaugeLow = new Color32(0xFF, 0x8C, 0x00, 0xFF);
+
+    [Tooltip("게이지 70% 미만")]
+    public Color GaugeMedium = new Color32(0xFF, 0xE0, 0x1A, 0xFF);
+
+    [Tooltip("게이지 70% 이상")]
+    public Color GaugeHigh = new Color32(0x33, 0xE5, 0x66, 0xFF);
 
     [Header("Graphic Roles")]
     [Tooltip("아이템 슬롯 배경 — 팔레트 밖의 녹색 기운을 뺀 중성 톤")]
@@ -69,12 +120,20 @@ public class UITheme : ScriptableObject
     public float FontSizeTitle = 30f;
     public float FontSizeDisplay = 36f;
 
+    [Tooltip("전체화면 오버레이 문구처럼 Display보다 커야 하는 텍스트")]
+    public float FontSizeHero = 60f;
+
+    [Tooltip("타이틀 로고 등 단독으로 쓰이는 최대 크기")]
+    public float FontSizeBanner = 120f;
+
     [Header("Typography Auto Size Minimum (px)")]
     public float FontSizeCaptionMin = 12f;
     public float FontSizeBodyMin = 14f;
     public float FontSizeSubtitleMin = 16f;
     public float FontSizeTitleMin = 18f;
     public float FontSizeDisplayMin = 24f;
+    public float FontSizeHeroMin = 36f;
+    public float FontSizeBannerMin = 60f;
 
     [Header("Layout")]
     [Min(1), Tooltip("UI 간격과 패딩을 맞추는 최소 그리드 단위")]
@@ -115,6 +174,36 @@ public class UITheme : ScriptableObject
     [Tooltip("Danger 스타일의 눌림 색")]
     public Color DangerPressed = new Color32(0xEA, 0x64, 0x64, 0xFF);
 
+    // 코드에서 색을 직접 지정해야 할 때 쓰는 접근자.
+    // 테마 에셋을 못 찾는 상황의 폴백 값을 이 클래스 한 곳에서만 관리한다.
+    public static Color InkPrimary { get { return Default != null ? Default.TextPrimary : (Color)new Color32(0xF2, 0xF8, 0xFF, 0xFF); } }
+    public static Color InkSecondary { get { return Default != null ? Default.TextSecondary : (Color)new Color32(0xA8, 0xB9, 0xCC, 0xFF); } }
+    public static Color InkMuted { get { return Default != null ? Default.TextMuted : (Color)new Color32(0x83, 0xA3, 0xAD, 0xFF); } }
+    public static Color InkPositive { get { return Default != null ? Default.TextPositive : (Color)new Color32(0x33, 0xE5, 0x66, 0xFF); } }
+    public static Color InkNegative { get { return Default != null ? Default.TextNegative : (Color)new Color32(0xFF, 0x6B, 0x72, 0xFF); } }
+    public static Color InkWarning { get { return Default != null ? Default.TextWarning : (Color)new Color32(0xFF, 0xB3, 0x47, 0xFF); } }
+    public static Color AccentColor { get { return Default != null ? Default.Accent : (Color)new Color32(0x00, 0xE5, 0xFF, 0xFF); } }
+
+    // 게이지 단계 임계값. CrankGaugeUI와 GeneratorUI가 같은 규칙을 각자 복사해 두고 있었다.
+    public Color GetGaugeColor(float ratio01)
+    {
+        if (ratio01 < 0.1f) return GaugeCritical;
+        if (ratio01 < 0.4f) return GaugeLow;
+        if (ratio01 < 0.7f) return GaugeMedium;
+        return GaugeHigh;
+    }
+
+    public static Color GaugeColorFor(float ratio01)
+    {
+        UITheme theme = Default;
+        if (theme != null) return theme.GetGaugeColor(ratio01);
+
+        if (ratio01 < 0.1f) return new Color32(0xFF, 0x3B, 0x3B, 0xFF);
+        if (ratio01 < 0.4f) return new Color32(0xFF, 0x8C, 0x00, 0xFF);
+        if (ratio01 < 0.7f) return new Color32(0xFF, 0xE0, 0x1A, 0xFF);
+        return new Color32(0x33, 0xE5, 0x66, 0xFF);
+    }
+
     public float GetFontSize(TypographyRole role)
     {
         return role switch
@@ -123,7 +212,25 @@ public class UITheme : ScriptableObject
             TypographyRole.Body => FontSizeBody,
             TypographyRole.Subtitle => FontSizeSubtitle,
             TypographyRole.Title => FontSizeTitle,
-            _ => FontSizeDisplay,
+            TypographyRole.Display => FontSizeDisplay,
+            TypographyRole.Hero => FontSizeHero,
+            _ => FontSizeBanner,
+        };
+    }
+
+    // TextColorRole.None은 호출자가 색을 적용하지 않아야 함을 뜻하므로 여기서는 다루지 않는다.
+    public Color GetTextColor(TextColorRole role)
+    {
+        return role switch
+        {
+            TextColorRole.Secondary => TextSecondary,
+            TextColorRole.Muted => TextMuted,
+            TextColorRole.Accent => Accent,
+            TextColorRole.OnAccent => TextOnAccent,
+            TextColorRole.Positive => TextPositive,
+            TextColorRole.Negative => TextNegative,
+            TextColorRole.Warning => TextWarning,
+            _ => TextPrimary,
         };
     }
 
@@ -135,7 +242,9 @@ public class UITheme : ScriptableObject
             TypographyRole.Body => FontSizeBodyMin,
             TypographyRole.Subtitle => FontSizeSubtitleMin,
             TypographyRole.Title => FontSizeTitleMin,
-            _ => FontSizeDisplayMin,
+            TypographyRole.Display => FontSizeDisplayMin,
+            TypographyRole.Hero => FontSizeHeroMin,
+            _ => FontSizeBannerMin,
         };
         return new Vector2(minimum, GetFontSize(role));
     }

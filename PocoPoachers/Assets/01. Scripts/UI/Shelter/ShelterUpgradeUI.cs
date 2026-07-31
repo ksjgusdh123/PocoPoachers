@@ -87,10 +87,7 @@ public class ShelterUpgradeUI : UIBase
         int current = ShelterManager.GetInstance().GetCombinedItemCount(_player, _storage, itemId);
         countText.text = $"{current} / {required}";
 
-        UITheme theme = UITheme.Default;
-        countText.color = current >= required
-            ? theme != null ? theme.Accent : new Color32(0x00, 0xE5, 0xFF, 0xFF)
-            : new Color32(0xFF, 0x6B, 0x72, 0xFF);
+        countText.color = current >= required ? UITheme.AccentColor : UITheme.InkNegative;
     }
 
     public void OnClickUpgrade()
