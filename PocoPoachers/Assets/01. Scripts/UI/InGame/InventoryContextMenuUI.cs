@@ -36,7 +36,7 @@ public class InventoryContextMenuUI : ContextMenuUIBase
         _targetSlot = null;
     }
 
-    private void ShowAt(ItemSlotUI slot)
+    private void ShowAt(ItemSlotUI slot)    
     {
         // 내 인벤토리에서만 노출 (박스/창고 제외)
         if (slot.InventoryUI == null || slot.InventoryUI.IsBox) return;
