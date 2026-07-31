@@ -1,16 +1,35 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 // 총기 파츠를 드래그&드롭으로 장착하는 슬롯 핸들러. 슬롯 하나(=SlotType)당 1개.
 // 인스펙터에서 _itemType = GunPart, _slotType 지정. 대상 총은 패널이 SetGun으로 주입.
-public class GunPartDropHandler : ItemHolderDropHandler
+public class GunPartDropHandler : ItemHolderDropHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private SlotType _slotType;
 
     private GunBase _gun;
     private int _droppedPartUid;
 
+    // 파츠 패널 전용 호버 툴팁 (일반 DescriptionUI는 파츠 패널이 떠 있으면 억제된다)
+    private MiniDescriptionUI _miniDescriptionUI;
+
     public SlotType SlotType => _slotType;
     public void SetGun(GunBase gun) => _gun = gun;
+
+    protected override void Awake()
+    {
+        base.Awake();
+        _miniDescriptionUI = FindAnyObjectByType<MiniDescriptionUI>(FindObjectsInactive.Include);
+    }
+
+    // 파츠 슬롯 호버 시 파츠 전용 미니 툴팁을 띄운다 (장비 슬롯의 EquipDropHandler와 동일 패턴)
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!_isSetted) return;
+        _miniDescriptionUI?.ShowDescription(DroppedItemData, GetUnequipUid());
+    }
+
+    public void OnPointerExit(PointerEventData eventData) => _miniDescriptionUI?.HideDescription();
 
     // 총 지정 + 현재 이 슬롯에 장착된 파츠를 아이콘으로 표시 (없으면 비움)
     public void Bind(GunBase gun)

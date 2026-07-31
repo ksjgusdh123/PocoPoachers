@@ -204,10 +204,11 @@ public class InventoryUI : MonoBehaviour
     protected virtual void RefreshCountText()
     {
         if (_countText != null)
-        {
             _countText.text = $"({_inventory.ItemCount} / {_inventory.CurrentCapacity})";
-            _miniCountText.text = _countText.text;
-        }
+
+        // 보조 카운트 뱃지(있는 UI만) — countText와 동일 내용 미러링
+        if (_miniCountText != null)
+            _miniCountText.text = $"({_inventory.ItemCount} / {_inventory.CurrentCapacity})";
 
         if (_weightText != null)
             _weightText.text = $"({_inventory.CurrentWeight} / {_inventory.MaxWeight})";

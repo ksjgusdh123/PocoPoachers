@@ -154,19 +154,7 @@ public class StorageUI : InventoryUI
         // 아이템 수 / 용량 텍스트는 부모에서 처리
         base.RefreshCountText();
 
-        string page = $"{_currentPage + 1} / {PageCount}";
         if (_pageText != null)
-        {
-            _pageText.text = page;
-            return;
-        }
-
-        // 기존 prefab은 전용 page text가 없으므로 개선된 header meta 영역을 fallback으로 사용한다.
-        Transform subtitleTransform = transform.Find("BoxNameUI/PolishHeader/Subtitle");
-        TextMeshProUGUI subtitle = subtitleTransform != null
-            ? subtitleTransform.GetComponent<TextMeshProUGUI>()
-            : null;
-        if (subtitle != null)
-            subtitle.text = $"{Inventory.ItemCount} / {Inventory.CurrentCapacity} ITEMS  /  PAGE {page}";
+            _pageText.text = $"{_currentPage + 1} / {PageCount}";
     }
 }

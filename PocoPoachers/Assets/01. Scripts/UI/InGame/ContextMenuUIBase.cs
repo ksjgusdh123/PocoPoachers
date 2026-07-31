@@ -8,12 +8,24 @@ public abstract class ContextMenuUIBase : UIBase
     [SerializeField] protected Vector2 _offset = new Vector2(100f, 0f);
 
     private RectTransform _rectTransform;
+    private bool _subscribed;
 
     protected override void Awake()
     {
         base.Awake();
 
         _rectTransform = GetComponent<RectTransform>();
+    }
+
+    // 씬에 비활성으로 배치된 패널은 Awake가 호출되지 않으므로 Awake에서 구독하면 안 된다.
+    // UIManager가 비활성 패널까지 반드시 거치는 등록 경로(RegisterSelf→RegisterToManager)에서
+    // 트리거 이벤트를 구독한다. 활성 패널은 Awake·씬 스캔으로 이 경로가 두 번 이상 올 수 있어 가드한다.
+    protected override void RegisterToManager()
+    {
+        base.RegisterToManager();
+
+        if (_subscribed) return;
+        _subscribed = true;
 
         Subscribe();
         UIManager.GetInstance().OnPanelClosed += HandleInventoryClosed;
@@ -23,10 +35,15 @@ public abstract class ContextMenuUIBase : UIBase
     // 파괴된 인스턴스로 이벤트가 들어와 예외가 난다
     protected override void OnDestroy()
     {
-        Unsubscribe();
+        if (_subscribed)
+        {
+            Unsubscribe();
 
-        var ui = UIManager.GetInstance();
-        if (ui != null) ui.OnPanelClosed -= HandleInventoryClosed;
+            var ui = UIManager.GetInstance();
+            if (ui != null) ui.OnPanelClosed -= HandleInventoryClosed;
+
+            _subscribed = false;
+        }
 
         base.OnDestroy();
     }
