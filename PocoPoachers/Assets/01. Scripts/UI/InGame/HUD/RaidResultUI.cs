@@ -23,6 +23,7 @@ public class RaidResultUI : MonoBehaviour
     [SerializeField] private Button _confirmButton;      // 확정 버튼 (성공/실패 공용)
     [SerializeField] private TextMeshProUGUI _timeText;  // 진행 시간 표시
     [SerializeField] private TextMeshProUGUI _killText;  // 처치 수 표시
+    [SerializeField] private Image _accentBar;           // 카드 상단 강조 바 — 성공/실패 색으로 전환
     [SerializeField] private float _fadeDuration = 0.4f;
 
     private Action _onConfirm;
@@ -59,6 +60,7 @@ public class RaidResultUI : MonoBehaviour
 
         if (_successPanel != null) _successPanel.SetActive(success);
         if (_failurePanel != null) _failurePanel.SetActive(!success);
+        if (_accentBar != null) _accentBar.color = success ? UITheme.InkPositive : UITheme.InkNegative;
 
         if (_confirmButton != null)
         {

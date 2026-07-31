@@ -58,6 +58,12 @@ public class UITheme : ScriptableObject
 
     [Tooltip("패널 배경색")]
     public Color Surface = new Color32(0x0A, 0x0F, 0x1D, 0xFF);
+    [Tooltip("Surface 위에 올라가는 카드/모달 배경 — 한 단계 밝은 표면")]
+    public Color SurfaceRaised = new Color32(0x18, 0x20, 0x33, 0xFF);
+
+    [Tooltip("모달 뒤를 덮는 암막 — 알파 포함")]
+    public Color Scrim = new Color32(0x00, 0x00, 0x00, 0xE6);
+
 
     [Tooltip("경고/위험 강조색")]
     public Color Danger = new Color32(0xEA, 0x00, 0x00, 0xFF);

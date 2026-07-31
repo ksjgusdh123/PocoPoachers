@@ -16,6 +16,9 @@ public class ThemedGraphicUI : MonoBehaviour
         HealthFill,
         StaminaFill,
         Danger,
+        // 기존 씬/프리팹에 저장된 정수값을 깨뜨리지 않도록 새 역할은 항상 끝에 추가한다.
+        SurfaceRaised,
+        Scrim,
     }
 
     [SerializeField] private GraphicRole _role = GraphicRole.Accent;
@@ -53,7 +56,9 @@ public class ThemedGraphicUI : MonoBehaviour
     {
         switch (_role)
         {
-            case GraphicRole.Surface:      return theme.Surface;
+            case GraphicRole.Surface:       return theme.Surface;
+            case GraphicRole.SurfaceRaised: return theme.SurfaceRaised;
+            case GraphicRole.Scrim:         return theme.Scrim;
             case GraphicRole.SlotSurface:  return theme.SlotSurface;
             case GraphicRole.ProgressFill: return theme.ProgressFill;
             case GraphicRole.HealthFill:   return theme.HealthFill;
