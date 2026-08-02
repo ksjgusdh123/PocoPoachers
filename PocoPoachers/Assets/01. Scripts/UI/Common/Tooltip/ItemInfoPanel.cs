@@ -309,12 +309,13 @@ public class ItemInfoPanel : MonoBehaviour
         var stat = GunStatTable.Instance.Get(data.Id);
         if (stat == null) return list;
 
-        list.Add(("데미지", $"{stat.Damage:F0}"));
-        if (stat.PelletCount > 1) list.Add(("탄자 수", $"{stat.PelletCount}"));
-        list.Add(("연사", $"{stat.Rpm:F0} RPM"));
-        list.Add(("탄창", $"{stat.MaxMagazine}"));
-        list.Add(("장전", $"{stat.ReloadTime:F1}초"));
-        list.Add(("사거리", $"{stat.BulletRange:F0}"));
+        var loc = LocalizationManager.GetInstance();
+        list.Add((loc.GetString("stat.damage"), $"{stat.Damage:F0}"));
+        if (stat.PelletCount > 1) list.Add((loc.GetString("stat.pellet_count"), $"{stat.PelletCount}"));
+        list.Add((loc.GetString("stat.rpm"), $"{stat.Rpm:F0} RPM"));
+        list.Add((loc.GetString("stat.magazine"), $"{stat.MaxMagazine}"));
+        list.Add((loc.GetString("stat.reload_time"), string.Format(loc.GetString("stat.seconds_format"), stat.ReloadTime.ToString("F1"))));
+        list.Add((loc.GetString("stat.range"), $"{stat.BulletRange:F0}"));
         return list;
     }
 
@@ -325,13 +326,14 @@ public class ItemInfoPanel : MonoBehaviour
         var basePart = GunPartTable.Instance.Get(data.Id);
         if (basePart == null) return list;
 
+        var loc = LocalizationManager.GetInstance();
         var part = WorldEquipmentManager.GetEnhancedGunPart(basePart, uid);
-        AddMultiplier(list, "산탄 확산", part.SpreadMultiplier);
-        AddMultiplier(list, "조준 속도", part.AimFovMultiplier);
-        AddMultiplier(list, "재장전 속도", part.ReloadTimeMultiplier);
-        AddMultiplier(list, "반동", part.RecoilMultiplier);
-        AddMultiplier(list, "소음 범위", part.SoundRangeMultiplier);
-        if (part.MaxMagazineBonus != 0) list.Add(("탄창 용량", $"+{part.MaxMagazineBonus}"));
+        AddMultiplier(list, loc.GetString("stat.spread"), part.SpreadMultiplier);
+        AddMultiplier(list, loc.GetString("stat.aim_speed"), part.AimFovMultiplier);
+        AddMultiplier(list, loc.GetString("stat.reload_speed"), part.ReloadTimeMultiplier);
+        AddMultiplier(list, loc.GetString("stat.recoil"), part.RecoilMultiplier);
+        AddMultiplier(list, loc.GetString("stat.sound_range"), part.SoundRangeMultiplier);
+        if (part.MaxMagazineBonus != 0) list.Add((loc.GetString("stat.magazine_capacity"), $"+{part.MaxMagazineBonus}"));
         return list;
     }
 
@@ -341,10 +343,11 @@ public class ItemInfoPanel : MonoBehaviour
         var baseStat = ArmorStatTable.Instance.Get(data.Id);
         if (baseStat == null) return list;
 
+        var loc = LocalizationManager.GetInstance();
         var stat = WorldEquipmentManager.GetEnhancedArmorStat(uid, baseStat);
-        if (stat.DefenseRate > 0f) list.Add(("방어율", $"{stat.DefenseRate * 100f:F0}%"));
-        if (stat.MaxHpBonus > 0f) list.Add(("HP 보너스", $"+{stat.MaxHpBonus:F0}"));
-        AddMultiplier(list, "이동속도", stat.MoveSpeedMultiplier);
+        if (stat.DefenseRate > 0f) list.Add((loc.GetString("stat.defense_rate"), $"{stat.DefenseRate * 100f:F0}%"));
+        if (stat.MaxHpBonus > 0f) list.Add((loc.GetString("stat.hp_bonus"), $"+{stat.MaxHpBonus:F0}"));
+        AddMultiplier(list, loc.GetString("stat.move_speed"), stat.MoveSpeedMultiplier);
         return list;
     }
 

@@ -54,9 +54,7 @@ public class PlanetSlotUI : MonoBehaviour
         _nameText.text = localization.GetString(_data.PlanetName);
 
         if (_lockText == null || _isUnlocked) return;
-        _lockText.text = localization.CurrentLanguage == SystemLanguage.Korean
-            ? $"쉘터 Lv.{_data.NeedShelterLevel} 필요"
-            : $"REQUIRES SHELTER LV.{_data.NeedShelterLevel}";
+        _lockText.text = string.Format(localization.GetString("planet.shelter_level_required"), _data.NeedShelterLevel);
     }
 
     private void OnClick()

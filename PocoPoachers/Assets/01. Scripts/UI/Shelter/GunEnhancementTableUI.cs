@@ -96,7 +96,7 @@ public class GunEnhancementTableUI : MonoBehaviour
 
         if (_powerCostText != null)
         {
-            _powerCostText.text = $"전력 {PowerCost:0}";
+            _powerCostText.text = string.Format(LocalizationManager.GetInstance().GetString("generator.power_cost_format"), PowerCost.ToString("0"));
             _powerCostText.color = canAffordPower ? UITheme.InkPositive : UITheme.InkNegative;
         }
 
@@ -132,7 +132,8 @@ public class GunEnhancementTableUI : MonoBehaviour
 
         if (Generator.Instance == null || !Generator.Instance.TryConsume(PowerCost))
         {
-            UIManager.GetInstance().ShowNotice("발전기", "발전기 전력 부족");
+            var loc = LocalizationManager.GetInstance();
+            UIManager.GetInstance().ShowNotice(loc.GetString("generator.title"), loc.GetString("generator.power_insufficient_message"));
             return;
         }
 
@@ -156,17 +157,18 @@ public class GunEnhancementTableUI : MonoBehaviour
             var part = GunPartTable.Instance.Get(item.Id);
             if (part == null) return string.Empty;
 
-            AppendMultiplierLine(sb, "산탄 확산", part.SpreadMultiplier, currentLevel, nextLevel);
-            AppendMultiplierLine(sb, "조준 속도", part.AimFovMultiplier, currentLevel, nextLevel);
-            AppendMultiplierLine(sb, "재장전 속도", part.ReloadTimeMultiplier, currentLevel, nextLevel);
-            AppendMultiplierLine(sb, "반동", part.RecoilMultiplier, currentLevel, nextLevel);
-            AppendMultiplierLine(sb, "소음 범위", part.SoundRangeMultiplier, currentLevel, nextLevel);
+            var loc = LocalizationManager.GetInstance();
+            AppendMultiplierLine(sb, loc.GetString("stat.spread"), part.SpreadMultiplier, currentLevel, nextLevel);
+            AppendMultiplierLine(sb, loc.GetString("stat.aim_speed"), part.AimFovMultiplier, currentLevel, nextLevel);
+            AppendMultiplierLine(sb, loc.GetString("stat.reload_speed"), part.ReloadTimeMultiplier, currentLevel, nextLevel);
+            AppendMultiplierLine(sb, loc.GetString("stat.recoil"), part.RecoilMultiplier, currentLevel, nextLevel);
+            AppendMultiplierLine(sb, loc.GetString("stat.sound_range"), part.SoundRangeMultiplier, currentLevel, nextLevel);
 
             if (part.MaxMagazineBonus != 0)
             {
                 int cur = EnhanceAdditive(part.MaxMagazineBonus, currentLevel);
                 int nxt = EnhanceAdditive(part.MaxMagazineBonus, nextLevel);
-                sb.AppendLine($"탄창 용량: +{cur} → +{nxt}");
+                sb.AppendLine($"{loc.GetString("stat.magazine_capacity")}: +{cur} → +{nxt}");
             }
         }
         else
@@ -174,19 +176,20 @@ public class GunEnhancementTableUI : MonoBehaviour
             var stat = ArmorStatTable.Instance.Get(item.Id);
             if (stat == null) return string.Empty;
 
+            var loc = LocalizationManager.GetInstance();
             if (stat.DefenseRate > 0)
             {
                 float cur = stat.DefenseRate * (1f + 0.1f * currentLevel);
                 float nxt = stat.DefenseRate * (1f + 0.1f * nextLevel);
-                sb.AppendLine($"방어율: {cur * 100f:F0}% → {nxt * 100f:F0}%");
+                sb.AppendLine($"{loc.GetString("stat.defense_rate")}: {cur * 100f:F0}% → {nxt * 100f:F0}%");
             }
             if (stat.MaxHpBonus > 0)
             {
                 float cur = stat.MaxHpBonus * (1f + 0.1f * currentLevel);
                 float nxt = stat.MaxHpBonus * (1f + 0.1f * nextLevel);
-                sb.AppendLine($"HP 보너스: +{cur:F0} → +{nxt:F0}");
+                sb.AppendLine($"{loc.GetString("stat.hp_bonus")}: +{cur:F0} → +{nxt:F0}");
             }
-            AppendMultiplierLine(sb, "이동속도", stat.MoveSpeedMultiplier, currentLevel, nextLevel);
+            AppendMultiplierLine(sb, loc.GetString("stat.move_speed"), stat.MoveSpeedMultiplier, currentLevel, nextLevel);
         }
 
         return sb.ToString().TrimEnd();

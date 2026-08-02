@@ -197,7 +197,7 @@ public class CraftingTableUI : MonoBehaviour
 
         if (_powerCostText != null)
         {
-            _powerCostText.text = $"전력 {PowerCost:0}";
+            _powerCostText.text = string.Format(LocalizationManager.GetInstance().GetString("generator.power_cost_format"), PowerCost.ToString("0"));
             _powerCostText.color = canAffordPower ? UITheme.InkPositive : UITheme.InkNegative;
         }
 
@@ -228,7 +228,8 @@ public class CraftingTableUI : MonoBehaviour
 
         if (Generator.Instance == null || !Generator.Instance.TryConsume(PowerCost))
         {
-            UIManager.GetInstance().ShowNotice("발전기", "발전기 전력 부족");
+            var loc = LocalizationManager.GetInstance();
+            UIManager.GetInstance().ShowNotice(loc.GetString("generator.title"), loc.GetString("generator.power_insufficient_message"));
             return;
         }
 

@@ -71,8 +71,9 @@ public class RaidResultUI : MonoBehaviour
         // 진행 통계 표시 — 집계를 멈추고 최종 값을 반영
         var stats = RaidStats.Instance;
         stats.StopRaid();
-        if (_timeText != null) _timeText.text = FormatTime(stats.ElapsedTime);
-        if (_killText != null) _killText.text = stats.Kills.ToString();
+        var loc = LocalizationManager.GetInstance();
+        if (_timeText != null) _timeText.text = $"{loc.GetString("raid_result.time_label")} {FormatTime(stats.ElapsedTime)}";
+        if (_killText != null) _killText.text = $"{loc.GetString("raid_result.kill_label")} {stats.Kills}";
 
         _group.interactable = true;
         _group.blocksRaycasts = true;
