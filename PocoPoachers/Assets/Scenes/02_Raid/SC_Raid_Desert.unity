@@ -46544,6 +46544,8 @@ MonoBehaviour:
   spawnPoints:
   - centerPoint: {fileID: 2029853128}
     radius: 36.2
+    patrolRadius: 40
+    patrolOffset: {x: 0, y: 0, z: 0}
     enemies:
     - prefab: {fileID: 6112331380076343035, guid: 4ea1806353f2dcd42a215c047f295eda, type: 3}
       count: 5
@@ -46552,6 +46554,8 @@ MonoBehaviour:
       helmetSpawnChance: 0.5
   - centerPoint: {fileID: 2137743580}
     radius: 10
+    patrolRadius: 50
+    patrolOffset: {x: 6.47, y: 0, z: 28.59}
     enemies:
     - prefab: {fileID: 6112331380076343035, guid: 4ea1806353f2dcd42a215c047f295eda, type: 3}
       count: 3
@@ -46560,6 +46564,8 @@ MonoBehaviour:
       helmetSpawnChance: 1
   - centerPoint: {fileID: 263078087}
     radius: 10
+    patrolRadius: 50
+    patrolOffset: {x: 22.68, y: 0, z: 0}
     enemies:
     - prefab: {fileID: 6112331380076343035, guid: 4ea1806353f2dcd42a215c047f295eda, type: 3}
       count: 3
@@ -59084,7 +59090,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_SerializedVersion: 0
   m_OverrideArea: 1
-  m_Area: 1
+  m_Area: 0
   m_OverrideGenerateLinks: 0
   m_GenerateLinks: 0
   m_IgnoreFromBuild: 0
@@ -101221,7 +101227,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Unity.AI.Navigation::Unity.AI.Navigation.NavMeshModifier
   m_SerializedVersion: 0
   m_OverrideArea: 1
-  m_Area: 1
+  m_Area: 0
   m_OverrideGenerateLinks: 0
   m_GenerateLinks: 0
   m_IgnoreFromBuild: 0

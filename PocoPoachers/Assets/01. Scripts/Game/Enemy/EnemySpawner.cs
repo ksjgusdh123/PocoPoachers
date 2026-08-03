@@ -17,7 +17,11 @@ public class EnemySpawnPoint
 {
     public Transform centerPoint;
     public float radius = 5f;
+    public float patrolRadius = 10f; // 타깃이 없을 때 적이 정찰 기준점에서 벗어날 수 있는 최대 거리
+    public Vector3 patrolOffset = Vector3.zero; // 정찰 기준점을 centerPoint에서 이 만큼 옮긴 위치로 사용
     public EnemySpawnEntry[] enemies;
+
+    public Vector3 PatrolOrigin => centerPoint.position + patrolOffset;
 }
 
 public class EnemySpawner : MonoBehaviour
@@ -49,6 +53,7 @@ public class EnemySpawner : MonoBehaviour
                     Vector3 spawnPos = GetRandomNavMeshPosition(point.centerPoint.position, point.radius);
                     var enemy = Instantiate(entry.prefab, spawnPos, Quaternion.Euler(0f, Random.Range(0f, 360f), 0f), GetEnemiesParent());
 
+                    SetPatrolBounds(enemy, point.PatrolOrigin, point.patrolRadius);
                     EquipWeapon(enemy, entry);
                     EquipHelmet(enemy, entry);
                 }
@@ -68,10 +73,19 @@ public class EnemySpawner : MonoBehaviour
                 var stat = entry.prefab.GetComponent<EnemyStat>();
                 if (stat == null || stat.EnemyId != enemyTypeId) continue;
 
-                return Instantiate(entry.prefab, pos, rotation, GetEnemiesParent());
+                var enemy = Instantiate(entry.prefab, pos, rotation, GetEnemiesParent());
+                SetPatrolBounds(enemy, point.PatrolOrigin, point.patrolRadius);
+                return enemy;
             }
         }
         return null;
+    }
+
+    private void SetPatrolBounds(GameObject enemy, Vector3 origin, float patrolRadius)
+    {
+        var bounds = enemy.GetComponent<EnemyPatrolBounds>();
+        if (bounds == null) bounds = enemy.AddComponent<EnemyPatrolBounds>();
+        bounds.SetBounds(origin, patrolRadius);
     }
 
     private Transform GetEnemiesParent()
@@ -133,6 +147,18 @@ public class EnemySpawner : MonoBehaviour
         {
             if (point.centerPoint == null) continue;
 
+            // 모든 적이 patrolOffset만큼 옮겨진 기준점을 기준으로 정찰하므로, 벗어날 수 있는 최대 범위는 patrolRadius 그 자체 — 겹치지 않도록 먼저 채운다
+            Vector3 patrolOrigin = point.PatrolOrigin;
+            Gizmos.color = new Color(1f, 0.9f, 0.1f, 0.3f);
+            Gizmos.DrawSphere(patrolOrigin, point.patrolRadius);
+            Gizmos.color = new Color(1f, 0.9f, 0.1f, 1f);
+            Gizmos.DrawWireSphere(patrolOrigin, point.patrolRadius);
+
+            // centerPoint에서 정찰 기준점까지의 오프셋을 선으로 표시
+            if (point.patrolOffset != Vector3.zero)
+                Gizmos.DrawLine(point.centerPoint.position, patrolOrigin);
+
+            // 스폰 위치가 흩뿌려지는 범위
             Gizmos.color = new Color(1f, 0.3f, 0.3f, 0.3f);
             Gizmos.DrawSphere(point.centerPoint.position, point.radius);
 

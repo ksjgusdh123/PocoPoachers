@@ -14,11 +14,23 @@ public partial class PatrolRandomPositionAction : Action
     [SerializeReference] public BlackboardVariable<PlayerController> Target;
 
     private NavMeshAgent _agent;
+    private EnemyPatrolBounds _bounds;
+    private Vector3 _spawnPosition;
+    private bool _hasSpawnPosition;
 
     protected override Status OnStart()
     {
         if (_agent == null)
             _agent = Self.Value.GetComponent<NavMeshAgent>();
+        if (_bounds == null)
+            _bounds = Self.Value.GetComponent<EnemyPatrolBounds>();
+
+        // EnemySpawner가 지정한 스폰 기준점이 있으면 그것을, 없으면 첫 실행 시점의 위치를 기준점으로 사용
+        if (!_hasSpawnPosition)
+        {
+            _spawnPosition = _bounds != null && _bounds.IsSet ? _bounds.Origin : _agent.transform.position;
+            _hasSpawnPosition = true;
+        }
 
         _agent.SetDestination(GetRandomNavMeshPosition());
         return Status.Running;
@@ -46,10 +58,12 @@ public partial class PatrolRandomPositionAction : Action
 
     private Vector3 GetRandomNavMeshPosition()
     {
+        float radius = _bounds != null && _bounds.IsSet ? _bounds.Radius : Radius.Value;
+
         for (int i = 0; i < 10; i++)
         {
-            Vector3 randomDir = _agent.transform.position + UnityEngine.Random.insideUnitSphere * Radius.Value;
-            if (NavMesh.SamplePosition(randomDir, out NavMeshHit hit, Radius.Value, NavMesh.AllAreas))
+            Vector3 randomDir = _spawnPosition + UnityEngine.Random.insideUnitSphere * radius;
+            if (NavMesh.SamplePosition(randomDir, out NavMeshHit hit, radius, NavMesh.AllAreas))
                 return hit.position;
         }
         return _agent.transform.position;
