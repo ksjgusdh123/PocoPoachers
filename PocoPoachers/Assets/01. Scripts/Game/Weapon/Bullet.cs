@@ -87,7 +87,8 @@ public class Bullet : MonoBehaviour
 
             transform.position = hit.point;   // 실제로 멈추는 경우에만 충돌 지점에 붙임
 
-            if (_showHitMarker)
+            // showVFX는 IDamageable(적/샌드백)을 맞췄을 때만 true — 벽 등 다른 콜라이더는 히트마커 제외
+            if (_showHitMarker && showVFX)
                 CrosshairUI.Instance?.ShowHitMarker();
 
             if (IsWallHit(hit.collider))
