@@ -6,6 +6,12 @@ public class WeaponController : EquipableController
 {
     [SerializeField] private float _switchMidTime = 0.15f;
     [SerializeField] private CrosshairUI _crosshairUI;
+    [SerializeField] private LayerMask _aimHitMask;
+    [SerializeField] private float _maxAimDistance = 200f;
+    [SerializeField] private float _aimHeightSampleRadius = 0.25f; // 크로스헤어 광선 주변 이 반경 안에 hitMask 오브젝트가 있으면 그 Y좌표로 조준 높이를 보정
+
+    private static readonly string[] AimHitLayerNames =
+        { "Ground", "Terrain", "Wall", "Enemy", "Sandbag", "ItemBox", "Storage", "Ore" };
 
     public bool IsAiming    => _currentGun != null && _currentGun.IsAiming;
     public bool IsReloading => _currentGun != null && _currentGun.IsReloading;
@@ -66,6 +72,15 @@ public class WeaponController : EquipableController
 
         if (_inventory != null)
             _inventory.OnItemAdded += OnItemAddedToInventory;
+
+        EnsureAimHitMask();
+    }
+
+    // 새로 추가된 필드라 기존 씬/프리팹에는 0(Nothing)으로 직렬화돼 있음 — 수동 설정 안 됐으면 기본 레이어로 채움
+    private void EnsureAimHitMask()
+    {
+        if (_aimHitMask.value != 0) return;
+        _aimHitMask = LayerMask.GetMask(AimHitLayerNames);
     }
 
     private void Start()
@@ -211,7 +226,7 @@ public class WeaponController : EquipableController
             _cameraShakeHandler = _ => CameraShake.Instance?.Shake(
                 gun.Stat.CameraShakeIntensity, gun.Stat.CameraShakeDuration, gun.Muzzle.up);
             _currentGun.OnShoot += _cameraShakeHandler;
-            _currentGun.AimDirectionProvider = () => GetCrosshairGroundDirection(gun.Muzzle);
+            _currentGun.AimDirectionProvider = () => GetCrosshairAimDirection(gun.Muzzle);
 
             _reloadRequestedHandler = () => TryReloadFromInventory();
             _reloadCompleteHandler = consumed => ConsumeAmmoFromInventory(consumed);
@@ -369,18 +384,25 @@ public class WeaponController : EquipableController
     private float GetAimTime() =>
         _currentGun != null ? _currentGun.Stat.AimTime : 0.2f;
 
-    private Vector3 GetCrosshairGroundDirection(Transform muzzle)
+    // 크로스헤어가 실제로 가리키는 3D 지점(적/지형)을 향한 방향을 계산한다.
+    // 총구 높이의 평평한 가상 평면과 교차시키던 이전 방식은 터레인 높낮이를 무시해서
+    // 언덕 위 적을 조준해도 총알이 총구 높이로 수평 발사되는 문제가 있었다.
+    private Vector3 GetCrosshairAimDirection(Transform muzzle)
     {
         if (CrosshairUI.Instance == null || Camera.main == null)
             return muzzle.up;
 
         Ray ray = Camera.main.ScreenPointToRay(CrosshairUI.Instance.ScreenPosition);
-        Plane plane = new Plane(Vector3.up, new Vector3(0f, muzzle.position.y, 0f));
 
-        if (!plane.Raycast(ray, out float distance))
-            return muzzle.up;
+        // 광선 주변 반경 안에 hitMask 오브젝트가 있으면 그 오브젝트의 Y좌표를 조준 높이로 쓴다.
+        // X/Z는 건드리지 않고(스냅 안 함) 크로스헤어 광선 그대로 유지 — 높이만 보정하는 것이 목적.
+        float planeHeight = muzzle.position.y;
+        if (Physics.SphereCast(ray, _aimHeightSampleRadius, out RaycastHit hit, _maxAimDistance, _aimHitMask, QueryTriggerInteraction.Ignore))
+            planeHeight = hit.point.y;
 
-        Vector3 targetPoint = ray.GetPoint(distance);
+        Plane plane = new Plane(Vector3.up, new Vector3(0f, planeHeight, 0f));
+        Vector3 targetPoint = plane.Raycast(ray, out float distance) ? ray.GetPoint(distance) : ray.GetPoint(_maxAimDistance);
+
         Vector3 dir = targetPoint - muzzle.position;
         return dir.sqrMagnitude < 0.001f ? muzzle.up : dir.normalized;
     }
