@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
@@ -9,28 +9,24 @@ public class ItemQuantityRange
     public int Max = 1;
 }
 
+[System.Serializable]
+public class BoxSpawnPoint
+{
+    public Transform point;
+    public GameObject boxPrefab; // ItemBox + BoxLootTable가 붙은 프리팹. 인스턴스화하지 않고 BoxLootTable 설정값만 읽어온다.
+}
+
 // 호스트에서 호출하기
 
 public class ItemSpawner : MonoBehaviour
 {
-    [Header("Simple Spawn Area")]
-    [SerializeField] private Vector3 _spawnAreaSize = new Vector3(10f, 0f, 10f); // 가로, 높이, 세로 범위
-    [SerializeField] private int _totalBoxCount = 5;
+    [Header("Box Spawn Points")]
+    [SerializeField] private BoxSpawnPoint[] _boxSpawnPoints;
 
     [Header("Ground Placement")]
     [SerializeField] private LayerMask _groundLayer;
 
-    [Header("Random Settings")]
-    [SerializeField, Range(0f, 1f)] private float _weaponChance = 0.7f;
-    [SerializeField, Range(0f, 1f)] private float _armorChance = 0.3f;
-    [SerializeField] private int _minItemPerBox = 1;
-    [SerializeField] private int _maxItemPerBox = 3;
-    [SerializeField] private List<ItemQuantityRange> _quantityRanges = new List<ItemQuantityRange>();
-    [SerializeField] private int _defaultMinQuantity = 1;
-    [SerializeField] private int _defaultMaxQuantity = 1;
-
-    private Dictionary<ItemType, List<int>> _cachedItemIds = new Dictionary<ItemType, List<int>>();
-    private Dictionary<ItemType, (int min, int max)> _quantityMap = new Dictionary<ItemType, (int, int)>();
+    static Dictionary<ItemType, List<int>> _itemIdsByType;
 
     int _nextUid = 1000;
     static int _nextItemUid = 1;
@@ -61,121 +57,73 @@ public class ItemSpawner : MonoBehaviour
     private static bool HasDurability(ItemType type) =>
         type == ItemType.Weapon || type == ItemType.Helmet || type == ItemType.Armor;
 
-    public List<int> GetIds(ItemType type)
+    // 타입별 아이템 id 목록. ItemTable 기반이라 스포너 인스턴스와 무관하게 공유되는 정적 캐시.
+    public static List<int> GetItemIds(ItemType type)
     {
-        if (_cachedItemIds.Count == 0)
-            CacheItemIds();
-
-        return _cachedItemIds.TryGetValue(type, out var ids) ? ids : new List<int>();
+        if (_itemIdsByType == null) BuildItemIdCache();
+        return _itemIdsByType.TryGetValue(type, out var ids) ? ids : new List<int>();
     }
 
-    void Start()
+    static void BuildItemIdCache()
     {
-        CacheItemIds();
-
-        if (RoomManager.IsHost)
-            SpawnInitBoxes();
-    }
-
-    void CacheItemIds()
-    {
-        if (_cachedItemIds.Count > 0) return;
+        _itemIdsByType = new Dictionary<ItemType, List<int>>();
 
         var table = ItemTable.Instance;
         if (table == null) return;
+
         foreach (ItemType type in System.Enum.GetValues(typeof(ItemType)))
-            _cachedItemIds[type] = new List<int>();
+            _itemIdsByType[type] = new List<int>();
         foreach (var item in table.All)
         {
-            if (_cachedItemIds.ContainsKey(item.Type))
-                _cachedItemIds[item.Type].Add(item.Id);
+            if (_itemIdsByType.ContainsKey(item.Type))
+                _itemIdsByType[item.Type].Add(item.Id);
         }
-
-        foreach (var range in _quantityRanges)
-            _quantityMap[range.Type] = (range.Min, range.Max);
     }
 
-    (int min, int max) GetQuantityRange(ItemType type)
+    // 하위 호환: EnemySpawner 등에서 인스턴스로 접근하던 코드가 그대로 동작하도록 유지
+    public List<int> GetIds(ItemType type) => GetItemIds(type);
+
+    void Start()
     {
-        if (_quantityMap.TryGetValue(type, out var range)) return range;
-        return (_defaultMinQuantity, _defaultMaxQuantity);
+        if (RoomManager.IsHost)
+            SpawnInitBoxes();
     }
 
     public void SpawnInitBoxes()
     {
         if (!RoomManager.IsHost) return;
+        if (_boxSpawnPoints == null) return;
 
         var omgr = ObjectManager.Instance;
-        Vector3 origin = transform.position; // 스포너의 현재 위치를 중심점으로 사용
 
-        for (int i = 0; i < _totalBoxCount; i++)
+        foreach (var sp in _boxSpawnPoints)
         {
+            if (sp.point == null || sp.boxPrefab == null) continue;
+
+            var lootTable = sp.boxPrefab.GetComponent<BoxLootTable>();
+            if (lootTable == null) continue;
+
             int uid = _nextUid++;
+            lootTable.Roll(out var itemIds, out var itemCounts, out var itemUids);
 
-            // 1. 인스펙터 설정값 기반 랜덤 좌표 계산
-            float rx = Random.Range(-_spawnAreaSize.x * 0.5f, _spawnAreaSize.x * 0.5f);
-            float rz = Random.Range(-_spawnAreaSize.z * 0.5f, _spawnAreaSize.z * 0.5f);
-            Vector3 randomPoint = origin + new Vector3(rx, _spawnAreaSize.y, rz);
-
-            // 2. 바닥 체크 (SpawnUtility 활용)
-            Vector3 randomPos = GetGroundPosition(randomPoint, _groundLayer);
-            float randomRot = Random.Range(0f, 360f);
-
-            // 아이템 구성
-            int itemCount = Random.Range(_minItemPerBox, _maxItemPerBox + 1);
-            List<int> randomItems = new List<int>();
-            List<int> randomCounts = new List<int>();
-            List<int> randomUids = new List<int>();
-            for (int j = 0; j < itemCount; j++)
-            {
-                var (pickedId, pickedType) = GetRandomItemId();
-                if (pickedId == -1) continue;
-                var (min, max) = GetQuantityRange(pickedType);
-                randomItems.Add(pickedId);
-                randomCounts.Add(Random.Range(min, max + 1));
-                randomUids.Add(AssignItemUid(pickedId));
-            }
-
-            // temp 601 - bullet 700 : bag
-            randomItems.Add(601);
-            randomCounts.Add(30);
-            randomUids.Add(AssignItemUid(601));
-            randomItems.Add(700);
-            randomCounts.Add(1);
-            randomUids.Add(AssignItemUid(700));
+            Vector3 pos = GetGroundPosition(sp.point.position, _groundLayer);
+            float rot = sp.point.eulerAngles.y;
 
             var data = new H_ItemSpawnT
             {
                 Uid = uid,
                 TypeId = BOX_TYPE_ID,
-                Pos = new Vec3T { X = randomPos.x, Y = randomPos.y, Z = randomPos.z },
-                Rotation = randomRot,
-                ItemIds = randomItems,
-                ItemCount = randomCounts,
-                ItemUids = randomUids,
+                Pos = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+                Rotation = rot,
+                ItemIds = itemIds,
+                ItemCount = itemCounts,
+                ItemUids = itemUids,
             };
 
             omgr?.RegisterSpawnedBox(data);
-            omgr?.SpawnItemBox(uid, BOX_TYPE_ID, randomPos, randomRot)
-                ?.Initialize(randomItems.ToArray(), randomCounts.ToArray(), randomUids.ToArray());
+            omgr?.SpawnItemBox(uid, BOX_TYPE_ID, pos, rot)
+                ?.Initialize(itemIds.ToArray(), itemCounts.ToArray(), itemUids.ToArray());
         }
-
-     
-    }
-
-    (int id, ItemType type) GetRandomItemId()
-    {
-        float value = Random.value;
-        var helmets = _cachedItemIds[ItemType.Helmet];
-        var weapons = _cachedItemIds[ItemType.Weapon];
-        var consumables = _cachedItemIds[ItemType.Consumable];
-
-        if (value < _armorChance && helmets.Count > 0)
-            return (helmets[Random.Range(0, helmets.Count)], ItemType.Helmet);
-        else if (value < _weaponChance && weapons.Count > 0)
-            return (weapons[Random.Range(0, weapons.Count)], ItemType.Weapon);
-
-        return consumables.Count > 0 ? (consumables[Random.Range(0, consumables.Count)], ItemType.Consumable) : (-1, ItemType.None);
     }
 
     public void ResetSpawnState()
@@ -232,12 +180,17 @@ public class ItemSpawner : MonoBehaviour
     }
 
     // --- 에디터 시각화 (Gizmos) ---
-    private void OnDrawGizmosSelected() // 선택했을 때만 영역이 보이도록 변경
+    private void OnDrawGizmosSelected()
     {
-        Gizmos.color = new Color(1f, 1f, 0f, 0.3f);
-        Gizmos.DrawCube(transform.position, new Vector3(_spawnAreaSize.x, 1f, _spawnAreaSize.z));
+        if (_boxSpawnPoints == null) return;
 
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(transform.position, new Vector3(_spawnAreaSize.x, 1f, _spawnAreaSize.z));
+        foreach (var sp in _boxSpawnPoints)
+        {
+            if (sp.point == null) continue;
+
+            Gizmos.color = new Color(1f, 1f, 0f, 0.6f);
+            Gizmos.DrawSphere(sp.point.position, 0.3f);
+            Gizmos.DrawWireCube(sp.point.position, Vector3.one);
+        }
     }
 }
