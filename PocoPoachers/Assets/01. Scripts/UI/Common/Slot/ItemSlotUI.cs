@@ -12,6 +12,7 @@ public class ItemSlotUI : ItemSlotUIBase
     public ItemData SlotItemData => _settedSlot?.ItemData;
     public int SavedAmountItem => _settedSlot?.Amount ?? 0;
     public int SlotUid => _settedSlot?.Uid ?? 0;
+    public ItemSlot Slot => _settedSlot;
 
     private ItemSlot _settedSlot;
 
