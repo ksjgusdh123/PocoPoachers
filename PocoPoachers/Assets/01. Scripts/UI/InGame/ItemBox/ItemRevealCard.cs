@@ -15,6 +15,7 @@ public class ItemRevealCard : MonoBehaviour
     [SerializeField] Image _itemImage;
 
     Tween _revealTween;   // 진행 중인 뒤집기 페이드 (파괴 시 Kill 대상)
+    SlotHoverHighlightUI _hoverHighlight;
 
     public bool isFlip { get; private set; } = true;
 
@@ -24,6 +25,7 @@ public class ItemRevealCard : MonoBehaviour
         originFrameColor = _backFrameImage.color;
 
         _backFaceSprite ??= Resources.Load<Sprite>(BackFaceSpritePath);
+        _hoverHighlight = GetComponent<SlotHoverHighlightUI>();
     }
 
     public void CheckSlotState(BoxItemSlot slot)
@@ -58,6 +60,7 @@ public class ItemRevealCard : MonoBehaviour
                 _backFrameImage.color = originFrameColor;
                 _itemImage.gameObject.SetActive(true);
                 if (_currentSlot != null) _currentSlot.isOpen = true;
+                _hoverHighlight?.NotifyRevealed();
             });
     }
 

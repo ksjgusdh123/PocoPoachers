@@ -20,17 +20,61 @@ public class SlotHoverHighlightUI : MonoBehaviour, IPointerEnterHandler, IPointe
     private Vector3 _baseScale = Vector3.one;
     private Color _baseColor = Color.white;
     private bool _cached;
+    private bool _isPointerOver;
+    private ItemSlotUI _slotUI;
 
     private UITheme Theme => _theme != null ? _theme : UITheme.Default;
+
+    private void Awake()
+    {
+        _slotUI = GetComponent<ItemSlotUI>();
+    }
 
     private void OnDisable()
     {
         if (_rect != null) DOTween.Kill(_rect);
         if (_border != null) DOTween.Kill(_border);
         Restore();
+        _isPointerOver = false;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
+    {
+        _isPointerOver = true;
+        if (IsRevealBlocked()) return;
+        PlayEnter();
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        _isPointerOver = false;
+        Cache();
+        var theme = Theme;
+        float duration = theme != null ? theme.ButtonMotionDuration : 0.08f;
+
+        if (_border != null)
+        {
+            DOTween.Kill(_border);
+            _border.DOColor(_baseColor, duration).SetUpdate(true);
+        }
+
+        if (_rect != null)
+        {
+            DOTween.Kill(_rect);
+            _rect.DOScale(_baseScale, duration).SetEase(Ease.OutQuad).SetUpdate(true);
+        }
+    }
+
+    // 박스 카드가 리빌되는 순간 호출된다 — 뒤집히기 전부터 마우스가 올라가 있었다면 그제서야 하이라이트를 켠다
+    public void NotifyRevealed()
+    {
+        if (_isPointerOver) PlayEnter();
+    }
+
+    private bool IsRevealBlocked() =>
+        _slotUI != null && _slotUI.Slot is BoxItemSlot boxSlot && !boxSlot.isOpen && !boxSlot.skipReveal;
+
+    private void PlayEnter()
     {
         Cache();
         var theme = Theme;
@@ -47,25 +91,6 @@ public class SlotHoverHighlightUI : MonoBehaviour, IPointerEnterHandler, IPointe
             DOTween.Kill(_rect);
             _rect.DOScale(_baseScale * theme.SlotHoverScale, theme.ButtonMotionDuration)
                  .SetEase(Ease.OutQuad).SetUpdate(true);
-        }
-    }
-
-    public void OnPointerExit(PointerEventData eventData)
-    {
-        Cache();
-        var theme = Theme;
-        float duration = theme != null ? theme.ButtonMotionDuration : 0.08f;
-
-        if (_border != null)
-        {
-            DOTween.Kill(_border);
-            _border.DOColor(_baseColor, duration).SetUpdate(true);
-        }
-
-        if (_rect != null)
-        {
-            DOTween.Kill(_rect);
-            _rect.DOScale(_baseScale, duration).SetEase(Ease.OutQuad).SetUpdate(true);
         }
     }
 
