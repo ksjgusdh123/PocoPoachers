@@ -55,13 +55,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1002951609091153779}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.002151521, y: -0.005125135, z: -0.30774558, w: 0.95145243}
-  m_LocalPosition: {x: -0.105, y: 0.18, z: -0.004}
+  m_LocalRotation: {x: -0.06826588, y: 0.114411116, z: -0.450819, w: 0.8826166}
+  m_LocalPosition: {x: 0.13, y: 0.144, z: -0.068}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 8120961701950025388}
-  m_LocalEulerAnglesHint: {x: 0.054, y: -0.635, z: -35.848}
+  m_LocalEulerAnglesHint: {x: -0.994, y: 15.281, z: -54.247}
 --- !u!1 &1500275326456394333
 GameObject:
   m_ObjectHideFlags: 0
@@ -155,7 +155,7 @@ CharacterController:
   m_Enabled: 1
   serializedVersion: 3
   m_Height: 1
-  m_Radius: 0.5
+  m_Radius: 0.71
   m_SlopeLimit: 45
   m_StepOffset: 0.3
   m_SkinWidth: 0.08
@@ -335,6 +335,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponController
   _switchMidTime: 0.15
   _crosshairUI: {fileID: 0}
+  _aimHitMask:
+    serializedVersion: 2
+    m_Bits: 2048
+  _maxAimDistance: 200
+  _aimHeightSampleRadius: 1
 --- !u!114 &3840131265392853747
 MonoBehaviour:
   m_ObjectHideFlags: 0
