@@ -87,6 +87,11 @@ public class IdleFloatMotion : MonoBehaviour
             if (sr != null) launch.Join(sr.DOFade(0f, duration).SetEase(Ease.InQuad));
         }
 
+        // 완전히 페이드아웃된 시점에 오브젝트를 꺼서, 자식으로 붙은 화염 등도 함께 안 그려지게 한다.
+        // OnComplete 대신 AppendCallback을 쓰는 이유: 호출부(LoadingSceneController)가 이 Tween에
+        // 자기 OnComplete를 따로 거는데, OnComplete는 마지막 호출로 덮어써지므로 여기서 겹치면 안 된다.
+        launch.AppendCallback(() => gameObject.SetActive(false));
+
         return launch;
     }
 }

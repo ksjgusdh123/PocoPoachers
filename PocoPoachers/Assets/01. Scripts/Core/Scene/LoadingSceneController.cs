@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 public class LoadingSceneController : MonoBehaviour
 {
     [SerializeField] private LoadingScreenUI _loadingScreenUI;
-    [SerializeField] private float _minDisplayDuration = 3f; // 발사 연출까지 포함해서, 실제 로딩이 더 빨리 끝나도 이 시간만큼은 로딩씬을 유지한다
+    [SerializeField] private float _minDisplayDuration = 3f; // 실제 로딩이 더 빨리 끝나도 이 시간만큼은 로딩씬을 유지한다 (발사 연출 시간은 별도로 더 붙음)
     [SerializeField] private IdleFloatMotion _rocket; // 비워두면 발사 연출 없이 바로 전환
     [SerializeField] private float _launchDuration = 0.5f; // PlayLaunch()에 넘기는 값과 맞춰야 함
 
@@ -33,9 +33,8 @@ public class LoadingSceneController : MonoBehaviour
 
         _loadingScreenUI.Report(1f);
 
-        // 발사 연출 시간을 뺀 나머지를 최소 노출 시간으로 채운다 — 발사 연출이 3초 안에 포함되도록
-        float launchDuration = _rocket != null ? _launchDuration : 0f;
-        float remaining = _minDisplayDuration - launchDuration - (Time.unscaledTime - startTime);
+        // 로딩 완료든 최소 노출 시간이든, 더 늦게 끝나는 쪽까지 기다린다 (발사 연출은 그 다음)
+        float remaining = _minDisplayDuration - (Time.unscaledTime - startTime);
         if (remaining > 0f)
             yield return new WaitForSecondsRealtime(remaining);
 
