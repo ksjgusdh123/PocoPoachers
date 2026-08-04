@@ -9,6 +9,8 @@ public class LoadingSceneController : MonoBehaviour
     [SerializeField] private float _minDisplayDuration = 3f; // 실제 로딩이 더 빨리 끝나도 이 시간만큼은 로딩씬을 유지한다 (발사 연출 시간은 별도로 더 붙음)
     [SerializeField] private IdleFloatMotion _rocket; // 비워두면 발사 연출 없이 바로 전환
     [SerializeField] private float _launchDuration = 0.5f; // PlayLaunch()에 넘기는 값과 맞춰야 함
+    [SerializeField] private PassingMeteorSpawner _meteorSpawner; // 비워두면 방향 반전 안 함
+    [SerializeField] private ImageScrollUI _scrollingBackground;  // 비워두면 방향 반전 안 함
 
     private void Start()
     {
@@ -18,6 +20,13 @@ public class LoadingSceneController : MonoBehaviour
     private IEnumerator LoadTargetScene()
     {
         string targetScene = SceneLoader.Instance.TargetSceneName;
+
+        // Shelter로 돌아가는 길이면 로켓/운석/배경 모두 반대 방향(귀환)을, 아니면 원래 방향(출발)을 향하게 한다
+        bool reversed = SceneName.IsShelter(targetScene);
+        if (_rocket != null) _rocket.SetReversed(reversed);
+        if (_meteorSpawner != null) _meteorSpawner.SetReversed(reversed);
+        if (_scrollingBackground != null) _scrollingBackground.SetReversed(reversed);
+
         _loadingScreenUI.Begin();
 
         float startTime = Time.unscaledTime;

@@ -15,7 +15,8 @@ public class IdleFloatMotion : MonoBehaviour
     private RectTransform _rect;
     private Vector2 _baseAnchoredPos;
     private Vector3 _baseLocalPos;
-    private Vector3 _baseLocalEuler; // 로켓처럼 이미 기본 기울기가 잡혀 있는 오브젝트도 그 각도를 기준으로 흔들리게 함
+    private Vector3 _originalLocalEuler; // Awake 시점의 원래 각도 (SetReversed 기준점, 절대 안 바뀜)
+    private Vector3 _baseLocalEuler;     // 로켓처럼 이미 기본 기울기가 잡혀 있는 오브젝트도 그 각도를 기준으로 흔들리게 함
     private Sequence _sequence;
 
     private void Awake()
@@ -23,7 +24,18 @@ public class IdleFloatMotion : MonoBehaviour
         _rect = transform as RectTransform;
         if (_rect != null) _baseAnchoredPos = _rect.anchoredPosition;
         else _baseLocalPos = transform.localPosition;
-        _baseLocalEuler = transform.localEulerAngles;
+        _originalLocalEuler = transform.localEulerAngles;
+        _baseLocalEuler = _originalLocalEuler;
+    }
+
+    // 로딩 방향(예: Shelter로 돌아올 때 vs 나갈 때)에 따라 로켓이 바라보는 방향을 180도 뒤집는다.
+    // 뒤집은 각도가 이후 흔들림/발사 연출의 새 기준이 된다.
+    public void SetReversed(bool reversed)
+    {
+        _baseLocalEuler = _originalLocalEuler + (reversed ? new Vector3(0f, 0f, 180f) : Vector3.zero);
+        transform.localEulerAngles = _baseLocalEuler;
+
+        if (isActiveAndEnabled) Play();
     }
 
     private void OnEnable() => Play();

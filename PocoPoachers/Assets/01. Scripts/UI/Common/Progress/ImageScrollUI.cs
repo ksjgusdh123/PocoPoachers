@@ -9,16 +9,20 @@ public class ImageScrollUI : MonoBehaviour
     [SerializeField] private Vector2 _scrollSpeed = new Vector2(0.05f, 0f); // 초당 UV 이동량 (0~1 기준, 부호로 방향 결정)
 
     private RawImage _rawImage;
+    private float _directionSign = 1f; // Awake 타이밍과 무관하게 동작하도록, 원본 _scrollSpeed는 건드리지 않고 부호만 별도로 곱한다
 
     private void Awake()
     {
         _rawImage = GetComponent<RawImage>();
     }
 
+    // 로딩 방향(예: Shelter로 돌아올 때 vs 나갈 때)에 따라 배경이 흐르는 방향을 반대로 뒤집는다
+    public void SetReversed(bool reversed) => _directionSign = reversed ? -1f : 1f;
+
     private void Update()
     {
         Rect uv = _rawImage.uvRect;
-        uv.position += _scrollSpeed * Time.unscaledDeltaTime;
+        uv.position += _scrollSpeed * _directionSign * Time.unscaledDeltaTime;
         _rawImage.uvRect = uv;
     }
 }
