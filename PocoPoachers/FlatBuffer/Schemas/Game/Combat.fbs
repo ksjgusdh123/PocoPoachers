@@ -72,3 +72,14 @@ table H_Rescue
     state:      byte;
     duration:   float;
 }
+
+// 완전 사망 시 호송 빔 연출 트리거 — 게스트가 보내면 호스트가 전체 게스트에 전파한다.
+// 죽은 플레이어 id는 호스트가 송신자로부터 직접 판별하므로 게스트가 실을 필요가 없다.
+table G_RescueBeamPlay
+{
+}
+
+table H_RescueBeamPlay
+{
+    player_id: int;
+}

@@ -369,11 +369,13 @@ public class PlayerController : MonoBehaviour
     }
 
     // 위에서 포드가 내려와 빔으로 플레이어를 호송하는 연출. 끝나면 관전 모드로 전환한다.
-    // TODO: 지금은 로컬 전용 연출 — 다른 플레이어에게도 보이게 하려면 RoomSync로 재생 트리거를 브로드캐스트해야 함.
+    // 로컬 재생과 별개로 RoomSync를 통해 팀원 화면에도 같은 연출이 재생되도록 알린다.
     private void PlayRescueBeam()
     {
         var effect = new GameObject("RescueBeamEffect").AddComponent<RescueBeamEffect>();
         effect.Play(transform, BeginSpectate);
+
+        RoomSync.RescueBeamPlay();
     }
 
     // 구조되어 부활하면 기절 게이지를 중단하고 상태를 초기화한다 (다음 사망을 다시 처리할 수 있도록)
