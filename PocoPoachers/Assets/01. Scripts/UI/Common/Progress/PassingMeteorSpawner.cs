@@ -31,16 +31,11 @@ public class PassingMeteorSpawner : MonoBehaviour
     [SerializeField] private bool _alignRotationToDirection = true;
     [SerializeField] private float _fadeInOutRatio = 0.15f; // 진행률 앞/뒤 이 비율 구간에서 알파 페이드
 
-    private Vector2 _originalDirection;
+    private float _directionSign = 1f; // Awake 타이밍과 무관하게 동작하도록, 원본 _direction은 건드리지 않고 부호만 별도로 곱한다
     private Coroutine _loopCoroutine;
 
-    private void Awake()
-    {
-        _originalDirection = _direction;
-    }
-
     // 로딩 방향(예: Shelter로 돌아올 때 vs 나갈 때)에 따라 운석이 스치는 방향을 반대로 뒤집는다
-    public void SetReversed(bool reversed) => _direction = reversed ? -_originalDirection : _originalDirection;
+    public void SetReversed(bool reversed) => _directionSign = reversed ? -1f : 1f;
 
     private void OnEnable() => _loopCoroutine = StartCoroutine(SpawnLoop());
 
@@ -63,7 +58,7 @@ public class PassingMeteorSpawner : MonoBehaviour
     {
         if (_spawnArea == null || _meteorPrefab == null) return;
 
-        Vector2 dir = _direction.normalized;
+        Vector2 dir = (_direction * _directionSign).normalized;
         Vector2 perpendicular = new Vector2(-dir.y, dir.x);
 
         Rect rect = _spawnArea.rect;
