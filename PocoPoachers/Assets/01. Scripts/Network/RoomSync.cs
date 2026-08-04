@@ -105,6 +105,24 @@ public static class RoomSync
             }, G_Rescue.Pack, PacketType.G_Rescue);
     }
 
+    // 완전 사망 시 호송 빔 연출을 팀원에게도 재생시킨다 — 로컬 재생은 호출부(PlayerController)가 별도로 처리한다
+    public static void RescueBeamPlay()
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            BroadcastRescueBeamPlay(MyId);
+        else
+            PacketBuilder.SendReliableToHost(new G_RescueBeamPlayT(), G_RescueBeamPlay.Pack, PacketType.G_RescueBeamPlay);
+    }
+
+    // 호스트가 특정 플레이어의 호송 빔 연출을 전체 게스트에 전파 (게스트 요청 중계 또는 호스트 자신의 사망)
+    public static void BroadcastRescueBeamPlay(int playerId)
+    {
+        if (!RoomManager.HasGuests) return;
+        PacketBuilder.BroadcastReliableToGuests(new H_RescueBeamPlayT { PlayerId = playerId }, H_RescueBeamPlay.Pack, PacketType.H_RescueBeamPlay);
+    }
+
     // 무기 해제 시점의 탄약 저장 — 호스트는 직접 저장하고, 게스트는 호스트에게 요청한다
     public static void GunAmmoSave(int gunUid, int currentAmmo, int maxMagazine)
     {

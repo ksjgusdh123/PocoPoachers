@@ -58,6 +58,8 @@ public enum PacketType : byte
   G_EnhanceItem = 51,
   G_RequestGunState = 52,
   G_DropItem = 53,
+  G_RescueBeamPlay = 54,
+  H_RescueBeamPlay = 55,
 };
 
 public class PacketTypeUnion {
@@ -176,6 +178,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_RequestGunState(G_RequestGunStateT _g_requestgunstate) { return new PacketTypeUnion{ Type = PacketType.G_RequestGunState, Value = _g_requestgunstate }; }
   public G_DropItemT AsG_DropItem() { return this.As<G_DropItemT>(); }
   public static PacketTypeUnion FromG_DropItem(G_DropItemT _g_dropitem) { return new PacketTypeUnion{ Type = PacketType.G_DropItem, Value = _g_dropitem }; }
+  public G_RescueBeamPlayT AsG_RescueBeamPlay() { return this.As<G_RescueBeamPlayT>(); }
+  public static PacketTypeUnion FromG_RescueBeamPlay(G_RescueBeamPlayT _g_rescuebeamplay) { return new PacketTypeUnion{ Type = PacketType.G_RescueBeamPlay, Value = _g_rescuebeamplay }; }
+  public H_RescueBeamPlayT AsH_RescueBeamPlay() { return this.As<H_RescueBeamPlayT>(); }
+  public static PacketTypeUnion FromH_RescueBeamPlay(H_RescueBeamPlayT _h_rescuebeamplay) { return new PacketTypeUnion{ Type = PacketType.H_RescueBeamPlay, Value = _h_rescuebeamplay }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -233,6 +239,8 @@ public class PacketTypeUnion {
       case PacketType.G_EnhanceItem: return G_EnhanceItem.Pack(builder, _o.AsG_EnhanceItem()).Value;
       case PacketType.G_RequestGunState: return G_RequestGunState.Pack(builder, _o.AsG_RequestGunState()).Value;
       case PacketType.G_DropItem: return G_DropItem.Pack(builder, _o.AsG_DropItem()).Value;
+      case PacketType.G_RescueBeamPlay: return G_RescueBeamPlay.Pack(builder, _o.AsG_RescueBeamPlay()).Value;
+      case PacketType.H_RescueBeamPlay: return H_RescueBeamPlay.Pack(builder, _o.AsH_RescueBeamPlay()).Value;
     }
   }
 }
@@ -404,6 +412,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.G_DropItem:
         result = G_DropItemVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_RescueBeamPlay:
+        result = G_RescueBeamPlayVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_RescueBeamPlay:
+        result = H_RescueBeamPlayVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

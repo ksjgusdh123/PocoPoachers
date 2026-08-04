@@ -25,6 +25,7 @@ public enum UIType
     MainGameUI,
     Generator,
     InventoryContextMenu,
+    Dialogue,
 }
 
 public class UIManager : Singleton<UIManager>

@@ -35,6 +35,7 @@ public class PlayerController : MonoBehaviour
     public GameObject GetCraftingTableUI => CraftingTableUI;
     public GameObject GetGeneratorUI => GeneratorUI;
     public InventoryUI PlayerBagInventoryUI => _playerBagInventoryUI;
+    public PlayerInputHandler InputHandler => _inputHandler;
 
     private Inventory _inventory;
     private InventoryUI _playerBagInventoryUI;
@@ -365,7 +366,17 @@ public class PlayerController : MonoBehaviour
         foreach (var equip in GetComponents<EquipableController>())
             equip.UnequipAll();
 
-        BeginSpectate();
+        PlayRescueBeam();
+    }
+
+    // 위에서 포드가 내려와 빔으로 플레이어를 호송하는 연출. 끝나면 관전 모드로 전환한다.
+    // 로컬 재생과 별개로 RoomSync를 통해 팀원 화면에도 같은 연출이 재생되도록 알린다.
+    private void PlayRescueBeam()
+    {
+        var effect = new GameObject("RescueBeamEffect").AddComponent<RescueBeamEffect>();
+        effect.Play(transform, BeginSpectate);
+
+        RoomSync.RescueBeamPlay();
     }
 
     // 구조되어 부활하면 기절 게이지를 중단하고 상태를 초기화한다 (다음 사망을 다시 처리할 수 있도록)
@@ -538,8 +549,12 @@ public class PlayerController : MonoBehaviour
         if (nearest == null) return;
         if (!nearest.TryGetComponent<IInteractable>(out var interactable)) return;
 
-        interactable.OnInteract(this);
+        // OnInteract보다 먼저 대입해야, OnInteract 내부에서 EndInteraction(this)를 호출해
+        // 즉시 상호작용을 끝내려는 경우(예: NpcDialogueInteractable)가 제대로 동작한다.
+        // 순서가 반대면 EndInteraction의 "지금 추적 중인 게 이거 맞나" 가드에 걸려 무시되고,
+        // 바로 다음 줄에서 다시 덮어써져 버린다.
         _currentInteractable = interactable;
+        interactable.OnInteract(this);
     }
 
     /// <summary>

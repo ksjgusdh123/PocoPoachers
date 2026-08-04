@@ -72,6 +72,8 @@ public struct FlatPacket : IFlatbufferObject
   public G_EnhanceItem TypeAsG_EnhanceItem() { return Type<G_EnhanceItem>().Value; }
   public G_RequestGunState TypeAsG_RequestGunState() { return Type<G_RequestGunState>().Value; }
   public G_DropItem TypeAsG_DropItem() { return Type<G_DropItem>().Value; }
+  public G_RescueBeamPlay TypeAsG_RescueBeamPlay() { return Type<G_RescueBeamPlay>().Value; }
+  public H_RescueBeamPlay TypeAsH_RescueBeamPlay() { return Type<H_RescueBeamPlay>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -259,6 +261,12 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.G_DropItem:
         _o.Type.Value = this.Type<G_DropItem>().HasValue ? this.Type<G_DropItem>().Value.UnPack() : null;
+        break;
+      case PacketType.G_RescueBeamPlay:
+        _o.Type.Value = this.Type<G_RescueBeamPlay>().HasValue ? this.Type<G_RescueBeamPlay>().Value.UnPack() : null;
+        break;
+      case PacketType.H_RescueBeamPlay:
+        _o.Type.Value = this.Type<H_RescueBeamPlay>().HasValue ? this.Type<H_RescueBeamPlay>().Value.UnPack() : null;
         break;
     }
   }

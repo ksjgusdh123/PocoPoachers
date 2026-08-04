@@ -7,13 +7,21 @@ public class StaminaWorldUI : MonoBehaviour
     [SerializeField] private Vector3 _offset = new Vector3(0f, 1.5f, 0f);
 
     private Transform _playerTransform;
+    private PlayerStat _stat;
 
     public void Setup(PlayerStat stat, Transform playerTransform)
     {
+        _stat = stat;
         _playerTransform = playerTransform;
 
         stat.OnStaminaChanged += Refresh;
         Refresh(stat.CurrentStamina, stat.MaxStamina);
+    }
+
+    private void OnDestroy()
+    {
+        if (_stat != null)
+            _stat.OnStaminaChanged -= Refresh;
     }
 
     private void LateUpdate()
