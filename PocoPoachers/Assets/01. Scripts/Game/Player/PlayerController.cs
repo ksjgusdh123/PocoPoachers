@@ -35,6 +35,7 @@ public class PlayerController : MonoBehaviour
     public GameObject GetCraftingTableUI => CraftingTableUI;
     public GameObject GetGeneratorUI => GeneratorUI;
     public InventoryUI PlayerBagInventoryUI => _playerBagInventoryUI;
+    public PlayerInputHandler InputHandler => _inputHandler;
 
     private Inventory _inventory;
     private InventoryUI _playerBagInventoryUI;
@@ -548,8 +549,12 @@ public class PlayerController : MonoBehaviour
         if (nearest == null) return;
         if (!nearest.TryGetComponent<IInteractable>(out var interactable)) return;
 
-        interactable.OnInteract(this);
+        // OnInteract보다 먼저 대입해야, OnInteract 내부에서 EndInteraction(this)를 호출해
+        // 즉시 상호작용을 끝내려는 경우(예: NpcDialogueInteractable)가 제대로 동작한다.
+        // 순서가 반대면 EndInteraction의 "지금 추적 중인 게 이거 맞나" 가드에 걸려 무시되고,
+        // 바로 다음 줄에서 다시 덮어써져 버린다.
         _currentInteractable = interactable;
+        interactable.OnInteract(this);
     }
 
     /// <summary>

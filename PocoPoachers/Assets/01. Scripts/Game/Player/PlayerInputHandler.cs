@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -9,7 +10,8 @@ public enum PlayerInputMapType
     Game,
     Inventory,
     ItemBox,
-    Shelter
+    Shelter,
+    Dialogue
 }
 
 [RequireComponent(typeof(PlayerInput))]
@@ -24,6 +26,7 @@ public class PlayerInputHandler : MonoBehaviour
 
     public event Action GoInventory;
     public event Action StartInteraction;
+    public event Action DialogueAdvance;
     public event Action<int> WeaponSwitch;
     public event Action<int> RegisterItemNumberKey;
     public event Action<int> ConsumeItemNumberKey;
@@ -44,6 +47,17 @@ public class PlayerInputHandler : MonoBehaviour
             : PlayerInputMapType.Game;
 
     public void SwitchToGameplayMap() => SwitchInputActionMap(GameplayMap);
+
+    // 입력 액션 콜백 처리 도중(같은 프레임) 맵을 바로 바꾸면, 그 입력을 떼는(release) 이벤트를
+    // 새로 바뀐 맵 쪽이 놓쳐서 다음 입력이 "새로 눌림"으로 안 잡히는 경우가 있다.
+    // 이번 입력 이벤트 처리가 끝난 뒤(다음 프레임)로 복귀를 미룬다.
+    public void SwitchToGameplayMapNextFrame() => StartCoroutine(SwitchToGameplayMapNextFrameRoutine());
+
+    private IEnumerator SwitchToGameplayMapNextFrameRoutine()
+    {
+        yield return null;
+        SwitchToGameplayMap();
+    }
 
     private void Awake()
     {
@@ -102,6 +116,12 @@ public class PlayerInputHandler : MonoBehaviour
     void OnInteraction(InputValue value)
     {
         if (value.isPressed) StartInteraction?.Invoke();
+    }
+
+    // Dialogue 맵 전용 — Interaction과 이름을 다르게 둬서, 대화 중 F가 월드 상호작용으로 재소비되지 않는다
+    void OnAdvance(InputValue value)
+    {
+        if (value.isPressed) DialogueAdvance?.Invoke();
     }
 
     void OnDodge(InputValue value)
