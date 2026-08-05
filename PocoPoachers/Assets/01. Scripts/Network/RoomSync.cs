@@ -311,6 +311,55 @@ public static class RoomSync
                 G_ShelterLevel.Pack, PacketType.G_ShelterLevel);
     }
 
+    // 퀘스트 수락 동기화 - ShelterLevel과 동일한 패턴(파티 공유 상태). 호스트면 전원에게 브로드캐스트,
+    // 게스트면 호스트에게 요청만 보내고 호스트가 확인 후 다시 전원에게 브로드캐스트한다.
+    public static void QuestAccept(int questId)
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastReliableToGuests(
+                new H_QuestAcceptT { QuestId = questId },
+                H_QuestAccept.Pack, PacketType.H_QuestAccept);
+        else
+            PacketBuilder.SendReliableToHost(
+                new G_QuestAcceptT { QuestId = questId },
+                G_QuestAccept.Pack, PacketType.G_QuestAccept);
+    }
+
+    // 퀘스트 완료 동기화 - QuestAccept와 동일한 패턴(상태를 Completed로 맞추는 거라 멱등).
+    public static void QuestComplete(int questId)
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastReliableToGuests(
+                new H_QuestCompleteT { QuestId = questId },
+                H_QuestComplete.Pack, PacketType.H_QuestComplete);
+        else
+            PacketBuilder.SendReliableToHost(
+                new G_QuestCompleteT { QuestId = questId },
+                G_QuestComplete.Pack, PacketType.G_QuestComplete);
+    }
+
+    // 퀘스트 제출 동기화 - QuestAccept와 달리 "누적값에 더하는" 연산이라 멱등이 아니다.
+    // 그래서 이 메서드는 순수하게 "전송"만 한다 - 호출 쪽(QuestDescriptionUI)이 호스트/솔로일 때만
+    // QuestManager.AddSubmitted를 직접 부르고, 게스트는 이 전송만 하고 로컬 적용은 H_QuestSubmit을
+    // 받을 때(OnH_QuestSubmit)까지 미룬다. 안 그러면 호스트의 확인 브로드캐스트가 돌아올 때 이중 집계된다.
+    public static void QuestSubmit(int questId, int itemId, int amount)
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastReliableToGuests(
+                new H_QuestSubmitT { QuestId = questId, ItemId = itemId, Amount = amount },
+                H_QuestSubmit.Pack, PacketType.H_QuestSubmit);
+        else
+            PacketBuilder.SendReliableToHost(
+                new G_QuestSubmitT { QuestId = questId, ItemId = itemId, Amount = amount },
+                G_QuestSubmit.Pack, PacketType.G_QuestSubmit);
+    }
+
     // 게스트가 씬 로드 완료를 호스트에 알림 (호스트가 박스/적 스냅샷을 보내는 트리거)
     public static void SceneReady()
     {

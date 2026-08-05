@@ -117,9 +117,13 @@ public class DialogueUI : UIBase
         SetChoices(new List<DialogueChoiceData>());
 
         // 선택지에 accept_quest_id가 있으면(dialogue_choice.csv) 그 퀘스트를 수락한다.
-        // QuestManager는 호스트 권위라 게스트가 골라도 로컬에서만 바뀐다 - QuestManager.cs 상단 주석 참고.
+        // 로컬에 먼저 낙관적으로 적용하고 RoomSync.QuestAccept로 전파한다(ShelterManager.TryUpgrade와 동일 패턴) -
+        // 호스트면 전원에게 브로드캐스트, 게스트면 호스트에게 보내서 호스트가 확인 후 다시 전원에게 브로드캐스트한다.
         if (choice.AcceptQuestId > 0)
+        {
             QuestManager.Accept(choice.AcceptQuestId);
+            RoomSync.QuestAccept(choice.AcceptQuestId);
+        }
 
         DialogueData next = choice.NextId > 0 ? DialogueTable.Instance.Get(choice.NextId) : null;
         if (next == null)

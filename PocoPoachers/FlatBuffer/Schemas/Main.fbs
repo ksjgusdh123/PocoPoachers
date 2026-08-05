@@ -6,6 +6,7 @@ include "Game/Movement.fbs";
 include "Game/Combat.fbs";
 include "Game/Item.fbs";
 include "Game/Enemy.fbs";
+include "Game/Quest.fbs";
 
 union PacketType
 {
@@ -93,6 +94,15 @@ union PacketType
 
     G_RescueBeamPlay,
     H_RescueBeamPlay,
+
+    G_QuestAccept,
+    H_QuestAccept,
+
+    G_QuestSubmit,
+    H_QuestSubmit,
+
+    G_QuestComplete,
+    H_QuestComplete,
 }
 
 table FlatPacket

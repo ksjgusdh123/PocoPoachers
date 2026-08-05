@@ -11,7 +11,7 @@ using UnityEngine.UI;
 // 액션 버튼 하나가 상태에 따라 라벨/동작을 바꾼다:
 //   Available              -> 버튼 숨김 (수락은 대화로만)
 //   InProgress + 제출 미달   -> "제출하기" (클릭 시 목표 아이템 전부를 인벤토리에서 꺼내 QuestManager.AddSubmitted)
-//   InProgress + 전부 제출됨 -> "완료하기" (클릭 시 QuestManager.Complete)
+//   InProgress + 전부 제출됨 -> "완료하기" (클릭 시 QuestManager.Complete + 보상 지급 - 누른 사람만 받음, GrantReward 참고)
 //   Completed               -> 버튼 숨김
 public class QuestDescriptionUI : MonoBehaviour
 {
@@ -173,6 +173,20 @@ public class QuestDescriptionUI : MonoBehaviour
         return sb.Length > 0 ? sb.ToString() : "-";
     }
 
+    // 완료 버튼을 누른 이 클라이언트의 로컬 인벤토리에 보상 아이템을 지급한다 - "완료버튼 누른 사람만" 받는 정책
+    private static void GrantReward(QuestData quest)
+    {
+        var inventory = FindLocalInventory();
+        if (inventory == null) return;
+
+        foreach (var (itemId, count) in quest.RewardItems)
+        {
+            var item = ItemTable.Instance.Get(itemId);
+            if (item == null) continue;
+            inventory.AddItem(item, count);
+        }
+    }
+
     // CheatConsole.FindLocalPlayer()와 동일한 방식 - 씬에 여러 PlayerController(원격 포함)가 있을 수 있어
     // 실제 입력이 활성화된 것을 로컬로 판단한다
     private static Inventory FindLocalInventory()
@@ -200,13 +214,26 @@ public class QuestDescriptionUI : MonoBehaviour
 
         if (IsGoalFullyMet(_currentQuest))
         {
+            // Complete는 상태를 Completed로 맞추는 멱등 연산이라 Accept와 동일하게 낙관적 적용 + 전파.
+            // 보상 지급은 상태 동기화와 무관하게 순수 로컬 동작이다 - "완료하기"를 물리적으로 누른
+            // 이 클라이언트에서 딱 한 번만 실행되고, 다른 클라이언트는 H_QuestComplete를 받아도
+            // 상태만 맞출 뿐 보상은 절대 지급하지 않는다(PacketHandler.Quest.cs 참고) - 그래서
+            // 버튼을 누른 사람만 보상을 받는다.
             QuestManager.Complete(_currentQuest.Id);
+            RoomSync.QuestComplete(_currentQuest.Id);
+            GrantReward(_currentQuest);
             return;
         }
 
-        // 아직 다 안 찼으면 "제출하기" - 목표 아이템마다 들고 있는 만큼(최대 남은 필요량까지) 인벤토리에서 꺼내 제출량에 더한다
+        // 아직 다 안 찼으면 "제출하기" - 목표 아이템마다 들고 있는 만큼(최대 남은 필요량까지) 인벤토리에서 꺼낸다.
+        // 인벤토리는 내 것이라 로컬에서 바로 빼도 되지만, 제출 누적치(QuestManager)는 파티 공유 값이라
+        // 호스트/솔로만 바로 반영한다 - 게스트가 낙관적으로 먼저 더해버리면 호스트의 확인 브로드캐스트가
+        // 돌아올 때(OnH_QuestSubmit) 이중으로 더해진다. 그래서 게스트는 요청만 보내고, 실제 반영은
+        // 호스트가 보내주는 H_QuestSubmit을 받을 때 한다.
         var inventory = FindLocalInventory();
         if (inventory == null) return;
+
+        bool isHost = RoomManager.IsHost;
 
         foreach (var (itemId, target) in _currentQuest.GoalItems)
         {
@@ -221,7 +248,10 @@ public class QuestDescriptionUI : MonoBehaviour
             if (toSubmit <= 0) continue;
 
             int removed = inventory.RemoveItem(item, toSubmit);
-            if (removed > 0) QuestManager.AddSubmitted(_currentQuest.Id, itemId, removed);
+            if (removed <= 0) continue;
+
+            if (isHost) QuestManager.AddSubmitted(_currentQuest.Id, itemId, removed);
+            RoomSync.QuestSubmit(_currentQuest.Id, itemId, removed);
         }
     }
 }

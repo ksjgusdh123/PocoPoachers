@@ -56,5 +56,11 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.G_DropItem          , PacketHandlers.OnG_DropItem);
         _onRecv.Add(PacketType.G_RescueBeamPlay    , PacketHandlers.OnG_RescueBeamPlay);
         _onRecv.Add(PacketType.H_RescueBeamPlay    , PacketHandlers.OnH_RescueBeamPlay);
+        _onRecv.Add(PacketType.G_QuestAccept       , PacketHandlers.OnG_QuestAccept);
+        _onRecv.Add(PacketType.H_QuestAccept       , PacketHandlers.OnH_QuestAccept);
+        _onRecv.Add(PacketType.G_QuestSubmit       , PacketHandlers.OnG_QuestSubmit);
+        _onRecv.Add(PacketType.H_QuestSubmit       , PacketHandlers.OnH_QuestSubmit);
+        _onRecv.Add(PacketType.G_QuestComplete     , PacketHandlers.OnG_QuestComplete);
+        _onRecv.Add(PacketType.H_QuestComplete     , PacketHandlers.OnH_QuestComplete);
     }
 }

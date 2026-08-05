@@ -17,12 +17,18 @@ public enum QuestState
 // (questId, itemId) 조합으로 따로 센다. 목표 수량과 비교해서 다 채웠는지 판단하는 건 호출 쪽
 // (QuestDescriptionUI) 몫이다 — QuestManager는 QuestTable을 몰라도 되게 의도적으로 분리했다.
 //
-// 네트워크 동기화는 아직 미구현이다. 계획:
-//   - G_QuestAccept / G_QuestSubmit(게스트→호스트, 신뢰): 호스트가 Accept()/AddSubmitted() 호출
-//   - H_QuestStateChanged / H_QuestSubmitted(호스트→게스트 브로드캐스트, 신뢰): 각 이벤트 구독해서 보내면 됨
-//   - late-join 시 SendWorldStateToGuest에 퀘스트 스냅샷 추가 필요
-// 위 패킷들이 생기기 전까지 게스트 클라이언트에서 Accept/Submit/Complete를 호출하면 로컬에서만 바뀌고
-// 호스트에는 전파되지 않는다 — 반드시 호스트 측 코드(패킷 핸들러 등)에서만 호출할 것.
+// 네트워크 동기화: Accept/Submit/Complete 전부 구현됨 (RoomSync.QuestAccept/QuestSubmit/QuestComplete,
+// PacketHandler.Quest.cs G/H 양쪽).
+//   - Accept/Complete: "상태를 X로 맞춘다"라 멱등이다 - 트리거 쪽이 로컬에 먼저 낙관적으로 적용한 뒤
+//     RoomSync로 전파한다(ShelterManager.TryUpgrade와 동일 패턴). 이미 그 상태면 조용히 무시하므로
+//     호스트의 재확인 브로드캐스트가 되돌아와도 안전하다.
+//   - Submit(AddSubmitted): "누적값에 더한다"라 멱등이 아니다 - 게스트는 로컬에 낙관적으로 적용하지
+//     않고 요청만 보낸다. 실제 반영은 호스트가 AddSubmitted를 호출한 뒤 보내주는 H_QuestSubmit을
+//     받을 때 한다 (안 그러면 자기 요청이 되돌아올 때 이중 집계됨). QuestDescriptionUI.OnClickAction 참고.
+//   - late-join 시 SendWorldStateToGuest에 퀘스트 스냅샷(현재 상태 전체) 전송 아직 없음 - 새로 들어온
+//     게스트는 그 전에 있었던 Accept/Submit/Complete를 못 받는다.
+//   - 호스트는 게스트가 보낸 Submit amount를 그대로 믿는다(검증 없음) - G_Move 등 다른 자기보고 패킷과
+//     동일한 신뢰 수준. 실제로 그 아이템을 갖고 있었는지는 확인 안 함.
 public static class QuestManager
 {
     private static readonly Dictionary<int, QuestState> _progress = new();
@@ -45,7 +51,11 @@ public static class QuestManager
 
     public static void Accept(int questId)
     {
-        ClearSubmissions(questId); // 재수락 대비 - 새로 시작하면 제출 기록도 초기화
+        // 이미 수락(이상 진행)된 퀘스트면 무시 - 호스트의 재확인 브로드캐스트가 자기 자신에게
+        // 되돌아오거나, 같은 대화를 다시 걸었을 때 제출 기록이 지워지는 걸 막는다.
+        if (GetState(questId) != QuestState.Available) return;
+
+        ClearSubmissions(questId); // 혹시 남아있던 이전 기록 정리 (정상 경로에선 보통 비어있음)
         SetState(questId, QuestState.InProgress);
     }
 
