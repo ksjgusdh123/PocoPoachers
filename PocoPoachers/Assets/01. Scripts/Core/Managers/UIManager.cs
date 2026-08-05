@@ -27,6 +27,7 @@ public enum UIType
     InventoryContextMenu,
     Dialogue,
     Quest,
+    QuestNotice,
 }
 
 public class UIManager : Singleton<UIManager>

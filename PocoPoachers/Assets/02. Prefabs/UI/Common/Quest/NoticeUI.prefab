@@ -173,7 +173,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &7960513979589407543
 RectTransform:
   m_ObjectHideFlags: 0
@@ -214,7 +214,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5aae03705e22b314fba041a30d956976, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::QuestAcceptNoticeUI
+  _startVisible: 0
+  _useSharedDimmer: 0
   _questNameText: {fileID: 708387846555688741}
+  _messageText: {fileID: 4280427055631010431}
   _displayDuration: 3
   _fadeDuration: 0.2
 --- !u!1 &7628412461946283102
@@ -230,7 +233,7 @@ GameObject:
   - component: {fileID: 4280427055631010431}
   - component: {fileID: 6151599908837279284}
   m_Layer: 5
-  m_Name: Text (TMP)
+  m_Name: MessageText
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -283,7 +286,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: "\uC774(\uAC00) \uCD94\uAC00\uB418\uC5C8\uC2B5\uB2C8\uB2E4"
+  m_text: "\uD018\uC2A4\uD2B8\uAC00 \uCD94\uAC00\uB418\uC5C8\uC2B5\uB2C8\uB2E4"
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 5b49de6228ad48141bf9858646bbd6ba, type: 2}
   m_sharedMaterial: {fileID: -2280722913069362485, guid: 5b49de6228ad48141bf9858646bbd6ba, type: 2}

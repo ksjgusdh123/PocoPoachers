@@ -2,7 +2,7 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 
-// 퀘스트가 수락되면 잠깐 떴다 사라지는 토스트 알림. 다른 UI 패널처럼 씬에 비활성 상태로 배치해도 된다 -
+// 퀘스트가 수락되거나 완료되면 잠깐 떴다 사라지는 토스트 알림. 다른 UI 패널처럼 씬에 비활성 상태로 배치해도 된다 -
 // UIBase를 상속하면 UIManager가 씬 로드마다 비활성 오브젝트까지 스캔해서 RegisterSelf를 직접
 // 호출해주기 때문에(SceneUIRegistrar와 동일 원리) OnEnable 없이도 QuestManager 이벤트 구독이 이뤄진다.
 //
@@ -12,8 +12,12 @@ using UnityEngine;
 public class QuestAcceptNoticeUI : UIBase
 {
     [SerializeField] private TextMeshProUGUI _questNameText;
+    [SerializeField] private TextMeshProUGUI _messageText;
     [SerializeField] private float _displayDuration = 3f;
     [SerializeField] private float _fadeDuration = 0.2f;
+
+    private const string AddedMessage = "퀘스트가 추가되었습니다";
+    private const string CompletedMessage = "퀘스트가 완료되었습니다";
 
     protected override UIType UiType => UIType.QuestNotice;
 
@@ -39,6 +43,8 @@ public class QuestAcceptNoticeUI : UIBase
 
         if (_questNameText == null)
             Debug.LogWarning("[QuestAcceptNoticeUI] _questNameText가 비어있습니다 - 인스펙터에서 QuestName 텍스트를 연결해주세요.", this);
+        if (_messageText == null)
+            Debug.LogWarning("[QuestAcceptNoticeUI] _messageText가 비어있습니다 - 인스펙터에서 메시지 텍스트를 연결해주세요.", this);
     }
 
     // UIManager가 씬 로드마다 비활성 오브젝트까지 포함해 이걸 직접 호출해준다 - 그래서 오브젝트가
@@ -64,17 +70,24 @@ public class QuestAcceptNoticeUI : UIBase
 
     private void HandleQuestStateChanged(int questId, QuestState state)
     {
-        if (state != QuestState.InProgress) return; // Available -> InProgress(수락) 순간만
+        string message = state switch
+        {
+            QuestState.InProgress => AddedMessage,   // Available -> InProgress(수락) 순간
+            QuestState.Completed => CompletedMessage, // -> Completed(완료) 순간
+            _ => null,
+        };
+        if (message == null) return;
 
         var quest = QuestTable.Instance.Get(questId);
         if (quest == null) return;
 
-        Show(quest.QuestName);
+        Show(quest.QuestName, message);
     }
 
-    private void Show(string questName)
+    private void Show(string questName, string message)
     {
         if (_questNameText != null) _questNameText.text = questName;
+        if (_messageText != null) _messageText.text = message;
 
         gameObject.SetActive(true); // 이 시점에 처음 활성화되면 Awake가 여기서 돌 수 있다 - 문제 없음
 
