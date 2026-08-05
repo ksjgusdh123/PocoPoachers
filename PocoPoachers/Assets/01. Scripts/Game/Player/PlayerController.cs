@@ -119,6 +119,7 @@ public class PlayerController : MonoBehaviour
 
         _inputHandler = GetComponent<PlayerInputHandler>();
         _inputHandler.GoInventory += ShowInventory;
+        _inputHandler.GoQuest += ShowQuest;
         _inputHandler.RegisterItemNumberKey += RegisterItem;
         _inputHandler.ConsumeItemNumberKey += StartConsuming;
         _inputHandler.StartInteraction += Interaction;
@@ -466,6 +467,7 @@ public class PlayerController : MonoBehaviour
         if (_inputHandler != null)
         {
             _inputHandler.GoInventory -= ShowInventory;
+            _inputHandler.GoQuest -= ShowQuest;
             _inputHandler.RegisterItemNumberKey -= RegisterItem;
             _inputHandler.ConsumeItemNumberKey -= StartConsuming;
             _inputHandler.StartInteraction -= Interaction;
@@ -628,6 +630,13 @@ public class PlayerController : MonoBehaviour
         var weapon = GetComponent<WeaponController>();
         if (weapon != null && weapon.IsReloading) return;
         UIManager.GetInstance().Toggle(UIType.Inventory);
+    }
+
+    void ShowQuest()
+    {
+        bool wasOpen = UIManager.GetInstance().GetPanel(UIType.Quest)?.activeSelf ?? false;
+        UIManager.GetInstance().Toggle(UIType.Quest);
+        LockCamera(!wasOpen); // 열리는 거면 잠그고(마우스 오프셋 정지), 닫히는 거면 원복
     }
 
     void RegisterItem(int index)

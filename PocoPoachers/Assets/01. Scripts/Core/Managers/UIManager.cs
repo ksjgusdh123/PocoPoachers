@@ -26,6 +26,7 @@ public enum UIType
     Generator,
     InventoryContextMenu,
     Dialogue,
+    Quest,
 }
 
 public class UIManager : Singleton<UIManager>
