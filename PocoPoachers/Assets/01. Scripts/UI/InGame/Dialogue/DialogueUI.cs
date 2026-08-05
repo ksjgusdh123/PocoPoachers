@@ -116,6 +116,11 @@ public class DialogueUI : UIBase
         DialogueChoiceData choice = _pendingChoices[index];
         SetChoices(new List<DialogueChoiceData>());
 
+        // 선택지에 accept_quest_id가 있으면(dialogue_choice.csv) 그 퀘스트를 수락한다.
+        // QuestManager는 호스트 권위라 게스트가 골라도 로컬에서만 바뀐다 - QuestManager.cs 상단 주석 참고.
+        if (choice.AcceptQuestId > 0)
+            QuestManager.Accept(choice.AcceptQuestId);
+
         DialogueData next = choice.NextId > 0 ? DialogueTable.Instance.Get(choice.NextId) : null;
         if (next == null)
         {

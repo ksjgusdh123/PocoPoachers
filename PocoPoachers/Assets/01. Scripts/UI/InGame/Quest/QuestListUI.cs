@@ -32,19 +32,17 @@ public class QuestListUI : MonoBehaviour
         }
     }
 
+    // Start()는 오브젝트 수명 중 딱 한 번만 실행된다 - Q로 껐다 켜는 건 SetActive만 토글하는 거라
+    // Start가 다시 안 불린다. 그래서 새로 고침은 매번 다시 켜질 때 도는 OnEnable에서 한다.
     private void OnEnable()
     {
         QuestManager.OnQuestStateChanged += HandleQuestStateChanged;
+        SelectFilter(_filterStates.Length > 0 ? _filterStates[0] : QuestState.Available);
     }
 
     private void OnDisable()
     {
         QuestManager.OnQuestStateChanged -= HandleQuestStateChanged;
-    }
-
-    private void Start()
-    {
-        SelectFilter(_filterStates.Length > 0 ? _filterStates[0] : QuestState.Available);
     }
 
     // 다른 경로(패킷 핸들러 등)로 퀘스트 상태가 바뀌어도 지금 보고 있는 탭이면 바로 반영
@@ -78,6 +76,12 @@ public class QuestListUI : MonoBehaviour
     // 반복되면 GC 스파이크가 생긴다.
     private void RefreshList()
     {
+        if (_entryPrefab == null)
+        {
+            Debug.LogError("[QuestListUI] _entryPrefab이 비어있습니다 - 인스펙터에서 QuestListEntry 프리팹을 연결해주세요.", this);
+            return;
+        }
+
         int used = 0;
 
         foreach (var quest in QuestTable.Instance.All)

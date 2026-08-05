@@ -6,8 +6,10 @@ using UnityEngine.UI;
 
 // 퀘스트 상세 표시 패널. QuestListUI가 목록에서 항목을 고르면 SetQuest로 내용을 채운다.
 // 목표/보상은 아이템이 여러 종류일 수 있어(QuestData.GoalItems/RewardItems) 한 줄씩 묶어서 표시한다.
+// 수락은 이 UI가 아니라 NPC 대화(DialogueUI, dialogue_choice.csv의 accept_quest_id)에서만 한다 -
+// 그래서 Available 상태에서는 액션 버튼이 아예 안 뜬다.
 // 액션 버튼 하나가 상태에 따라 라벨/동작을 바꾼다:
-//   Available              -> "수락하기" (클릭 시 QuestManager.Accept)
+//   Available              -> 버튼 숨김 (수락은 대화로만)
 //   InProgress + 제출 미달   -> "제출하기" (클릭 시 목표 아이템 전부를 인벤토리에서 꺼내 QuestManager.AddSubmitted)
 //   InProgress + 전부 제출됨 -> "완료하기" (클릭 시 QuestManager.Complete)
 //   Completed               -> 버튼 숨김
@@ -19,7 +21,7 @@ public class QuestDescriptionUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _questGoalText;
     [SerializeField] private TextMeshProUGUI _questRewardText;
 
-    [Header("Action Button (수락하기 / 제출하기 / 완료하기 공용)")]
+    [Header("Action Button (제출하기 / 완료하기 공용 - 수락은 대화로만 하므로 여기 없음)")]
     [SerializeField] private Button _actionButton;
     [SerializeField] private TextMeshProUGUI _actionButtonText;
 
@@ -128,10 +130,9 @@ public class QuestDescriptionUI : MonoBehaviour
 
         switch (state)
         {
-            case QuestState.Available:
-                _actionButton.gameObject.SetActive(true);
-                _actionButton.interactable = true;
-                if (_actionButtonText != null) _actionButtonText.text = "수락하기";
+            case QuestState.Available: // 수락은 대화로만 - 여기선 버튼 없음
+            case QuestState.Completed:
+                _actionButton.gameObject.SetActive(false);
                 break;
 
             case QuestState.InProgress:
@@ -141,7 +142,6 @@ public class QuestDescriptionUI : MonoBehaviour
                 if (_actionButtonText != null) _actionButtonText.text = goalMet ? "완료하기" : "제출하기";
                 break;
 
-            case QuestState.Completed:
             default:
                 _actionButton.gameObject.SetActive(false);
                 break;
@@ -195,14 +195,8 @@ public class QuestDescriptionUI : MonoBehaviour
     {
         if (_currentQuest == null) return;
 
-        QuestState state = QuestManager.GetState(_currentQuest.Id);
-        if (state == QuestState.Available)
-        {
-            QuestManager.Accept(_currentQuest.Id);
-            return;
-        }
-
-        if (state != QuestState.InProgress) return;
+        // 수락은 대화로만 하므로 여기선 InProgress(제출/완료)만 처리한다
+        if (QuestManager.GetState(_currentQuest.Id) != QuestState.InProgress) return;
 
         if (IsGoalFullyMet(_currentQuest))
         {

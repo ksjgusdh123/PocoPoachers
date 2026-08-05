@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2722569818652383005}
   - component: {fileID: 7262407321374550080}
   - component: {fileID: 2812244055005187289}
+  - component: {fileID: 637366088551039046}
   m_Layer: 5
   m_Name: Text (TMP)
   m_TagString: Untagged
@@ -92,8 +93,8 @@ MonoBehaviour:
   m_faceColor:
     serializedVersion: 2
     rgba: 4294967295
-  m_fontSize: 24
-  m_fontSizeBase: 24
+  m_fontSize: 18
+  m_fontSizeBase: 18
   m_fontWeight: 400
   m_enableAutoSizing: 0
   m_fontSizeMin: 18
@@ -137,6 +138,24 @@ MonoBehaviour:
   m_hasFontAssetChanged: 0
   m_baseMaterial: {fileID: 0}
   m_maskOffset: {x: 0, y: 0, z: 0, w: 0}
+--- !u!114 &637366088551039046
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1323216979289146227}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1845ffd7f230b7347b44c9eef001f576, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ThemedTextUI
+  _role: 1
+  _manageFontSize: 1
+  _manageAutoSizeRange: 1
+  _colorRole: 0
+  _keepAlpha: 1
+  _theme: {fileID: 0}
 --- !u!1 &5543030942398942364
 GameObject:
   m_ObjectHideFlags: 0
@@ -149,7 +168,7 @@ GameObject:
   - component: {fileID: 807617639302757802}
   - component: {fileID: 3770351806148551533}
   - component: {fileID: 3167700047319711323}
-  - component: {fileID: 4393270378729614624}
+  - component: {fileID: 1348691134928976679}
   m_Layer: 5
   m_Name: QuestButton
   m_TagString: Untagged
@@ -259,7 +278,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls: []
---- !u!114 &4393270378729614624
+--- !u!114 &1348691134928976679
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
