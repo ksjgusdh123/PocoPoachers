@@ -4,8 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // 좌측 퀘스트 목록(상태 탭 + 스크롤 목록). 항목을 고르면 QuestDescriptionUI에 표시한다.
-// 데이터는 아직 QuestTable/QuestManager가 없어 인스펙터에 채우는 임시 테스트 데이터를 쓴다 —
-// 나중에 실제 데이터 소스가 생기면 _testQuests 대신 그쪽에서 목록을 받아오도록 바꾸면 된다.
+// 정의(이름/설명/보상)는 quest.csv → QuestTable, 진행 상태(수락/진행중/완료)는 QuestManager(파티 공유)에서 가져온다.
 public class QuestListUI : MonoBehaviour
 {
     [Header("Status Tabs (수락 가능 / 진행 중 / 완료 버튼 순서와 맞춰 연결)")]
@@ -18,9 +17,6 @@ public class QuestListUI : MonoBehaviour
 
     [Header("Description")]
     [SerializeField] private QuestDescriptionUI _descriptionPanel;
-
-    [Header("Test Data (임시 - 추후 실제 데이터 소스로 교체 예정)")]
-    [SerializeField] private List<QuestData> _testQuests = new();
 
     private readonly List<QuestListEntryUI> _entries = new();
     private QuestState _selectedFilter;
@@ -36,9 +32,25 @@ public class QuestListUI : MonoBehaviour
         }
     }
 
+    private void OnEnable()
+    {
+        QuestManager.OnQuestStateChanged += HandleQuestStateChanged;
+    }
+
+    private void OnDisable()
+    {
+        QuestManager.OnQuestStateChanged -= HandleQuestStateChanged;
+    }
+
     private void Start()
     {
         SelectFilter(_filterStates.Length > 0 ? _filterStates[0] : QuestState.Available);
+    }
+
+    // 다른 경로(패킷 핸들러 등)로 퀘스트 상태가 바뀌어도 지금 보고 있는 탭이면 바로 반영
+    private void HandleQuestStateChanged(int questId, QuestState state)
+    {
+        RefreshList();
     }
 
     public void SelectFilter(QuestState state)
@@ -68,9 +80,9 @@ public class QuestListUI : MonoBehaviour
     {
         int used = 0;
 
-        foreach (var quest in _testQuests)
+        foreach (var quest in QuestTable.Instance.All)
         {
-            if (quest.State != _selectedFilter) continue;
+            if (QuestManager.GetState(quest.Id) != _selectedFilter) continue;
 
             if (used == _entries.Count)
                 _entries.Add(Instantiate(_entryPrefab, _entryParent));

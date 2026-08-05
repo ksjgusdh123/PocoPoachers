@@ -449,6 +449,9 @@ public class PlayerController : MonoBehaviour
             // 씬 전환/종료 시점에 uid별 장비 상태(내구도/장탄수/파츠)를 함께 영속화
             _saveManager?.SaveEquipmentState();
 
+            // 퀘스트 진행 상태(파티 공유)도 같은 시점에 영속화
+            _saveManager?.SaveQuestState();
+
             // 활력치(체력/스태미나/배터리)를 영속화해 맵 전환 시 유지한다.
             // 단 사망 상태면 저장값을 버려(ClearVitals) 다음 스폰이 0 체력으로 시작하지 않게 한다.
             if (_playerStat != null)
