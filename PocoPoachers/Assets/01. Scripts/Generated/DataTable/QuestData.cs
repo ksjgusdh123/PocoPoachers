@@ -9,8 +9,10 @@ public partial class QuestData
     public string npc_name = "";
     public string name = "";
     public string description = "";
-    public string goal = "";
-    public string reward = "";
+    public string goal_item_ids = "";
+    public string goal_item_counts = "";
+    public string reward_item_ids = "";
+    public string reward_item_counts = "";
 
     public int Id { get => id; set => id = value; }
 
@@ -23,8 +25,12 @@ public partial class QuestData
 
     public string Description { get => description; set => description = value; }
 
-    public string Goal { get => goal; set => goal = value; }
+    public string GoalItemIds { get => goal_item_ids; set => goal_item_ids = value; }
 
-    public string Reward { get => reward; set => reward = value; }
+    public string GoalItemCounts { get => goal_item_counts; set => goal_item_counts = value; }
+
+    public string RewardItemIds { get => reward_item_ids; set => reward_item_ids = value; }
+
+    public string RewardItemCounts { get => reward_item_counts; set => reward_item_counts = value; }
 
 }

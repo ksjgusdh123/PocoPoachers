@@ -25,7 +25,7 @@
 | `6001 ~ 6999` | RepairCost (수리 재료) | item_id(수리 대상 무기/헬멧/갑옷 ID)당 1행, 고정 비용 |
 | `7001 ~ 7999` | Skill (AI 스킬) | `skill` 컬럼(Dodge/Retreat/Heal)이 동작 종류, `SkillManager._skillIds`로 AI별 할당 |
 | `8001 ~ 8999` | ItemEnhancementCost (장비/파츠 강화 재료) | item_id + level 조합당 1행, 최대 레벨 3 |
-| `9001 ~ 9999` | Quest | `npc_id`는 Dialogue처럼 참조용 정수(전용 NPC 테이블 없음). `goal`/`reward`는 현재 표시용 문자열 컬럼 — 실제 진행도·보상 지급 로직과는 아직 연결 안 됨 |
+| `9001 ~ 9999` | Quest | `npc_id`는 Dialogue처럼 참조용 정수(전용 NPC 테이블 없음). `goal_item_ids`/`reward_item_ids`는 `\|`로 구분한 Item ID 목록(콤마는 CSV 파서가 컬럼 구분자로 먹어서 못 씀), 대응하는 `*_counts`와 인덱스로 짝짓는다 — `QuestData.GoalItems`/`RewardItems`(손으로 쓴 partial, `QuestData.Parsed.cs`)가 파싱해서 `(itemId, count)` 목록으로 돌려줌. 완료 시 보상 지급 로직은 아직 연결 안 됨 |
 | Item ID 공유 | CraftingRecipe (제작 레시피) | id = result_item_id (1:1), `CraftingRecipeTable.Get(itemId)`로 조회 |
 | Item ID 공유 | GeneratorFuel (발전기 연료) | id = 연료 아이템의 Item ID (1:1), `GeneratorFuelTable.Get(itemId)`로 전력 보충값(power_seconds) 조회. 연료 아이템은 800~899(Ingredient) 범위 사용 |
 

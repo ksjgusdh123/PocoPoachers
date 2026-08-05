@@ -81,7 +81,7 @@ P2P 아키텍처 개요, 입장 흐름, 인원 제한, 동기화 현황. 패킷 
 | 총기 발사 사운드 미동기화 | `Combat.fbs` / `PacketHandler.Combat.cs` | `G_Shoot`엔 `sound_range`가 있으나 `H_Shoot`엔 없음 — 다른 게스트에게 전파 안 됨 |
 | 발자국 사운드 미전달 | — | — |
 | 게스트 이탈 시 호스트 재입장 대기 | `IngameMenuUI.OnHostLeft` | `onCancel`이 빈 스텁 (TODO 주석) |
-| 퀘스트 진행 상태 미동기화 | `QuestManager` | 호스트 메모리 + 세이브까지는 구현됨(파티 공유, `SaveManager.SaveQuestState`). `G_QuestAccept`/`H_QuestStateChanged` 패킷과 late-join 스냅샷이 없어 게스트 화면에는 반영 안 됨 — `QuestManager.OnQuestStateChanged`가 연결 지점 |
+| 퀘스트 진행 상태 미동기화 | `QuestManager` | 호스트 메모리 + 세이브까지는 구현됨(파티 공유, `SaveManager.SaveQuestState`). `G_QuestAccept`/`G_QuestSubmit`/`H_QuestStateChanged`/`H_QuestSubmitted` 패킷과 late-join 스냅샷이 없어 게스트 화면에는 반영 안 됨 — `QuestManager.OnQuestStateChanged`/`OnSubmittedChanged`가 연결 지점. 제출은 `QuestDescriptionUI.OnClickAction`이 로컬 인벤토리에서 바로 빼는 구조라, 게스트가 제출하면 게스트 로컬에서만 아이템이 사라지고 호스트에는 전파 안 됨(권위 없는 조작) |
 | 플레이어 이름 UI 입력 | `NetworkManager` | 현재 `"Player"` 고정 |
 | `RoomSync.GunAmmoSave` 디버그 로그 | `RoomSync.cs` | 제거 예정 TODO 잔존 |
 

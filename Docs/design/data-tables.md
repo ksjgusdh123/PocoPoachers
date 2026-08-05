@@ -42,7 +42,7 @@ XxxTable.Instance.Get(id) / .All
 | `repair_cost.csv` | `RepairCostTable` | item_id, need_item1/2 | `RepairWorkbenchUI` |
 | `crafting_recipe.csv` | `CraftingRecipeTable` | result_item_id, result_count, need_item1~3 | `CraftingTableUI` |
 | `generator_fuel.csv` | `GeneratorFuelTable`, `GeneratorFuelData` | id(=연료 item_id), power_seconds | `Generator.TryInsertFuel` |
-| `quest.csv` | `QuestTable`, `QuestData` | npc_id, npc_name, name, description, goal, reward | `QuestListUI`/`QuestDescriptionUI` — `goal`/`reward`는 아직 표시용 문자열, 진행도·지급 로직 미연결 |
+| `quest.csv` | `QuestTable`, `QuestData` | npc_id, npc_name, name, description, goal_item_ids, goal_item_counts, reward_item_ids, reward_item_counts | `QuestListUI`/`QuestDescriptionUI` — goal/reward는 `\|` 구분 Item ID 목록(복수 아이템 지원), `QuestData.Parsed.cs`(손으로 쓴 partial)의 `GoalItems`/`RewardItems`가 파싱. 완료 시 보상 지급은 미구현 |
 | `sound.csv` | `SoundTable`, `SoundData` | key, type, path (숫자 id 없음, key 기반) | `SoundManager` |
 | `localization.csv` | `LocalizationTable` | key, ko, en | `LocalizationManager` |
 
