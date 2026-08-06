@@ -9,7 +9,7 @@ public class RescueBeamEffect : MonoBehaviour
     [Header("Pod")]
     [SerializeField] private float _podHoverHeight = 6f;   // 대상 위 이 높이에서 정지
     [SerializeField] private float _podApproachDistance = 20f; // 대상 뒤 이 거리(수평)에서부터 날아옴 (화면 밖)
-    [SerializeField] private float _podMoveDuration = 1f;
+    [SerializeField] private float _podMoveDuration = 0.3f;
     [SerializeField] private float _podRotateDuration = 1f; // 이동 시작 전 진행 방향으로 회전하는 데 걸리는 시간
     [SerializeField] private Vector3 _podModelScale = Vector3.one;
     [SerializeField] private Vector3 _podModelEulerAngles = Vector3.zero;
@@ -21,8 +21,21 @@ public class RescueBeamEffect : MonoBehaviour
     [Header("Lift")]
     [SerializeField] private float _liftHeight = 5f; // 플레이어가 빔 안에서 떠오르는 높이
 
+    [Header("Trail")]
+    [SerializeField] private float _trailTime = 0.4f;
+    [SerializeField] private float _trailStartWidth = 0.6f;
+    [SerializeField] private float _trailEndWidth = 0.05f;
+    [SerializeField] private Color _trailColor = new Color(0.5f, 0.9f, 1f, 0.8f);
+
+    [Header("Ghost")]
+    [SerializeField] private float _ghostInterval = 0.08f;    // 잔상 생성 간격
+    [SerializeField] private float _ghostFadeDuration = 0.3f; // 잔상 하나가 옅어져 사라지는 데 걸리는 시간
+    [SerializeField] private Color _ghostColor = new Color(0.5f, 0.9f, 1f, 0.4f);
+
     private Transform _pod;
     private Transform _beam;
+    private TrailRenderer _trail;
+    private Coroutine _ghostRoutine;
 
     public void Play(Transform target, Action onComplete)
     {
@@ -51,6 +64,16 @@ public class RescueBeamEffect : MonoBehaviour
             Debug.LogWarning("[RescueBeamEffect] RescueEffectPrefabs에 포드 프리팹이 지정되지 않았습니다.");
         }
         _pod = podGo.transform;
+
+        // 트레일 — 이동 중일 때만 emitting을 켜서 정지/텔레포트 중엔 잔상이 안 남게 한다
+        _trail = podGo.AddComponent<TrailRenderer>();
+        _trail.time = _trailTime;
+        _trail.startWidth = _trailStartWidth;
+        _trail.endWidth = _trailEndWidth;
+        _trail.material = new Material(Shader.Find("Sprites/Default"));
+        _trail.startColor = _trailColor;
+        _trail.endColor = new Color(_trailColor.r, _trailColor.g, _trailColor.b, 0f);
+        _trail.emitting = false;
 
         // 빔 — 인스펙터로 지정된 프리팹을 그대로 사용한다.
         // 피벗(로컬 y=0)이 포드 위치, 아래(-Y)로 1유닛 길이로 모델링되어 있어야 한다 — localScale.y로 길이를 조절한다.
@@ -89,7 +112,11 @@ public class RescueBeamEffect : MonoBehaviour
         // 1. 진행 방향으로 회전을 마친 뒤, 포드가 뒤에서 날아와 대상 위로 이동
         Quaternion approachRotation = Quaternion.LookRotation(-behindDir, Vector3.up) * Quaternion.Euler(_podModelEulerAngles);
         yield return RotateOverTime(_pod.rotation, approachRotation, _podRotateDuration);
+        _trail.emitting = true;
+        _ghostRoutine = StartCoroutine(GhostSpawnLoop());
         yield return MoveOverTime(p => _pod.position = p, startPos, hoverPos, _podMoveDuration);
+        StopCoroutine(_ghostRoutine);
+        _trail.emitting = false;
 
         // 2. 빔 켜짐 (포드~바닥까지 닿을 만큼 자라남)
         yield return ScaleBeam(0f, _podHoverHeight, _beamToggleDuration);
@@ -109,10 +136,59 @@ public class RescueBeamEffect : MonoBehaviour
 
         Quaternion departRotation = Quaternion.LookRotation(behindDir, Vector3.up) * Quaternion.Euler(_podModelEulerAngles);
         yield return RotateOverTime(_pod.rotation, departRotation, _podRotateDuration);
+        _trail.emitting = true;
+        _ghostRoutine = StartCoroutine(GhostSpawnLoop());
         yield return MoveOverTime(p => _pod.position = p, hoverPos, startPos, _podMoveDuration, EaseInQuad);
 
         onComplete?.Invoke();
         Destroy(gameObject);
+    }
+
+    // 이동 중 일정 간격으로 포드 모델의 반투명 잔상을 남긴다
+    private IEnumerator GhostSpawnLoop()
+    {
+        while (true)
+        {
+            SpawnGhost();
+            yield return new WaitForSeconds(_ghostInterval);
+        }
+    }
+
+    private void SpawnGhost()
+    {
+        GameObject podPrefab = RescueEffectPrefabs.Instance != null ? RescueEffectPrefabs.Instance.PodPrefab : null;
+        if (podPrefab == null) return;
+
+        GameObject ghost = Instantiate(podPrefab, _pod.position, _pod.rotation);
+        ghost.name = "RescuePodGhost";
+        ghost.transform.localScale = _pod.lossyScale;
+
+        foreach (var c in ghost.GetComponentsInChildren<Collider>())
+            Destroy(c);
+
+        Material ghostMaterial = MakeGhostMaterial();
+        foreach (var r in ghost.GetComponentsInChildren<Renderer>())
+            r.material = ghostMaterial;
+
+        // 페이드/파괴는 잔상 자신에 붙여서 진행 — 포드(this)가 먼저 파괴돼도 끊기지 않게 한다
+        ghost.AddComponent<RescuePodGhostFade>().Init(ghostMaterial, _ghostFadeDuration);
+    }
+
+    private Material MakeGhostMaterial()
+    {
+        Material mat = new Material(Shader.Find("Universal Render Pipeline/Unlit")) { color = _ghostColor };
+
+        mat.SetFloat("_Surface", 1f);
+        mat.SetOverrideTag("RenderType", "Transparent");
+        mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        mat.SetInt("_ZWrite", 0);
+        mat.SetInt("_Cull", (int)UnityEngine.Rendering.CullMode.Off);
+        mat.DisableKeyword("_ALPHATEST_ON");
+        mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+        mat.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
+
+        return mat;
     }
 
     private IEnumerator LiftAndShrink(Transform target, Vector3 from, Vector3 to, Vector3 startScale, float duration)
