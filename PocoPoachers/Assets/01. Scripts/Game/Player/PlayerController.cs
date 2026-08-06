@@ -371,11 +371,18 @@ public class PlayerController : MonoBehaviour
     }
 
     // 위에서 포드가 내려와 빔으로 플레이어를 호송하는 연출. 끝나면 관전 모드로 전환한다.
+    // 연출 동안 카메라가 상승하는 플레이어를 따라가지 않도록 위치 추적을 잠시 꺼둔다.
     // 로컬 재생과 별개로 RoomSync를 통해 팀원 화면에도 같은 연출이 재생되도록 알린다.
     private void PlayRescueBeam()
     {
+        _cameraController?.SetFollowPosition(false);
+
         var effect = new GameObject("RescueBeamEffect").AddComponent<RescueBeamEffect>();
-        effect.Play(transform, BeginSpectate);
+        effect.Play(transform, () =>
+        {
+            _cameraController?.SetFollowPosition(true);
+            BeginSpectate();
+        });
 
         RoomSync.RescueBeamPlay();
     }

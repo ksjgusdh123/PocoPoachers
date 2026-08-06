@@ -43,6 +43,7 @@ public class CheatConsole : Singleton<CheatConsole>
         _commands["items"] = new CheatEntry { Usage = "items [filter]", Handler = CmdItems };
         _commands["shelter"] = new CheatEntry { Usage = "shelter [level <n>|upgrade|need]", Handler = CmdShelter };
         _commands["god"] = new CheatEntry { Usage = "god [on|off]", Handler = CmdGod };
+        _commands["rescuebeam"] = new CheatEntry { Usage = "rescuebeam", Handler = _ => CmdRescueBeam() };
     }
 
     void Update()
@@ -250,6 +251,25 @@ public class CheatConsole : Singleton<CheatConsole>
             stat.SetGodMode(enable);
 
         Log($"[CHEAT] 전체 플레이어 무적 {(enable ? "ON" : "OFF")} ({stats.Count}명)");
+    }
+
+    // 실제로 죽지 않고도 구조 연출만 미리보기 — 로컬 재생만 하고 사망 상태/루프박스 드랍/관전 전환 등은 건드리지 않는다
+    void CmdRescueBeam()
+    {
+        var player = FindLocalPlayer();
+        if (player == null)
+        {
+            Log("플레이어를 찾을 수 없습니다.");
+            Log("게임 씬에서 플레이어가 스폰된 뒤 다시 시도하세요.");
+            return;
+        }
+
+        var camera = FindAnyObjectByType<CameraController>();
+        camera?.SetFollowPosition(false);
+
+        var effect = new GameObject("RescueBeamEffect").AddComponent<RescueBeamEffect>();
+        effect.Play(player.transform, () => camera?.SetFollowPosition(true));
+        Log("[CHEAT] 구조 연출 재생");
     }
 
     // 호스트 기준 접속한 모든 플레이어의 스탯 — 로컬(PlayerStat) + 원격(RemotePlayerStat)
