@@ -8,6 +8,7 @@ public class MinimapUI : UIBase
     [SerializeField] private GameObject _backgroundDim;
 
     [SerializeField] private MinimapMarkerSpawner _markerSpawner;
+    [SerializeField] private MinimapZoomPan _zoomPan;
 
     protected override UIType UiType => UIType.Minimap;
 
@@ -15,6 +16,7 @@ public class MinimapUI : UIBase
     {
         if (_backgroundDim != null) _backgroundDim.SetActive(true);
         _markerSpawner?.Refresh();
+        _zoomPan?.ResetView();
     }
 
     protected override void OnHide()
