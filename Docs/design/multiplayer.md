@@ -81,6 +81,9 @@ P2P 아키텍처 개요, 입장 흐름, 인원 제한, 동기화 현황. 패킷 
 | 총기 발사 사운드 미동기화 | `Combat.fbs` / `PacketHandler.Combat.cs` | `G_Shoot`엔 `sound_range`가 있으나 `H_Shoot`엔 없음 — 다른 게스트에게 전파 안 됨 |
 | 발자국 사운드 미전달 | — | — |
 | 게스트 이탈 시 호스트 재입장 대기 | `IngameMenuUI.OnHostLeft` | `onCancel`이 빈 스텁 (TODO 주석) |
+| 퀘스트 진행 신뢰 검증 없음 | `PacketHandler.Quest.cs` (`OnG_QuestSubmit`) | Accept/Submit/Complete 전부 동기화됨(2026-08) — `G_QuestAccept`/`H_QuestAccept`, `G_QuestSubmit`/`H_QuestSubmit`, `G_QuestComplete`/`H_QuestComplete`, `RoomSync.QuestAccept`/`QuestSubmit`/`QuestComplete`. Accept/Complete는 상태 확정형이라 멱등이라 트리거 쪽이 낙관적으로 먼저 적용(`ShelterManager.TryUpgrade`와 동일 패턴). Submit은 누적값이라 멱등이 아니라서 게스트는 로컬 미적용, 호스트가 `AddSubmitted` 적용 후 브로드캐스트한 `H_QuestSubmit`을 받을 때만 반영(이중 집계 방지) — `QuestDescriptionUI.OnClickAction` 참고. 다만 호스트는 게스트가 보낸 제출 수량을 검증 없이 그대로 믿는다(`G_Move`와 동일한 신뢰 수준) — 실제 인벤토리 보유 여부 확인 안 함 |
+| 퀘스트 late-join 스냅샷 없음 | `RoomManager.SendWorldStateToGuest` | 새로 들어온 게스트는 그 전에 있었던 Accept/Submit/Complete 내역을 못 받음 — `H_ShelterLevel`처럼 접속 시 `QuestManager` 전체 상태를 보내는 스냅샷 패킷이 필요 |
+| 퀘스트 보상 지급 정책 | `QuestDescriptionUI.GrantReward` | 정책: **완료 버튼을 누른 사람만** 보상을 받음(파티 전원 지급 아님). 보상 지급은 네트워크 동기화 대상이 아니라 순수 로컬 동작 — `H_QuestComplete`/`G_QuestComplete` 핸들러는 상태(`QuestManager.Complete`)만 맞추고 보상은 절대 지급하지 않는다. `RewardItems`가 여러 아이템이면 전부 로컬 인벤토리에 `AddItem` — 인벤토리가 가득 차면 `Inventory.AddItem`이 들어가는 만큼만 넣고 초과분은 유실(별도 처리 없음) |
 | 플레이어 이름 UI 입력 | `NetworkManager` | 현재 `"Player"` 고정 |
 | `RoomSync.GunAmmoSave` 디버그 로그 | `RoomSync.cs` | 제거 예정 TODO 잔존 |
 

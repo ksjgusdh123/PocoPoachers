@@ -10,6 +10,7 @@ public class CameraController : MonoBehaviour
     private ICameraEffect[] _effects;
     private Vector3 _velocity;
     private bool _isLocked;
+    private bool _followPosition = true;
     private float _defaultSmoothTime;
 
     public void SetTarget(Transform target) => _target = target;
@@ -17,6 +18,12 @@ public class CameraController : MonoBehaviour
     public void SetLocked(bool locked)
     {
         _isLocked = locked;
+    }
+
+    // 대상 위치 추적을 잠시 끈다 — 대상이 연출 등으로 순간이동/상승할 때 카메라가 같이 따라가지 않도록
+    public void SetFollowPosition(bool follow)
+    {
+        _followPosition = follow;
     }
 
     // 관전 모드 — 이펙트(마우스 오프셋/셰이크)를 끄고 스무딩을 강화해 원격 플레이어의 네트워크 보간 떨림을 완화한다
@@ -34,7 +41,7 @@ public class CameraController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (_target == null) return;
+        if (_target == null || !_followPosition) return;
 
         Vector3 targetPos = _target.position + _baseOffset;
 

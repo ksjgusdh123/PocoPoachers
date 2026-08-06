@@ -1,0 +1,38 @@
+// 퀘스트 수락 동기화. 파티 공유 상태(QuestManager)라 한 명이 수락하면 전원에게 반영돼야 한다.
+// 트리거 쪽(DialogueUI)이 로컬에 낙관적으로 먼저 적용한 뒤 이 패킷으로 전파한다 - ShelterLevel과 동일한 패턴.
+// Accept/Complete는 "상태를 X로 맞춘다"라 멱등이지만(같은 값 재적용해도 안전), Submit은 "누적값에 더한다"라
+// 게스트가 낙관적으로 먼저 적용하면 호스트 재확인 브로드캐스트가 돌아올 때 이중으로 더해진다.
+// 그래서 Submit만 요청/결과 패턴(게스트는 로컬 미적용, 호스트가 적용 후 브로드캐스트한 걸 받아야 반영)을 쓴다.
+table G_QuestAccept
+{
+    quest_id: int;
+}
+
+table H_QuestAccept
+{
+    quest_id: int;
+}
+
+table G_QuestSubmit
+{
+    quest_id: int;
+    item_id: int;
+    amount: int;
+}
+
+table H_QuestSubmit
+{
+    quest_id: int;
+    item_id: int;
+    amount: int;
+}
+
+table G_QuestComplete
+{
+    quest_id: int;
+}
+
+table H_QuestComplete
+{
+    quest_id: int;
+}

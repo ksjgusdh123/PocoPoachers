@@ -119,6 +119,7 @@ public class PlayerController : MonoBehaviour
 
         _inputHandler = GetComponent<PlayerInputHandler>();
         _inputHandler.GoInventory += ShowInventory;
+        _inputHandler.GoQuest += ShowQuest;
         _inputHandler.RegisterItemNumberKey += RegisterItem;
         _inputHandler.ConsumeItemNumberKey += StartConsuming;
         _inputHandler.StartInteraction += Interaction;
@@ -370,11 +371,18 @@ public class PlayerController : MonoBehaviour
     }
 
     // 위에서 포드가 내려와 빔으로 플레이어를 호송하는 연출. 끝나면 관전 모드로 전환한다.
+    // 연출 동안 카메라가 상승하는 플레이어를 따라가지 않도록 위치 추적을 잠시 꺼둔다.
     // 로컬 재생과 별개로 RoomSync를 통해 팀원 화면에도 같은 연출이 재생되도록 알린다.
     private void PlayRescueBeam()
     {
+        _cameraController?.SetFollowPosition(false);
+
         var effect = new GameObject("RescueBeamEffect").AddComponent<RescueBeamEffect>();
-        effect.Play(transform, BeginSpectate);
+        effect.Play(transform, () =>
+        {
+            _cameraController?.SetFollowPosition(true);
+            BeginSpectate();
+        });
 
         RoomSync.RescueBeamPlay();
     }
@@ -449,6 +457,9 @@ public class PlayerController : MonoBehaviour
             // 씬 전환/종료 시점에 uid별 장비 상태(내구도/장탄수/파츠)를 함께 영속화
             _saveManager?.SaveEquipmentState();
 
+            // 퀘스트 진행 상태(파티 공유)도 같은 시점에 영속화
+            _saveManager?.SaveQuestState();
+
             // 활력치(체력/스태미나/배터리)를 영속화해 맵 전환 시 유지한다.
             // 단 사망 상태면 저장값을 버려(ClearVitals) 다음 스폰이 0 체력으로 시작하지 않게 한다.
             if (_playerStat != null)
@@ -463,6 +474,7 @@ public class PlayerController : MonoBehaviour
         if (_inputHandler != null)
         {
             _inputHandler.GoInventory -= ShowInventory;
+            _inputHandler.GoQuest -= ShowQuest;
             _inputHandler.RegisterItemNumberKey -= RegisterItem;
             _inputHandler.ConsumeItemNumberKey -= StartConsuming;
             _inputHandler.StartInteraction -= Interaction;
@@ -625,6 +637,13 @@ public class PlayerController : MonoBehaviour
         var weapon = GetComponent<WeaponController>();
         if (weapon != null && weapon.IsReloading) return;
         UIManager.GetInstance().Toggle(UIType.Inventory);
+    }
+
+    void ShowQuest()
+    {
+        bool wasOpen = UIManager.GetInstance().GetPanel(UIType.Quest)?.activeSelf ?? false;
+        UIManager.GetInstance().Toggle(UIType.Quest);
+        LockCamera(!wasOpen); // 열리는 거면 잠그고(마우스 오프셋 정지), 닫히는 거면 원복
     }
 
     void RegisterItem(int index)

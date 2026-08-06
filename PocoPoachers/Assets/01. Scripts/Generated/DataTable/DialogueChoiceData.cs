@@ -9,6 +9,7 @@ public partial class DialogueChoiceData
     public int order;
     public string text = "";
     public int next_id;
+    public int accept_quest_id;
 
     public int Id { get => id; set => id = value; }
 
@@ -19,5 +20,7 @@ public partial class DialogueChoiceData
     public string Text { get => text; set => text = value; }
 
     public int NextId { get => next_id; set => next_id = value; }
+
+    public int AcceptQuestId { get => accept_quest_id; set => accept_quest_id = value; }
 
 }

@@ -11,7 +11,8 @@ public enum PlayerInputMapType
     Inventory,
     ItemBox,
     Shelter,
-    Dialogue
+    Dialogue,
+    Quest
 }
 
 [RequireComponent(typeof(PlayerInput))]
@@ -25,6 +26,7 @@ public class PlayerInputHandler : MonoBehaviour
     public bool IsAimPressed { get; private set; }
 
     public event Action GoInventory;
+    public event Action GoQuest;
     public event Action StartInteraction;
     public event Action DialogueAdvance;
     public event Action<int> WeaponSwitch;
@@ -110,6 +112,16 @@ public class PlayerInputHandler : MonoBehaviour
             if (_inputType == PlayerInputMapType.Inventory) SwitchToGameplayMap();
             else SwitchInputActionMap(PlayerInputMapType.Inventory);
             GoInventory?.Invoke();
+        }
+    }
+
+    void OnGoQuest(InputValue value)
+    {
+        if (value.isPressed)
+        {
+            if (_inputType == PlayerInputMapType.Quest) SwitchToGameplayMap();
+            else SwitchInputActionMap(PlayerInputMapType.Quest);
+            GoQuest?.Invoke();
         }
     }
 

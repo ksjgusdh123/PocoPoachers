@@ -19,6 +19,7 @@
 | `equipment` | `WorldEquipmentManager.SaveData` — uid별 내구도(현재/최대), 탄약(`currentAmmo/maxAmmo/ammoSet`), 파츠(`slotType/partId/partUid`), 강화 레벨. uid 없는 스택형 아이템은 itemId 키로 강화 레벨만 별도 저장 |
 | `guestStates` | 호스트 전용. 게스트별 `{playerId, inventory, equipSlots, equipment}` — 게스트는 별도 세이브 파일이 없고 호스트 파일 안에 보관됨 |
 | `hasVitals, hp, stamina, battery` | `hasVitals`가 true일 때만 유효. 사망 시 저장하지 않고 `ClearVitals()` — 다음 접속 시 0에서 시작하지 않도록 방지 |
+| `questProgress` | `QuestManager.SaveData` — 퀘스트별 진행 상태(Available/InProgress/Completed). 쉘터 레벨처럼 파티 전체가 공유하는 값이라 `guestStates`가 아니라 최상위에 하나만 있음. 호스트 전용 저장(`SaveQuestState`) — [multiplayer.md](multiplayer.md#동기화-미구현-항목) 참고, 아직 게스트 브로드캐스트 패킷 없음 |
 
 > **강화·장착·내구도·Vital 저장은 이미 구현되어 있다.** 과거 문서에 남아있던 "미저장" 기재는 오래된 상태였음.
 
@@ -29,7 +30,6 @@
 | `RaidStats` (경과시간·킬수) | 레이드마다 초기화, 세이브 없음 |
 | `GameManager.GainedInventory` / `GiveInventory` | 설정되나 저장/로드 경로 없음 — 죽은 필드 가능성 |
 | 통화/재화 | 시스템 자체 없음 |
-| 퀘스트/미션 진행도 | 시스템 자체 없음 |
 | 플레이어 월드 좌표 | `SpawnId` 이산 스폰 포인트만 사용 |
 | 옵션 설정 | `SaveManager`가 아니라 `PlayerPrefs` (`SoundManager`/`LocalizationManager`가 별도 관리) |
 | 월드에 스폰된 아이템 박스 | `ObjectManager._spawnedBoxes` — 씬 전환 시 소멸, 파일로 영속화 안 됨 |

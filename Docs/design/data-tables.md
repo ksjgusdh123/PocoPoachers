@@ -24,7 +24,7 @@ XxxTable.Instance.Get(id) / .All
 
 **의도적 ID 공유:** `ItemData.id` == `GunStatData.id` == `ArmorStatData.id` == `GunPartData.id`(1:1). `CraftingRecipeData.id`/`GeneratorFuelData.id`도 결과/연료 아이템의 Item ID와 공유.
 
-## CSV 전체 목록 (16개, `PocoPoachers/DataTable/`)
+## CSV 전체 목록 (17개, `PocoPoachers/DataTable/`)
 
 | CSV | 생성 클래스 | 주요 필드 | 사용처 |
 |-----|-------------|-----------|--------|
@@ -42,6 +42,7 @@ XxxTable.Instance.Get(id) / .All
 | `repair_cost.csv` | `RepairCostTable` | item_id, need_item1/2 | `RepairWorkbenchUI` |
 | `crafting_recipe.csv` | `CraftingRecipeTable` | result_item_id, result_count, need_item1~3 | `CraftingTableUI` |
 | `generator_fuel.csv` | `GeneratorFuelTable`, `GeneratorFuelData` | id(=연료 item_id), power_seconds | `Generator.TryInsertFuel` |
+| `quest.csv` | `QuestTable`, `QuestData` | npc_id, npc_name, name, description, goal_item_ids, goal_item_counts, reward_item_ids, reward_item_counts | `QuestListUI`/`QuestDescriptionUI` — goal/reward는 `\|` 구분 Item ID 목록(복수 아이템 지원), `QuestData.Parsed.cs`(손으로 쓴 partial)의 `GoalItems`/`RewardItems`가 파싱. 완료 시 보상 지급은 미구현 |
 | `sound.csv` | `SoundTable`, `SoundData` | key, type, path (숫자 id 없음, key 기반) | `SoundManager` |
 | `localization.csv` | `LocalizationTable` | key, ko, en | `LocalizationManager` |
 

@@ -60,6 +60,12 @@ public enum PacketType : byte
   G_DropItem = 53,
   G_RescueBeamPlay = 54,
   H_RescueBeamPlay = 55,
+  G_QuestAccept = 56,
+  H_QuestAccept = 57,
+  G_QuestSubmit = 58,
+  H_QuestSubmit = 59,
+  G_QuestComplete = 60,
+  H_QuestComplete = 61,
 };
 
 public class PacketTypeUnion {
@@ -182,6 +188,18 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_RescueBeamPlay(G_RescueBeamPlayT _g_rescuebeamplay) { return new PacketTypeUnion{ Type = PacketType.G_RescueBeamPlay, Value = _g_rescuebeamplay }; }
   public H_RescueBeamPlayT AsH_RescueBeamPlay() { return this.As<H_RescueBeamPlayT>(); }
   public static PacketTypeUnion FromH_RescueBeamPlay(H_RescueBeamPlayT _h_rescuebeamplay) { return new PacketTypeUnion{ Type = PacketType.H_RescueBeamPlay, Value = _h_rescuebeamplay }; }
+  public G_QuestAcceptT AsG_QuestAccept() { return this.As<G_QuestAcceptT>(); }
+  public static PacketTypeUnion FromG_QuestAccept(G_QuestAcceptT _g_questaccept) { return new PacketTypeUnion{ Type = PacketType.G_QuestAccept, Value = _g_questaccept }; }
+  public H_QuestAcceptT AsH_QuestAccept() { return this.As<H_QuestAcceptT>(); }
+  public static PacketTypeUnion FromH_QuestAccept(H_QuestAcceptT _h_questaccept) { return new PacketTypeUnion{ Type = PacketType.H_QuestAccept, Value = _h_questaccept }; }
+  public G_QuestSubmitT AsG_QuestSubmit() { return this.As<G_QuestSubmitT>(); }
+  public static PacketTypeUnion FromG_QuestSubmit(G_QuestSubmitT _g_questsubmit) { return new PacketTypeUnion{ Type = PacketType.G_QuestSubmit, Value = _g_questsubmit }; }
+  public H_QuestSubmitT AsH_QuestSubmit() { return this.As<H_QuestSubmitT>(); }
+  public static PacketTypeUnion FromH_QuestSubmit(H_QuestSubmitT _h_questsubmit) { return new PacketTypeUnion{ Type = PacketType.H_QuestSubmit, Value = _h_questsubmit }; }
+  public G_QuestCompleteT AsG_QuestComplete() { return this.As<G_QuestCompleteT>(); }
+  public static PacketTypeUnion FromG_QuestComplete(G_QuestCompleteT _g_questcomplete) { return new PacketTypeUnion{ Type = PacketType.G_QuestComplete, Value = _g_questcomplete }; }
+  public H_QuestCompleteT AsH_QuestComplete() { return this.As<H_QuestCompleteT>(); }
+  public static PacketTypeUnion FromH_QuestComplete(H_QuestCompleteT _h_questcomplete) { return new PacketTypeUnion{ Type = PacketType.H_QuestComplete, Value = _h_questcomplete }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -241,6 +259,12 @@ public class PacketTypeUnion {
       case PacketType.G_DropItem: return G_DropItem.Pack(builder, _o.AsG_DropItem()).Value;
       case PacketType.G_RescueBeamPlay: return G_RescueBeamPlay.Pack(builder, _o.AsG_RescueBeamPlay()).Value;
       case PacketType.H_RescueBeamPlay: return H_RescueBeamPlay.Pack(builder, _o.AsH_RescueBeamPlay()).Value;
+      case PacketType.G_QuestAccept: return G_QuestAccept.Pack(builder, _o.AsG_QuestAccept()).Value;
+      case PacketType.H_QuestAccept: return H_QuestAccept.Pack(builder, _o.AsH_QuestAccept()).Value;
+      case PacketType.G_QuestSubmit: return G_QuestSubmit.Pack(builder, _o.AsG_QuestSubmit()).Value;
+      case PacketType.H_QuestSubmit: return H_QuestSubmit.Pack(builder, _o.AsH_QuestSubmit()).Value;
+      case PacketType.G_QuestComplete: return G_QuestComplete.Pack(builder, _o.AsG_QuestComplete()).Value;
+      case PacketType.H_QuestComplete: return H_QuestComplete.Pack(builder, _o.AsH_QuestComplete()).Value;
     }
   }
 }
@@ -418,6 +442,24 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_RescueBeamPlay:
         result = H_RescueBeamPlayVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_QuestAccept:
+        result = G_QuestAcceptVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_QuestAccept:
+        result = H_QuestAcceptVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_QuestSubmit:
+        result = G_QuestSubmitVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_QuestSubmit:
+        result = H_QuestSubmitVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_QuestComplete:
+        result = G_QuestCompleteVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_QuestComplete:
+        result = H_QuestCompleteVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

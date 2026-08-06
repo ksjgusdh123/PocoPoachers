@@ -101,6 +101,23 @@ public class SaveManager : Singleton<SaveManager>
         ItemSpawner.SeedItemUid(WorldEquipmentManager.MaxUid());
     }
 
+    // 퀘스트 진행 상태 저장 - 쉘터 레벨과 마찬가지로 파티 공유 값이라 호스트만 저장한다
+    public void SaveQuestState()
+    {
+        if (!RoomManager.IsHost) return;
+        var data = GetOrLoad(_activeSlot);
+        data.questProgress = QuestManager.Export();
+        data.lastSavedAt = NowTimestamp();
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    // 저장된 퀘스트 진행 상태를 QuestManager로 복원. 게임 로드 시 1회 호출.
+    public void LoadQuestState()
+    {
+        var data = GetOrLoad(_activeSlot);
+        QuestManager.Import(data.questProgress);
+    }
+
     // 활력치(체력/스태미나/배터리) 저장 — 맵 전환 시 유지되도록 로컬에 영속화. 인벤/장비와 동일하게 게스트도 로컬 저장.
     public void SaveVitals(float hp, float stamina, float battery)
     {
@@ -246,6 +263,9 @@ public class SaveManager : Singleton<SaveManager>
         public List<InventorySaveEntry> inventories = new List<InventorySaveEntry>();
         public List<EquipSlotEntry> equipSlots = new List<EquipSlotEntry>();
         public WorldEquipmentManager.SaveData equipment = new WorldEquipmentManager.SaveData();
+
+        // 퀘스트 진행 상태 - 쉘터 레벨처럼 파티 전체가 공유하는 값이라 게스트별(GuestRoomState)이 아니라 여기 한 곳에만 둔다
+        public QuestManager.SaveData questProgress = new QuestManager.SaveData();
 
         // 방 세계에 참여한 게스트들의 상태 (호스트 세이브 = 방 세계이므로 여기 함께 보관)
         public List<GuestRoomState> guestStates = new List<GuestRoomState>();

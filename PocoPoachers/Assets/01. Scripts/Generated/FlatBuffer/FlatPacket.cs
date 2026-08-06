@@ -74,6 +74,12 @@ public struct FlatPacket : IFlatbufferObject
   public G_DropItem TypeAsG_DropItem() { return Type<G_DropItem>().Value; }
   public G_RescueBeamPlay TypeAsG_RescueBeamPlay() { return Type<G_RescueBeamPlay>().Value; }
   public H_RescueBeamPlay TypeAsH_RescueBeamPlay() { return Type<H_RescueBeamPlay>().Value; }
+  public G_QuestAccept TypeAsG_QuestAccept() { return Type<G_QuestAccept>().Value; }
+  public H_QuestAccept TypeAsH_QuestAccept() { return Type<H_QuestAccept>().Value; }
+  public G_QuestSubmit TypeAsG_QuestSubmit() { return Type<G_QuestSubmit>().Value; }
+  public H_QuestSubmit TypeAsH_QuestSubmit() { return Type<H_QuestSubmit>().Value; }
+  public G_QuestComplete TypeAsG_QuestComplete() { return Type<G_QuestComplete>().Value; }
+  public H_QuestComplete TypeAsH_QuestComplete() { return Type<H_QuestComplete>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -267,6 +273,24 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_RescueBeamPlay:
         _o.Type.Value = this.Type<H_RescueBeamPlay>().HasValue ? this.Type<H_RescueBeamPlay>().Value.UnPack() : null;
+        break;
+      case PacketType.G_QuestAccept:
+        _o.Type.Value = this.Type<G_QuestAccept>().HasValue ? this.Type<G_QuestAccept>().Value.UnPack() : null;
+        break;
+      case PacketType.H_QuestAccept:
+        _o.Type.Value = this.Type<H_QuestAccept>().HasValue ? this.Type<H_QuestAccept>().Value.UnPack() : null;
+        break;
+      case PacketType.G_QuestSubmit:
+        _o.Type.Value = this.Type<G_QuestSubmit>().HasValue ? this.Type<G_QuestSubmit>().Value.UnPack() : null;
+        break;
+      case PacketType.H_QuestSubmit:
+        _o.Type.Value = this.Type<H_QuestSubmit>().HasValue ? this.Type<H_QuestSubmit>().Value.UnPack() : null;
+        break;
+      case PacketType.G_QuestComplete:
+        _o.Type.Value = this.Type<G_QuestComplete>().HasValue ? this.Type<G_QuestComplete>().Value.UnPack() : null;
+        break;
+      case PacketType.H_QuestComplete:
+        _o.Type.Value = this.Type<H_QuestComplete>().HasValue ? this.Type<H_QuestComplete>().Value.UnPack() : null;
         break;
     }
   }
