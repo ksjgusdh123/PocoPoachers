@@ -7,11 +7,14 @@ public class MinimapUI : UIBase
     [Tooltip("미니맵이 열릴 때 같이 켜지는 배경(화면 전체를 덮는 어두운 이미지 등). 씬/프리팹에서 직접 배치해서 연결.")]
     [SerializeField] private GameObject _backgroundDim;
 
+    [SerializeField] private MinimapMarkerSpawner _markerSpawner;
+
     protected override UIType UiType => UIType.Minimap;
 
     protected override void OnShow()
     {
         if (_backgroundDim != null) _backgroundDim.SetActive(true);
+        _markerSpawner?.Refresh();
     }
 
     protected override void OnHide()

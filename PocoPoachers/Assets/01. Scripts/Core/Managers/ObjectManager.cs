@@ -83,6 +83,17 @@ public class ObjectManager : Singleton<ObjectManager>
         }
     }
 
+    // 특정 종류의 살아있는 오브젝트를 전부 순회 (미니맵 마커처럼 "접속한 플레이어 수만큼" 필요할 때 사용)
+    // 로컬 플레이어는 여기 포함되지 않는다 (ApplyMove의 IsLocalPlayer 참고) — 별도로 찾아야 한다
+    public IEnumerable<WorldObject> GetAllByKind(ObjectKind kind)
+    {
+        foreach (var kv in _objects)
+        {
+            if (kv.Key.kind == kind && kv.Value != null)
+                yield return kv.Value;
+        }
+    }
+
     public bool TryGet(ObjectKind kind, int id, out WorldObject obj)
     {
         var key = (kind, id);
