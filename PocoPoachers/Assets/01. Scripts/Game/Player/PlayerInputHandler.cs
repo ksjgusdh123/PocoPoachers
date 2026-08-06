@@ -12,7 +12,8 @@ public enum PlayerInputMapType
     ItemBox,
     Shelter,
     Dialogue,
-    Quest
+    Quest,
+    Minimap
 }
 
 [RequireComponent(typeof(PlayerInput))]
@@ -35,6 +36,7 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action Dodge;
     public event Action CancelItemUse;
     public event Action CancelReload;
+    public event Action ToggleMinimap;
 
     private PlayerInput _inputMap;
     private readonly Key[] _weaponKeys = { Key.Digit1, Key.Digit2 };
@@ -166,6 +168,9 @@ public class PlayerInputHandler : MonoBehaviour
     {
         if (Keyboard.current[Key.X].wasPressedThisFrame)
             CancelReload?.Invoke();
+
+        if (Keyboard.current[Key.M].wasPressedThisFrame)
+            ToggleMinimap?.Invoke();
     }
 
     void OnChangeGun()

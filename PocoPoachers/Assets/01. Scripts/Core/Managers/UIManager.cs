@@ -28,6 +28,7 @@ public enum UIType
     Dialogue,
     Quest,
     QuestNotice,
+    Minimap,
 }
 
 public class UIManager : Singleton<UIManager>

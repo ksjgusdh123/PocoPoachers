@@ -120,6 +120,7 @@ public class PlayerController : MonoBehaviour
         _inputHandler = GetComponent<PlayerInputHandler>();
         _inputHandler.GoInventory += ShowInventory;
         _inputHandler.GoQuest += ShowQuest;
+        _inputHandler.ToggleMinimap += ShowMinimap;
         _inputHandler.RegisterItemNumberKey += RegisterItem;
         _inputHandler.ConsumeItemNumberKey += StartConsuming;
         _inputHandler.StartInteraction += Interaction;
@@ -475,6 +476,7 @@ public class PlayerController : MonoBehaviour
         {
             _inputHandler.GoInventory -= ShowInventory;
             _inputHandler.GoQuest -= ShowQuest;
+            _inputHandler.ToggleMinimap -= ShowMinimap;
             _inputHandler.RegisterItemNumberKey -= RegisterItem;
             _inputHandler.ConsumeItemNumberKey -= StartConsuming;
             _inputHandler.StartInteraction -= Interaction;
@@ -497,15 +499,18 @@ public class PlayerController : MonoBehaviour
 
     private void OnPanelOpened(UIType type)
     {
-        if (type == UIType.Inventory)
+        if (type == UIType.Inventory || type == UIType.Minimap)
             PlayerMainGameUI.SetActive(false);
         else if (type != UIType.IngameMenu && type != UIType.EnhancementTable)
             return;
 
         LockCamera(true);
-        _inputHandler.SwitchInputActionMap(type == UIType.EnhancementTable
-            ? PlayerInputMapType.ItemBox
-            : PlayerInputMapType.Inventory);
+        _inputHandler.SwitchInputActionMap(type switch
+        {
+            UIType.EnhancementTable => PlayerInputMapType.ItemBox,
+            UIType.Minimap => PlayerInputMapType.Minimap,
+            _ => PlayerInputMapType.Inventory,
+        });
     }
 
     private void OnPanelClosed(UIType type)
@@ -524,10 +529,10 @@ public class PlayerController : MonoBehaviour
         if (type == UIType.Inventory)
             _gunPartPanel?.Close();
 
-        if (type != UIType.Inventory && type != UIType.IngameMenu && type != UIType.EnhancementTable) return;
+        if (type != UIType.Inventory && type != UIType.IngameMenu && type != UIType.EnhancementTable && type != UIType.Minimap) return;
         if (UIManager.GetInstance().IsAnyPanelOpen) return;
 
-        if (type == UIType.Inventory)
+        if (type == UIType.Inventory || type == UIType.Minimap)
             PlayerMainGameUI.SetActive(true);
 
         LockCamera(false);
@@ -637,6 +642,20 @@ public class PlayerController : MonoBehaviour
         var weapon = GetComponent<WeaponController>();
         if (weapon != null && weapon.IsReloading) return;
         UIManager.GetInstance().Toggle(UIType.Inventory);
+    }
+
+    void ShowMinimap()
+    {
+        var ui = UIManager.GetInstance();
+        if (ui.IsOpen(UIType.Minimap))
+        {
+            ui.Hide(UIType.Minimap);
+            return;
+        }
+
+        // DialogueUI.Open()과 동일한 패턴 — 열려있던 다른 패널을 전부 닫고 미니맵만 띄운다
+        ui.HideAll();
+        ui.Show(UIType.Minimap);
     }
 
     void ShowQuest()
