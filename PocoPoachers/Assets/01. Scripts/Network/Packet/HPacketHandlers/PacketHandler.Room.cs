@@ -58,7 +58,7 @@ public static partial class PacketHandlers
         {
             var player = UnityEngine.Object.FindAnyObjectByType<PlayerController>();
             if (player == null) return;
-            player.ApplyRoomRestore(packet.Equips, packet.Inventory);
+            player.ApplyRoomRestore(packet.Equips, packet.Inventory, packet.QuickSlots);
         });
     }
 

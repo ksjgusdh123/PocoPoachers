@@ -360,6 +360,44 @@ public static class RoomSync
                 G_QuestSubmit.Pack, PacketType.G_QuestSubmit);
     }
 
+    // 게스트가 씬 전환 직전에 자기 상태를 호스트 세이브에 올린다(오토세이브 + 인벤 미러 동기화).
+    // 자기 복원은 GuestStateCarry가 하므로, 이 패킷이 늦게 도착해도 게스트 쪽은 영향이 없다.
+    public static void GuestSnapshot(
+        List<SaveManager.SlotSaveEntry> inventory,
+        List<SaveManager.EquipSlotEntry> equips,
+        List<SaveManager.SlotSaveEntry> quickSlots)
+    {
+        if (RoomManager.IsHost) return;
+
+        PacketBuilder.SendReliableToHost(new G_GuestSnapshotT
+        {
+            PlayerId   = MyId,
+            Inventory  = ToInvEntries(inventory),
+            Equips     = ToEquipEntries(equips),
+            QuickSlots = ToInvEntries(quickSlots),
+        }, G_GuestSnapshot.Pack, PacketType.G_GuestSnapshot);
+    }
+
+    static List<GuestInvEntryT> ToInvEntries(List<SaveManager.SlotSaveEntry> slots)
+    {
+        var result = new List<GuestInvEntryT>();
+        if (slots == null) return result;
+
+        foreach (var s in slots)
+            result.Add(new GuestInvEntryT { SlotIndex = s.slotIndex, ItemId = s.itemId, Amount = s.amount, ItemUid = s.uid });
+        return result;
+    }
+
+    static List<GuestEquipEntryT> ToEquipEntries(List<SaveManager.EquipSlotEntry> slots)
+    {
+        var result = new List<GuestEquipEntryT>();
+        if (slots == null) return result;
+
+        foreach (var s in slots)
+            result.Add(new GuestEquipEntryT { SlotIndex = s.slotIndex, ItemId = s.itemId, ItemUid = s.uid });
+        return result;
+    }
+
     // 게스트가 씬 로드 완료를 호스트에 알림 (호스트가 박스/적 스냅샷을 보내는 트리거)
     public static void SceneReady()
     {

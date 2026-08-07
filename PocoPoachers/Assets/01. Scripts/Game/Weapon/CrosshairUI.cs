@@ -119,6 +119,7 @@ public class CrosshairUI : MonoBehaviour
         // 오브젝트를 꺼 일반 커서를 유지한다. Instance가 null이라 UIManager.RefreshCursor도 되살리지 않는다.
         if (SceneName.IsShelter(SceneManager.GetActiveScene().name))
         {
+            Instance = null; // 이전 씬의 파괴된 인스턴스가 남아있으면 지운다
             Cursor.visible = true;
             Cursor.lockState = CursorLockMode.None;
             gameObject.SetActive(false);
@@ -136,6 +137,11 @@ public class CrosshairUI : MonoBehaviour
         if (_reloadGaugeGroup != null) _reloadGaugeGroup.alpha = 0f;
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Confined;
+    }
+
+    private void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
     }
 
     private void Update()

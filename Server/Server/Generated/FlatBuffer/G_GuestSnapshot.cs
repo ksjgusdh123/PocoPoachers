@@ -6,15 +6,15 @@ using global::System;
 using global::System.Collections.Generic;
 using global::Google.FlatBuffers;
 
-public struct H_GuestRestore : IFlatbufferObject
+public struct G_GuestSnapshot : IFlatbufferObject
 {
   private Table __p;
   public ByteBuffer ByteBuffer { get { return __p.bb; } }
   public static void ValidateVersion() { FlatBufferConstants.FLATBUFFERS_24_3_25(); }
-  public static H_GuestRestore GetRootAsH_GuestRestore(ByteBuffer _bb) { return GetRootAsH_GuestRestore(_bb, new H_GuestRestore()); }
-  public static H_GuestRestore GetRootAsH_GuestRestore(ByteBuffer _bb, H_GuestRestore obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
+  public static G_GuestSnapshot GetRootAsG_GuestSnapshot(ByteBuffer _bb) { return GetRootAsG_GuestSnapshot(_bb, new G_GuestSnapshot()); }
+  public static G_GuestSnapshot GetRootAsG_GuestSnapshot(ByteBuffer _bb, G_GuestSnapshot obj) { return (obj.__assign(_bb.GetInt(_bb.Position) + _bb.Position, _bb)); }
   public void __init(int _i, ByteBuffer _bb) { __p = new Table(_i, _bb); }
-  public H_GuestRestore __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
+  public G_GuestSnapshot __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public int PlayerId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public GuestInvEntry? Inventory(int j) { int o = __p.__offset(6); return o != 0 ? (GuestInvEntry?)(new GuestInvEntry()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
@@ -24,20 +24,20 @@ public struct H_GuestRestore : IFlatbufferObject
   public GuestInvEntry? QuickSlots(int j) { int o = __p.__offset(10); return o != 0 ? (GuestInvEntry?)(new GuestInvEntry()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int QuickSlotsLength { get { int o = __p.__offset(10); return o != 0 ? __p.__vector_len(o) : 0; } }
 
-  public static Offset<H_GuestRestore> CreateH_GuestRestore(FlatBufferBuilder builder,
+  public static Offset<G_GuestSnapshot> CreateG_GuestSnapshot(FlatBufferBuilder builder,
       int player_id = 0,
       VectorOffset inventoryOffset = default(VectorOffset),
       VectorOffset equipsOffset = default(VectorOffset),
       VectorOffset quick_slotsOffset = default(VectorOffset)) {
     builder.StartTable(4);
-    H_GuestRestore.AddQuickSlots(builder, quick_slotsOffset);
-    H_GuestRestore.AddEquips(builder, equipsOffset);
-    H_GuestRestore.AddInventory(builder, inventoryOffset);
-    H_GuestRestore.AddPlayerId(builder, player_id);
-    return H_GuestRestore.EndH_GuestRestore(builder);
+    G_GuestSnapshot.AddQuickSlots(builder, quick_slotsOffset);
+    G_GuestSnapshot.AddEquips(builder, equipsOffset);
+    G_GuestSnapshot.AddInventory(builder, inventoryOffset);
+    G_GuestSnapshot.AddPlayerId(builder, player_id);
+    return G_GuestSnapshot.EndG_GuestSnapshot(builder);
   }
 
-  public static void StartH_GuestRestore(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartG_GuestSnapshot(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddInventory(FlatBufferBuilder builder, VectorOffset inventoryOffset) { builder.AddOffset(1, inventoryOffset.Value, 0); }
   public static VectorOffset CreateInventoryVector(FlatBufferBuilder builder, Offset<GuestInvEntry>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
@@ -57,16 +57,16 @@ public struct H_GuestRestore : IFlatbufferObject
   public static VectorOffset CreateQuickSlotsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<GuestInvEntry>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateQuickSlotsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<GuestInvEntry>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartQuickSlotsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
-  public static Offset<H_GuestRestore> EndH_GuestRestore(FlatBufferBuilder builder) {
+  public static Offset<G_GuestSnapshot> EndG_GuestSnapshot(FlatBufferBuilder builder) {
     int o = builder.EndTable();
-    return new Offset<H_GuestRestore>(o);
+    return new Offset<G_GuestSnapshot>(o);
   }
-  public H_GuestRestoreT UnPack() {
-    var _o = new H_GuestRestoreT();
+  public G_GuestSnapshotT UnPack() {
+    var _o = new G_GuestSnapshotT();
     this.UnPackTo(_o);
     return _o;
   }
-  public void UnPackTo(H_GuestRestoreT _o) {
+  public void UnPackTo(G_GuestSnapshotT _o) {
     _o.PlayerId = this.PlayerId;
     _o.Inventory = new List<GuestInvEntryT>();
     for (var _j = 0; _j < this.InventoryLength; ++_j) {_o.Inventory.Add(this.Inventory(_j).HasValue ? this.Inventory(_j).Value.UnPack() : null);}
@@ -75,8 +75,8 @@ public struct H_GuestRestore : IFlatbufferObject
     _o.QuickSlots = new List<GuestInvEntryT>();
     for (var _j = 0; _j < this.QuickSlotsLength; ++_j) {_o.QuickSlots.Add(this.QuickSlots(_j).HasValue ? this.QuickSlots(_j).Value.UnPack() : null);}
   }
-  public static Offset<H_GuestRestore> Pack(FlatBufferBuilder builder, H_GuestRestoreT _o) {
-    if (_o == null) return default(Offset<H_GuestRestore>);
+  public static Offset<G_GuestSnapshot> Pack(FlatBufferBuilder builder, G_GuestSnapshotT _o) {
+    if (_o == null) return default(Offset<G_GuestSnapshot>);
     var _inventory = default(VectorOffset);
     if (_o.Inventory != null) {
       var __inventory = new Offset<GuestInvEntry>[_o.Inventory.Count];
@@ -95,7 +95,7 @@ public struct H_GuestRestore : IFlatbufferObject
       for (var _j = 0; _j < __quick_slots.Length; ++_j) { __quick_slots[_j] = GuestInvEntry.Pack(builder, _o.QuickSlots[_j]); }
       _quick_slots = CreateQuickSlotsVector(builder, __quick_slots);
     }
-    return CreateH_GuestRestore(
+    return CreateG_GuestSnapshot(
       builder,
       _o.PlayerId,
       _inventory,
@@ -104,14 +104,14 @@ public struct H_GuestRestore : IFlatbufferObject
   }
 }
 
-public class H_GuestRestoreT
+public class G_GuestSnapshotT
 {
   public int PlayerId { get; set; }
   public List<GuestInvEntryT> Inventory { get; set; }
   public List<GuestEquipEntryT> Equips { get; set; }
   public List<GuestInvEntryT> QuickSlots { get; set; }
 
-  public H_GuestRestoreT() {
+  public G_GuestSnapshotT() {
     this.PlayerId = 0;
     this.Inventory = null;
     this.Equips = null;
@@ -120,7 +120,7 @@ public class H_GuestRestoreT
 }
 
 
-static public class H_GuestRestoreVerify
+static public class G_GuestSnapshotVerify
 {
   static public bool Verify(Google.FlatBuffers.Verifier verifier, uint tablePos)
   {

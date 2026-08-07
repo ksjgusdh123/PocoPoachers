@@ -98,4 +98,16 @@ table H_GuestRestore
     player_id: int;
     inventory: [GuestInvEntry];
     equips:    [GuestEquipEntry];
+    quick_slots: [GuestInvEntry]; // 기존 오프셋 유지를 위해 반드시 끝에 추가
+}
+
+// 게스트→호스트(신뢰), 씬 전환 직전에 자기 상태를 올린다. 호스트는 방 세계 세이브에 기록해
+// 맵 이동마다 오토세이브가 되게 하고, 게스트 인벤 미러(GuestInventoryTracker)도 이 값으로 맞춘다.
+// 게스트 자신의 복원은 이 패킷을 기다리지 않는다 — 로컬 캐리오버(GuestStateCarry)가 담당한다.
+table G_GuestSnapshot
+{
+    player_id:   int;
+    inventory:   [GuestInvEntry];
+    equips:      [GuestEquipEntry];
+    quick_slots: [GuestInvEntry];
 }

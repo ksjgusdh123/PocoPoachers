@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 // 퀵슬롯 전용 저장소
@@ -31,12 +32,13 @@ public class QuickSlotInventory : MonoBehaviour
 
         ItemData data = invSlot.ItemData;
         int amount = invSlot.Amount;
+        int uid = invSlot.Uid;
 
         // 슬롯에 기존 아이템이 있으면 먼저 인벤토리로 반납
         ReturnTo(quickSlotIndex, inventory);
 
         inventory.RemoveItemAtSlot(inventorySlotIndex, data, amount);
-        _slots[ToLocal(quickSlotIndex)].Set(data, amount);
+        _slots[ToLocal(quickSlotIndex)].Set(data, amount, uid);
         return true;
     }
 
@@ -52,7 +54,7 @@ public class QuickSlotInventory : MonoBehaviour
         int addIdx = inventory.CanAddItem(slot.ItemData, slot.Amount);
         if (addIdx < 0) return false;
 
-        inventory.AddItemAtSlot(addIdx, slot.ItemData, slot.Amount);
+        inventory.AddItemAtSlot(addIdx, slot.ItemData, slot.Amount, slot.Uid);
         slot.Clear();
         return true;
     }
@@ -88,6 +90,48 @@ public class QuickSlotInventory : MonoBehaviour
             }, H_ConsumeItemResult.Pack, PacketType.H_ConsumeItemResult);
         }
         return true;
+    }
+
+    // 퀵슬롯 아이템은 인벤토리에서 빠져나와 있어 인벤 세이브에 안 잡힌다 — 따로 저장하지 않으면 맵 이동 시 소실된다
+    public List<SaveManager.SlotSaveEntry> Export()
+    {
+        var entries = new List<SaveManager.SlotSaveEntry>();
+        for (int i = 0; i < _slots.Length; i++)
+        {
+            var slot = _slots[i];
+            if (slot.IsEmpty) continue;
+
+            entries.Add(new SaveManager.SlotSaveEntry
+            {
+                slotIndex = _startIndex + i,
+                itemId    = slot.ItemData.id,
+                amount    = slot.Amount,
+                uid       = slot.Uid,
+            });
+        }
+        return entries;
+    }
+
+    // QuickSlotDropHandler.Init으로 UI가 slot.OnChanged를 구독한 뒤에 호출해야 표시가 갱신된다
+    public void Import(List<SaveManager.SlotSaveEntry> entries)
+    {
+        if (entries == null) return;
+
+        foreach (var entry in entries)
+        {
+            if (!IsValidIndex(entry.slotIndex)) continue;
+
+            ItemData data = ItemTable.Instance.Get(entry.itemId);
+            if (data == null) continue;
+
+            _slots[ToLocal(entry.slotIndex)].Set(data, entry.amount, entry.uid);
+        }
+    }
+
+    public void Clear()
+    {
+        foreach (var slot in _slots)
+            if (!slot.IsEmpty) slot.Clear();
     }
 
     // 외부 인덱스(3,4,5...) → 내부 배열 인덱스(0,1,2...)

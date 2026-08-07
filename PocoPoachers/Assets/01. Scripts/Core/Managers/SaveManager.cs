@@ -82,6 +82,17 @@ public class SaveManager : Singleton<SaveManager>
 
     public List<EquipSlotEntry> LoadEquipSlots() => GetOrLoad(_activeSlot).equipSlots;
 
+    // 퀵슬롯에 올려둔 아이템은 인벤토리에서 빠져나와 있어 SaveInventory에 안 잡히므로 따로 저장한다
+    public void SaveQuickSlots(List<SlotSaveEntry> slots)
+    {
+        var data = GetOrLoad(_activeSlot);
+        data.quickSlots = slots ?? new List<SlotSaveEntry>();
+        data.lastSavedAt = NowTimestamp();
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    public List<SlotSaveEntry> LoadQuickSlots() => GetOrLoad(_activeSlot).quickSlots;
+
     // 총기/방어구 등 uid별 인스턴스 상태(내구도/장탄수/파츠/강화)를 디스크에 저장 (호스트 전용)
     public void SaveEquipmentState()
     {
@@ -211,7 +222,12 @@ public class SaveManager : Singleton<SaveManager>
         public int playerId;
         public List<SlotSaveEntry> inventory = new List<SlotSaveEntry>();
         public List<EquipSlotEntry> equipSlots = new List<EquipSlotEntry>();
+        public List<SlotSaveEntry> quickSlots = new List<SlotSaveEntry>();
         public WorldEquipmentManager.SaveData equipment = new WorldEquipmentManager.SaveData();
+
+        // 게스트가 직접 올린 스냅샷인지. false면 GuestInventoryTracker(상자 교환 검증용 부분 미러)에서
+        // 긁어낸 부정확한 값이라, 진짜 스냅샷이 한 번이라도 오면 덮어써야 한다.
+        public bool fromGuestSnapshot;
     }
 
     [Serializable]
@@ -262,6 +278,7 @@ public class SaveManager : Singleton<SaveManager>
         public int shelterLevel = 1;
         public List<InventorySaveEntry> inventories = new List<InventorySaveEntry>();
         public List<EquipSlotEntry> equipSlots = new List<EquipSlotEntry>();
+        public List<SlotSaveEntry> quickSlots = new List<SlotSaveEntry>();
         public WorldEquipmentManager.SaveData equipment = new WorldEquipmentManager.SaveData();
 
         // 퀘스트 진행 상태 - 쉘터 레벨처럼 파티 전체가 공유하는 값이라 게스트별(GuestRoomState)이 아니라 여기 한 곳에만 둔다

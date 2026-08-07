@@ -80,6 +80,7 @@ public struct FlatPacket : IFlatbufferObject
   public H_QuestSubmit TypeAsH_QuestSubmit() { return Type<H_QuestSubmit>().Value; }
   public G_QuestComplete TypeAsG_QuestComplete() { return Type<G_QuestComplete>().Value; }
   public H_QuestComplete TypeAsH_QuestComplete() { return Type<H_QuestComplete>().Value; }
+  public G_GuestSnapshot TypeAsG_GuestSnapshot() { return Type<G_GuestSnapshot>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -291,6 +292,9 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_QuestComplete:
         _o.Type.Value = this.Type<H_QuestComplete>().HasValue ? this.Type<H_QuestComplete>().Value.UnPack() : null;
+        break;
+      case PacketType.G_GuestSnapshot:
+        _o.Type.Value = this.Type<G_GuestSnapshot>().HasValue ? this.Type<G_GuestSnapshot>().Value.UnPack() : null;
         break;
     }
   }
