@@ -508,7 +508,9 @@ public class UIManager : Singleton<UIManager>
 
     public void ChangeMouseCursor(bool isCrosshair)
     {
-        CrosshairUI.Instance?.SetGameMode(isCrosshair);
+        // ?.는 Unity의 파괴된 오브젝트를 걸러내지 못하므로 == null로 검사해야 한다
+        if (CrosshairUI.Instance == null) return;
+        CrosshairUI.Instance.SetGameMode(isCrosshair);
     }
 
     private void RefreshCursor()
