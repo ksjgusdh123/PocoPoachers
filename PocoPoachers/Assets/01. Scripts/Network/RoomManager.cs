@@ -794,6 +794,11 @@ public class RoomManager : Singleton<RoomManager>
     {
         if (!_isHost) return;
 
+        // 게스트가 직접 올린 스냅샷이 있으면 그게 정확하다. 트래커는 소모품 사용/로컬 이동을 반영하지 못하므로
+        // 여기서 다시 긁으면 오히려 최신 스냅샷을 부정확한 값으로 되돌리게 된다.
+        var saved = SaveManager.GetInstance()?.LoadGuestRoomState(guestId);
+        if (saved != null && saved.fromGuestSnapshot) return;
+
         var state = new SaveManager.GuestRoomState { playerId = guestId };
         var uids = new HashSet<int>();
 
@@ -814,6 +819,47 @@ public class RoomManager : Singleton<RoomManager>
         SaveManager.GetInstance()?.SaveGuestRoomState(state);
     }
 
+    // 호스트 전용 — 게스트가 씬 전환 직전에 올린 스냅샷을 방 세계 세이브에 기록한다(맵 이동마다 오토세이브).
+    // 인벤 미러도 이 값으로 맞춰야 맵 이동 뒤 상자 교환 검증(GuestInventoryTracker.HasInSlot)이 통과한다.
+    public void StoreGuestSnapshot(int guestId, G_GuestSnapshotT packet)
+    {
+        if (!_isHost || packet == null) return;
+
+        var state = new SaveManager.GuestRoomState { playerId = guestId, fromGuestSnapshot = true };
+        var uids = new HashSet<int>();
+
+        GuestInventoryTracker.ClearGuest(guestId);
+
+        if (packet.Inventory != null)
+            foreach (var inv in packet.Inventory)
+            {
+                if (inv == null) continue;
+                state.inventory.Add(new SaveManager.SlotSaveEntry { slotIndex = inv.SlotIndex, itemId = inv.ItemId, amount = inv.Amount, uid = inv.ItemUid });
+                GuestInventoryTracker.SetSlot(guestId, inv.SlotIndex, inv.ItemId, inv.Amount, inv.ItemUid);
+                if (inv.ItemUid != 0) uids.Add(inv.ItemUid);
+            }
+
+        if (packet.Equips != null)
+            foreach (var eq in packet.Equips)
+            {
+                if (eq == null) continue;
+                state.equipSlots.Add(new SaveManager.EquipSlotEntry { slotIndex = eq.SlotIndex, itemId = eq.ItemId, uid = eq.ItemUid });
+                if (eq.ItemUid != 0) uids.Add(eq.ItemUid);
+            }
+
+        if (packet.QuickSlots != null)
+            foreach (var qs in packet.QuickSlots)
+            {
+                if (qs == null) continue;
+                state.quickSlots.Add(new SaveManager.SlotSaveEntry { slotIndex = qs.SlotIndex, itemId = qs.ItemId, amount = qs.Amount, uid = qs.ItemUid });
+                if (qs.ItemUid != 0) uids.Add(qs.ItemUid);
+            }
+
+        state.equipment = WorldEquipmentManager.ExportSubset(uids);
+
+        SaveManager.GetInstance()?.SaveGuestRoomState(state);
+    }
+
     // 호스트 전용 — 방 세계에 저장된 게스트 상태를 접속 시 그 게스트에게 복원 전송한다.
     // 총 내구도/파츠/탄약은 담지 않는다 — 게스트가 재장착하면 기존 H_Durability/H_GunState 흐름이 채운다
     // (호스트 WorldEquipmentManager에 그 uid 상태가 이미 로드돼 있으므로).
@@ -827,6 +873,7 @@ public class RoomManager : Singleton<RoomManager>
             PlayerId = guestId,
             Inventory = new List<GuestInvEntryT>(),
             Equips = new List<GuestEquipEntryT>(),
+            QuickSlots = new List<GuestInvEntryT>(),
         };
 
         foreach (var inv in state.inventory)
@@ -837,6 +884,8 @@ public class RoomManager : Singleton<RoomManager>
         }
         foreach (var eq in state.equipSlots)
             t.Equips.Add(new GuestEquipEntryT { SlotIndex = eq.slotIndex, ItemId = eq.itemId, ItemUid = eq.uid });
+        foreach (var qs in state.quickSlots)
+            t.QuickSlots.Add(new GuestInvEntryT { SlotIndex = qs.slotIndex, ItemId = qs.itemId, Amount = qs.amount, ItemUid = qs.uid });
 
         PacketBuilder.SendReliableToGuest(guestId, t, H_GuestRestore.Pack, PacketType.H_GuestRestore);
     }
@@ -870,6 +919,7 @@ public class RoomManager : Singleton<RoomManager>
         WorldEquipmentManager.Clear();
         RemoteEquipState.Clear();
         QuestManager.Clear();
+        GuestStateCarry.Clear();
     }
 
     void CloseUdpSession()

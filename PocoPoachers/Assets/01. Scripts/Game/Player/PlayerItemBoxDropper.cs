@@ -13,17 +13,19 @@ public class PlayerItemBoxDropper : MonoBehaviour
     private static int _nextUid = 9000; // 필드 스포너(1000+), 적 드롭(5000+)과 겹치지 않는 범위
 
     private Inventory _inventory;
+    private QuickSlotInventory _quickSlotInventory;
 
     private void Awake()
     {
         _inventory = GetComponent<Inventory>();
+        _quickSlotInventory = GetComponent<QuickSlotInventory>();
     }
 
     // TODO: 게스트가 죽는 경우는 아직 미지원 — 호스트 로컬만 상자를 만들고, 게스트는 그냥 인벤토리만 비움
     public void SpawnLootBox()
     {
         if (_inventory == null) return;
-        if (!RoomManager.IsHost) { _inventory.Clear(); return; }
+        if (!RoomManager.IsHost) { _inventory.Clear(); _quickSlotInventory?.Clear(); return; }
 
         var itemIds = new List<int>();
         var itemCounts = new List<int>();
@@ -37,10 +39,25 @@ public class PlayerItemBoxDropper : MonoBehaviour
             itemUids.Add(slot.Uid);
         }
 
+        CollectQuickSlotItems(itemIds, itemCounts, itemUids);
         CollectEquippedItems(itemIds, itemCounts, itemUids);
 
         _inventory.Clear();
+        _quickSlotInventory?.Clear();
         SpawnBox(itemIds, itemCounts, itemUids);
+    }
+
+    // 퀵슬롯 아이템은 인벤토리에 없으므로 따로 담지 않으면 사망해도 안 떨어지고 세이브로 되살아난다
+    private void CollectQuickSlotItems(List<int> itemIds, List<int> itemCounts, List<int> itemUids)
+    {
+        if (_quickSlotInventory == null) return;
+
+        foreach (var entry in _quickSlotInventory.Export())
+        {
+            itemIds.Add(entry.itemId);
+            itemCounts.Add(entry.amount);
+            itemUids.Add(entry.uid);
+        }
     }
 
     // UI 밖으로 드래그해 버린 슬롯 아이템(드래그한 수량)을 플레이어 위치에 상자로 스폰한다.

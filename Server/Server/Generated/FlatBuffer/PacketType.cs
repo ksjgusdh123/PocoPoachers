@@ -66,6 +66,7 @@ public enum PacketType : byte
   H_QuestSubmit = 59,
   G_QuestComplete = 60,
   H_QuestComplete = 61,
+  G_GuestSnapshot = 62,
 };
 
 public class PacketTypeUnion {
@@ -200,6 +201,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_QuestComplete(G_QuestCompleteT _g_questcomplete) { return new PacketTypeUnion{ Type = PacketType.G_QuestComplete, Value = _g_questcomplete }; }
   public H_QuestCompleteT AsH_QuestComplete() { return this.As<H_QuestCompleteT>(); }
   public static PacketTypeUnion FromH_QuestComplete(H_QuestCompleteT _h_questcomplete) { return new PacketTypeUnion{ Type = PacketType.H_QuestComplete, Value = _h_questcomplete }; }
+  public G_GuestSnapshotT AsG_GuestSnapshot() { return this.As<G_GuestSnapshotT>(); }
+  public static PacketTypeUnion FromG_GuestSnapshot(G_GuestSnapshotT _g_guestsnapshot) { return new PacketTypeUnion{ Type = PacketType.G_GuestSnapshot, Value = _g_guestsnapshot }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -265,6 +268,7 @@ public class PacketTypeUnion {
       case PacketType.H_QuestSubmit: return H_QuestSubmit.Pack(builder, _o.AsH_QuestSubmit()).Value;
       case PacketType.G_QuestComplete: return G_QuestComplete.Pack(builder, _o.AsG_QuestComplete()).Value;
       case PacketType.H_QuestComplete: return H_QuestComplete.Pack(builder, _o.AsH_QuestComplete()).Value;
+      case PacketType.G_GuestSnapshot: return G_GuestSnapshot.Pack(builder, _o.AsG_GuestSnapshot()).Value;
     }
   }
 }
@@ -460,6 +464,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_QuestComplete:
         result = H_QuestCompleteVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_GuestSnapshot:
+        result = G_GuestSnapshotVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

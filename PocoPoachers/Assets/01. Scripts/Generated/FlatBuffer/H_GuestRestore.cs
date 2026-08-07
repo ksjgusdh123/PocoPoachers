@@ -21,19 +21,23 @@ public struct H_GuestRestore : IFlatbufferObject
   public int InventoryLength { get { int o = __p.__offset(6); return o != 0 ? __p.__vector_len(o) : 0; } }
   public GuestEquipEntry? Equips(int j) { int o = __p.__offset(8); return o != 0 ? (GuestEquipEntry?)(new GuestEquipEntry()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
   public int EquipsLength { get { int o = __p.__offset(8); return o != 0 ? __p.__vector_len(o) : 0; } }
+  public GuestInvEntry? QuickSlots(int j) { int o = __p.__offset(10); return o != 0 ? (GuestInvEntry?)(new GuestInvEntry()).__assign(__p.__indirect(__p.__vector(o) + j * 4), __p.bb) : null; }
+  public int QuickSlotsLength { get { int o = __p.__offset(10); return o != 0 ? __p.__vector_len(o) : 0; } }
 
   public static Offset<H_GuestRestore> CreateH_GuestRestore(FlatBufferBuilder builder,
       int player_id = 0,
       VectorOffset inventoryOffset = default(VectorOffset),
-      VectorOffset equipsOffset = default(VectorOffset)) {
-    builder.StartTable(3);
+      VectorOffset equipsOffset = default(VectorOffset),
+      VectorOffset quick_slotsOffset = default(VectorOffset)) {
+    builder.StartTable(4);
+    H_GuestRestore.AddQuickSlots(builder, quick_slotsOffset);
     H_GuestRestore.AddEquips(builder, equipsOffset);
     H_GuestRestore.AddInventory(builder, inventoryOffset);
     H_GuestRestore.AddPlayerId(builder, player_id);
     return H_GuestRestore.EndH_GuestRestore(builder);
   }
 
-  public static void StartH_GuestRestore(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartH_GuestRestore(FlatBufferBuilder builder) { builder.StartTable(4); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddInventory(FlatBufferBuilder builder, VectorOffset inventoryOffset) { builder.AddOffset(1, inventoryOffset.Value, 0); }
   public static VectorOffset CreateInventoryVector(FlatBufferBuilder builder, Offset<GuestInvEntry>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
@@ -47,6 +51,12 @@ public struct H_GuestRestore : IFlatbufferObject
   public static VectorOffset CreateEquipsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<GuestEquipEntry>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateEquipsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<GuestEquipEntry>>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartEquipsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddQuickSlots(FlatBufferBuilder builder, VectorOffset quickSlotsOffset) { builder.AddOffset(3, quickSlotsOffset.Value, 0); }
+  public static VectorOffset CreateQuickSlotsVector(FlatBufferBuilder builder, Offset<GuestInvEntry>[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddOffset(data[i].Value); return builder.EndVector(); }
+  public static VectorOffset CreateQuickSlotsVectorBlock(FlatBufferBuilder builder, Offset<GuestInvEntry>[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateQuickSlotsVectorBlock(FlatBufferBuilder builder, ArraySegment<Offset<GuestInvEntry>> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateQuickSlotsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<Offset<GuestInvEntry>>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartQuickSlotsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<H_GuestRestore> EndH_GuestRestore(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_GuestRestore>(o);
@@ -62,6 +72,8 @@ public struct H_GuestRestore : IFlatbufferObject
     for (var _j = 0; _j < this.InventoryLength; ++_j) {_o.Inventory.Add(this.Inventory(_j).HasValue ? this.Inventory(_j).Value.UnPack() : null);}
     _o.Equips = new List<GuestEquipEntryT>();
     for (var _j = 0; _j < this.EquipsLength; ++_j) {_o.Equips.Add(this.Equips(_j).HasValue ? this.Equips(_j).Value.UnPack() : null);}
+    _o.QuickSlots = new List<GuestInvEntryT>();
+    for (var _j = 0; _j < this.QuickSlotsLength; ++_j) {_o.QuickSlots.Add(this.QuickSlots(_j).HasValue ? this.QuickSlots(_j).Value.UnPack() : null);}
   }
   public static Offset<H_GuestRestore> Pack(FlatBufferBuilder builder, H_GuestRestoreT _o) {
     if (_o == null) return default(Offset<H_GuestRestore>);
@@ -77,11 +89,18 @@ public struct H_GuestRestore : IFlatbufferObject
       for (var _j = 0; _j < __equips.Length; ++_j) { __equips[_j] = GuestEquipEntry.Pack(builder, _o.Equips[_j]); }
       _equips = CreateEquipsVector(builder, __equips);
     }
+    var _quick_slots = default(VectorOffset);
+    if (_o.QuickSlots != null) {
+      var __quick_slots = new Offset<GuestInvEntry>[_o.QuickSlots.Count];
+      for (var _j = 0; _j < __quick_slots.Length; ++_j) { __quick_slots[_j] = GuestInvEntry.Pack(builder, _o.QuickSlots[_j]); }
+      _quick_slots = CreateQuickSlotsVector(builder, __quick_slots);
+    }
     return CreateH_GuestRestore(
       builder,
       _o.PlayerId,
       _inventory,
-      _equips);
+      _equips,
+      _quick_slots);
   }
 }
 
@@ -90,11 +109,13 @@ public class H_GuestRestoreT
   public int PlayerId { get; set; }
   public List<GuestInvEntryT> Inventory { get; set; }
   public List<GuestEquipEntryT> Equips { get; set; }
+  public List<GuestInvEntryT> QuickSlots { get; set; }
 
   public H_GuestRestoreT() {
     this.PlayerId = 0;
     this.Inventory = null;
     this.Equips = null;
+    this.QuickSlots = null;
   }
 }
 
@@ -107,6 +128,7 @@ static public class H_GuestRestoreVerify
       && verifier.VerifyField(tablePos, 4 /*PlayerId*/, 4 /*int*/, 4, false)
       && verifier.VerifyVectorOfTables(tablePos, 6 /*Inventory*/, GuestInvEntryVerify.Verify, false)
       && verifier.VerifyVectorOfTables(tablePos, 8 /*Equips*/, GuestEquipEntryVerify.Verify, false)
+      && verifier.VerifyVectorOfTables(tablePos, 10 /*QuickSlots*/, GuestInvEntryVerify.Verify, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

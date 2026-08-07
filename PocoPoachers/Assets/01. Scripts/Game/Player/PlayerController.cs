@@ -50,6 +50,8 @@ public class PlayerController : MonoBehaviour
     private SaveManager _saveManager;
     private PlayerInputHandler _inputHandler;
     private QuickSlotDropHandler[] _quickSlots;
+    private QuickSlotInventory _quickSlotInventory;
+    private bool _guestCarryRestored;
     private GunPartDropHandler[] _gunPartSlots;
     private EquipDropHandler[] _equipHandlers;
     private readonly List<GameObject> _interactObjects = new();
@@ -108,6 +110,10 @@ public class PlayerController : MonoBehaviour
             RestoreEquippedSlots();
             _saveManager.LoadInventory(PlayerSaveKey, _inventory);
         }
+        else if (GuestStateCarry.HasPending)
+        {
+            RestoreGuestCarry();
+        }
 
         BindPlayerInventoryUI();
 
@@ -116,6 +122,12 @@ public class PlayerController : MonoBehaviour
 
         InitQuickSlots();
         InitGunPartSlots();
+
+        // UI 바인딩(InitQuickSlots)이 끝난 뒤여야 slot.OnChanged로 아이콘까지 갱신된다
+        if (RoomManager.IsHost)
+            _quickSlotInventory.Import(_saveManager.LoadQuickSlots());
+        else if (GuestStateCarry.HasPending)
+            _quickSlotInventory.Import(GuestStateCarry.QuickSlots);
 
         _inputHandler = GetComponent<PlayerInputHandler>();
         _inputHandler.GoInventory += ShowInventory;
@@ -155,11 +167,11 @@ public class PlayerController : MonoBehaviour
 
     private void InitQuickSlots()
     {
-        var quickSlotInventory = GetComponent<QuickSlotInventory>();
+        _quickSlotInventory = GetComponent<QuickSlotInventory>();
 
-        int count = Mathf.Min(_quickSlots.Length, quickSlotInventory.SlotCount);
+        int count = Mathf.Min(_quickSlots.Length, _quickSlotInventory.SlotCount);
         for (int i = 0; i < count; i++)
-            _quickSlots[i].Init(_playerBagInventoryUI, quickSlotInventory, quickSlotInventory.StartIndex + i);
+            _quickSlots[i].Init(_playerBagInventoryUI, _quickSlotInventory, _quickSlotInventory.StartIndex + i);
     }
 
     // 총기 파츠 슬롯에 로컬 플레이어 인벤 UI 연결 (해제 시 인벤토리 반납용). 대상 총은 패널이 SetGun으로 주입.
@@ -207,45 +219,78 @@ public class PlayerController : MonoBehaviour
     private void RestoreEquippedSlots()
     {
         var entries = _saveManager?.LoadEquipSlots();
-        if (entries == null || entries.Count == 0) return;
-
-        var weaponController = GetComponent<WeaponController>();
-        var armorController = GetComponent<PlayerArmorController>();
-        var bagController = GetComponent<BagController>();
+        if (entries == null) return;
 
         foreach (var e in entries)
+            EquipRestored(e.slotIndex, e.itemId, e.uid);
+    }
+
+    // 게스트가 직전 씬에서 넘긴 자기 상태를 복원한다. 장착이 인벤 용량을 확장하므로 순서는 세이브 복원과 동일하게 장착 먼저.
+    private void RestoreGuestCarry()
+    {
+        _guestCarryRestored = true;
+
+        if (GuestStateCarry.Equips != null)
+            foreach (var e in GuestStateCarry.Equips)
+                EquipRestored(e.slotIndex, e.itemId, e.uid);
+
+        if (_inventory == null) return;
+
+        foreach (var it in GuestStateCarry.Inventory)
         {
-            var data = ItemTable.Instance.Get(e.itemId);
+            var data = ItemTable.Instance.Get(it.itemId);
             if (data == null) continue;
-
-            EquipableController controller =
-                e.slotIndex <= WeaponSlot1 ? (EquipableController)weaponController :
-                e.slotIndex <= ArmorSlot   ? armorController : bagController;
-
-            controller?.Equip(data, e.slotIndex, e.uid);
+            _inventory.AddItemAtSlot(it.slotIndex, data, it.amount, it.uid);
         }
+    }
+
+    private List<SaveManager.SlotSaveEntry> GatherInventorySlots()
+    {
+        var entries = new List<SaveManager.SlotSaveEntry>();
+        if (_inventory == null) return entries;
+
+        for (int i = 0; i < _inventory.CurrentCapacity; i++)
+        {
+            var slot = _inventory.Slots[i];
+            if (slot.IsEmpty) continue;
+
+            entries.Add(new SaveManager.SlotSaveEntry
+            {
+                slotIndex = i,
+                itemId    = slot.ItemData.id,
+                amount    = slot.Amount,
+                uid       = slot.Uid,
+            });
+        }
+        return entries;
+    }
+
+    // 슬롯 인덱스 → 담당 컨트롤러 매핑을 한 곳에 모은다 (세이브 복원/방 세계 복원/게스트 캐리오버 공용)
+    private void EquipRestored(int slotIndex, int itemId, int uid)
+    {
+        var data = ItemTable.Instance.Get(itemId);
+        if (data == null) return;
+
+        EquipableController controller =
+            slotIndex <= WeaponSlot1 ? (EquipableController)GetComponent<WeaponController>() :
+            slotIndex <= ArmorSlot   ? GetComponent<PlayerArmorController>() : GetComponent<BagController>();
+
+        controller?.Equip(data, slotIndex, uid);
     }
 
     // 코옵 게스트 복원 — 호스트가 보낸 방 세계 상태(로드아웃+인벤)를 로컬에 적용한다.
     // 장착이 controller.Equip → G_Equip을 보내 호스트가 총 상태(H_Durability/H_GunState)를 되돌려주게 한다.
     // 가방 장착이 인벤 용량을 확장하므로 장착을 인벤 채우기보다 먼저 한다(RestoreEquippedSlots와 동일).
-    public void ApplyRoomRestore(List<GuestEquipEntryT> equips, List<GuestInvEntryT> inventory)
+    public void ApplyRoomRestore(List<GuestEquipEntryT> equips, List<GuestInvEntryT> inventory, List<GuestInvEntryT> quickSlots)
     {
-        var weaponController = GetComponent<WeaponController>();
-        var armorController = GetComponent<PlayerArmorController>();
-        var bagController = GetComponent<BagController>();
+        // 로컬 캐리오버로 이미 복원했다면 호스트가 늦게 보낸 스냅샷은 무시한다 — 적용하면 중복 지급이 된다
+        if (_guestCarryRestored) return;
 
         if (equips != null)
             foreach (var e in equips)
             {
                 if (e == null) continue;
-                var data = ItemTable.Instance.Get(e.ItemId);
-                if (data == null) continue;
-
-                EquipableController controller =
-                    e.SlotIndex <= WeaponSlot1 ? (EquipableController)weaponController :
-                    e.SlotIndex <= ArmorSlot   ? armorController : bagController;
-                controller?.Equip(data, e.SlotIndex, e.ItemUid);
+                EquipRestored(e.SlotIndex, e.ItemId, e.ItemUid);
             }
 
         if (inventory != null && _inventory != null)
@@ -256,6 +301,17 @@ public class PlayerController : MonoBehaviour
                 if (data == null) continue;
                 _inventory.AddItemAtSlot(it.SlotIndex, data, it.Amount, it.ItemUid);
             }
+
+        if (quickSlots != null && _quickSlotInventory != null)
+        {
+            var entries = new List<SaveManager.SlotSaveEntry>();
+            foreach (var qs in quickSlots)
+            {
+                if (qs == null) continue;
+                entries.Add(new SaveManager.SlotSaveEntry { slotIndex = qs.SlotIndex, itemId = qs.ItemId, amount = qs.Amount, uid = qs.ItemUid });
+            }
+            _quickSlotInventory.Import(entries);
+        }
 
         InitEquipSlots();
     }
@@ -451,6 +507,9 @@ public class PlayerController : MonoBehaviour
             if (_inventory != null)
                 _saveManager?.SaveInventory(PlayerSaveKey, _inventory);
 
+            if (_quickSlotInventory != null)
+                _saveManager?.SaveQuickSlots(_quickSlotInventory.Export());
+
             // 장착 슬롯 구성(어떤 아이템이 몇 번 슬롯에 장착됐는지)을 저장 — 인벤토리와 함께 씬 전환/종료 시 영속화
             var equipSlots = GatherEquippedSlots();
             _saveManager?.SaveEquipSlots(equipSlots);
@@ -470,6 +529,16 @@ public class PlayerController : MonoBehaviour
                 else
                     _saveManager?.SaveVitals(_playerStat.CurrentHp, _playerStat.CurrentStamina, _playerStat.CurrentBattery);
             }
+        }
+        else
+        {
+            // 게스트는 세이브 파일 대신 메모리로 다음 씬에 넘기고(복원용), 같은 내용을 호스트 세이브에 올린다(오토세이브용)
+            var inventorySlots = GatherInventorySlots();
+            var equipSlots = GatherEquippedSlots();
+            var quickSlots = _quickSlotInventory?.Export();
+
+            GuestStateCarry.Store(inventorySlots, equipSlots, quickSlots);
+            RoomSync.GuestSnapshot(inventorySlots, equipSlots, quickSlots);
         }
 
         if (_inputHandler != null)
