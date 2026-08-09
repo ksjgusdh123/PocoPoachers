@@ -461,12 +461,29 @@ public class UIManager : Singleton<UIManager>
     {
         if (_dimmer != null) return;
 
-        _dimmer = new GameObject("SharedDimmer", typeof(RectTransform), typeof(UnityEngine.UI.Image));
-        _dimmerImage = _dimmer.GetComponent<UnityEngine.UI.Image>();
-        _dimmerImage.raycastTarget = true;   // 뒤쪽 UI/월드 클릭 차단
+        // 구조: SharedDimmer ─ BlurBackdrop(블러, 자동 생성) ─ Dim(딤 색)
+        // UI는 부모→자식 순으로 그려지므로 Dim을 자식으로 두어야 블러 위에 얹힌다.
+        // 블러 컴포넌트는 활성화되는 순간 BlurBackdrop을 첫 자식으로 끼워넣으므로,
+        // 배치가 끝나기 전에 켜지지 않도록 꺼둔 채로 조립한다.
+        _dimmer = new GameObject("SharedDimmer", typeof(RectTransform));
+        _dimmer.SetActive(false);
+
+        UIRealtimeBackdropBlur.Attach(_dimmer);
+
+        var dimObject = new GameObject("Dim", typeof(RectTransform), typeof(UnityEngine.UI.Image));
+        dimObject.layer = _dimmer.layer;
+        dimObject.transform.SetParent(_dimmer.transform, false);
+
+        var dimRect = (RectTransform)dimObject.transform;
+        dimRect.anchorMin = Vector2.zero;
+        dimRect.anchorMax = Vector2.one;
+        dimRect.offsetMin = Vector2.zero;
+        dimRect.offsetMax = Vector2.zero;
 
         var theme = UITheme.Default;
-        _dimmerImage.color = theme != null ? theme.Dimmer : new Color(0.04f, 0.06f, 0.11f, 0.6f);
+        _dimmerImage = dimObject.GetComponent<UnityEngine.UI.Image>();
+        _dimmerImage.raycastTarget = true;   // 뒤쪽 UI/월드 클릭 차단
+        _dimmerImage.color = theme != null ? theme.Dimmer : new Color(0f, 0f, 0f, 0.6f);
     }
 
     public void Toggle(UIType type)

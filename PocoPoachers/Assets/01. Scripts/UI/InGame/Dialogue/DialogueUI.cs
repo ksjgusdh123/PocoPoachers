@@ -15,9 +15,6 @@ public class DialogueUI : UIBase
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private TextMeshProUGUI _dialogueText;
 
-    [Tooltip("대화창이 열릴 때 같이 켜지는 배경(화면 전체를 덮는 어두운 이미지 등). 씬/프리팹에서 직접 배치해서 연결.")]
-    [SerializeField] private GameObject _backgroundDim;
-
     [Serializable]
     private class ChoiceSlot
     {
@@ -77,7 +74,6 @@ public class DialogueUI : UIBase
         UIManager.GetInstance().HideAll();
         SetContent(speakerName, dialogue);
         Show();
-        if (_backgroundDim != null) _backgroundDim.SetActive(true);
 
         _nextId = 0;
         SetChoices(new List<DialogueChoiceData>());
@@ -92,7 +88,6 @@ public class DialogueUI : UIBase
 
         UIManager.GetInstance().HideAll();
         Show();
-        if (_backgroundDim != null) _backgroundDim.SetActive(true);
 
         _player = player;
         if (_player != null)
@@ -189,7 +184,6 @@ public class DialogueUI : UIBase
     protected override void OnHide()
     {
         SetChoices(new List<DialogueChoiceData>());
-        if (_backgroundDim != null) _backgroundDim.SetActive(false);
 
         if (_player != null)
         {
