@@ -144,7 +144,7 @@ public class InventoryUI : MonoBehaviour
 
     private void OnDestroy()
     {
-        var manager = SlotInteractionManager.GetInstance();
+        var manager = SlotInteractionManager.ExistingInstance;
         if (manager != null)
         {
             if (_descriptionUI != null) manager.OnHoverEnter -= _descriptionUI.ShowDescription;

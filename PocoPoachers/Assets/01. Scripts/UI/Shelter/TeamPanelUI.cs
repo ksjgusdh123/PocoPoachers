@@ -55,7 +55,7 @@ public class TeamPanelUI : MonoBehaviour
 
     private void OnDisable()
     {
-        var lm = LocalizationManager.GetInstance();
+        var lm = LocalizationManager.ExistingInstance;
         if (lm != null) lm.OnLanguageChanged -= RefreshSlotNames;
     }
 

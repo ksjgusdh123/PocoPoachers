@@ -46,7 +46,7 @@ public abstract class UIBase : MonoBehaviour
 
     protected virtual void OnDestroy()
     {
-        if (UIManager.GetInstance() == null) return;
+        if (UIManager.ExistingInstance == null) return;
         UnregisterSelf();
     }
 

@@ -30,7 +30,7 @@ public class PlanetSlotUI : MonoBehaviour
 
     private void OnDisable()
     {
-        var manager = LocalizationManager.GetInstance();
+        var manager = LocalizationManager.ExistingInstance;
         if (manager == null) return;
         manager.OnLanguageChanged -= RefreshName;
     }

@@ -40,7 +40,7 @@ public class ShelterUpgradeUI : UIBase
 
     private void OnDisable()
     {
-        var manager = LocalizationManager.GetInstance();
+        var manager = LocalizationManager.ExistingInstance;
         if (manager == null) return;
         manager.OnLanguageChanged -= Refresh;
     }
