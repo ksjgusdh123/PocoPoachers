@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -5,6 +6,9 @@ using UnityEngine.EventSystems;
 // 이 컴포넌트는 잘라내기용 뷰포트(RectMask2D가 붙은 고정 크기 오브젝트)에 붙인다.
 // _mapContent엔 실제로 커지고 움직이는 지도(MinimapImage의 RectTransform)를 연결 —
 // 마커/핑이 전부 그 자식이라 같이 확대/이동된다.
+//
+// 슬라이더 등 다른 UI에서 조절하려면 NormalizedZoom을 쓰고, 휠로 바뀐 값을 따라가려면
+// ZoomChanged를 구독한다 (MinimapZoomSlider 참고).
 public class MinimapZoomPan : MonoBehaviour, IScrollHandler, IDragHandler
 {
     [SerializeField] private RectTransform _mapContent;
@@ -13,6 +17,15 @@ public class MinimapZoomPan : MonoBehaviour, IScrollHandler, IDragHandler
 
     private float _minZoom; // 시작 시점의 스케일 — 이보다 더 축소되지 않는다
     private Vector2 _initialPosition;
+
+    // 배율이 바뀔 때마다 0~1로 정규화한 값을 알린다. 휠로 바꿔도 슬라이더가 따라오게 하기 위한 것.
+    public event Action<float> ZoomChanged;
+
+    public float NormalizedZoom
+    {
+        get => _mapContent == null ? 0f : Mathf.InverseLerp(_minZoom, _maxZoom, _mapContent.localScale.x);
+        set => ApplyZoom(Mathf.Lerp(_minZoom, _maxZoom, Mathf.Clamp01(value)));
+    }
 
     private void Awake()
     {
@@ -25,19 +38,16 @@ public class MinimapZoomPan : MonoBehaviour, IScrollHandler, IDragHandler
     public void ResetView()
     {
         if (_mapContent == null) return;
-        _mapContent.localScale = new Vector3(_minZoom, _minZoom, 1f);
+
         _mapContent.anchoredPosition = _initialPosition;
+        ApplyZoom(_minZoom);
     }
 
     public void OnScroll(PointerEventData eventData)
     {
         if (_mapContent == null) return;
 
-        float scale = _mapContent.localScale.x + eventData.scrollDelta.y * _zoomStep;
-        scale = Mathf.Clamp(scale, _minZoom, _maxZoom);
-        _mapContent.localScale = new Vector3(scale, scale, 1f);
-
-        ClampContent(); // 줄어든 스케일 때문에 기존 위치가 범위 밖으로 나갈 수 있어 다시 잡아준다
+        ApplyZoom(_mapContent.localScale.x + eventData.scrollDelta.y * _zoomStep);
     }
 
     public void OnDrag(PointerEventData eventData)
@@ -47,6 +57,15 @@ public class MinimapZoomPan : MonoBehaviour, IScrollHandler, IDragHandler
 
         _mapContent.anchoredPosition += eventData.delta;
         ClampContent();
+    }
+
+    private void ApplyZoom(float scale)
+    {
+        scale = Mathf.Clamp(scale, _minZoom, _maxZoom);
+        _mapContent.localScale = new Vector3(scale, scale, 1f);
+
+        ClampContent(); // 줄어든 스케일 때문에 기존 위치가 범위 밖으로 나갈 수 있어 다시 잡아준다
+        ZoomChanged?.Invoke(NormalizedZoom);
     }
 
     // 지도가 뷰포트보다 큰 만큼만 이동 가능하게 막는다 — 빈 공간이 보이지 않도록
