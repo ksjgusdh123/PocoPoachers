@@ -27,6 +27,11 @@ Shader "Custom/UI-EdgeFade"
         [Header(Optional Mask)]
         _MaskTex ("마스크 (흑백, 흰색=보임)", 2D) = "white" {}
 
+        [Header(Outline)]
+        _OutlineColor ("외곽선 색 (알파 0이면 끔)", Color) = (0.9, 0.15, 0.15, 0)
+        _OutlineSharpness ("외곽선 두께 (클수록 얇음)", Range(1, 16)) = 6
+        _OutlineGlow ("안쪽 번짐", Range(0, 1)) = 0.35
+
         _StencilComp ("Stencil Comparison", Float) = 8
         _Stencil ("Stencil ID", Float) = 0
         _StencilOp ("Stencil Operation", Float) = 0
@@ -106,6 +111,10 @@ Shader "Custom/UI-EdgeFade"
             float _Softness;
             float _WobbleAmount, _WobbleFrequency, _WobbleSeed;
 
+            fixed4 _OutlineColor;
+            float _OutlineSharpness;
+            float _OutlineGlow;
+
             // 각도에 따라 경계를 밀고 당긴다. 배음을 정수로 맞춰야 각도 0도와 360도가 이어진다.
             float Wobble(float angle)
             {
@@ -139,8 +148,18 @@ Shader "Custom/UI-EdgeFade"
                 float radius = length(offset);
                 radius *= 1.0 - Wobble(atan2(offset.y, offset.x)) * _WobbleAmount;
 
-                color.a *= 1.0 - smoothstep(1.0 - _Softness, 1.0, radius);
-                color.a *= tex2D(_MaskTex, IN.texcoord).r;
+                // 0=완전 투명, 1=완전 불투명. 마스크까지 곱해두면 외곽선이 마스크 모양도 따라간다.
+                float coverage = 1.0 - smoothstep(1.0 - _Softness, 1.0, radius);
+                coverage *= tex2D(_MaskTex, IN.texcoord).r;
+                color.a *= coverage;
+
+                // coverage가 0도 1도 아닌 전이 구간에서만 1에 가까워지는 띠.
+                float band = saturate(coverage * (1.0 - coverage) * 4.0);
+                float outline = saturate(pow(band, _OutlineSharpness) + band * _OutlineGlow);
+                float outlineAlpha = outline * _OutlineColor.a;
+
+                color.rgb = lerp(color.rgb, _OutlineColor.rgb, outlineAlpha);
+                color.a = max(color.a, outlineAlpha);
 
                 #ifdef UNITY_UI_CLIP_RECT
                 color.a *= UnityGet2DClipping(IN.worldPosition.xy, _ClipRect);
