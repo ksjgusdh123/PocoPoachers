@@ -19,6 +19,11 @@ public abstract class Singleton<T> : MonoBehaviour where T : MonoBehaviour
 
     public static T Instance => GetInstance();
 
+    // 이미 살아있는 인스턴스만 돌려주고, 없으면 만들지 않는다.
+    // OnDisable/OnDestroy에서 구독을 해제할 때는 반드시 이쪽을 써야 한다. 정리 단계에서 GetInstance를
+    // 부르면 씬이 닫히는 도중에 새 오브젝트가 생겨 "Some objects were not cleaned up" 경고가 난다.
+    public static T ExistingInstance => SingletonRuntimeState.IsQuitting || _instance == null ? null : _instance;
+
     public static T GetInstance()
     {
         if (SingletonRuntimeState.IsQuitting)
