@@ -40,6 +40,9 @@ public class DialogueUI : UIBase
 
     protected override UIType UiType => UIType.Dialogue;
 
+    // 대화 중에도 뒷화면이 선명하게 보여야 한다.
+    protected override bool UseBackdropBlurByDefault => false;
+
     protected override void Awake()
     {
         base.Awake(); // UIBase의 자기 등록을 반드시 먼저 태워야 한다

@@ -12,6 +12,9 @@ public class MinimapUI : UIBase
 
     protected override UIType UiType => UIType.Minimap;
 
+    // 상시 표시 HUD라 블러를 깔면 게임 내내 화면을 덮는다.
+    protected override bool UseBackdropBlurByDefault => false;
+
     protected override void OnShow()
     {
         if (_backgroundDim != null) _backgroundDim.SetActive(true);

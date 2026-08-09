@@ -21,6 +21,9 @@ public class QuestAcceptNoticeUI : UIBase
 
     protected override UIType UiType => UIType.QuestNotice;
 
+    // 게임 중 잠깐 뜨는 토스트라 뒷화면을 가리면 안 된다.
+    protected override bool UseBackdropBlurByDefault => false;
+
     private CanvasGroup _canvasGroup;
     private Tween _tween;
     private bool _subscribed;
