@@ -92,11 +92,12 @@ public class EscapeZone : SceneExitBase
         OnStatusCleared?.Invoke(_zoneId);
     }
 
-    // 에디터에서 컴포넌트를 붙일 때의 기본값 — 탈출 지점은 결과 연출을 띄운다.
+    // 에디터에서 컴포넌트를 붙일 때의 기본값.
+    // 결과창은 결과 씬이 띄우므로 여기서는 켜지 않는다. _targetScene은 "결과창을 닫은 뒤 갈 곳"이다.
     private void Reset()
     {
         _targetScene  = TargetScene.Shelter;
-        _showResultUI = true;
+        _showResultUI = false;
     }
 
     private void Update()
@@ -220,8 +221,11 @@ public class EscapeZone : SceneExitBase
         // 게스트도 같은 시점에 연출을 시작하도록 먼저 알린다.
         RoomSync.EscapeState(active: false, _requiredSeconds, completed: true, null, charging: false, null, _zoneId);
 
-        // 포드 호송 연출이 끝난 뒤 이동 절차(결과 연출 → SceneTransition.Go)를 탄다.
-        PlayEscapeSequence(Exit);
+        // 결과는 레이드 씬 위가 아니라 결과 씬에서 보여준다. 닫기를 누르면 거기서 목적지로 보낸다.
+        RaidResultCarry.Set(success: true, TargetSceneName, _spawnId);
+
+        // 포드 호송 연출이 끝난 뒤 팀 전체를 결과 씬으로 옮긴다.
+        PlayEscapeSequence(() => SceneTransition.Go(SceneName.Result, SpawnId.None));
     }
 
     // 게스트 — 호스트가 알려준 상태를 그대로 반영한다.
@@ -231,8 +235,9 @@ public class EscapeZone : SceneExitBase
 
         if (completed)
         {
+            // 게스트는 연출만 재생하고, 결과 씬 이동은 호스트의 H_LoadScene을 따른다.
             OnStatusCleared?.Invoke(zoneId);
-            PlayEscapeSequence(ShowGuestResult);
+            PlayEscapeSequence(null);
             return;
         }
 
@@ -294,14 +299,5 @@ public class EscapeZone : SceneExitBase
         }
 
         controller.PlayEscapeBeam(onFinished);
-    }
-
-    // 이동 시점은 호스트가 정한다(H_LoadScene). 게스트는 결과만 보고 기다리므로 확인 버튼도 띄우지 않는다.
-    private static void ShowGuestResult()
-    {
-        var resultUI = FindAnyObjectByType<RaidResultUI>(FindObjectsInactive.Include);
-        if (resultUI == null) return;
-
-        resultUI.ShowSuccess(null, buttonVisible: false);
     }
 }
