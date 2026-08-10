@@ -584,7 +584,7 @@ public class PlayerController : MonoBehaviour
     {
         if (type == UIType.Inventory || type == UIType.Minimap)
             SetMainGameUIActive(false);
-        else if (type != UIType.IngameMenu && type != UIType.EnhancementTable)
+        else if (type != UIType.IngameMenu && type != UIType.EnhancementTable && type != UIType.VotePopup)
             return;
 
         LockCamera(true);
@@ -612,7 +612,8 @@ public class PlayerController : MonoBehaviour
         if (type == UIType.Inventory)
             _gunPartPanel?.Close();
 
-        if (type != UIType.Inventory && type != UIType.IngameMenu && type != UIType.EnhancementTable && type != UIType.Minimap) return;
+        if (type != UIType.Inventory && type != UIType.IngameMenu && type != UIType.EnhancementTable &&
+            type != UIType.Minimap && type != UIType.VotePopup) return;
         if (UIManager.GetInstance().IsAnyPanelOpen) return;
 
         if (type == UIType.Inventory || type == UIType.Minimap)
