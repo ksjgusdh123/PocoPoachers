@@ -71,6 +71,7 @@ public enum PacketType : byte
   G_MoveReply = 64,
   H_MoveCancel = 65,
   H_MoveProgress = 66,
+  H_EscapeState = 67,
 };
 
 public class PacketTypeUnion {
@@ -215,6 +216,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_MoveCancel(H_MoveCancelT _h_movecancel) { return new PacketTypeUnion{ Type = PacketType.H_MoveCancel, Value = _h_movecancel }; }
   public H_MoveProgressT AsH_MoveProgress() { return this.As<H_MoveProgressT>(); }
   public static PacketTypeUnion FromH_MoveProgress(H_MoveProgressT _h_moveprogress) { return new PacketTypeUnion{ Type = PacketType.H_MoveProgress, Value = _h_moveprogress }; }
+  public H_EscapeStateT AsH_EscapeState() { return this.As<H_EscapeStateT>(); }
+  public static PacketTypeUnion FromH_EscapeState(H_EscapeStateT _h_escapestate) { return new PacketTypeUnion{ Type = PacketType.H_EscapeState, Value = _h_escapestate }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -285,6 +288,7 @@ public class PacketTypeUnion {
       case PacketType.G_MoveReply: return G_MoveReply.Pack(builder, _o.AsG_MoveReply()).Value;
       case PacketType.H_MoveCancel: return H_MoveCancel.Pack(builder, _o.AsH_MoveCancel()).Value;
       case PacketType.H_MoveProgress: return H_MoveProgress.Pack(builder, _o.AsH_MoveProgress()).Value;
+      case PacketType.H_EscapeState: return H_EscapeState.Pack(builder, _o.AsH_EscapeState()).Value;
     }
   }
 }
@@ -495,6 +499,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_MoveProgress:
         result = H_MoveProgressVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_EscapeState:
+        result = H_EscapeStateVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

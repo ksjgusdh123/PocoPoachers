@@ -82,6 +82,17 @@ public static partial class PacketHandlers
         MainThreadDispatcher.Enqueue(() => SceneMoveVote.GetInstance()?.HandleProgress(memberIds, accepted));
     }
 
+    // 탈출 구역 상태. 게스트는 판정하지 않고 게이지와 결과창만 호스트에 맞춘다.
+    public static void OnH_EscapeState(FlatPacket root)
+    {
+        var packet = root.TypeAsH_EscapeState();
+        bool  active    = packet.Active;
+        float duration  = packet.Duration;
+        bool  completed = packet.Completed;
+
+        MainThreadDispatcher.Enqueue(() => EscapeZone.ApplyRemoteState(active, duration, completed));
+    }
+
     // 거절·시간 초과·호스트 취소로 이동이 무산됐다는 통보.
     public static void OnH_MoveCancel(FlatPacket root)
     {

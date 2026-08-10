@@ -47,7 +47,10 @@ public class RaidResultUI : MonoBehaviour
     }
 
     // 탈출 성공 표시. onConfirm: 확정 시 실행할 동작(예: 셸터로 이동)
-    public void ShowSuccess(Action onConfirm) => Show(success: true, onConfirm, buttonVisible: true);
+    public void ShowSuccess(Action onConfirm) => ShowSuccess(onConfirm, buttonVisible: true);
+
+    // 이동을 호스트가 확정하는 경우(팀 탈출)의 게스트처럼, 결과만 보여주고 버튼은 감출 때 사용한다.
+    public void ShowSuccess(Action onConfirm, bool buttonVisible) => Show(success: true, onConfirm, buttonVisible);
 
     // 임무 실패 표시. onConfirm: 확정 시 실행할 동작. 버튼은 호스트에게만.
     public void ShowFailure(Action onConfirm) => Show(success: false, onConfirm, buttonVisible: RoomManager.IsHost);

@@ -67,5 +67,6 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.G_MoveReply         , PacketHandlers.OnG_MoveReply);
         _onRecv.Add(PacketType.H_MoveCancel        , PacketHandlers.OnH_MoveCancel);
         _onRecv.Add(PacketType.H_MoveProgress      , PacketHandlers.OnH_MoveProgress);
+        _onRecv.Add(PacketType.H_EscapeState       , PacketHandlers.OnH_EscapeState);
     }
 }

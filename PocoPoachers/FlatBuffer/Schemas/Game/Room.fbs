@@ -122,6 +122,14 @@ table H_MoveProgress
     accepted:   [bool]; // 같은 인덱스의 수락 여부
 }
 
+// 호스트→게스트(신뢰), 탈출 구역 상태. 판정은 호스트만 하고 게스트는 게이지/결과창만 맞춘다.
+table H_EscapeState
+{
+    active:    bool;  // 충전 중인지
+    duration:  float; // 필요 시간 (게이지 길이)
+    completed: bool;  // 탈출 확정 — 결과창 표시
+}
+
 // 호스트→게스트(신뢰), 이동이 무산됐음을 알려 대기 UI를 닫게 한다.
 table H_MoveCancel
 {

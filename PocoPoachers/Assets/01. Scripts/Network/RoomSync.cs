@@ -424,6 +424,14 @@ public static class RoomSync
             H_MoveProgress.Pack, PacketType.H_MoveProgress);
     }
 
+    // 탈출 구역 상태 — 게스트의 게이지 표시와 결과창을 호스트 판정에 맞춘다.
+    public static void EscapeState(bool active, float duration, bool completed)
+    {
+        PacketBuilder.BroadcastReliableToGuests(
+            new H_EscapeStateT { Active = active, Duration = duration, Completed = completed },
+            H_EscapeState.Pack, PacketType.H_EscapeState);
+    }
+
     // 이동이 무산됐음을 알려 게스트 쪽 대기 UI를 닫게 한다.
     public static void MoveCancel(MoveVoteCancelReason reason)
     {

@@ -85,6 +85,7 @@ public struct FlatPacket : IFlatbufferObject
   public G_MoveReply TypeAsG_MoveReply() { return Type<G_MoveReply>().Value; }
   public H_MoveCancel TypeAsH_MoveCancel() { return Type<H_MoveCancel>().Value; }
   public H_MoveProgress TypeAsH_MoveProgress() { return Type<H_MoveProgress>().Value; }
+  public H_EscapeState TypeAsH_EscapeState() { return Type<H_EscapeState>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -311,6 +312,9 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_MoveProgress:
         _o.Type.Value = this.Type<H_MoveProgress>().HasValue ? this.Type<H_MoveProgress>().Value.UnPack() : null;
+        break;
+      case PacketType.H_EscapeState:
+        _o.Type.Value = this.Type<H_EscapeState>().HasValue ? this.Type<H_EscapeState>().Value.UnPack() : null;
         break;
     }
   }
