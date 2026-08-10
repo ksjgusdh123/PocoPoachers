@@ -67,6 +67,9 @@ public enum PacketType : byte
   G_QuestComplete = 60,
   H_QuestComplete = 61,
   G_GuestSnapshot = 62,
+  H_MoveRequest = 63,
+  G_MoveReply = 64,
+  H_MoveCancel = 65,
 };
 
 public class PacketTypeUnion {
@@ -203,6 +206,12 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_QuestComplete(H_QuestCompleteT _h_questcomplete) { return new PacketTypeUnion{ Type = PacketType.H_QuestComplete, Value = _h_questcomplete }; }
   public G_GuestSnapshotT AsG_GuestSnapshot() { return this.As<G_GuestSnapshotT>(); }
   public static PacketTypeUnion FromG_GuestSnapshot(G_GuestSnapshotT _g_guestsnapshot) { return new PacketTypeUnion{ Type = PacketType.G_GuestSnapshot, Value = _g_guestsnapshot }; }
+  public H_MoveRequestT AsH_MoveRequest() { return this.As<H_MoveRequestT>(); }
+  public static PacketTypeUnion FromH_MoveRequest(H_MoveRequestT _h_moverequest) { return new PacketTypeUnion{ Type = PacketType.H_MoveRequest, Value = _h_moverequest }; }
+  public G_MoveReplyT AsG_MoveReply() { return this.As<G_MoveReplyT>(); }
+  public static PacketTypeUnion FromG_MoveReply(G_MoveReplyT _g_movereply) { return new PacketTypeUnion{ Type = PacketType.G_MoveReply, Value = _g_movereply }; }
+  public H_MoveCancelT AsH_MoveCancel() { return this.As<H_MoveCancelT>(); }
+  public static PacketTypeUnion FromH_MoveCancel(H_MoveCancelT _h_movecancel) { return new PacketTypeUnion{ Type = PacketType.H_MoveCancel, Value = _h_movecancel }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -269,6 +278,9 @@ public class PacketTypeUnion {
       case PacketType.G_QuestComplete: return G_QuestComplete.Pack(builder, _o.AsG_QuestComplete()).Value;
       case PacketType.H_QuestComplete: return H_QuestComplete.Pack(builder, _o.AsH_QuestComplete()).Value;
       case PacketType.G_GuestSnapshot: return G_GuestSnapshot.Pack(builder, _o.AsG_GuestSnapshot()).Value;
+      case PacketType.H_MoveRequest: return H_MoveRequest.Pack(builder, _o.AsH_MoveRequest()).Value;
+      case PacketType.G_MoveReply: return G_MoveReply.Pack(builder, _o.AsG_MoveReply()).Value;
+      case PacketType.H_MoveCancel: return H_MoveCancel.Pack(builder, _o.AsH_MoveCancel()).Value;
     }
   }
 }
@@ -467,6 +479,15 @@ static public class PacketTypeVerify
         break;
       case PacketType.G_GuestSnapshot:
         result = G_GuestSnapshotVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_MoveRequest:
+        result = H_MoveRequestVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_MoveReply:
+        result = G_MoveReplyVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_MoveCancel:
+        result = H_MoveCancelVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

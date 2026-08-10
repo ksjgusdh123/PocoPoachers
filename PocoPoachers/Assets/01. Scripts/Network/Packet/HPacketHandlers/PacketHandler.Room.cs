@@ -62,6 +62,22 @@ public static partial class PacketHandlers
         });
     }
 
+    // 호스트의 팀 이동 제안. 게스트는 수락/거절 팝업을 띄우고 G_MoveReply로 답한다.
+    public static void OnH_MoveRequest(FlatPacket root)
+    {
+        var packet = root.TypeAsH_MoveRequest();
+        string sceneName = packet.SceneName;
+        if (string.IsNullOrEmpty(sceneName)) return;
+
+        MainThreadDispatcher.Enqueue(() => SceneMoveVote.GetInstance()?.ShowRequest(sceneName));
+    }
+
+    // 거절·시간 초과·호스트 취소로 이동이 무산됐다는 통보.
+    public static void OnH_MoveCancel(FlatPacket root)
+    {
+        MainThreadDispatcher.Enqueue(() => SceneMoveVote.GetInstance()?.HandleCancelled());
+    }
+
     public static void OnH_LoadScene(FlatPacket root)
     {
         var packet = root.TypeAsH_LoadScene();

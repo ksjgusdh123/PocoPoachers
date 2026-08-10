@@ -81,6 +81,9 @@ public struct FlatPacket : IFlatbufferObject
   public G_QuestComplete TypeAsG_QuestComplete() { return Type<G_QuestComplete>().Value; }
   public H_QuestComplete TypeAsH_QuestComplete() { return Type<H_QuestComplete>().Value; }
   public G_GuestSnapshot TypeAsG_GuestSnapshot() { return Type<G_GuestSnapshot>().Value; }
+  public H_MoveRequest TypeAsH_MoveRequest() { return Type<H_MoveRequest>().Value; }
+  public G_MoveReply TypeAsG_MoveReply() { return Type<G_MoveReply>().Value; }
+  public H_MoveCancel TypeAsH_MoveCancel() { return Type<H_MoveCancel>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -295,6 +298,15 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.G_GuestSnapshot:
         _o.Type.Value = this.Type<G_GuestSnapshot>().HasValue ? this.Type<G_GuestSnapshot>().Value.UnPack() : null;
+        break;
+      case PacketType.H_MoveRequest:
+        _o.Type.Value = this.Type<H_MoveRequest>().HasValue ? this.Type<H_MoveRequest>().Value.UnPack() : null;
+        break;
+      case PacketType.G_MoveReply:
+        _o.Type.Value = this.Type<G_MoveReply>().HasValue ? this.Type<G_MoveReply>().Value.UnPack() : null;
+        break;
+      case PacketType.H_MoveCancel:
+        _o.Type.Value = this.Type<H_MoveCancel>().HasValue ? this.Type<H_MoveCancel>().Value.UnPack() : null;
         break;
     }
   }

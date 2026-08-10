@@ -73,6 +73,7 @@
 | MainGameUI | 인게임 HUD 루트 | ✅ |
 | IngameMenu | ESC 인게임 메뉴 | ✅ (호스트 재입장 대기만 TODO) |
 | WarningPopup / NoticePopup | 알림 | ✅ |
+| VotePopup | 팀 이동 수락 대기 (`VotePopupUI` — 게스트는 수락/거절, 호스트는 대기+취소) | ✅ |
 | JoinCode | 협동 참가 코드 | ✅ |
 | Options | 옵션 | ✅ |
 | PlanetSelect | 행성 선택 | ✅ |

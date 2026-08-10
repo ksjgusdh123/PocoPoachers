@@ -17,6 +17,7 @@ public enum UIType
     IngameMenu,
     WarningPopup,
     NoticePopup,
+    VotePopup,
     JoinCode,
     Options,
     PlanetSelect,
@@ -69,6 +70,7 @@ public class UIManager : Singleton<UIManager>
 
     private WarningPopupUI _warningPopup;
     private NoticePopupUI  _noticePopup;
+    private VotePopupUI    _votePopup;
 
     // 모달 패널 뒤에 깔리는 공용 딤머 (런타임 생성)
     private GameObject _dimmer;
@@ -76,6 +78,9 @@ public class UIManager : Singleton<UIManager>
 
     private Action _warningConfirmAction;
     private Action _warningCancelAction;
+
+    private Action _voteAcceptAction;
+    private Action _voteDeclineAction;
 
     protected override void Awake()
     {
@@ -190,6 +195,30 @@ public class UIManager : Singleton<UIManager>
         Unregister(UIType.NoticePopup);
     }
 
+    public void RegisterVotePopup(VotePopupUI popup)
+    {
+        if (_votePopup != null)
+        {
+            _votePopup.OnAccepted -= OnVoteAccepted;
+            _votePopup.OnDeclined -= OnVoteDeclined;
+        }
+        _votePopup = popup;
+        _votePopup.OnAccepted += OnVoteAccepted;
+        _votePopup.OnDeclined += OnVoteDeclined;
+        Register(UIType.VotePopup, popup.gameObject);
+    }
+
+    public void UnregisterVotePopup()
+    {
+        if (_votePopup != null)
+        {
+            _votePopup.OnAccepted -= OnVoteAccepted;
+            _votePopup.OnDeclined -= OnVoteDeclined;
+            _votePopup = null;
+        }
+        Unregister(UIType.VotePopup);
+    }
+
     // ── Popup API ──────────────────────────────────────────────────────
 
     public void ShowWarning(string title, string message, Action onConfirm, Action onCancel = null)
@@ -236,6 +265,72 @@ public class UIManager : Singleton<UIManager>
     }
 
     private void OnNoticeOk() => Hide(UIType.NoticePopup);
+
+    // ── Vote Popup API ─────────────────────────────────────────────────
+
+    // 게스트 — 호스트의 이동 제안에 수락/거절로 답한다.
+    public void ShowVoteRequest(string title, string message, Action onAccept, Action onDecline)
+    {
+        if (!PrepareVote(title, message, onAccept, onDecline)) return;
+
+        _votePopup.SetRequestMode();
+        Show(UIType.VotePopup);
+    }
+
+    // 호스트 — 게스트 응답을 기다리는 동안 띄운다. 취소하면 onCancel이 불린다.
+    public void ShowVoteWaiting(string title, string message, Action onCancel)
+    {
+        if (!PrepareVote(title, message, null, onCancel)) return;
+
+        _votePopup.SetWaitingMode();
+        Show(UIType.VotePopup);
+    }
+
+    public void SetVoteProgress(string text) => _votePopup?.SetProgress(text);
+
+    public void SetVoteMemberCount(int count)     => _votePopup?.SetMemberCount(count);
+    public void MarkVoteMemberAccepted(int index) => _votePopup?.MarkMemberAccepted(index);
+    public void MarkVoteMemberGone(int index)     => _votePopup?.MarkMemberGone(index);
+
+    public void HideVote()
+    {
+        _voteAcceptAction  = null;
+        _voteDeclineAction = null;
+        if (_votePopup != null) Hide(UIType.VotePopup);
+    }
+
+    private bool PrepareVote(string title, string message, Action onAccept, Action onDecline)
+    {
+        if (_votePopup == null)
+        {
+            Debug.LogWarning($"[UIManager] VotePopup이 등록되지 않아 '{title}' 투표를 표시할 수 없습니다.");
+            return false;
+        }
+
+        _voteAcceptAction  = onAccept;
+        _voteDeclineAction = onDecline;
+        _votePopup.SetContent(title, message);
+        _votePopup.SetProgress(string.Empty);
+        return true;
+    }
+
+    private void OnVoteAccepted()
+    {
+        Hide(UIType.VotePopup);
+        var action = _voteAcceptAction;
+        _voteAcceptAction  = null;
+        _voteDeclineAction = null;
+        action?.Invoke();
+    }
+
+    private void OnVoteDeclined()
+    {
+        Hide(UIType.VotePopup);
+        var action = _voteDeclineAction;
+        _voteAcceptAction  = null;
+        _voteDeclineAction = null;
+        action?.Invoke();
+    }
 
     // ── Panel Management ───────────────────────────────────────────────
 
