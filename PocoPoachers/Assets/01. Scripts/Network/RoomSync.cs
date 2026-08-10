@@ -425,7 +425,7 @@ public static class RoomSync
     }
 
     // 탈출 구역 상태 — 게스트의 알림 UI(인원 아이콘·게이지)와 결과창을 호스트 판정에 맞춘다.
-    public static void EscapeState(bool active, float duration, bool completed, List<bool> inside, bool charging, List<int> memberIds)
+    public static void EscapeState(bool active, float duration, bool completed, List<bool> inside, bool charging, List<int> memberIds, int zoneId)
     {
         PacketBuilder.BroadcastReliableToGuests(new H_EscapeStateT
         {
@@ -435,6 +435,7 @@ public static class RoomSync
             Inside    = inside    != null ? new List<bool>(inside)    : new List<bool>(),
             Charging  = charging,
             MemberIds = memberIds != null ? new List<int>(memberIds)  : new List<int>(),
+            ZoneId    = zoneId,
         }, H_EscapeState.Pack, PacketType.H_EscapeState);
     }
 

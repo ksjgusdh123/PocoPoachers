@@ -8,12 +8,14 @@ public readonly struct EscapeStatus
     public readonly IReadOnlyList<bool> Inside;   // 인원별 구역 안 여부
     public readonly bool  Charging;               // 전원 집결 — 게이지 충전 중
     public readonly float Duration;               // 필요 시간
+    public readonly int   ZoneId;                 // 어느 구역의 상태인지
 
-    public EscapeStatus(IReadOnlyList<bool> inside, bool charging, float duration)
+    public EscapeStatus(IReadOnlyList<bool> inside, bool charging, float duration, int zoneId)
     {
         Inside   = inside;
         Charging = charging;
         Duration = duration;
+        ZoneId   = zoneId;
     }
 }
 
@@ -29,8 +31,9 @@ public class EscapeZone : SceneExitBase
     private float _pollInterval = 0.15f;
 
     // EscapeNoticeUI가 구독한다. 호스트는 자기 판정으로, 게스트는 호스트가 보낸 상태로 발행한다.
+    // 구역이 여러 개일 수 있어 어느 구역의 신호인지(zoneId) 함께 넘긴다.
     public static event Action<EscapeStatus> OnStatusChanged;
-    public static event Action               OnStatusCleared;
+    public static event Action<int>          OnStatusCleared;
 
     private readonly List<StatBase>    _players  = new();
     private readonly List<int>         _ids      = new();
@@ -39,6 +42,7 @@ public class EscapeZone : SceneExitBase
     private readonly List<bool>        _lastSent = new();
 
     private Collider _zone;
+    private int   _zoneId;
     private float _chargeStartTime;
     private float _nextPollTime;
     private bool  _charging;
@@ -48,7 +52,35 @@ public class EscapeZone : SceneExitBase
     private bool _lastActive;
     private bool _lastCharging;
 
-    private void Awake() => _zone = GetComponent<Collider>();
+    private void Awake()
+    {
+        _zone = GetComponent<Collider>();
+        AssignZoneIds();
+    }
+
+    // 구역 번호는 호스트와 게스트가 같아야 한다. 모두 같은 씬을 로드하므로 이름(같으면 위치) 순으로
+    // 정렬해 번호를 매기면 별도 동기화 없이 일치한다.
+    private static void AssignZoneIds()
+    {
+        var zones = FindObjectsByType<EscapeZone>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        Array.Sort(zones, CompareZones);
+
+        for (int i = 0; i < zones.Length; i++)
+            zones[i]._zoneId = i;
+    }
+
+    private static int CompareZones(EscapeZone a, EscapeZone b)
+    {
+        int byName = string.CompareOrdinal(a.name, b.name);
+        if (byName != 0) return byName;
+
+        Vector3 pa = a.transform.position;
+        Vector3 pb = b.transform.position;
+        int byX = pa.x.CompareTo(pb.x);
+        if (byX != 0) return byX;
+        int byY = pa.y.CompareTo(pb.y);
+        return byY != 0 ? byY : pa.z.CompareTo(pb.z);
+    }
 
     // 씬을 벗어날 때 알림을 켜둔 채로 남기지 않는다.
     private void OnDisable()
@@ -57,7 +89,7 @@ public class EscapeZone : SceneExitBase
 
         _lastActive = false;
         _charging   = false;
-        OnStatusCleared?.Invoke();
+        OnStatusCleared?.Invoke(_zoneId);
     }
 
     // 에디터에서 컴포넌트를 붙일 때의 기본값 — 탈출 지점은 결과 연출을 띄운다.
@@ -115,8 +147,8 @@ public class EscapeZone : SceneExitBase
         _lastSent.Clear();
         _lastSent.AddRange(_inside);
 
-        Publish(anyInside ? _inside : null, _ids, _charging, _requiredSeconds);
-        RoomSync.EscapeState(anyInside, _requiredSeconds, completed: false, _inside, _charging, _ids);
+        Publish(anyInside ? _inside : null, _ids, _charging, _requiredSeconds, _zoneId);
+        RoomSync.EscapeState(anyInside, _requiredSeconds, completed: false, _inside, _charging, _ids, _zoneId);
     }
 
     private bool HasChanged(bool anyInside)
@@ -183,38 +215,40 @@ public class EscapeZone : SceneExitBase
         _charging   = false;
         _lastActive = false;
 
-        OnStatusCleared?.Invoke();
+        OnStatusCleared?.Invoke(_zoneId);
 
-        // 게스트가 결과창을 먼저 띄우게 알린 뒤 이동 절차(결과 연출 → SceneTransition.Go)를 탄다.
-        RoomSync.EscapeState(active: false, _requiredSeconds, completed: true, null, charging: false, null);
-        Exit();
+        // 게스트도 같은 시점에 연출을 시작하도록 먼저 알린다.
+        RoomSync.EscapeState(active: false, _requiredSeconds, completed: true, null, charging: false, null, _zoneId);
+
+        // 포드 호송 연출이 끝난 뒤 이동 절차(결과 연출 → SceneTransition.Go)를 탄다.
+        PlayEscapeSequence(Exit);
     }
 
     // 게스트 — 호스트가 알려준 상태를 그대로 반영한다.
-    public static void ApplyRemoteState(bool active, float duration, bool completed, bool[] inside, bool charging, int[] memberIds)
+    public static void ApplyRemoteState(bool active, float duration, bool completed, bool[] inside, bool charging, int[] memberIds, int zoneId)
     {
         if (RoomManager.IsHost) return;
 
         if (completed)
         {
-            OnStatusCleared?.Invoke();
-            ShowGuestResult();
+            OnStatusCleared?.Invoke(zoneId);
+            PlayEscapeSequence(ShowGuestResult);
             return;
         }
 
-        Publish(active ? inside : null, memberIds, charging, duration);
+        Publish(active ? inside : null, memberIds, charging, duration, zoneId);
     }
 
     // 구역 밖에 있는 사람에게는 아무것도 띄우지 않는다 — 자기 항목이 안에 있을 때만 알림을 켠다.
-    private static void Publish(IReadOnlyList<bool> inside, IReadOnlyList<int> memberIds, bool charging, float duration)
+    private static void Publish(IReadOnlyList<bool> inside, IReadOnlyList<int> memberIds, bool charging, float duration, int zoneId)
     {
         if (inside == null || inside.Count == 0 || !IsSelfInside(inside, memberIds))
         {
-            OnStatusCleared?.Invoke();
+            OnStatusCleared?.Invoke(zoneId);
             return;
         }
 
-        OnStatusChanged?.Invoke(new EscapeStatus(inside, charging, duration));
+        OnStatusChanged?.Invoke(new EscapeStatus(inside, charging, duration, zoneId));
     }
 
     private static bool IsSelfInside(IReadOnlyList<bool> inside, IReadOnlyList<int> memberIds)
@@ -226,6 +260,40 @@ public class EscapeZone : SceneExitBase
             if (memberIds[i] == myId) return inside[i];
 
         return false;
+    }
+
+    // 탈출이 확정되면 사망 때와 같은 포드 호송 연출을 전원에게 재생한다.
+    // 완료 신호는 모두가 받으므로 원격 팀원 몫도 각 클라이언트가 로컬로 재생한다 — 추가 패킷이 필요 없다.
+    private static void PlayEscapeSequence(Action onFinished)
+    {
+        var objectManager = ObjectManager.Instance;
+        if (objectManager != null)
+        {
+            foreach (var worldObject in objectManager.GetAllByKind(ObjectKind.Player))
+            {
+                if (worldObject == null) continue;
+
+                // 이미 호송된(완전 사망) 팀원에게 다시 포드를 보내지 않는다
+                var stat = worldObject.GetComponent<StatBase>();
+                if (stat != null && IsGone(worldObject.Id, stat)) continue;
+
+                var remoteEffect = new GameObject("RescueBeamEffect").AddComponent<RescueBeamEffect>();
+                remoteEffect.Play(worldObject.transform, null);
+            }
+        }
+
+        var local = PlayerMovement.LocalTransform;
+        var controller = local != null ? local.GetComponent<PlayerController>() : null;
+        int myId = NetworkManager.Instance != null ? NetworkManager.Instance.MyPlayerId : 0;
+
+        // 관전 중(이미 호송된) 플레이어는 연출 없이 결과창으로 넘어간다
+        if (controller == null || PlayerDeathTracker.IsFinalized(myId))
+        {
+            onFinished?.Invoke();
+            return;
+        }
+
+        controller.PlayEscapeBeam(onFinished);
     }
 
     // 이동 시점은 호스트가 정한다(H_LoadScene). 게스트는 결과만 보고 기다리므로 확인 버튼도 띄우지 않는다.

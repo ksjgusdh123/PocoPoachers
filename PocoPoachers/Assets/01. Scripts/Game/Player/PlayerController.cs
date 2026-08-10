@@ -447,6 +447,22 @@ public class PlayerController : MonoBehaviour
         RoomSync.RescueBeamPlay();
     }
 
+    // 탈출 확정 — 사망 때와 같은 포드 호송 연출을 재생하고, 끝나면 결과창 콜백을 부른다.
+    // 연출 중에는 조작을 막는다(빔에 실린 채 걸어 나가지 못하게).
+    public void PlayEscapeBeam(Action onFinished)
+    {
+        _inputHandler?.SwitchInputActionMap(PlayerInputMapType.Inventory);
+        LockCamera(true);
+        _cameraController?.SetFollowPosition(false);
+
+        var effect = new GameObject("RescueBeamEffect").AddComponent<RescueBeamEffect>();
+        effect.Play(transform, () =>
+        {
+            _cameraController?.SetFollowPosition(true);
+            onFinished?.Invoke();
+        });
+    }
+
     // 구조되어 부활하면 기절 게이지를 중단하고 상태를 초기화한다 (다음 사망을 다시 처리할 수 있도록)
     private void HandleRevive()
     {

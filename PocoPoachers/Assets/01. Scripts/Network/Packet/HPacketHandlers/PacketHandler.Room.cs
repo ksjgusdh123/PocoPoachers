@@ -90,7 +90,7 @@ public static partial class PacketHandlers
         int[]  memberIds = packet.MemberIds?.ToArray();
 
         MainThreadDispatcher.Enqueue(() =>
-            EscapeZone.ApplyRemoteState(packet.Active, packet.Duration, packet.Completed, inside, packet.Charging, memberIds));
+            EscapeZone.ApplyRemoteState(packet.Active, packet.Duration, packet.Completed, inside, packet.Charging, memberIds, packet.ZoneId));
     }
 
     // 거절·시간 초과·호스트 취소로 이동이 무산됐다는 통보.

@@ -36,6 +36,7 @@ public struct H_EscapeState : IFlatbufferObject
   public ArraySegment<byte>? GetMemberIdsBytes() { return __p.__vector_as_arraysegment(14); }
 #endif
   public int[] GetMemberIdsArray() { return __p.__vector_as_array<int>(14); }
+  public int ZoneId { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<H_EscapeState> CreateH_EscapeState(FlatBufferBuilder builder,
       bool active = false,
@@ -43,8 +44,10 @@ public struct H_EscapeState : IFlatbufferObject
       bool completed = false,
       VectorOffset insideOffset = default(VectorOffset),
       bool charging = false,
-      VectorOffset member_idsOffset = default(VectorOffset)) {
-    builder.StartTable(6);
+      VectorOffset member_idsOffset = default(VectorOffset),
+      int zone_id = 0) {
+    builder.StartTable(7);
+    H_EscapeState.AddZoneId(builder, zone_id);
     H_EscapeState.AddMemberIds(builder, member_idsOffset);
     H_EscapeState.AddInside(builder, insideOffset);
     H_EscapeState.AddDuration(builder, duration);
@@ -54,7 +57,7 @@ public struct H_EscapeState : IFlatbufferObject
     return H_EscapeState.EndH_EscapeState(builder);
   }
 
-  public static void StartH_EscapeState(FlatBufferBuilder builder) { builder.StartTable(6); }
+  public static void StartH_EscapeState(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddActive(FlatBufferBuilder builder, bool active) { builder.AddBool(0, active, false); }
   public static void AddDuration(FlatBufferBuilder builder, float duration) { builder.AddFloat(1, duration, 0.0f); }
   public static void AddCompleted(FlatBufferBuilder builder, bool completed) { builder.AddBool(2, completed, false); }
@@ -71,6 +74,7 @@ public struct H_EscapeState : IFlatbufferObject
   public static VectorOffset CreateMemberIdsVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateMemberIdsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartMemberIdsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddZoneId(FlatBufferBuilder builder, int zoneId) { builder.AddInt(6, zoneId, 0); }
   public static Offset<H_EscapeState> EndH_EscapeState(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_EscapeState>(o);
@@ -89,6 +93,7 @@ public struct H_EscapeState : IFlatbufferObject
     _o.Charging = this.Charging;
     _o.MemberIds = new List<int>();
     for (var _j = 0; _j < this.MemberIdsLength; ++_j) {_o.MemberIds.Add(this.MemberIds(_j));}
+    _o.ZoneId = this.ZoneId;
   }
   public static Offset<H_EscapeState> Pack(FlatBufferBuilder builder, H_EscapeStateT _o) {
     if (_o == null) return default(Offset<H_EscapeState>);
@@ -109,7 +114,8 @@ public struct H_EscapeState : IFlatbufferObject
       _o.Completed,
       _inside,
       _o.Charging,
-      _member_ids);
+      _member_ids,
+      _o.ZoneId);
   }
 }
 
@@ -121,6 +127,7 @@ public class H_EscapeStateT
   public List<bool> Inside { get; set; }
   public bool Charging { get; set; }
   public List<int> MemberIds { get; set; }
+  public int ZoneId { get; set; }
 
   public H_EscapeStateT() {
     this.Active = false;
@@ -129,6 +136,7 @@ public class H_EscapeStateT
     this.Inside = null;
     this.Charging = false;
     this.MemberIds = null;
+    this.ZoneId = 0;
   }
 }
 
@@ -144,6 +152,7 @@ static public class H_EscapeStateVerify
       && verifier.VerifyVectorOfData(tablePos, 10 /*Inside*/, 1 /*bool*/, false)
       && verifier.VerifyField(tablePos, 12 /*Charging*/, 1 /*bool*/, 1, false)
       && verifier.VerifyVectorOfData(tablePos, 14 /*MemberIds*/, 4 /*int*/, false)
+      && verifier.VerifyField(tablePos, 16 /*ZoneId*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

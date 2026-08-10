@@ -131,6 +131,7 @@ table H_EscapeState
     inside:    [bool]; // 표시 순서대로 구역 안 여부 (0번은 호스트)
     charging:  bool;   // 전원 집결 — 게이지 충전 중
     member_ids: [int]; // inside와 같은 순서의 플레이어 id — 각자 자기 항목을 찾아 UI 표시 여부를 정한다
+    zone_id:    int;   // 탈출 구역이 여러 개일 때 어느 구역의 상태인지
 }
 
 // 호스트→게스트(신뢰), 이동이 무산됐음을 알려 대기 UI를 닫게 한다.

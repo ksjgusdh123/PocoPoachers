@@ -30,6 +30,11 @@ public class EscapeNoticeUI : MonoBehaviour
     private float _chargeStartTime;
     private bool  _charging;
 
+    // 지금 표시 중인 구역. 탈출 구역이 여러 개일 때 다른 구역의 신호로 배너가 꺼지면 안 된다.
+    private int _shownZoneId = NoZone;
+
+    private const int NoZone = -1;
+
     // 구독은 루트 생명주기에 건다. 표시 여부로 켜고 끄면 숨은 동안 갱신을 못 받는다.
     private void Awake()
     {
@@ -55,6 +60,7 @@ public class EscapeNoticeUI : MonoBehaviour
     private void HandleStatusChanged(EscapeStatus status)
     {
         if (_content != null) _content.SetActive(true);
+        _shownZoneId = status.ZoneId;
 
         BuildIcons(status.Inside);
         if (_txtCount != null) _txtCount.text = $"{CountInside(status.Inside)} / {status.Inside.Count}";
@@ -68,8 +74,12 @@ public class EscapeNoticeUI : MonoBehaviour
         _charging = status.Charging;
     }
 
-    private void HandleStatusCleared()
+    // 내가 보고 있던 구역이 아니면 무시한다 — 다른 구역의 인원 변화로 내 배너가 꺼지지 않게.
+    private void HandleStatusCleared(int zoneId)
     {
+        if (_shownZoneId != NoZone && _shownZoneId != zoneId) return;
+
+        _shownZoneId = NoZone;
         _charging = false;
         if (_gauge != null) _gauge.value = 0f;
         if (_content != null) _content.SetActive(false);
