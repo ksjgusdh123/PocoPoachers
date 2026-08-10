@@ -125,9 +125,12 @@ table H_MoveProgress
 // 호스트→게스트(신뢰), 탈출 구역 상태. 판정은 호스트만 하고 게스트는 게이지/결과창만 맞춘다.
 table H_EscapeState
 {
-    active:    bool;  // 충전 중인지
-    duration:  float; // 필요 시간 (게이지 길이)
-    completed: bool;  // 탈출 확정 — 결과창 표시
+    active:    bool;   // 구역에 한 명이라도 있는지 (알림 UI 표시 여부)
+    duration:  float;  // 필요 시간 (게이지 길이)
+    completed: bool;   // 탈출 확정 — 결과창 표시
+    inside:    [bool]; // 표시 순서대로 구역 안 여부 (0번은 호스트)
+    charging:  bool;   // 전원 집결 — 게이지 충전 중
+    member_ids: [int]; // inside와 같은 순서의 플레이어 id — 각자 자기 항목을 찾아 UI 표시 여부를 정한다
 }
 
 // 호스트→게스트(신뢰), 이동이 무산됐음을 알려 대기 UI를 닫게 한다.

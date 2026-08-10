@@ -219,6 +219,9 @@ public class ObjectManager : Singleton<ObjectManager>
         lock (_moveLock)
             _pending.Clear();
 
+        // 씬을 옮기면 사망 기록도 의미가 없다
+        PlayerDeathTracker.ClearAll();
+
         var toDestroy = new List<WorldObject>();
         foreach (var kv in _objects)
         {

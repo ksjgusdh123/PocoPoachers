@@ -19,22 +19,58 @@ public struct H_EscapeState : IFlatbufferObject
   public bool Active { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
   public float Duration { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public bool Completed { get { int o = __p.__offset(8); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public bool Inside(int j) { int o = __p.__offset(10); return o != 0 ? 0!=__p.bb.Get(__p.__vector(o) + j * 1) : false; }
+  public int InsideLength { get { int o = __p.__offset(10); return o != 0 ? __p.__vector_len(o) : 0; } }
+#if ENABLE_SPAN_T
+  public Span<bool> GetInsideBytes() { return __p.__vector_as_span<bool>(10, 1); }
+#else
+  public ArraySegment<byte>? GetInsideBytes() { return __p.__vector_as_arraysegment(10); }
+#endif
+  public bool[] GetInsideArray() { return __p.__vector_as_array<bool>(10); }
+  public bool Charging { get { int o = __p.__offset(12); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public int MemberIds(int j) { int o = __p.__offset(14); return o != 0 ? __p.bb.GetInt(__p.__vector(o) + j * 4) : (int)0; }
+  public int MemberIdsLength { get { int o = __p.__offset(14); return o != 0 ? __p.__vector_len(o) : 0; } }
+#if ENABLE_SPAN_T
+  public Span<int> GetMemberIdsBytes() { return __p.__vector_as_span<int>(14, 4); }
+#else
+  public ArraySegment<byte>? GetMemberIdsBytes() { return __p.__vector_as_arraysegment(14); }
+#endif
+  public int[] GetMemberIdsArray() { return __p.__vector_as_array<int>(14); }
 
   public static Offset<H_EscapeState> CreateH_EscapeState(FlatBufferBuilder builder,
       bool active = false,
       float duration = 0.0f,
-      bool completed = false) {
-    builder.StartTable(3);
+      bool completed = false,
+      VectorOffset insideOffset = default(VectorOffset),
+      bool charging = false,
+      VectorOffset member_idsOffset = default(VectorOffset)) {
+    builder.StartTable(6);
+    H_EscapeState.AddMemberIds(builder, member_idsOffset);
+    H_EscapeState.AddInside(builder, insideOffset);
     H_EscapeState.AddDuration(builder, duration);
+    H_EscapeState.AddCharging(builder, charging);
     H_EscapeState.AddCompleted(builder, completed);
     H_EscapeState.AddActive(builder, active);
     return H_EscapeState.EndH_EscapeState(builder);
   }
 
-  public static void StartH_EscapeState(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartH_EscapeState(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddActive(FlatBufferBuilder builder, bool active) { builder.AddBool(0, active, false); }
   public static void AddDuration(FlatBufferBuilder builder, float duration) { builder.AddFloat(1, duration, 0.0f); }
   public static void AddCompleted(FlatBufferBuilder builder, bool completed) { builder.AddBool(2, completed, false); }
+  public static void AddInside(FlatBufferBuilder builder, VectorOffset insideOffset) { builder.AddOffset(3, insideOffset.Value, 0); }
+  public static VectorOffset CreateInsideVector(FlatBufferBuilder builder, bool[] data) { builder.StartVector(1, data.Length, 1); for (int i = data.Length - 1; i >= 0; i--) builder.AddBool(data[i]); return builder.EndVector(); }
+  public static VectorOffset CreateInsideVectorBlock(FlatBufferBuilder builder, bool[] data) { builder.StartVector(1, data.Length, 1); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateInsideVectorBlock(FlatBufferBuilder builder, ArraySegment<bool> data) { builder.StartVector(1, data.Count, 1); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateInsideVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<bool>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartInsideVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(1, numElems, 1); }
+  public static void AddCharging(FlatBufferBuilder builder, bool charging) { builder.AddBool(4, charging, false); }
+  public static void AddMemberIds(FlatBufferBuilder builder, VectorOffset memberIdsOffset) { builder.AddOffset(5, memberIdsOffset.Value, 0); }
+  public static VectorOffset CreateMemberIdsVector(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddInt(data[i]); return builder.EndVector(); }
+  public static VectorOffset CreateMemberIdsVectorBlock(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateMemberIdsVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateMemberIdsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartMemberIdsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<H_EscapeState> EndH_EscapeState(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_EscapeState>(o);
@@ -48,14 +84,32 @@ public struct H_EscapeState : IFlatbufferObject
     _o.Active = this.Active;
     _o.Duration = this.Duration;
     _o.Completed = this.Completed;
+    _o.Inside = new List<bool>();
+    for (var _j = 0; _j < this.InsideLength; ++_j) {_o.Inside.Add(this.Inside(_j));}
+    _o.Charging = this.Charging;
+    _o.MemberIds = new List<int>();
+    for (var _j = 0; _j < this.MemberIdsLength; ++_j) {_o.MemberIds.Add(this.MemberIds(_j));}
   }
   public static Offset<H_EscapeState> Pack(FlatBufferBuilder builder, H_EscapeStateT _o) {
     if (_o == null) return default(Offset<H_EscapeState>);
+    var _inside = default(VectorOffset);
+    if (_o.Inside != null) {
+      var __inside = _o.Inside.ToArray();
+      _inside = CreateInsideVector(builder, __inside);
+    }
+    var _member_ids = default(VectorOffset);
+    if (_o.MemberIds != null) {
+      var __member_ids = _o.MemberIds.ToArray();
+      _member_ids = CreateMemberIdsVector(builder, __member_ids);
+    }
     return CreateH_EscapeState(
       builder,
       _o.Active,
       _o.Duration,
-      _o.Completed);
+      _o.Completed,
+      _inside,
+      _o.Charging,
+      _member_ids);
   }
 }
 
@@ -64,11 +118,17 @@ public class H_EscapeStateT
   public bool Active { get; set; }
   public float Duration { get; set; }
   public bool Completed { get; set; }
+  public List<bool> Inside { get; set; }
+  public bool Charging { get; set; }
+  public List<int> MemberIds { get; set; }
 
   public H_EscapeStateT() {
     this.Active = false;
     this.Duration = 0.0f;
     this.Completed = false;
+    this.Inside = null;
+    this.Charging = false;
+    this.MemberIds = null;
   }
 }
 
@@ -81,6 +141,9 @@ static public class H_EscapeStateVerify
       && verifier.VerifyField(tablePos, 4 /*Active*/, 1 /*bool*/, 1, false)
       && verifier.VerifyField(tablePos, 6 /*Duration*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Completed*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyVectorOfData(tablePos, 10 /*Inside*/, 1 /*bool*/, false)
+      && verifier.VerifyField(tablePos, 12 /*Charging*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyVectorOfData(tablePos, 14 /*MemberIds*/, 4 /*int*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

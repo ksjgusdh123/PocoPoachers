@@ -9,7 +9,7 @@ using UnityEngine.UI;
 //  VotePopupUI [UIPopupFrame]
 //  └── Content
 //      ├── txtMessage  [TextMeshProUGUI]
-//      ├── Roster      [HorizontalLayoutGroup]  ← VoteMemberIcon 프리팹을 인원 수만큼 생성
+//      ├── Roster      [HorizontalLayoutGroup]  ← MemberIcon 프리팹을 인원 수만큼 생성
 //      ├── txtProgress [TextMeshProUGUI]
 //      └── group
 //          ├── btnAccept  [Button] └ Txt_Accept  [TextMeshProUGUI]
@@ -29,7 +29,7 @@ public class VotePopupUI : PopupUIBase
 
     [Header("Roster")]
     [SerializeField] private RectTransform    _roster;
-    [SerializeField] private VoteMemberIconUI _memberIconPrefab;
+    [SerializeField] private MemberIconUI _memberIconPrefab;
 
     // 전투 중에 마우스로 옮겨가지 않고도 답할 수 있도록 단축키를 함께 받는다.
     [Header("Hotkeys")]
@@ -46,7 +46,7 @@ public class VotePopupUI : PopupUIBase
     private bool _answered;
 
     // 생성한 아이콘은 파괴하지 않고 재사용한다 — 투표를 열 때마다 Instantiate/Destroy를 반복할 이유가 없다.
-    private readonly List<VoteMemberIconUI> _memberIcons = new();
+    private readonly List<MemberIconUI> _memberIcons = new();
 
     public event Action OnAccepted;
     public event Action OnDeclined;
@@ -151,17 +151,17 @@ public class VotePopupUI : PopupUIBase
         {
             bool used = i < count;
             _memberIcons[i].gameObject.SetActive(used);
-            if (used) _memberIcons[i].SetAccepted(false);
+            if (used) _memberIcons[i].SetHighlighted(false);
         }
     }
 
     public void MarkMemberAccepted(int index)
     {
         if (!TryGetIcon(index, out var icon)) return;
-        icon.SetAccepted(true);
+        icon.SetHighlighted(true);
     }
 
-    private bool TryGetIcon(int index, out VoteMemberIconUI icon)
+    private bool TryGetIcon(int index, out MemberIconUI icon)
     {
         icon = null;
         if (index < 0 || index >= _memberIcons.Count) return false;

@@ -14,8 +14,6 @@ public class ProgressUI : ProgressUIBase
         ChargingStation.OnChargeEnded   += StopFilling;
         RescueInteractable.OnRescueStarted += StartFilling;
         RescueInteractable.OnRescueEnded   += StopFilling;
-        EscapeZone.OnChargeStarted += StartFilling;
-        EscapeZone.OnChargeEnded   += StopFilling;
     }
 
     protected override void Unsubscribe()
@@ -30,7 +28,5 @@ public class ProgressUI : ProgressUIBase
         ChargingStation.OnChargeEnded   -= StopFilling;
         RescueInteractable.OnRescueStarted -= StartFilling;
         RescueInteractable.OnRescueEnded   -= StopFilling;
-        EscapeZone.OnChargeStarted -= StartFilling;
-        EscapeZone.OnChargeEnded   -= StopFilling;
     }
 }

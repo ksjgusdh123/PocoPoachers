@@ -2,9 +2,24 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
+// 탈출 구역의 현재 상태. 아이콘 순서는 0번이 호스트, 그 뒤가 게스트(플레이어 id 오름차순)다.
+public readonly struct EscapeStatus
+{
+    public readonly IReadOnlyList<bool> Inside;   // 인원별 구역 안 여부
+    public readonly bool  Charging;               // 전원 집결 — 게이지 충전 중
+    public readonly float Duration;               // 필요 시간
+
+    public EscapeStatus(IReadOnlyList<bool> inside, bool charging, float duration)
+    {
+        Inside   = inside;
+        Charging = charging;
+        Duration = duration;
+    }
+}
+
 // 레이드 탈출 지점 — 살아있는 팀원 전원이 구역 안에 모여 일정 시간 버티면 발동한다.
 // 판정은 호스트만 한다. 호스트는 G_Move/StatSync로 전원의 위치와 생존 상태를 이미 알고 있어
-// 위치 보고용 패킷이 따로 필요 없다. 게스트는 H_EscapeState로 게이지와 결과창만 맞춘다.
+// 위치 보고용 패킷이 따로 필요 없다. 게스트는 H_EscapeState로 알림 UI만 맞춘다.
 [RequireComponent(typeof(Collider))]
 public class EscapeZone : SceneExitBase
 {
@@ -13,11 +28,15 @@ public class EscapeZone : SceneExitBase
     [SerializeField, Tooltip("전원 위치를 검사하는 간격. 매 프레임 돌 필요가 없다.")]
     private float _pollInterval = 0.15f;
 
-    // 게이지(ProgressUI)가 구독한다. 호스트는 자기 판정으로, 게스트는 호스트가 보낸 상태로 발행한다.
-    public static event Action<float> OnChargeStarted;
-    public static event Action        OnChargeEnded;
+    // EscapeNoticeUI가 구독한다. 호스트는 자기 판정으로, 게스트는 호스트가 보낸 상태로 발행한다.
+    public static event Action<EscapeStatus> OnStatusChanged;
+    public static event Action               OnStatusCleared;
 
-    private readonly List<StatBase> _players = new();
+    private readonly List<StatBase>    _players  = new();
+    private readonly List<int>         _ids      = new();
+    private readonly List<WorldObject> _remotes  = new();
+    private readonly List<bool>        _inside   = new();
+    private readonly List<bool>        _lastSent = new();
 
     private Collider _zone;
     private float _chargeStartTime;
@@ -25,15 +44,20 @@ public class EscapeZone : SceneExitBase
     private bool  _charging;
     private bool  _completed;
 
+    // 마지막으로 알린 상태 — 달라졌을 때만 UI 갱신과 브로드캐스트를 한다.
+    private bool _lastActive;
+    private bool _lastCharging;
+
     private void Awake() => _zone = GetComponent<Collider>();
 
-    // 씬을 벗어날 때 게이지를 켜둔 채로 남기지 않는다.
+    // 씬을 벗어날 때 알림을 켜둔 채로 남기지 않는다.
     private void OnDisable()
     {
-        if (!_charging) return;
+        if (!_lastActive) return;
 
-        _charging = false;
-        OnChargeEnded?.Invoke();
+        _lastActive = false;
+        _charging   = false;
+        OnStatusCleared?.Invoke();
     }
 
     // 에디터에서 컴포넌트를 붙일 때의 기본값 — 탈출 지점은 결과 연출을 띄운다.
@@ -49,107 +73,159 @@ public class EscapeZone : SceneExitBase
         if (Time.time < _nextPollTime) return;
         _nextPollTime = Time.time + _pollInterval;
 
-        if (!AllPlayersReady())
-        {
-            StopCharging();
-            return;
-        }
+        Evaluate();
 
-        if (!_charging)
-        {
-            StartCharging();
-            return;
-        }
-
-        if (Time.time - _chargeStartTime >= _requiredSeconds) Complete();
+        if (_charging && Time.time - _chargeStartTime >= _requiredSeconds) Complete();
     }
 
-    // 살아있는 팀원 전원이 구역 안에 있어야 한다. 다운(구조 대기)된 팀원이 있으면 살려서 데려와야 한다.
-    private bool AllPlayersReady()
+    // 인원별 구역 안 여부를 다시 계산하고, 달라졌을 때만 UI 갱신과 브로드캐스트를 한다.
+    private void Evaluate()
     {
         CollectPlayers();
-        if (_players.Count == 0) return false;
 
-        foreach (var stat in _players)
+        _inside.Clear();
+        bool anyInside = false;
+        bool allInside = _players.Count > 0;
+
+        for (int i = 0; i < _players.Count; i++)
         {
-            if (stat.IsDead) return false;
-            if (!IsInside(stat.transform.position)) return false;
+            // 다운(구조 대기)된 팀원은 살려서 데려와야 한다. 완전 사망자는 CollectPlayers에서 이미 빠진다.
+            bool ready = !_players[i].IsDead && IsInside(_players[i].transform.position);
+            _inside.Add(ready);
+
+            if (ready) anyInside = true;
+            else       allInside = false;
         }
-        return true;
+
+        if (allInside && !_charging)
+        {
+            _charging = true;
+            _chargeStartTime = Time.time;
+        }
+        else if (!allInside)
+        {
+            // 한 명이라도 빠지면 처음부터 다시 채운다
+            _charging = false;
+        }
+
+        if (!HasChanged(anyInside)) return;
+
+        _lastActive   = anyInside;
+        _lastCharging = _charging;
+        _lastSent.Clear();
+        _lastSent.AddRange(_inside);
+
+        Publish(anyInside ? _inside : null, _ids, _charging, _requiredSeconds);
+        RoomSync.EscapeState(anyInside, _requiredSeconds, completed: false, _inside, _charging, _ids);
     }
 
+    private bool HasChanged(bool anyInside)
+    {
+        if (anyInside != _lastActive || _charging != _lastCharging) return true;
+        if (_lastSent.Count != _inside.Count) return true;
+
+        for (int i = 0; i < _inside.Count; i++)
+            if (_inside[i] != _lastSent[i]) return true;
+
+        return false;
+    }
+
+    // 완전 사망(관전)한 인원은 아예 목록에서 뺀다 — 3명 중 1명이 죽었으면 남은 2명만 모이면 된다.
     private void CollectPlayers()
     {
         _players.Clear();
+        _ids.Clear();
 
+        // 아이콘 순서를 고정하기 위해 호스트(로컬)를 항상 0번에 둔다
         var local = PlayerMovement.LocalTransform;
         if (local != null)
         {
+            int localId = NetworkManager.Instance != null ? NetworkManager.Instance.MyPlayerId : 0;
             var localStat = local.GetComponentInChildren<StatBase>();
-            if (localStat != null) _players.Add(localStat);
+            if (localStat != null && !IsGone(localId, localStat))
+            {
+                _players.Add(localStat);
+                _ids.Add(localId);
+            }
         }
 
         var objectManager = ObjectManager.Instance;
         if (objectManager == null) return;
 
+        _remotes.Clear();
         foreach (var worldObject in objectManager.GetAllByKind(ObjectKind.Player))
-        {
-            if (worldObject == null) continue;
+            if (worldObject != null) _remotes.Add(worldObject);
 
+        // ObjectManager의 열거 순서는 보장되지 않는다. id로 정렬해 아이콘 위치가 튀지 않게 한다.
+        _remotes.Sort((a, b) => a.Id.CompareTo(b.Id));
+
+        foreach (var worldObject in _remotes)
+        {
             var stat = worldObject.GetComponent<StatBase>();
-            if (stat != null) _players.Add(stat);
+            if (stat == null || IsGone(worldObject.Id, stat)) continue;
+
+            _players.Add(stat);
+            _ids.Add(worldObject.Id);
         }
     }
+
+    // 구조 시간이 끝나 관전으로 넘어간 인원. 되살아났으면(HP > 0) 기록이 남아 있어도 다시 대상이다.
+    private static bool IsGone(int playerId, StatBase stat) =>
+        stat.CurrentHp <= 0f && PlayerDeathTracker.IsFinalized(playerId);
 
     // 콜라이더 모양 그대로 판정한다. 안에 있으면 ClosestPoint가 그 점을 그대로 돌려준다.
     private bool IsInside(Vector3 position) =>
         (_zone.ClosestPoint(position) - position).sqrMagnitude < 0.0001f;
 
-    private void StartCharging()
-    {
-        _charging = true;
-        _chargeStartTime = Time.time;
-
-        OnChargeStarted?.Invoke(_requiredSeconds);
-        RoomSync.EscapeState(active: true, _requiredSeconds, completed: false);
-    }
-
-    // 한 명이라도 빠지면 처음부터 다시 채운다.
-    private void StopCharging()
-    {
-        if (!_charging) return;
-
-        _charging = false;
-        OnChargeEnded?.Invoke();
-        RoomSync.EscapeState(active: false, _requiredSeconds, completed: false);
-    }
-
     private void Complete()
     {
-        _completed = true;
-        _charging  = false;
+        _completed  = true;
+        _charging   = false;
+        _lastActive = false;
 
-        OnChargeEnded?.Invoke();
+        OnStatusCleared?.Invoke();
 
         // 게스트가 결과창을 먼저 띄우게 알린 뒤 이동 절차(결과 연출 → SceneTransition.Go)를 탄다.
-        RoomSync.EscapeState(active: false, _requiredSeconds, completed: true);
+        RoomSync.EscapeState(active: false, _requiredSeconds, completed: true, null, charging: false, null);
         Exit();
     }
 
     // 게스트 — 호스트가 알려준 상태를 그대로 반영한다.
-    public static void ApplyRemoteState(bool active, float duration, bool completed)
+    public static void ApplyRemoteState(bool active, float duration, bool completed, bool[] inside, bool charging, int[] memberIds)
     {
         if (RoomManager.IsHost) return;
 
         if (completed)
         {
-            OnChargeEnded?.Invoke();
+            OnStatusCleared?.Invoke();
             ShowGuestResult();
             return;
         }
 
-        if (active) OnChargeStarted?.Invoke(duration);
-        else        OnChargeEnded?.Invoke();
+        Publish(active ? inside : null, memberIds, charging, duration);
+    }
+
+    // 구역 밖에 있는 사람에게는 아무것도 띄우지 않는다 — 자기 항목이 안에 있을 때만 알림을 켠다.
+    private static void Publish(IReadOnlyList<bool> inside, IReadOnlyList<int> memberIds, bool charging, float duration)
+    {
+        if (inside == null || inside.Count == 0 || !IsSelfInside(inside, memberIds))
+        {
+            OnStatusCleared?.Invoke();
+            return;
+        }
+
+        OnStatusChanged?.Invoke(new EscapeStatus(inside, charging, duration));
+    }
+
+    private static bool IsSelfInside(IReadOnlyList<bool> inside, IReadOnlyList<int> memberIds)
+    {
+        if (memberIds == null) return false;
+
+        int myId = NetworkManager.Instance != null ? NetworkManager.Instance.MyPlayerId : 0;
+        for (int i = 0; i < memberIds.Count && i < inside.Count; i++)
+            if (memberIds[i] == myId) return inside[i];
+
+        return false;
     }
 
     // 이동 시점은 호스트가 정한다(H_LoadScene). 게스트는 결과만 보고 기다리므로 확인 버튼도 띄우지 않는다.

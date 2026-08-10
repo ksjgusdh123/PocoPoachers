@@ -424,12 +424,18 @@ public static class RoomSync
             H_MoveProgress.Pack, PacketType.H_MoveProgress);
     }
 
-    // 탈출 구역 상태 — 게스트의 게이지 표시와 결과창을 호스트 판정에 맞춘다.
-    public static void EscapeState(bool active, float duration, bool completed)
+    // 탈출 구역 상태 — 게스트의 알림 UI(인원 아이콘·게이지)와 결과창을 호스트 판정에 맞춘다.
+    public static void EscapeState(bool active, float duration, bool completed, List<bool> inside, bool charging, List<int> memberIds)
     {
-        PacketBuilder.BroadcastReliableToGuests(
-            new H_EscapeStateT { Active = active, Duration = duration, Completed = completed },
-            H_EscapeState.Pack, PacketType.H_EscapeState);
+        PacketBuilder.BroadcastReliableToGuests(new H_EscapeStateT
+        {
+            Active    = active,
+            Duration  = duration,
+            Completed = completed,
+            Inside    = inside    != null ? new List<bool>(inside)    : new List<bool>(),
+            Charging  = charging,
+            MemberIds = memberIds != null ? new List<int>(memberIds)  : new List<int>(),
+        }, H_EscapeState.Pack, PacketType.H_EscapeState);
     }
 
     // 이동이 무산됐음을 알려 게스트 쪽 대기 UI를 닫게 한다.

@@ -414,6 +414,9 @@ public class PlayerController : MonoBehaviour
         _finalized = true;
         _isFainting = false;
 
+        // 탈출 구역 집결 인원에서 빠지려면 "다운"이 아니라 "완전 사망"임을 알려야 한다
+        PlayerDeathTracker.MarkFinalized(NetworkManager.Instance?.MyPlayerId ?? 0);
+
         // 게임 시간은 "자신이 완전히 사망한 시점"까지만 기록한다 (이후 관전 시간은 미포함)
         RaidStats.Instance.StopRaid();
 
@@ -450,6 +453,8 @@ public class PlayerController : MonoBehaviour
         _isFainting = false;
         _finalized = false;
         _faintingUI?.StopFainting();
+
+        PlayerDeathTracker.Clear(NetworkManager.Instance?.MyPlayerId ?? 0);
 
         // 관전 중이었다면 해제하고 카메라를 자신에게 되돌린다
         _spectating = false;
