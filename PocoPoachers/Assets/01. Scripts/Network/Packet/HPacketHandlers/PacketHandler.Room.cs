@@ -72,6 +72,16 @@ public static partial class PacketHandlers
         MainThreadDispatcher.Enqueue(() => SceneMoveVote.GetInstance()?.ShowRequest(sceneName));
     }
 
+    // 호스트가 뿌린 투표 현황. 게스트도 같은 인원 아이콘 열을 그린다.
+    public static void OnH_MoveProgress(FlatPacket root)
+    {
+        var packet = root.TypeAsH_MoveProgress().UnPack();
+        int[]  memberIds = packet.MemberIds?.ToArray();
+        bool[] accepted  = packet.Accepted?.ToArray();
+
+        MainThreadDispatcher.Enqueue(() => SceneMoveVote.GetInstance()?.HandleProgress(memberIds, accepted));
+    }
+
     // 거절·시간 초과·호스트 취소로 이동이 무산됐다는 통보.
     public static void OnH_MoveCancel(FlatPacket root)
     {

@@ -17,7 +17,6 @@ public enum UIType
     IngameMenu,
     WarningPopup,
     NoticePopup,
-    VotePopup,
     JoinCode,
     Options,
     PlanetSelect,
@@ -30,6 +29,10 @@ public enum UIType
     Quest,
     QuestNotice,
     Minimap,
+
+    // 씬·프리팹은 UIType을 정수로 직렬화한다. 중간에 끼워 넣으면 기존 배치가 전부 다른 UI를
+    // 가리키게 되므로 새 항목은 반드시 끝에 추가할 것.
+    VotePopup,
 }
 
 public class UIManager : Singleton<UIManager>
@@ -290,7 +293,6 @@ public class UIManager : Singleton<UIManager>
 
     public void SetVoteMemberCount(int count)     => _votePopup?.SetMemberCount(count);
     public void MarkVoteMemberAccepted(int index) => _votePopup?.MarkMemberAccepted(index);
-    public void MarkVoteMemberGone(int index)     => _votePopup?.MarkMemberGone(index);
 
     public void HideVote()
     {
@@ -365,8 +367,20 @@ public class UIManager : Singleton<UIManager>
     }
 
     // 씬에 자기등록된 UI 패널을 이름 검색 없이 조회 (SceneUIRegistrar 참고)
-    public GameObject GetPanel(UIType type) =>
-        _panels.TryGetValue(type, out var panel) ? panel : null;
+    public GameObject GetPanel(UIType type)
+    {
+        if (!_panels.TryGetValue(type, out var panel)) return null;
+
+        // 씬이 바뀌었는데 아직 재등록 전이면 이전 씬의 파괴된 패널이 남아 있을 수 있다.
+        // 파괴된 오브젝트를 그대로 넘기면 호출부가 캐시해뒀다가 MissingReferenceException을 낸다.
+        if (panel == null)
+        {
+            _panels.Remove(type);
+            return null;
+        }
+
+        return panel;
+    }
 
     public void Show(UIType type)
     {

@@ -416,6 +416,14 @@ public static class RoomSync
             G_MoveReply.Pack, PacketType.G_MoveReply);
     }
 
+    // 투표 현황을 게스트에게 뿌린다. 게스트도 같은 인원 아이콘 열을 그린다.
+    public static void MoveProgress(List<int> memberIds, List<bool> accepted)
+    {
+        PacketBuilder.BroadcastReliableToGuests(
+            new H_MoveProgressT { MemberIds = new List<int>(memberIds), Accepted = new List<bool>(accepted) },
+            H_MoveProgress.Pack, PacketType.H_MoveProgress);
+    }
+
     // 이동이 무산됐음을 알려 게스트 쪽 대기 UI를 닫게 한다.
     public static void MoveCancel(MoveVoteCancelReason reason)
     {

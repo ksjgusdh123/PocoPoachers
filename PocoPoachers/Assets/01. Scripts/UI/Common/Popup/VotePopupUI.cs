@@ -48,14 +48,13 @@ public class VotePopupUI : PopupUIBase
         _btnDecline.onClick.AddListener(() => OnDeclined?.Invoke());
     }
 
-    // 게스트 — 수락/거절 두 버튼. 남의 응답은 알 수 없으므로 인원 아이콘은 숨긴다.
+    // 게스트 — 수락/거절 두 버튼
     public void SetRequestMode()
     {
         var localization = LocalizationManager.GetInstance();
         _btnAccept.gameObject.SetActive(true);
         _txtAccept .text = localization.GetString("vote.accept");
         _txtDecline.text = localization.GetString("vote.decline");
-        SetMemberCount(0);
     }
 
     // 호스트 — 응답을 기다리는 동안 취소만 가능
@@ -70,7 +69,7 @@ public class VotePopupUI : PopupUIBase
         if (_txtProgress != null) _txtProgress.text = text;
     }
 
-    // 응답을 기다리는 인원 수만큼 아이콘을 만들고(모자라면 생성) 전부 미수락 상태로 되돌린다.
+    // 팀 인원 수(호스트 포함)만큼 아이콘을 만들고(모자라면 생성) 전부 미수락 상태로 되돌린다.
     public void SetMemberCount(int count)
     {
         if (_roster != null) _roster.gameObject.SetActive(count > 0);
@@ -91,13 +90,6 @@ public class VotePopupUI : PopupUIBase
     {
         if (!TryGetIcon(index, out var icon)) return;
         icon.SetAccepted(true);
-    }
-
-    // 대기 중 나간 인원은 더 기다리지 않으므로 목록에서 뺀다.
-    public void MarkMemberGone(int index)
-    {
-        if (!TryGetIcon(index, out var icon)) return;
-        icon.gameObject.SetActive(false);
     }
 
     private bool TryGetIcon(int index, out VoteMemberIconUI icon)

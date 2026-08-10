@@ -115,6 +115,13 @@ table G_MoveReply
     accepted: bool;
 }
 
+// 호스트→게스트(신뢰), 이동 투표 현황. 게스트도 호스트와 같은 인원 아이콘 열을 그린다.
+table H_MoveProgress
+{
+    member_ids: [int];  // 표시 순서 (0번은 호스트)
+    accepted:   [bool]; // 같은 인덱스의 수락 여부
+}
+
 // 호스트→게스트(신뢰), 이동이 무산됐음을 알려 대기 UI를 닫게 한다.
 table H_MoveCancel
 {

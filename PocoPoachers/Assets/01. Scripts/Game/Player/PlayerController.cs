@@ -566,10 +566,24 @@ public class PlayerController : MonoBehaviour
         ui.OnPanelClosed -= OnPanelClosed;
     }
 
+    // 플레이어는 씬마다 새로 스폰되지만 HUD는 씬에 배치돼 있어, 캐시해 둔 참조가 이전 씬의
+    // 파괴된 오브젝트일 수 있다. 파괴됐으면 현재 씬 패널로 다시 잡는다.
+    // (Unity의 == null은 파괴된 오브젝트에도 true를 돌려준다 — ?. 로는 걸러지지 않는다)
+    private void SetMainGameUIActive(bool active)
+    {
+        if (PlayerMainGameUI == null)
+        {
+            var manager = UIManager.GetInstance();
+            PlayerMainGameUI = manager != null ? manager.GetPanel(UIType.MainGameUI) : null;
+        }
+
+        if (PlayerMainGameUI != null) PlayerMainGameUI.SetActive(active);
+    }
+
     private void OnPanelOpened(UIType type)
     {
         if (type == UIType.Inventory || type == UIType.Minimap)
-            PlayerMainGameUI.SetActive(false);
+            SetMainGameUIActive(false);
         else if (type != UIType.IngameMenu && type != UIType.EnhancementTable)
             return;
 
@@ -602,7 +616,7 @@ public class PlayerController : MonoBehaviour
         if (UIManager.GetInstance().IsAnyPanelOpen) return;
 
         if (type == UIType.Inventory || type == UIType.Minimap)
-            PlayerMainGameUI.SetActive(true);
+            SetMainGameUIActive(true);
 
         LockCamera(false);
         _inputHandler.SwitchToGameplayMap();
