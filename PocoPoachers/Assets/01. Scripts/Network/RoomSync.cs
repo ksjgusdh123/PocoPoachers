@@ -24,7 +24,7 @@ public static class RoomSync
     }
 
     // pelletDirections: 샷건 등 다발 발사의 펠릿별 방향. null/비어 있으면 direction 단발로 처리
-    public static void Shoot(Vector3 origin, Vector3 direction, GunStatData stat, IReadOnlyList<Vector3> pelletDirections = null)
+    public static void Shoot(Vector3 origin, Vector3 direction, GunStatData stat, IReadOnlyList<Vector3> pelletDirections = null, bool isHeadshot = false)
     {
         if (IsSolo) return;
 
@@ -35,11 +35,11 @@ public static class RoomSync
 
         if (RoomManager.IsHost)
             PacketBuilder.BroadcastToGuests(
-                new H_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, Directions = dirsT },
+                new H_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, Directions = dirsT, IsHeadshot = isHeadshot },
                 H_Shoot.Pack, PacketType.H_Shoot);
         else
             PacketBuilder.SendToHost(
-                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, SoundRange = stat.SoundRange, Directions = dirsT },
+                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, SoundRange = stat.SoundRange, Directions = dirsT, IsHeadshot = isHeadshot },
                 G_Shoot.Pack, PacketType.G_Shoot);
     }
 

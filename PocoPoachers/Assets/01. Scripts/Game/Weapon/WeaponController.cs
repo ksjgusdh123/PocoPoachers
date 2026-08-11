@@ -218,6 +218,7 @@ public class WeaponController : EquipableController
             if (_reloadCompleteHandler != null) prev.OnReloadComplete -= _reloadCompleteHandler;
             if (_ammoChangedHandler != null) prev.OnAmmoChanged -= _ammoChangedHandler;
             prev.AimDirectionProvider = null;
+            prev.HeadshotProvider = null;
             prev.gameObject.SetActive(false);
         }
 
@@ -235,6 +236,7 @@ public class WeaponController : EquipableController
                 gun.Stat.CameraShakeIntensity, gun.Stat.CameraShakeDuration, gun.Muzzle.up);
             _currentGun.OnShoot += _cameraShakeHandler;
             _currentGun.AimDirectionProvider = () => GetCrosshairAimDirection(gun.Muzzle);
+            _currentGun.HeadshotProvider = CheckHeadshot;
 
             _reloadRequestedHandler = () => TryReloadFromInventory();
             _reloadCompleteHandler = consumed => ConsumeAmmoFromInventory(consumed);
@@ -276,10 +278,7 @@ public class WeaponController : EquipableController
             : isFirePressed && !_wasFirePressed;
 
         if (fireInput && _currentGun.TryShoot())
-        {
-            CheckHeadshotDebug(); // TODO: 디버그 후 제거 — 판정 방식 확정되면 Bullet에 헤드샷 플래그로 전달
             SoundEvent.Emit(_currentGun.Muzzle.position, _currentGun.Stat.SoundRange, gameObject);
-        }
 
         _wasFirePressed = isFirePressed;
     }
@@ -415,24 +414,19 @@ public class WeaponController : EquipableController
         return dir.sqrMagnitude < 0.001f ? muzzle.up : dir.normalized;
     }
 
-    // 크로스헤어 지점에서 Head 레이어로 직접 레이캐스트해 헤드샷 여부만 로그로 확인하는 프로토타입
-    private void CheckHeadshotDebug()
+    // 발사 순간 크로스헤어 지점에서 Head 레이어로 직접 레이캐스트해 헤드샷 여부를 판정한다.
+    // GunBase.HeadshotProvider로 주입되어 TryShoot() 내부에서 호출된다.
+    private bool CheckHeadshot()
     {
-        if (CrosshairUI.Instance == null || Camera.main == null) return;
+        if (CrosshairUI.Instance == null || Camera.main == null) return false;
 
         Ray ray = Camera.main.ScreenPointToRay(CrosshairUI.Instance.ScreenPosition);
-        Debug.DrawRay(ray.origin, ray.direction * _maxAimDistance, Color.red, 1f);
+        bool isHeadshot = Physics.Raycast(ray, out RaycastHit hit, _maxAimDistance, _headHitMask, QueryTriggerInteraction.Collide);
 
-        if (Physics.Raycast(ray, out RaycastHit headHit, _maxAimDistance, _headHitMask, QueryTriggerInteraction.Collide))
-        {
-            Debug.Log($"[Headshot] 헤드샷! 대상: {headHit.collider.transform.root.name}");
-            return;
-        }
+        Debug.Log(isHeadshot // TODO: 디버그 후 제거
+            ? $"[Headshot] 헤드샷! 대상: {hit.collider.transform.root.name}"
+            : "[Headshot] 헤드샷 아님");
 
-        // 헤드샷이 아닐 때 실제로 뭘 맞췄는지(레이어 무관) 확인용 — 원인 파악되면 제거
-        if (Physics.Raycast(ray, out RaycastHit anyHit, _maxAimDistance, ~0, QueryTriggerInteraction.Collide))
-            Debug.Log($"[Headshot] 헤드샷 아님 — 실제 피격: {anyHit.collider.name} (레이어: {LayerMask.LayerToName(anyHit.collider.gameObject.layer)}, mask={_headHitMask.value})");
-        else
-            Debug.Log($"[Headshot] 헤드샷 아님 — 아무것도 맞지 않음 (mask={_headHitMask.value})");
+        return isHeadshot;
     }
 }

@@ -5,6 +5,7 @@ public class Bullet : MonoBehaviour
 {
     private const string WallLayerName = "Wall";
     private const int MaxHitCount = 8;
+    private const float HeadshotDamageMultiplier = 2f;
     private static readonly RaycastHit[] HitBuffer = new RaycastHit[MaxHitCount];
 
     [SerializeField] private float _collisionRadius = 0.08f;
@@ -14,6 +15,7 @@ public class Bullet : MonoBehaviour
     private float _speed;
     private float _damage;
     private float _range;
+    private bool _isHeadshot;
     private float _traveledDistance;
     private Vector3 _direction;
     private Action _onRelease;
@@ -32,11 +34,12 @@ public class Bullet : MonoBehaviour
         _applyDamage = RoomManager.IsHost;
     }
 
-    public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease, GameObject attacker = null, Color color = default)
+    public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease, GameObject attacker = null, Color color = default, bool isHeadshot = false)
     {
         _speed = speed;
         _damage = damage;
         _range = range;
+        _isHeadshot = isHeadshot;
         _direction = direction.normalized;
         _onRelease = onRelease;
         _attacker = attacker;
@@ -64,8 +67,9 @@ public class Bullet : MonoBehaviour
             {
                 if (_applyDamage)
                 {
+                    float damage = _isHeadshot ? _damage * HeadshotDamageMultiplier : _damage;
                     // 무적 등으로 데미지가 무효면 관통 — 충돌을 무시하고 정상 전진
-                    if (!damageable.TakeDamage(_damage, _attacker))
+                    if (!damageable.TakeDamage(damage, _attacker))
                     {
                         transform.position = origin + _direction * step;
                         _traveledDistance += step;

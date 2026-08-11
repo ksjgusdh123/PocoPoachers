@@ -39,12 +39,12 @@ public abstract class GunBase : EquippableItemBase
     // 사격 네트워크 전파 — 소유자가 적이면 적 전용(enemyId 기반), 아니면 플레이어 경로로 보낸다.
     // 적 총알을 플레이어 경로(RoomSync.Shoot, MyId)로 보내면 게스트에서 호스트 플레이어로 오귀속돼
     // 같은 레이어(적끼리) 스킵이 깨진다 — 그래서 적은 반드시 이 분기를 타야 한다.
-    protected void BroadcastShoot(Vector3 origin, Vector3 direction, System.Collections.Generic.IReadOnlyList<Vector3> pelletDirections = null)
+    protected void BroadcastShoot(Vector3 origin, Vector3 direction, System.Collections.Generic.IReadOnlyList<Vector3> pelletDirections = null, bool isHeadshot = false)
     {
         if (_ownerEnemy != null)
             RoomSync.EnemyShoot(_ownerEnemy.EnemyId, origin, direction, _stat, pelletDirections);
         else
-            RoomSync.Shoot(origin, direction, _stat, pelletDirections);
+            RoomSync.Shoot(origin, direction, _stat, pelletDirections, isHeadshot);
     }
 
     public static event Action<float> OnReloadStarted;
@@ -120,7 +120,8 @@ public abstract class GunBase : EquippableItemBase
             return false;
         }
 
-        Shoot();
+        bool isHeadshot = HeadshotProvider?.Invoke() ?? false;
+        Shoot(isHeadshot);
         _muzzleFlash?.Play(_stat.MuzzleColor);
         ShellCasingPool.Instance?.Eject(_shellEjectPort);
         _soundGizmoPosition = _muzzle.position;
@@ -146,7 +147,7 @@ public abstract class GunBase : EquippableItemBase
         return true;
     }
 
-    protected abstract void Shoot();
+    protected abstract void Shoot(bool isHeadshot);
 
     public void EquipPart(GunPartData part)
     {
@@ -192,6 +193,10 @@ public abstract class GunBase : EquippableItemBase
     /// 플레이어 무기는 WeaponController가 크로스헤어 기반 콜백을 주입한다.
     /// </summary>
     public Func<Vector3> AimDirectionProvider { get; set; }
+
+    // 발사 순간 헤드샷 여부를 판정하는 외부 콜백. 미설정(적 등) 시 항상 false.
+    // 플레이어 무기는 WeaponController가 크로스헤어 기반 콜백을 주입한다.
+    public Func<bool> HeadshotProvider { get; set; }
 
     protected Vector3 GetFireDirection()
     {

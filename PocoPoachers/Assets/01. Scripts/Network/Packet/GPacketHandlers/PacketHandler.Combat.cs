@@ -67,7 +67,7 @@ public static partial class PacketHandlers
             }
 
             var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(dir));
-            bullet.Initialize(bulletSpeed, damage, maxRange, dir, () => pool.Release(prefab, bullet), attacker, bulletColor);
+            bullet.Initialize(bulletSpeed, damage, maxRange, dir, () => pool.Release(prefab, bullet), attacker, bulletColor, packet.IsHeadshot);
         }
 
         if (RoomManager.IsHost)
@@ -96,6 +96,7 @@ public static partial class PacketHandlers
                     Damage      = damage,
                     MaxRange    = maxRange,
                     Directions  = rebroadcastDirs,
+                    IsHeadshot  = packet.IsHeadshot,
                 },
                 H_Shoot.Pack, PacketType.H_Shoot);
         }

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class SingleGun : GunBase
 {
-    protected override void Shoot()
+    protected override void Shoot(bool isHeadshot)
     {
         Vector3 fireDir = GetFireDirection();
 
@@ -14,9 +14,10 @@ public class SingleGun : GunBase
             fireDir,
             () => BulletPool.GetInstance().Release(_bulletPrefab, bullet),
             Owner,
-            _stat.MuzzleColor
+            _stat.MuzzleColor,
+            isHeadshot
         );
 
-        BroadcastShoot(_muzzle.position, fireDir);
+        BroadcastShoot(_muzzle.position, fireDir, isHeadshot: isHeadshot);
     }
 }
