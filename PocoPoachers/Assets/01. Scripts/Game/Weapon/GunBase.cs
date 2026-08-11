@@ -110,14 +110,14 @@ public abstract class GunBase : EquippableItemBase
         transform.localPosition = _originLocalPos + recoilDirLocal * _recoilDist;
     }
 
-    public void TryShoot()
+    public bool TryShoot()
     {
-        if (_isReloading || Time.time < _nextFireTime) return;
-        if (_currentDurability <= 0f) return;
+        if (_isReloading || Time.time < _nextFireTime) return false;
+        if (_currentDurability <= 0f) return false;
         if (_currentAmmo <= 0)
         {
             OnReloadRequested?.Invoke();
-            return;
+            return false;
         }
 
         Shoot();
@@ -143,6 +143,7 @@ public abstract class GunBase : EquippableItemBase
         OnShoot?.Invoke(kickVector);
 
         if (_currentAmmo <= 0) OnReloadRequested?.Invoke();
+        return true;
     }
 
     protected abstract void Shoot();

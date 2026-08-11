@@ -275,10 +275,9 @@ public class WeaponController : EquipableController
             ? isFirePressed
             : isFirePressed && !_wasFirePressed;
 
-        if (fireInput)
+        if (fireInput && _currentGun.TryShoot())
         {
             CheckHeadshotDebug(); // TODO: 디버그 후 제거 — 판정 방식 확정되면 Bullet에 헤드샷 플래그로 전달
-            _currentGun.TryShoot();
             SoundEvent.Emit(_currentGun.Muzzle.position, _currentGun.Stat.SoundRange, gameObject);
         }
 
