@@ -7,6 +7,7 @@ public class WeaponController : EquipableController
     [SerializeField] private float _switchMidTime = 0.15f;
     [SerializeField] private CrosshairUI _crosshairUI;
     [SerializeField] private LayerMask _aimHitMask;
+    [SerializeField] private LayerMask _headHitMask;
     [SerializeField] private float _maxAimDistance = 200f;
     [SerializeField] private float _aimHeightSampleRadius = 0.25f; // 크로스헤어 광선 주변 이 반경 안에 hitMask 오브젝트가 있으면 그 Y좌표로 조준 높이를 보정
 
@@ -74,6 +75,7 @@ public class WeaponController : EquipableController
             _inventory.OnItemAdded += OnItemAddedToInventory;
 
         EnsureAimHitMask();
+        EnsureHeadHitMask();
     }
 
     // 새로 추가된 필드라 기존 씬/프리팹에는 0(Nothing)으로 직렬화돼 있음 — 수동 설정 안 됐으면 기본 레이어로 채움
@@ -81,6 +83,12 @@ public class WeaponController : EquipableController
     {
         if (_aimHitMask.value != 0) return;
         _aimHitMask = LayerMask.GetMask(AimHitLayerNames);
+    }
+
+    private void EnsureHeadHitMask()
+    {
+        if (_headHitMask.value != 0) return;
+        _headHitMask = LayerMask.GetMask("Head");
     }
 
     private void Start()
@@ -269,6 +277,7 @@ public class WeaponController : EquipableController
 
         if (fireInput)
         {
+            CheckHeadshotDebug(); // TODO: 디버그 후 제거 — 판정 방식 확정되면 Bullet에 헤드샷 플래그로 전달
             _currentGun.TryShoot();
             SoundEvent.Emit(_currentGun.Muzzle.position, _currentGun.Stat.SoundRange, gameObject);
         }
@@ -405,5 +414,26 @@ public class WeaponController : EquipableController
 
         Vector3 dir = targetPoint - muzzle.position;
         return dir.sqrMagnitude < 0.001f ? muzzle.up : dir.normalized;
+    }
+
+    // 크로스헤어 지점에서 Head 레이어로 직접 레이캐스트해 헤드샷 여부만 로그로 확인하는 프로토타입
+    private void CheckHeadshotDebug()
+    {
+        if (CrosshairUI.Instance == null || Camera.main == null) return;
+
+        Ray ray = Camera.main.ScreenPointToRay(CrosshairUI.Instance.ScreenPosition);
+        Debug.DrawRay(ray.origin, ray.direction * _maxAimDistance, Color.red, 1f);
+
+        if (Physics.Raycast(ray, out RaycastHit headHit, _maxAimDistance, _headHitMask, QueryTriggerInteraction.Collide))
+        {
+            Debug.Log($"[Headshot] 헤드샷! 대상: {headHit.collider.transform.root.name}");
+            return;
+        }
+
+        // 헤드샷이 아닐 때 실제로 뭘 맞췄는지(레이어 무관) 확인용 — 원인 파악되면 제거
+        if (Physics.Raycast(ray, out RaycastHit anyHit, _maxAimDistance, ~0, QueryTriggerInteraction.Collide))
+            Debug.Log($"[Headshot] 헤드샷 아님 — 실제 피격: {anyHit.collider.name} (레이어: {LayerMask.LayerToName(anyHit.collider.gameObject.layer)}, mask={_headHitMask.value})");
+        else
+            Debug.Log($"[Headshot] 헤드샷 아님 — 아무것도 맞지 않음 (mask={_headHitMask.value})");
     }
 }
