@@ -12,7 +12,7 @@ public partial class WantsToDodgeCondition : Condition
     {
         if (Self?.Value == null)
         {
-            Debug.Log("[WantsToDodge] Self가 null");
+            //Debug.Log("[WantsToDodge] Self가 null");
             return false;
         }
 
@@ -21,7 +21,7 @@ public partial class WantsToDodgeCondition : Condition
         float ratio = (stat != null && stat.MaxHp > 0f) ? stat.CurrentHp / stat.MaxHp : -1f;
 
         bool result = dodgeState != null && dodgeState.WantsToDodge;
-        Debug.Log($"[WantsToDodge] result={result}, dodgeState null={dodgeState == null}, WantsToDodge={dodgeState?.WantsToDodge}, hpRatio={ratio:F2}");
+        //Debug.Log($"[WantsToDodge] result={result}, dodgeState null={dodgeState == null}, WantsToDodge={dodgeState?.WantsToDodge}, hpRatio={ratio:F2}");
         return result;
     }
 }

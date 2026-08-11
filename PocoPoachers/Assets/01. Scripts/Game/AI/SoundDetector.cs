@@ -24,7 +24,7 @@ public class SoundDetector : MonoBehaviour
         if (source == gameObject) return;
         if (_targetDetector == null)
         {
-            Debug.LogWarning($"[Sound] {name}: TargetDetector 없음 — 소리 무시", this);
+            //Debug.LogWarning($"[Sound] {name}: TargetDetector 없음 — 소리 무시", this);
             return;
         }
 
@@ -42,12 +42,12 @@ public class SoundDetector : MonoBehaviour
             float sqrToCurrent = (transform.position - current.transform.position).sqrMagnitude;
             if (sqrToSound >= sqrToCurrent)
             {
-                Debug.Log($"[Sound] {name}: '{source.name}'(dist={Mathf.Sqrt(sqrToSound):F1}) 유지 — 기존 타깃 '{current.name}'(dist={Mathf.Sqrt(sqrToCurrent):F1})이 더 가까움");
+                //Debug.Log($"[Sound] {name}: '{source.name}'(dist={Mathf.Sqrt(sqrToSound):F1}) 유지 — 기존 타깃 '{current.name}'(dist={Mathf.Sqrt(sqrToCurrent):F1})이 더 가까움");
                 return; // 기존 타깃이 더 가깝거나 같으면 유지
             }
         }
 
-        Debug.Log($"[Sound] {name}: '{source.name}'로 타깃 교체 (dist={Mathf.Sqrt(sqrToSound):F1})");
+        //Debug.Log($"[Sound] {name}: '{source.name}'로 타깃 교체 (dist={Mathf.Sqrt(sqrToSound):F1})");
         _targetDetector.ForceSetTarget(source);
     }
 }
