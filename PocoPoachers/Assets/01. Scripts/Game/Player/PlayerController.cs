@@ -41,10 +41,9 @@ public class PlayerController : MonoBehaviour
     private InventoryUI _playerBagInventoryUI;
     private PlayerStat _playerStat;
     private FaintingUI _faintingUI;
-    private RaidResultUI _raidResultUI;
     private bool _isFainting;   // 기절(다운) 상태 진행 중 여부
     private bool _finalized;    // 완전 사망 처리(상자 스폰)를 이미 실행했는지 — 중복 방지
-    private bool _raidWipeHandled; // 레이드 전멸 → 셸터 복귀를 이미 처리했는지 (호스트 전용, 씬당 1회)
+    private bool _raidWipeHandled; // 레이드 전멸 → 결과 씬 이동을 이미 처리했는지 (씬당 1회)
     private bool _spectating;      // 완전 사망 후 동료 시점 관전 중인지
     private StatBase _spectateStat; // 현재 관전 중인 동료의 스탯 (사망/이탈 시 다른 동료로 전환)
     private SaveManager _saveManager;
@@ -99,8 +98,6 @@ public class PlayerController : MonoBehaviour
         _faintingUI = FindAnyObjectByType<FaintingUI>(FindObjectsInactive.Include);
         if (_faintingUI != null)
             _faintingUI.OnFaintingComplete += FinalizeDeath;
-
-        _raidResultUI = FindAnyObjectByType<RaidResultUI>(FindObjectsInactive.Include);
 
         // 코옵 게스트는 개인 세이브를 쓰지 않는다 — 방 세계(호스트 소유)에서 상태를 받는다.
         // 호스트/솔로만 자기 개인 세이브에서 복원한다(호스트 세이브 = 방 세계).
@@ -368,9 +365,10 @@ public class PlayerController : MonoBehaviour
     private bool HasOtherLivingPlayer()
         => ObjectManager.Instance != null && ObjectManager.Instance.HasLivingPlayerExcept(_playerStat);
 
-    // 레이드 씬에서 살아있는 플레이어가 하나도 없으면(팀 전멸) 실패 UI를 띄운다.
-    // UI 표시는 모든 클라이언트가 로컬로(스탯 동기화로 각자 전멸을 판정), 실제 셸터 복귀는
-    // UI 연출이 끝난 뒤 OnRaidResultFinished에서 호스트만 수행한다(게스트는 H_LoadScene으로 따라옴).
+    // 레이드 씬에서 살아있는 플레이어가 하나도 없으면(팀 전멸) 결과 씬으로 보낸다.
+    // 전멸 판정은 모든 클라이언트가 로컬로 하고(스탯 동기화로 각자 판정), 씬 이동은 탈출과 마찬가지로
+    // 호스트만 트리거한다(게스트는 H_LoadScene으로 따라옴). 결과 정보는 각자 자기 Carry에 담는다 —
+    // 게스트가 기본값(성공)을 쓰면 실패인데 성공 화면이 뜬다.
     private void CheckRaidWipe()
     {
         if (_raidWipeHandled) return;
@@ -380,13 +378,26 @@ public class PlayerController : MonoBehaviour
         if (ObjectManager.Instance == null || ObjectManager.Instance.HasLivingPlayerExcept(null)) return;
 
         _raidWipeHandled = true;
-        Debug.Log("[PlayerController] 레이드 팀 전멸 — 임무 실패 UI 표시");
+        Debug.Log("[PlayerController] 레이드 팀 전멸 — 포드 호송 연출 후 결과 씬으로 이동");
 
-        if (_raidResultUI != null)
-            // 실패 버튼은 호스트에게만 뜨므로, 확정(호스트 클릭) 시 호스트가 팀을 셸터로 복귀시킨다
-            _raidResultUI.ShowFailure(() => SceneTransition.Go(SceneName.Shelter, SpawnId.FromRaid));
-        else if (RoomManager.IsHost)
-            SceneTransition.Go(SceneName.Shelter, SpawnId.FromRaid); // UI 없으면(안전장치) 바로 복귀
+        StartCoroutine(CoGoResultAfterRescueBeams());
+    }
+
+    // 마지막 팀원의 포드 호송 연출이 끝난 뒤 결과 씬으로 넘어간다 — 연출이 중간에 잘리지 않게.
+    // 원격 팀원 몫의 포드도 각 클라이언트가 로컬 RescueBeamEffect로 재생하고 끝나면 스스로 파괴되므로,
+    // 씬에 남은 이펙트가 사라질 때까지 기다리면 추가 패킷 없이 전원의 연출 종료를 알 수 있다.
+    private IEnumerator CoGoResultAfterRescueBeams()
+    {
+        yield return null; // 마지막 사망자의 이펙트가 생성될 한 프레임을 준다
+
+        var poll = new WaitForSeconds(0.1f);
+        while (FindAnyObjectByType<RescueBeamEffect>() != null)
+            yield return poll;
+
+        RaidResultCarry.Set(success: false, SceneName.Shelter, SpawnId.FromRaid);
+
+        if (RoomManager.IsHost)
+            SceneTransition.Go(SceneName.Result, SpawnId.None);
     }
 
     private void HandleDeath()
