@@ -398,6 +398,55 @@ public static class RoomSync
         return result;
     }
 
+    // 호스트가 팀 이동 전에 게스트 동의를 구한다. 응답은 G_MoveReply로 돌아온다.
+    public static void MoveRequest(string sceneName, SpawnId spawnId)
+    {
+        PacketBuilder.BroadcastReliableToGuests(
+            new H_MoveRequestT { SceneName = sceneName, SpawnId = (int)spawnId },
+            H_MoveRequest.Pack, PacketType.H_MoveRequest);
+    }
+
+    // 게스트가 이동 제안에 답한다.
+    public static void MoveReply(bool accepted)
+    {
+        if (RoomManager.IsHost) return;
+
+        PacketBuilder.SendReliableToHost(
+            new G_MoveReplyT { PlayerId = MyId, Accepted = accepted },
+            G_MoveReply.Pack, PacketType.G_MoveReply);
+    }
+
+    // 투표 현황을 게스트에게 뿌린다. 게스트도 같은 인원 아이콘 열을 그린다.
+    public static void MoveProgress(List<int> memberIds, List<bool> accepted)
+    {
+        PacketBuilder.BroadcastReliableToGuests(
+            new H_MoveProgressT { MemberIds = new List<int>(memberIds), Accepted = new List<bool>(accepted) },
+            H_MoveProgress.Pack, PacketType.H_MoveProgress);
+    }
+
+    // 탈출 구역 상태 — 게스트의 알림 UI(인원 아이콘·게이지)와 결과창을 호스트 판정에 맞춘다.
+    public static void EscapeState(bool active, float duration, bool completed, List<bool> inside, bool charging, List<int> memberIds, int zoneId)
+    {
+        PacketBuilder.BroadcastReliableToGuests(new H_EscapeStateT
+        {
+            Active    = active,
+            Duration  = duration,
+            Completed = completed,
+            Inside    = inside    != null ? new List<bool>(inside)    : new List<bool>(),
+            Charging  = charging,
+            MemberIds = memberIds != null ? new List<int>(memberIds)  : new List<int>(),
+            ZoneId    = zoneId,
+        }, H_EscapeState.Pack, PacketType.H_EscapeState);
+    }
+
+    // 이동이 무산됐음을 알려 게스트 쪽 대기 UI를 닫게 한다.
+    public static void MoveCancel(MoveVoteCancelReason reason)
+    {
+        PacketBuilder.BroadcastReliableToGuests(
+            new H_MoveCancelT { Reason = (int)reason },
+            H_MoveCancel.Pack, PacketType.H_MoveCancel);
+    }
+
     // 게스트가 씬 로드 완료를 호스트에 알림 (호스트가 박스/적 스냅샷을 보내는 트리거)
     public static void SceneReady()
     {

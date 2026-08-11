@@ -746,6 +746,7 @@ GameObject:
   - component: {fileID: 658585892212651998}
   - component: {fileID: 8488273169115432251}
   - component: {fileID: 1696237478214734562}
+  - component: {fileID: 4431720763636478332}
   m_Layer: 5
   m_Name: PlayerBagUI
   m_TagString: Untagged
@@ -828,6 +829,22 @@ MonoBehaviour:
   _role: 0
   _keepAlpha: 1
   _theme: {fileID: 0}
+--- !u!114 &4431720763636478332
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4117983229800789143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17a04e4ad22876942852da9c6b8c3982, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIRealtimeBackdropBlur
+  _backdropMaterial: {fileID: 2100000, guid: 08668806c278252429d30d82296dac29, type: 2}
+  _useThemeTint: 1
+  _tint: {r: 0.35, g: 0.38, b: 0.45, a: 1}
+  _blockRaycast: 1
 --- !u!1 &4212720111349260583
 GameObject:
   m_ObjectHideFlags: 0
@@ -1340,7 +1357,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4294967295
+    rgba: 4294965490
   m_fontColor: {r: 0.9490196, g: 0.972549, b: 1, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3
@@ -1818,7 +1835,7 @@ MonoBehaviour:
   m_fontMaterials: []
   m_fontColor32:
     serializedVersion: 2
-    rgba: 4278190080
+    rgba: 4280094474
   m_fontColor: {r: 0.039215688, g: 0.05882353, b: 0.11372549, a: 1}
   m_enableVertexGradient: 0
   m_colorMode: 3

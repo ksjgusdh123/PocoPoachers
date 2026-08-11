@@ -27,6 +27,10 @@ public static class SceneTransition
         {
             loader.LoadShelterScene();
         }
+        else if (sceneName == SceneName.Result)
+        {
+            loader.LoadResultScene();
+        }
         else if (sceneName.StartsWith("SC_Raid_") &&
                  int.TryParse(sceneName.Substring("SC_Raid_".Length), out int planetId))
         {

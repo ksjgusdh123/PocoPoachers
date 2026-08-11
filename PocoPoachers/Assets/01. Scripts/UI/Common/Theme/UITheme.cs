@@ -116,8 +116,15 @@ public class UITheme : ScriptableObject
     [Tooltip("스태미나 게이지 색")]
     public Color StaminaFill = new Color32(0x3C, 0x78, 0xFF, 0xFF);
 
-    [Tooltip("모달 패널 뒤를 덮는 딤머 색")]
-    public Color Dimmer = new Color32(0x0A, 0x0F, 0x1D, 0x99);
+    [Tooltip("모달 패널 뒤를 덮는 딤머 색. 블러 배경 위에 얹히므로 알파로 어둡기를 조절한다.")]
+    public Color Dimmer = new Color32(0x00, 0x00, 0x00, 0x99);
+
+    [Header("Backdrop Blur")]
+    [Tooltip("패널 뒤 실시간 블러 배경에 쓰는 머티리얼 (M_UIBlurBackdrop). UIRealtimeBackdropBlur가 비어 있으면 여기서 가져간다.")]
+    public Material BackdropBlurMaterial;
+
+    [Tooltip("블러에 곱할 색. RGB를 낮추면 어두워지고, 알파는 배경 전체의 불투명도.")]
+    public Color BackdropBlurTint = new Color(0.35f, 0.38f, 0.45f, 1f);
 
     [Header("Typography (px)")]
     public float FontSizeCaption = 15f;

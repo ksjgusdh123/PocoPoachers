@@ -62,6 +62,43 @@ public static partial class PacketHandlers
         });
     }
 
+    // 호스트의 팀 이동 제안. 게스트는 수락/거절 팝업을 띄우고 G_MoveReply로 답한다.
+    public static void OnH_MoveRequest(FlatPacket root)
+    {
+        var packet = root.TypeAsH_MoveRequest();
+        string sceneName = packet.SceneName;
+        if (string.IsNullOrEmpty(sceneName)) return;
+
+        MainThreadDispatcher.Enqueue(() => SceneMoveVote.GetInstance()?.ShowRequest(sceneName));
+    }
+
+    // 호스트가 뿌린 투표 현황. 게스트도 같은 인원 아이콘 열을 그린다.
+    public static void OnH_MoveProgress(FlatPacket root)
+    {
+        var packet = root.TypeAsH_MoveProgress().UnPack();
+        int[]  memberIds = packet.MemberIds?.ToArray();
+        bool[] accepted  = packet.Accepted?.ToArray();
+
+        MainThreadDispatcher.Enqueue(() => SceneMoveVote.GetInstance()?.HandleProgress(memberIds, accepted));
+    }
+
+    // 탈출 구역 상태. 게스트는 판정하지 않고 알림 UI와 결과창만 호스트에 맞춘다.
+    public static void OnH_EscapeState(FlatPacket root)
+    {
+        var packet = root.TypeAsH_EscapeState().UnPack();
+        bool[] inside    = packet.Inside?.ToArray();
+        int[]  memberIds = packet.MemberIds?.ToArray();
+
+        MainThreadDispatcher.Enqueue(() =>
+            EscapeZone.ApplyRemoteState(packet.Active, packet.Duration, packet.Completed, inside, packet.Charging, memberIds, packet.ZoneId));
+    }
+
+    // 거절·시간 초과·호스트 취소로 이동이 무산됐다는 통보.
+    public static void OnH_MoveCancel(FlatPacket root)
+    {
+        MainThreadDispatcher.Enqueue(() => SceneMoveVote.GetInstance()?.HandleCancelled());
+    }
+
     public static void OnH_LoadScene(FlatPacket root)
     {
         var packet = root.TypeAsH_LoadScene();

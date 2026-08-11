@@ -29,6 +29,10 @@ public enum UIType
     Quest,
     QuestNotice,
     Minimap,
+
+    // 씬·프리팹은 UIType을 정수로 직렬화한다. 중간에 끼워 넣으면 기존 배치가 전부 다른 UI를
+    // 가리키게 되므로 새 항목은 반드시 끝에 추가할 것.
+    VotePopup,
 }
 
 public class UIManager : Singleton<UIManager>
@@ -69,6 +73,7 @@ public class UIManager : Singleton<UIManager>
 
     private WarningPopupUI _warningPopup;
     private NoticePopupUI  _noticePopup;
+    private VotePopupUI    _votePopup;
 
     // 모달 패널 뒤에 깔리는 공용 딤머 (런타임 생성)
     private GameObject _dimmer;
@@ -76,6 +81,9 @@ public class UIManager : Singleton<UIManager>
 
     private Action _warningConfirmAction;
     private Action _warningCancelAction;
+
+    private Action _voteAcceptAction;
+    private Action _voteDeclineAction;
 
     protected override void Awake()
     {
@@ -190,6 +198,30 @@ public class UIManager : Singleton<UIManager>
         Unregister(UIType.NoticePopup);
     }
 
+    public void RegisterVotePopup(VotePopupUI popup)
+    {
+        if (_votePopup != null)
+        {
+            _votePopup.OnAccepted -= OnVoteAccepted;
+            _votePopup.OnDeclined -= OnVoteDeclined;
+        }
+        _votePopup = popup;
+        _votePopup.OnAccepted += OnVoteAccepted;
+        _votePopup.OnDeclined += OnVoteDeclined;
+        Register(UIType.VotePopup, popup.gameObject);
+    }
+
+    public void UnregisterVotePopup()
+    {
+        if (_votePopup != null)
+        {
+            _votePopup.OnAccepted -= OnVoteAccepted;
+            _votePopup.OnDeclined -= OnVoteDeclined;
+            _votePopup = null;
+        }
+        Unregister(UIType.VotePopup);
+    }
+
     // ── Popup API ──────────────────────────────────────────────────────
 
     public void ShowWarning(string title, string message, Action onConfirm, Action onCancel = null)
@@ -237,6 +269,71 @@ public class UIManager : Singleton<UIManager>
 
     private void OnNoticeOk() => Hide(UIType.NoticePopup);
 
+    // ── Vote Popup API ─────────────────────────────────────────────────
+
+    // 게스트 — 호스트의 이동 제안에 수락/거절로 답한다.
+    public void ShowVoteRequest(string title, string message, Action onAccept, Action onDecline)
+    {
+        if (!PrepareVote(title, message, onAccept, onDecline)) return;
+
+        _votePopup.SetRequestMode();
+        Show(UIType.VotePopup);
+    }
+
+    // 호스트 — 게스트 응답을 기다리는 동안 띄운다. 취소하면 onCancel이 불린다.
+    public void ShowVoteWaiting(string title, string message, Action onCancel)
+    {
+        if (!PrepareVote(title, message, null, onCancel)) return;
+
+        _votePopup.SetWaitingMode();
+        Show(UIType.VotePopup);
+    }
+
+    public void SetVoteProgress(string text) => _votePopup?.SetProgress(text);
+
+    public void SetVoteMemberCount(int count)     => _votePopup?.SetMemberCount(count);
+    public void MarkVoteMemberAccepted(int index) => _votePopup?.MarkMemberAccepted(index);
+
+    public void HideVote()
+    {
+        _voteAcceptAction  = null;
+        _voteDeclineAction = null;
+        if (_votePopup != null) Hide(UIType.VotePopup);
+    }
+
+    private bool PrepareVote(string title, string message, Action onAccept, Action onDecline)
+    {
+        if (_votePopup == null)
+        {
+            Debug.LogWarning($"[UIManager] VotePopup이 등록되지 않아 '{title}' 투표를 표시할 수 없습니다.");
+            return false;
+        }
+
+        _voteAcceptAction  = onAccept;
+        _voteDeclineAction = onDecline;
+        _votePopup.SetContent(title, message);
+        _votePopup.SetProgress(string.Empty);
+        return true;
+    }
+
+    private void OnVoteAccepted()
+    {
+        Hide(UIType.VotePopup);
+        var action = _voteAcceptAction;
+        _voteAcceptAction  = null;
+        _voteDeclineAction = null;
+        action?.Invoke();
+    }
+
+    private void OnVoteDeclined()
+    {
+        Hide(UIType.VotePopup);
+        var action = _voteDeclineAction;
+        _voteAcceptAction  = null;
+        _voteDeclineAction = null;
+        action?.Invoke();
+    }
+
     // ── Panel Management ───────────────────────────────────────────────
 
     public void Register(UIType type, GameObject panel)
@@ -270,8 +367,20 @@ public class UIManager : Singleton<UIManager>
     }
 
     // 씬에 자기등록된 UI 패널을 이름 검색 없이 조회 (SceneUIRegistrar 참고)
-    public GameObject GetPanel(UIType type) =>
-        _panels.TryGetValue(type, out var panel) ? panel : null;
+    public GameObject GetPanel(UIType type)
+    {
+        if (!_panels.TryGetValue(type, out var panel)) return null;
+
+        // 씬이 바뀌었는데 아직 재등록 전이면 이전 씬의 파괴된 패널이 남아 있을 수 있다.
+        // 파괴된 오브젝트를 그대로 넘기면 호출부가 캐시해뒀다가 MissingReferenceException을 낸다.
+        if (panel == null)
+        {
+            _panels.Remove(type);
+            return null;
+        }
+
+        return panel;
+    }
 
     public void Show(UIType type)
     {
@@ -461,12 +570,29 @@ public class UIManager : Singleton<UIManager>
     {
         if (_dimmer != null) return;
 
-        _dimmer = new GameObject("SharedDimmer", typeof(RectTransform), typeof(UnityEngine.UI.Image));
-        _dimmerImage = _dimmer.GetComponent<UnityEngine.UI.Image>();
-        _dimmerImage.raycastTarget = true;   // 뒤쪽 UI/월드 클릭 차단
+        // 구조: SharedDimmer ─ BlurBackdrop(블러, 자동 생성) ─ Dim(딤 색)
+        // UI는 부모→자식 순으로 그려지므로 Dim을 자식으로 두어야 블러 위에 얹힌다.
+        // 블러 컴포넌트는 활성화되는 순간 BlurBackdrop을 첫 자식으로 끼워넣으므로,
+        // 배치가 끝나기 전에 켜지지 않도록 꺼둔 채로 조립한다.
+        _dimmer = new GameObject("SharedDimmer", typeof(RectTransform));
+        _dimmer.SetActive(false);
+
+        UIRealtimeBackdropBlur.Attach(_dimmer);
+
+        var dimObject = new GameObject("Dim", typeof(RectTransform), typeof(UnityEngine.UI.Image));
+        dimObject.layer = _dimmer.layer;
+        dimObject.transform.SetParent(_dimmer.transform, false);
+
+        var dimRect = (RectTransform)dimObject.transform;
+        dimRect.anchorMin = Vector2.zero;
+        dimRect.anchorMax = Vector2.one;
+        dimRect.offsetMin = Vector2.zero;
+        dimRect.offsetMax = Vector2.zero;
 
         var theme = UITheme.Default;
-        _dimmerImage.color = theme != null ? theme.Dimmer : new Color(0.04f, 0.06f, 0.11f, 0.6f);
+        _dimmerImage = dimObject.GetComponent<UnityEngine.UI.Image>();
+        _dimmerImage.raycastTarget = true;   // 뒤쪽 UI/월드 클릭 차단
+        _dimmerImage.color = theme != null ? theme.Dimmer : new Color(0f, 0f, 0f, 0.6f);
     }
 
     public void Toggle(UIType type)

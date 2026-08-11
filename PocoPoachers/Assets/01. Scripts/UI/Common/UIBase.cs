@@ -1,5 +1,13 @@
 using UnityEngine;
 
+// 패널 뒤 블러 배경을 붙일지 결정한다. Auto는 패널 종류별 기본값(UseBackdropBlurByDefault)을 따른다.
+public enum BackdropBlurMode
+{
+    Auto,
+    On,
+    Off,
+}
+
 // 씬/프리팹에 배치된 UI 패널의 공통 베이스.
 // - UIManager에 자기 자신을 등록하고 열림/닫힘 훅(OnShow/OnHide)을 제공한다.
 // - 등록의 정본 경로는 UIManager가 씬 로드마다 비활성 오브젝트까지 스캔해 RegisterSelf를
@@ -12,18 +20,33 @@ public abstract class UIBase : MonoBehaviour
     [SerializeField, Tooltip("체크하면 이 패널이 열릴 때 UIManager가 패널 뒤에 공용 딤머를 깔고 뒤쪽 클릭을 막는다. 패널이 자체 딤머를 갖고 있으면 체크하지 않는다.")]
     private bool _useSharedDimmer = false;
 
+    [SerializeField, Tooltip("패널 뒤 블러 배경. Auto는 패널 종류별 기본값을 따른다. 상시 떠 있는 HUD는 Off여야 한다.")]
+    private BackdropBlurMode _backdropBlur = BackdropBlurMode.Auto;
+
     public bool UseSharedDimmer => _useSharedDimmer;
 
     protected abstract UIType UiType { get; }
 
+    // HUD처럼 상시 떠 있는 패널은 false로 덮어쓴다. 켜둔 채로 두면 블러 패스가 게임 내내 돈다.
+    protected virtual bool UseBackdropBlurByDefault => true;
+
+    private bool ShouldUseBackdropBlur => _backdropBlur switch
+    {
+        BackdropBlurMode.On => true,
+        BackdropBlurMode.Off => false,
+        _ => UseBackdropBlurByDefault,
+    };
+
     protected virtual void Awake()
     {
         RegisterSelf();
+
+        if (ShouldUseBackdropBlur) UIRealtimeBackdropBlur.Attach(gameObject);
     }
 
     protected virtual void OnDestroy()
     {
-        if (UIManager.GetInstance() == null) return;
+        if (UIManager.ExistingInstance == null) return;
         UnregisterSelf();
     }
 

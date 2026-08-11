@@ -406,6 +406,14 @@ public class RoomManager : Singleton<RoomManager>
         objectManager.QueueMove(ObjectKind.Player, guestId, pos, yaw, 0);
     }
 
+    // 씬 이동 동의 대기처럼 현재 접속한 게스트 전원을 대상으로 하는 절차에서 쓴다.
+    public void CollectGuestIds(List<int> buffer)
+    {
+        buffer.Clear();
+        foreach (var kv in _guests)
+            buffer.Add(kv.Key);
+    }
+
     public void SetMemberCount(int count)
     {
         _memberCount = count;

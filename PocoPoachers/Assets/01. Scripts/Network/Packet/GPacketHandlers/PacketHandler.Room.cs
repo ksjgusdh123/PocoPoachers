@@ -42,6 +42,19 @@ public static partial class PacketHandlers
         RoomManager.Instance?.HandleGuestSceneReady(guestId);
     }
 
+    // 게스트의 이동 동의 응답. 호스트는 전원 수락이 모이면 실제 씬 전환을 시작한다.
+    public static void OnG_MoveReply(FlatPacket root)
+    {
+        if (!RoomManager.IsHost) return;
+
+        var packet = root.TypeAsG_MoveReply();
+        if (!RoomManager.TryGetGuestIdFromPacket(packet.PlayerId, autoRegister: false, out int guestId))
+            return;
+
+        bool accepted = packet.Accepted;
+        MainThreadDispatcher.Enqueue(() => SceneMoveVote.Instance?.HandleGuestReply(guestId, accepted));
+    }
+
     // 게스트가 씬 전환 직전에 올린 자기 상태. 호스트는 방 세계 세이브에 기록해 맵 이동마다 오토세이브가 되게 한다.
     // 게스트 복원은 이 패킷을 기다리지 않으므로(로컬 캐리오버) 늦게 도착해도 무방하다.
     public static void OnG_GuestSnapshot(FlatPacket root)

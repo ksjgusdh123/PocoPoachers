@@ -63,5 +63,10 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.G_QuestComplete     , PacketHandlers.OnG_QuestComplete);
         _onRecv.Add(PacketType.H_QuestComplete     , PacketHandlers.OnH_QuestComplete);
         _onRecv.Add(PacketType.G_GuestSnapshot     , PacketHandlers.OnG_GuestSnapshot);
+        _onRecv.Add(PacketType.H_MoveRequest       , PacketHandlers.OnH_MoveRequest);
+        _onRecv.Add(PacketType.G_MoveReply         , PacketHandlers.OnG_MoveReply);
+        _onRecv.Add(PacketType.H_MoveCancel        , PacketHandlers.OnH_MoveCancel);
+        _onRecv.Add(PacketType.H_MoveProgress      , PacketHandlers.OnH_MoveProgress);
+        _onRecv.Add(PacketType.H_EscapeState       , PacketHandlers.OnH_EscapeState);
     }
 }

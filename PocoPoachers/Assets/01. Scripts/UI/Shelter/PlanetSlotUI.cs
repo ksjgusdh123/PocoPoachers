@@ -30,7 +30,7 @@ public class PlanetSlotUI : MonoBehaviour
 
     private void OnDisable()
     {
-        var manager = LocalizationManager.GetInstance();
+        var manager = LocalizationManager.ExistingInstance;
         if (manager == null) return;
         manager.OnLanguageChanged -= RefreshName;
     }
@@ -60,16 +60,12 @@ public class PlanetSlotUI : MonoBehaviour
     private void OnClick()
     {
         int planetId = _data.Id;
+
+        // 호스트 + 게스트면 전원 수락을 기다린 뒤 SceneMoveVote가 이동을 확정한다.
+        if (SceneMoveVote.TryBeginTeamMove($"SC_Raid_{planetId}", SpawnId.FromShelter)) return;
+
         GameManager.Instance.SetSelectedPlanet(planetId);
         GameManager.Instance.SetSpawnId(SpawnId.FromShelter);
-
-        if (RoomManager.IsHost && RoomManager.HasGuests)
-        {
-            PacketBuilder.BroadcastReliableToGuests(
-                new H_LoadSceneT { SceneName = $"SC_Raid_{planetId}", SpawnId = (int)SpawnId.FromShelter },
-                H_LoadScene.Pack, PacketType.H_LoadScene);
-        }
-
         SceneLoader.Instance.LoadPlanetScene(planetId);
     }
 }

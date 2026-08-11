@@ -11,6 +11,9 @@ public abstract class ContextMenuUIBase : UIBase
     private RectTransform _rectTransform;
     private bool _subscribed;
 
+    // 커서 옆에 뜨는 작은 메뉴라 뒷배경을 가릴 이유가 없다.
+    protected override bool UseBackdropBlurByDefault => false;
+
     protected override void Awake()
     {
         base.Awake();

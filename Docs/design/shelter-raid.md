@@ -93,6 +93,11 @@
 
 ### 레이드 종료
 
+탈출이 확정되면 사망 때와 같은 포드 호송 연출을 재생한 뒤 **결과 씬(`SC_Result`)으로 팀 전체가 이동**하고, 거기서 `ResultSceneController`가 결과창을 띄운다. 닫기(호스트만 표시)를 누르면 쉘터로 복귀한다. 팀 전멸(실패)은 아직 레이드 씬 위 오버레이 방식 그대로다.
+
+레이드 탈출 지점은 `EscapeZone`(`SceneExitBase` 파생) — **살아있는 팀원 전원이 구역 안에 5초** 있어야 발동한다. 다운(구조 대기)된 팀원이 있으면 살려야 하고, 한 명이라도 벗어나면 게이지가 0으로 리셋된다. 판정은 호스트만 하고(위치·생존 상태를 이미 받고 있음), 게스트는 `H_EscapeState`로 게이지와 결과창만 맞춘다. 상호작용으로 즉시 이동하는 포털은 같은 베이스의 `ScenePortal`이다.
+
+
 **성공(포털 탈출):** `ScenePortal`의 `_showResultUI` 플래그가 true면 `RaidResultUI.ShowSuccess(confirm)` 오버레이 표시 후 전환, false면 즉시 전환. 별도 아이템 회수 임계치 등 추가 조건 없음 — 포털에 진입하면 끝.
 
 **실패(팀 전멸):** `PlayerController.CheckRaidWipe()`가 매 프레임 생존자 확인 → 전원 사망 시 `RaidResultUI.ShowFailure()`. 확인 버튼은 호스트에게만 노출되며 확인 시 쉘터로 전환.
