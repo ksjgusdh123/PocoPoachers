@@ -62,6 +62,7 @@ public class Bullet : MonoBehaviour
         if (TryGetHit(origin, step, out RaycastHit hit))
         {
             bool showVFX = false;
+            bool isKill = false;
 
             if (hit.collider.TryGetComponent<IDamageable>(out var damageable))
             {
@@ -77,6 +78,8 @@ public class Bullet : MonoBehaviour
                             Release();
                         return;
                     }
+                    // 데미지가 실제로 적용된 이 클라이언트(호스트)에서만 사망 여부를 알 수 있음
+                    isKill = damageable is StatBase stat && stat.IsDead;
                 }
                 showVFX = true;
             }
@@ -93,7 +96,7 @@ public class Bullet : MonoBehaviour
 
             // showVFX는 IDamageable(적/샌드백)을 맞췄을 때만 true — 벽 등 다른 콜라이더는 히트마커 제외
             if (_showHitMarker && showVFX)
-                CrosshairUI.Instance?.ShowHitMarker();
+                CrosshairUI.Instance?.ShowHitMarker(isKill);
 
             if (IsWallHit(hit.collider))
                 BulletDecalPool.Instance?.Spawn(hit, _color);

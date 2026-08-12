@@ -88,6 +88,7 @@ public class CrosshairUI : MonoBehaviour
     [Header("Hit Marker")]
     [SerializeField] private CanvasGroup _hitMarkerGroup;
     [SerializeField] private Color _hitMarkerColor = Color.white;
+    [SerializeField] private Color _hitMarkerKillColor = Color.red;
     [SerializeField] private float _hitMarkerDuration = 0.12f;
     [SerializeField] private float _hitMarkerFadeSpeed = 20f;
     [SerializeField] private float _hitMarkerSpreadScale = 0.7f;
@@ -241,13 +242,14 @@ public class CrosshairUI : MonoBehaviour
         _shakeTimer = _shakeDuration;
     }
 
-    public void ShowHitMarker()
+    public void ShowHitMarker(bool isKill = false)
     {
         EnsureHitMarker();
         if (_hitMarkerGroup == null) return;
 
         _hitMarkerTimer = _hitMarkerDuration;
         _hitMarkerGroup.alpha = 1f;
+        ApplyHitMarkerColor(isKill ? _hitMarkerKillColor : _hitMarkerColor);
         UpdateActiveHitMarkerDistances();
         ApplyHitMarkerDistance(_activeHitMarkerOuterDistance);
     }
@@ -328,7 +330,7 @@ public class CrosshairUI : MonoBehaviour
         _hitMarkerLines[2] = _hitMarkerBottomLeft != null ? _hitMarkerBottomLeft : FindHitMarkerLine(hitMarker, "BottomLeft");
         _hitMarkerLines[3] = _hitMarkerBottomRight != null ? _hitMarkerBottomRight : FindHitMarkerLine(hitMarker, "BottomRight");
         ApplyHitMarkerLineRotations();
-        ApplyHitMarkerColor();
+        ApplyHitMarkerColor(_hitMarkerColor);
     }
 
     private void ApplyHitMarkerLineRotations()
@@ -341,7 +343,7 @@ public class CrosshairUI : MonoBehaviour
         _hitMarkerLines[3].localEulerAngles = new Vector3(0f, 0f, -45f);
     }
 
-    private void ApplyHitMarkerColor()
+    private void ApplyHitMarkerColor(Color color)
     {
         if (!HasHitMarkerLines()) return;
 
@@ -349,7 +351,7 @@ public class CrosshairUI : MonoBehaviour
         {
             if (_hitMarkerLines[i].TryGetComponent<Image>(out var image))
             {
-                image.color = _hitMarkerColor;
+                image.color = color;
                 image.raycastTarget = false;
             }
         }
