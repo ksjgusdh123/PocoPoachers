@@ -11,6 +11,8 @@ using UnityEngine.UI;
 //
 // 이 스크립트는 표시 + 타이머만 담당한다. 실제 사망 확정(상자 스폰/부활 처리 등)은
 // OnFaintingComplete 구독측(사망 시스템)이 수행한다. 구조되면 StopFainting()으로 중단한다.
+// 같은 오브젝트에 두 개가 붙으면 StartFainting으로 켜지는 순간 다른 하나의 Awake가 다시 꺼버리므로 중복을 금지한다
+[DisallowMultipleComponent]
 public class FaintingUI : MonoBehaviour
 {
     [SerializeField] private Image _fillImage;           // 남은 시간 비율로 채우는 게이지

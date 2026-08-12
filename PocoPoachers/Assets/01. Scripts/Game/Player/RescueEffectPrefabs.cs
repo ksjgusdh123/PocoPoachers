@@ -11,4 +11,20 @@ public class RescueEffectPrefabs : Singleton<RescueEffectPrefabs>
 
     public GameObject PodPrefab => _podPrefab;
     public GameObject BeamPrefab => _beamPrefab;
+
+    protected override void Awake()
+    {
+        // 씬에 새로 배치된 인스턴스가 중복 싱글턴으로 파괴되기 전에, 이 씬의 프리팹 지정을
+        // 살아남는 인스턴스에 넘겨준다 (ObjectManager.ApplySceneEntries와 같은 이유).
+        if (_instance != null && _instance != this)
+            _instance.ApplyScenePrefabs(_podPrefab, _beamPrefab);
+
+        base.Awake();
+    }
+
+    private void ApplyScenePrefabs(GameObject pod, GameObject beam)
+    {
+        if (pod != null) _podPrefab = pod;
+        if (beam != null) _beamPrefab = beam;
+    }
 }
