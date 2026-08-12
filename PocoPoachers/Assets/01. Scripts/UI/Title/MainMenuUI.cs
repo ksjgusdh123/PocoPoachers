@@ -30,6 +30,9 @@ public class MainMenuUI : MonoBehaviour
     [SerializeField] GameObject _panelSaveSlots;
     [SerializeField] Button     _btnCloseSaveSlots;
 
+    [Tooltip("디버그용 — 켜면 캐릭터 생성 씬을 건너뛰고 기본 이름으로 바로 시작한다")]
+    [SerializeField] bool       _skipCharacterCreate;
+
     void Awake()
     {
         SoundManager.GetInstance().PlayBgm("bgm_main");
@@ -55,8 +58,19 @@ public class MainMenuUI : MonoBehaviour
         SaveSlotButtonUI.OnSlotSelected -= OnSaveSlotSelected;
     }
 
-    // 슬롯 할당/닉네임 확정과 호스트 시작은 캐릭터 생성 씬(CharacterCreateUI)이 이어서 처리한다
-    void OnClickNewGame() => SceneManager.LoadScene(SceneName.CharacterCreate);
+    // 기본은 캐릭터 생성 씬으로 넘겨 슬롯 할당/닉네임 확정과 호스트 시작을 CharacterCreateUI가 처리한다.
+    // 건너뛰기가 켜져 있으면 여기서 기본 이름으로 바로 새 게임을 시작한다.
+    void OnClickNewGame()
+    {
+        if (!_skipCharacterCreate)
+        {
+            SceneManager.LoadScene(SceneName.CharacterCreate);
+            return;
+        }
+
+        SetButtonsInteractable(false);
+        StartCoroutine(NewGameStart.Run(nickname: null, onCancel: () => SetButtonsInteractable(true)));
+    }
 
     void OnClickLoad()
     {

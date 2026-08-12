@@ -1,4 +1,3 @@
-using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -16,8 +15,8 @@ using UnityEngine.UI;
 // 외형 커스터마이징도 이 화면에 붙일 예정이라 "확정" 시점을 여기 한 곳으로 모아둔다.
 public class CharacterCreateUI : MonoBehaviour
 {
-    public const int MinNicknameLength = 2;
-    public const int MaxNicknameLength = 12;
+    private const int MinLength = 2;
+    private const int MaxLength = 12;
 
     [SerializeField] private TMP_InputField _inputNickname;
     [SerializeField] private Button _btnConfirm;
@@ -27,7 +26,7 @@ public class CharacterCreateUI : MonoBehaviour
 
     private void Awake()
     {
-        _inputNickname.characterLimit = MaxNicknameLength;
+        _inputNickname.characterLimit = MaxLength;
         _inputNickname.onValueChanged.AddListener(_ => RefreshConfirm());
         _inputNickname.onSubmit.AddListener(_ => OnClickConfirm());
 
@@ -50,29 +49,15 @@ public class CharacterCreateUI : MonoBehaviour
             RoomManager.Instance.OnRoomJoinFailed -= HandleRoomFailed;
     }
 
-    private void RefreshConfirm() => _btnConfirm.interactable = Nickname.Length >= MinNicknameLength;
+    private void RefreshConfirm() => _btnConfirm.interactable = Nickname.Length >= MinLength;
 
     private void OnClickConfirm()
     {
         string nickname = Nickname;
-        if (nickname.Length < MinNicknameLength) return;
+        if (nickname.Length < MinLength) return;
 
         SetInteractable(false);
-
-        var save = SaveManager.GetInstance();
-        save.AllocateNewSlot();
-        save.SaveNickname(nickname);
-        save.LoadEquipmentState(); // 새 슬롯: 장비 상태 초기화 + uid 카운터 리셋
-        save.LoadQuestState();     // 새 슬롯: 퀘스트 진행 상태 초기화
-
-        var loc = LocalizationManager.GetInstance();
-        StartCoroutine(NetworkConnectFlow.Run(
-            onSuccess: () => RoomManager.Instance.StartAsHost(),
-            onFail: () => UIManager.GetInstance().ShowWarning(
-                loc.GetString("network.connect_failed_title"),
-                loc.GetString("network.local_play_fallback"),
-                onConfirm: () => RoomManager.Instance.StartLocalHost(),
-                onCancel: () => SetInteractable(true))));
+        StartCoroutine(NewGameStart.Run(nickname, onCancel: () => SetInteractable(true)));
     }
 
     // 아직 방을 만들기 전이라 세션 정리 없이 타이틀로 돌아가면 된다
@@ -84,6 +69,6 @@ public class CharacterCreateUI : MonoBehaviour
     {
         _inputNickname.interactable = interactable;
         _btnBack.interactable = interactable;
-        _btnConfirm.interactable = interactable && Nickname.Length >= MinNicknameLength;
+        _btnConfirm.interactable = interactable && Nickname.Length >= MinLength;
     }
 }
