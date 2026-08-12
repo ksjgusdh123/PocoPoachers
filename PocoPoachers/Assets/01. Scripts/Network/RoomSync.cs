@@ -447,6 +447,32 @@ public static class RoomSync
             H_MoveCancel.Pack, PacketType.H_MoveCancel);
     }
 
+    // 게스트가 접속 직후 자기 닉네임을 호스트에 보고. 호스트는 명부에 넣고 전원에게 다시 뿌린다.
+    public static void Nickname(string nickname)
+    {
+        if (RoomManager.IsHost) return;
+        if (string.IsNullOrEmpty(nickname)) return;
+
+        PacketBuilder.SendReliableToHost(
+            new G_NicknameT { PlayerId = MyId, Nickname = nickname },
+            G_Nickname.Pack, PacketType.G_Nickname);
+    }
+
+    // 호스트가 방 전체 닉네임 명부를 뿌린다. 게스트 지정 시 그 게스트에게만(신규 접속자 초기화).
+    public static void Roster(int guestPlayerId = 0)
+    {
+        if (!RoomManager.IsHost) return;
+
+        PlayerNameRegistry.BuildRoster(out var ids, out var names);
+        if (ids.Count == 0) return;
+
+        var packet = new H_RosterT { PlayerIds = ids, Nicknames = names };
+        if (guestPlayerId > 0)
+            PacketBuilder.SendReliableToGuest(guestPlayerId, packet, H_Roster.Pack, PacketType.H_Roster);
+        else
+            PacketBuilder.BroadcastReliableToGuests(packet, H_Roster.Pack, PacketType.H_Roster);
+    }
+
     // 게스트가 씬 로드 완료를 호스트에 알림 (호스트가 박스/적 스냅샷을 보내는 트리거)
     public static void SceneReady()
     {

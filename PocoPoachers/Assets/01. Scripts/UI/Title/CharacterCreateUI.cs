@@ -18,6 +18,10 @@ public class CharacterCreateUI : MonoBehaviour
     private const int MinLength = 2;
     private const int MaxLength = 12;
 
+    // 참여한 방에 내 기록이 없어(최초 등록) 이름만 만들러 온 경우.
+    // 이미 접속은 끝난 상태라, 확정하면 새 게임을 시작하는 대신 이름을 호스트에 보고하고 쉘터로 들어간다.
+    public static bool JoinFlow;
+
     [SerializeField] private TMP_InputField _inputNickname;
     [SerializeField] private Button _btnConfirm;
     [SerializeField] private Button _btnBack;
@@ -56,12 +60,32 @@ public class CharacterCreateUI : MonoBehaviour
         string nickname = Nickname;
         if (nickname.Length < MinLength) return;
 
+        // 참여한 방의 최초 등록 — 세이브 슬롯은 만들지 않는다. 이름을 호스트에 보고하고 그대로 입장한다.
+        if (JoinFlow)
+        {
+            JoinFlow = false;
+            SaveManager.GetInstance().SaveLastNickname(nickname);
+            RoomSync.Nickname(nickname);
+            RoomManager.Instance.EnterShelterFromMenu();
+            return;
+        }
+
         SetInteractable(false);
         StartCoroutine(NewGameStart.Run(nickname, onCancel: () => SetInteractable(true)));
     }
 
-    // 아직 방을 만들기 전이라 세션 정리 없이 타이틀로 돌아가면 된다
-    private void OnClickBack() => SceneManager.LoadScene(SceneName.Title);
+    private void OnClickBack()
+    {
+        // 참여 중이었다면 이미 방에 붙어 있으므로 세션을 정리하고 나간다
+        if (JoinFlow)
+        {
+            JoinFlow = false;
+            SceneLoader.Instance.LoadTitleScene();
+            return;
+        }
+
+        SceneManager.LoadScene(SceneName.Title);
+    }
 
     private void HandleRoomFailed(string _) => SetInteractable(true);
 

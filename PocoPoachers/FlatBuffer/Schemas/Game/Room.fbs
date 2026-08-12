@@ -140,6 +140,22 @@ table H_MoveCancel
     reason: int; // 0=게스트 거절, 1=응답 시간 초과, 2=호스트 취소
 }
 
+// 게스트→호스트(신뢰), 접속 직후 자기 닉네임을 보고한다.
+// 호스트는 payload의 player_id를 믿지 않고 실제 송신자 id로 키를 잡는다.
+table G_Nickname
+{
+    player_id: int;
+    nickname:  string;
+}
+
+// 호스트→게스트(신뢰), 방 전체 닉네임 명부. 델타가 아니라 매번 전체를 보낸다 —
+// 신규 접속자 초기화와 기존 인원 갱신이 한 패킷으로 끝나고, 몇 번 도착하든 결과가 같다.
+table H_Roster
+{
+    player_ids: [int];
+    nicknames:  [string]; // 같은 인덱스끼리 짝
+}
+
 // 게스트→호스트(신뢰), 씬 전환 직전에 자기 상태를 올린다. 호스트는 방 세계 세이브에 기록해
 // 맵 이동마다 오토세이브가 되게 하고, 게스트 인벤 미러(GuestInventoryTracker)도 이 값으로 맞춘다.
 // 게스트 자신의 복원은 이 패킷을 기다리지 않는다 — 로컬 캐리오버(GuestStateCarry)가 담당한다.

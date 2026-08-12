@@ -77,14 +77,52 @@ public class RoomManager : Singleton<RoomManager>
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
+    // 호스트 명부(H_Roster)를 기다리는 시간. 못 받으면 이 월드에 기록이 없는 것으로 보고 진행한다.
+    const float RosterWaitTimeout = 5f;
+
     // 메뉴 씬(타이틀=불러오기/협동, 캐릭터 생성=새 게임)에서 세션이 시작됐을 때만 쉘터로 보낸다
     void LoadShelterIfOnMenu()
     {
         string scene = SceneManager.GetActiveScene().name;
         if (scene != SceneName.Title && scene != SceneName.CharacterCreate) return;
 
+        // 게스트는 호스트 방 세계에 자기 기록이 있는지 확인한 뒤 입장한다 — 없으면 닉네임부터 만든다
+        if (!_isHost)
+        {
+            StartCoroutine(CoGuestEnterAfterRoster());
+            return;
+        }
+
+        EnterShelterFromMenu();
+    }
+
+    public void EnterShelterFromMenu()
+    {
         GameManager.Instance?.SetSpawnId(SpawnId.FromTitle);
         SceneLoader.Instance?.LoadShelterScene();
+    }
+
+    // 호스트가 보낸 명부에 내 id가 있으면 이 월드에 온 적 있는 게스트 → 그 이름 그대로 바로 입장.
+    // 없으면 최초 등록이므로 캐릭터 생성 화면에서 이름을 정하게 하고, 확정 시 CharacterCreateUI가 입장을 잇는다.
+    IEnumerator CoGuestEnterAfterRoster()
+    {
+        int myId = NetworkManager.Instance?.MyPlayerId ?? 0;
+
+        float elapsed = 0f;
+        while (!PlayerNameRegistry.RosterHas(myId) && elapsed < RosterWaitTimeout)
+        {
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        if (PlayerNameRegistry.RosterHas(myId))
+        {
+            EnterShelterFromMenu();
+            yield break;
+        }
+
+        CharacterCreateUI.JoinFlow = true;
+        SceneManager.LoadScene(SceneName.CharacterCreate);
     }
 
     public void StartAsHost() => CreateOrJoinRoom(true, null);
@@ -100,6 +138,7 @@ public class RoomManager : Singleton<RoomManager>
         _waitingGuests.Clear();
         _sceneReadyGuests.Clear();
         _hostLastSeen = 0;
+        PlayerNameRegistry.Clear();
         NotifyGameStarted();
     }
 
@@ -116,6 +155,7 @@ public class RoomManager : Singleton<RoomManager>
         _hostLastSeen = 0;
         _hostEp = null;
         _worldObjectsReady = IsGameplayScene(SceneManager.GetActiveScene().name);
+        PlayerNameRegistry.Clear(); // 이전 방의 명부가 남지 않게
 
         ThreadPool.QueueUserWorkItem(_ => {
             _udpSession = new UdpSession();
@@ -183,6 +223,8 @@ public class RoomManager : Singleton<RoomManager>
                 }
                 else
                 {
+                    // 닉네임은 여기서 보내지 않는다 — 호스트 명부를 먼저 받아보고,
+                    // 내 기록이 없을 때(최초 등록)만 이름을 만들어 보고한다(CoGuestEnterAfterRoster).
                     OnGameStarted?.Invoke();
                     // 이미 게임 씬에 있으면 씬 로드 이벤트가 없으므로 즉시 준비 완료를 알린다
                     if (IsGameplayScene(SceneManager.GetActiveScene().name))
@@ -515,6 +557,12 @@ public class RoomManager : Singleton<RoomManager>
 
         SendHostEquipToGuest(newGuestId);
 
+        // 이 월드에 온 적 있는 게스트면 그때 쓰던 이름을 명부에 되살린다.
+        // 기록이 없으면(이 월드 신규) 명부에 자기 이름이 빠진 채로 가고, 게스트가 그걸 보고 이름을 만들어 보낸다.
+        PlayerNameRegistry.Set(newGuestId, SaveManager.GetInstance()?.LoadGuestNickname(newGuestId));
+
+        RoomSync.Roster(newGuestId);
+
         var shelterMgr = ShelterManager.GetInstance();
         if (shelterMgr != null)
             PacketBuilder.SendToGuest(newGuestId,
@@ -788,6 +836,7 @@ public class RoomManager : Singleton<RoomManager>
 
         GuestInventoryTracker.ClearGuest(guestId);
         RemoteEquipState.ClearPlayer(guestId);
+        PlayerNameRegistry.Remove(guestId);
 
         ObjectManager.Instance?.Despawn(ObjectKind.Player, guestId);
         OnPlayerCountChanged?.Invoke(_guests.Count + 1);
@@ -796,6 +845,8 @@ public class RoomManager : Singleton<RoomManager>
         PacketBuilder.BroadcastToGuests(
             new H_LeaveT { PlayerId = guestId, IsHost = false },
             H_Leave.Pack, PacketType.H_Leave);
+
+        RoomSync.Roster();
     }
 
     // 호스트 전용 — 게스트의 현재 상태(인벤/로드아웃/총·방어구 인스턴스상태)를 호스트가 보유한
