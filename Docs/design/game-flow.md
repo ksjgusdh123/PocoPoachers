@@ -7,6 +7,7 @@
 | 씬 (상수) | 실제 씬 이름 | 용도 | 로드 API |
 |-----------|--------------|------|----------|
 | `SceneName.Title` | `SC_Title` | 타이틀·메인 메뉴 | `SceneLoader.LoadTitleScene()` |
+| `SceneName.CharacterCreate` | `SC_CharacterCreate` | 새 게임 — 닉네임 입력(추후 외형 커스터마이징) | `SceneManager.LoadScene` (로딩 씬 미경유) |
 | `SceneName.Loading` | `SC_Loading` | 비동기 로딩 중간 씬 | 모든 전환이 경유 |
 | `SceneName.Shelter` | `SC_RocketShelter` | 거점(쉘터) | `SceneLoader.LoadShelterScene()` |
 | — | `SC_Raid_{planetId}` | 행성별 레이드 (동적 조합) | `SceneLoader.LoadPlanetScene(id)` |
@@ -19,7 +20,8 @@
 ## 씬 전환 흐름
 
 ```
-SC_Title ──(새 게임/로드)──▶ SC_Loading ──▶ SC_RocketShelter
+SC_Title ──(새 게임)──▶ SC_CharacterCreate ──(닉네임 확정)──▶ SC_Loading ──▶ SC_RocketShelter
+SC_Title ──(로드)─────────────────────────────────────────▶ SC_Loading ──▶ SC_RocketShelter
 SC_RocketShelter ──(우주선)─▶ SC_Loading ──▶ SC_Raid_{id}
 SC_Raid ──(포털/팀 전멸)────▶ SC_Loading ──▶ SC_RocketShelter / SC_Title
 ```
@@ -37,7 +39,9 @@ SC_Raid ──(포털/팀 전멸)────▶ SC_Loading ──▶ SC_RocketS
 
 ## 루프 배선 (코드 근거)
 
-- **타이틀 → 쉘터:** `RoomManager.Awake`가 `OnGameStarted += LoadShelterIfOnTitle` 구독. 호스트/솔로 세션이 `SC_Title`에서 시작되면 `SpawnId.FromTitle` 설정 후 `SceneLoader.LoadShelterScene()`.
+- **타이틀 → 캐릭터 생성:** `MainMenuUI.OnClickNewGame()` — 슬롯 할당/닉네임 확정 없이 `SC_CharacterCreate`로만 이동한다. 슬롯 생성은 닉네임 확정 시점으로 미뤄져, 도중에 취소해도 빈 세이브가 남지 않는다.
+- **캐릭터 생성 → 쉘터:** `CharacterCreateUI.OnClickConfirm()` — `AllocateNewSlot()` → `SaveNickname()` → 장비/퀘스트 상태 초기화 → `NetworkConnectFlow.Run` 후 `RoomManager.StartAsHost()`(연결 실패 시 `StartLocalHost()` 폴백).
+- **메뉴 → 쉘터:** `RoomManager.Awake`가 `OnGameStarted += LoadShelterIfOnMenu` 구독. 호스트/솔로 세션이 `SC_Title`(로드/협동) 또는 `SC_CharacterCreate`(새 게임)에서 시작되면 `SpawnId.FromTitle` 설정 후 `SceneLoader.LoadShelterScene()`.
 - **쉘터 → 레이드:** `PlanetSlotUI.OnClick()` — 선택 행성/스폰ID 설정, 호스트+게스트 있으면 `H_LoadSceneT` 브로드캐스트, `SceneLoader.LoadPlanetScene(planetId)`.
 - **레이드 → 쉘터/타이틀 (포털):** `Game/Map/ScenePortal.cs` — `_showResultUI` true면 `RaidResultUI.ShowSuccess(confirm)`로 확인 후 전환, false면 즉시 `SceneTransition.Go()`.
 - **레이드 → 쉘터 (팀 전멸):** `PlayerController.CheckRaidWipe()` — `Update()`마다 씬이 `SC_Raid_`로 시작하고 생존자가 없는지 확인. 없으면 `RaidResultUI.ShowFailure()` 표시, 확인 버튼은 호스트에게만 노출, 확인 시 `SceneTransition.Go(Shelter, FromRaid)`. `_raidWipeHandled` 플래그로 씬당 1회만 처리.

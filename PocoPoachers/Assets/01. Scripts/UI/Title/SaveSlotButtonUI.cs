@@ -57,7 +57,17 @@ public class SaveSlotButtonUI : MonoBehaviour
     private void RefreshInfoText()
     {
         if (_txtInfo == null) return;
+
+        if (!_hasSave)
+        {
+            _txtInfo.text = LocalizationManager.GetInstance().GetString("save.empty_slot");
+            return;
+        }
+
+        // 닉네임이 없는 건 캐릭터 생성 이전에 만들어진 슬롯 — 날짜만 보여준다
         var sm = SaveManager.GetInstance();
-        _txtInfo.text = _hasSave ? sm.GetLastSavedAt(_slotIndex) : LocalizationManager.GetInstance().GetString("save.empty_slot");
+        string nickname = sm.GetNickname(_slotIndex);
+        string savedAt = sm.GetLastSavedAt(_slotIndex);
+        _txtInfo.text = string.IsNullOrEmpty(nickname) ? savedAt : $"{nickname}  {savedAt}";
     }
 }

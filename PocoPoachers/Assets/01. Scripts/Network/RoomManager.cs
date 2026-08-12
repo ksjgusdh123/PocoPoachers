@@ -73,13 +73,15 @@ public class RoomManager : Singleton<RoomManager>
     {
         base.Awake();
         DontDestroyOnLoad(gameObject);
-        OnGameStarted += LoadShelterIfOnTitle;
+        OnGameStarted += LoadShelterIfOnMenu;
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
-    void LoadShelterIfOnTitle()
+    // 메뉴 씬(타이틀=불러오기/협동, 캐릭터 생성=새 게임)에서 세션이 시작됐을 때만 쉘터로 보낸다
+    void LoadShelterIfOnMenu()
     {
-        if (SceneManager.GetActiveScene().name != SceneName.Title) return;
+        string scene = SceneManager.GetActiveScene().name;
+        if (scene != SceneName.Title && scene != SceneName.CharacterCreate) return;
 
         GameManager.Instance?.SetSpawnId(SpawnId.FromTitle);
         SceneLoader.Instance?.LoadShelterScene();
@@ -975,7 +977,7 @@ public class RoomManager : Singleton<RoomManager>
 
     protected override void OnDestroy()
     {
-        OnGameStarted -= LoadShelterIfOnTitle;
+        OnGameStarted -= LoadShelterIfOnMenu;
         CloseUdpSession();
         base.OnDestroy();
     }

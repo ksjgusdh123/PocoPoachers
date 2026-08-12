@@ -160,6 +160,19 @@ public class SaveManager : Singleton<SaveManager>
         return data.hasVitals;
     }
 
+    // 캐릭터 생성에서 정한 닉네임 — 슬롯당 하나. 저장과 동시에 lastSavedAt이 찍혀 슬롯 목록에 나타난다.
+    public void SaveNickname(string nickname)
+    {
+        var data = GetOrLoad(_activeSlot);
+        data.nickname = nickname;
+        data.lastSavedAt = NowTimestamp();
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    public string LoadNickname() => GetOrLoad(_activeSlot).nickname;
+
+    public string GetNickname(int slotIndex) => GetOrLoad(slotIndex).nickname;
+
     public bool HasSave(int slotIndex) =>
         !string.IsNullOrEmpty(GetOrLoad(slotIndex).lastSavedAt);
 
@@ -275,6 +288,7 @@ public class SaveManager : Singleton<SaveManager>
     private class GameSaveData
     {
         public string lastSavedAt;
+        public string nickname;
         public int shelterLevel = 1;
         public List<InventorySaveEntry> inventories = new List<InventorySaveEntry>();
         public List<EquipSlotEntry> equipSlots = new List<EquipSlotEntry>();

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 // ── Inspector 연결 구조 ──────────────────────────────────────────────────
@@ -20,8 +21,6 @@ using UnityEngine.UI;
 
 public class MainMenuUI : MonoBehaviour
 {
-    private const float CONNECT_TIMEOUT = 5f;
-
     [SerializeField] Button     _btnNewGame;
     [SerializeField] Button     _btnLoad;
     [SerializeField] Button     _btnCoOp;
@@ -56,22 +55,8 @@ public class MainMenuUI : MonoBehaviour
         SaveSlotButtonUI.OnSlotSelected -= OnSaveSlotSelected;
     }
 
-    void OnClickNewGame()
-    {
-        SaveManager.GetInstance().AllocateNewSlot();
-        SaveManager.GetInstance().LoadEquipmentState(); // 새 슬롯: 장비 상태 초기화 + uid 카운터 리셋
-        SaveManager.GetInstance().LoadQuestState(); // 새 슬롯: 퀘스트 진행 상태 초기화
-        SetButtonsInteractable(false);
-        StartCoroutine(CoConnectThen(
-            onSuccess: () => RoomManager.Instance.StartAsHost(),
-            onFail:    () => UIManager.GetInstance().ShowWarning(
-                LocalizationManager.GetInstance().GetString("network.connect_failed_title"),
-                LocalizationManager.GetInstance().GetString("network.local_play_fallback"),
-                onConfirm: () => RoomManager.Instance.StartLocalHost(),
-                onCancel:  () => SetButtonsInteractable(true)
-            )
-        ));
-    }
+    // 슬롯 할당/닉네임 확정과 호스트 시작은 캐릭터 생성 씬(CharacterCreateUI)이 이어서 처리한다
+    void OnClickNewGame() => SceneManager.LoadScene(SceneName.CharacterCreate);
 
     void OnClickLoad()
     {
@@ -127,33 +112,12 @@ public class MainMenuUI : MonoBehaviour
 
     void OnRoomJoinFailed(string _) => SetButtonsInteractable(true);
 
-    IEnumerator CoConnectThen(Action onSuccess, Action onFail)
-    {
-        var nm = NetworkManager.Instance;
-        if (nm == null) { onFail?.Invoke(); yield break; }
-
-        if (!nm.IsLoggedIn)
+    IEnumerator CoConnectThen(Action onSuccess, Action onFail) =>
+        NetworkConnectFlow.Run(onSuccess, () =>
         {
-            if (nm.Session == null || !nm.Session.IsConnected)
-                nm.Reconnect();
-
-            float elapsed = 0f;
-            while (!nm.IsLoggedIn && elapsed < CONNECT_TIMEOUT)
-            {
-                elapsed += Time.deltaTime;
-                yield return null;
-            }
-
-            if (!nm.IsLoggedIn)
-            {
-                SetButtonsInteractable(true);
-                onFail?.Invoke();
-                yield break;
-            }
-        }
-
-        onSuccess?.Invoke();
-    }
+            SetButtonsInteractable(true);
+            onFail?.Invoke();
+        });
 
     void SetButtonsInteractable(bool interactable)
     {
