@@ -33,6 +33,7 @@ public struct FlatPacket : IFlatbufferObject
   public G_Shoot TypeAsG_Shoot() { return Type<G_Shoot>().Value; }
   public H_Shoot TypeAsH_Shoot() { return Type<H_Shoot>().Value; }
   public H_ShootRejected TypeAsH_ShootRejected() { return Type<H_ShootRejected>().Value; }
+  public H_HitConfirm TypeAsH_HitConfirm() { return Type<H_HitConfirm>().Value; }
   public H_ItemSpawn TypeAsH_ItemSpawn() { return Type<H_ItemSpawn>().Value; }
   public H_ItemDespawn TypeAsH_ItemDespawn() { return Type<H_ItemDespawn>().Value; }
   public G_ItemGain TypeAsG_ItemGain() { return Type<G_ItemGain>().Value; }
@@ -156,6 +157,9 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_ShootRejected:
         _o.Type.Value = this.Type<H_ShootRejected>().HasValue ? this.Type<H_ShootRejected>().Value.UnPack() : null;
+        break;
+      case PacketType.H_HitConfirm:
+        _o.Type.Value = this.Type<H_HitConfirm>().HasValue ? this.Type<H_HitConfirm>().Value.UnPack() : null;
         break;
       case PacketType.H_ItemSpawn:
         _o.Type.Value = this.Type<H_ItemSpawn>().HasValue ? this.Type<H_ItemSpawn>().Value.UnPack() : null;

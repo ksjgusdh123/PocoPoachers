@@ -26,6 +26,7 @@ public class Bullet : MonoBehaviour
     private GameObject _attacker;
     private int _attackerLayer = -1;
     private Color _color;
+    private Action<bool> _onDamageResult;
 
     private void Awake()
     {
@@ -34,7 +35,7 @@ public class Bullet : MonoBehaviour
         _applyDamage = RoomManager.IsHost;
     }
 
-    public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease, GameObject attacker = null, Color color = default, bool isHeadshot = false)
+    public void Initialize(float speed, float damage, float range, Vector3 direction, Action onRelease, GameObject attacker = null, Color color = default, bool isHeadshot = false, Action<bool> onDamageResult = null)
     {
         _speed = speed;
         _damage = damage;
@@ -49,6 +50,8 @@ public class Bullet : MonoBehaviour
         _color = color == default ? Color.white : color;
         // 로컬 플레이어가 쏜 총알에만 히트마커 표시 (AI/원격 플레이어 총알은 attacker가 null이거나 PlayerController가 없음)
         _showHitMarker = attacker != null && attacker.TryGetComponent<PlayerController>(out _);
+        // 호스트가 게스트의 권위 총알을 대신 시뮬레이션할 때, 데미지 적용 결과(킬 여부)를 원 발사자에게 알리는 용도
+        _onDamageResult = onDamageResult;
     }
 
     private void Update()
@@ -80,6 +83,7 @@ public class Bullet : MonoBehaviour
                     }
                     // 데미지가 실제로 적용된 이 클라이언트(호스트)에서만 사망 여부를 알 수 있음
                     isKill = damageable is StatBase stat && stat.IsDead;
+                    _onDamageResult?.Invoke(isKill);
                 }
                 showVFX = true;
             }

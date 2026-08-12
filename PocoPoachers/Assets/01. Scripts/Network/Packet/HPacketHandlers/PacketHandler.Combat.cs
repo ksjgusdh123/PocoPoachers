@@ -63,6 +63,13 @@ public static partial class PacketHandlers
             SoundEvent.Emit(origin, soundRange, attacker);
     }
 
+    public static void OnH_HitConfirm(FlatPacket root)
+    {
+        var packet = root.TypeAsH_HitConfirm();
+        if (packet.IsKill)
+            CrosshairUI.Instance?.ShowHitMarker(true);
+    }
+
     public static void OnH_ShootRejected(FlatPacket root)
     {
         var packet = root.TypeAsH_ShootRejected();

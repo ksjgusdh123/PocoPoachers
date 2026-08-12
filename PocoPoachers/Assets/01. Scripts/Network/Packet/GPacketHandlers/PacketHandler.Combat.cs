@@ -67,7 +67,16 @@ public static partial class PacketHandlers
             }
 
             var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(dir));
-            bullet.Initialize(bulletSpeed, damage, maxRange, dir, () => pool.Release(prefab, bullet), attacker, bulletColor, packet.IsHeadshot);
+            bullet.Initialize(bulletSpeed, damage, maxRange, dir, () => pool.Release(prefab, bullet), attacker, bulletColor, packet.IsHeadshot,
+                onDamageResult: isKill =>
+                {
+                    // 게스트 본인의 로컬(연출용) 총알은 데미지를 적용하지 않아 킬 여부를 모르므로,
+                    // 호스트가 대신 시뮬레이션한 권위 총알의 결과를 쏜 게스트에게 돌려줘 히트마커를 빨간색으로 확인시킨다
+                    if (isKill)
+                        PacketBuilder.SendReliableToGuest(guestId,
+                            new H_HitConfirmT { IsKill = true },
+                            H_HitConfirm.Pack, PacketType.H_HitConfirm);
+                });
         }
 
         if (RoomManager.IsHost)

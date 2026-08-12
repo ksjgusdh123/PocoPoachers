@@ -15,6 +15,7 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.G_Shoot             , PacketHandlers.OnG_Shoot);
         _onRecv.Add(PacketType.H_Shoot             , PacketHandlers.OnH_Shoot);
         _onRecv.Add(PacketType.H_ShootRejected     , PacketHandlers.OnH_ShootRejected);
+        _onRecv.Add(PacketType.H_HitConfirm        , PacketHandlers.OnH_HitConfirm);
         _onRecv.Add(PacketType.H_ItemSpawn         , PacketHandlers.OnH_ItemSpawn);
         _onRecv.Add(PacketType.H_ItemDespawn       , PacketHandlers.OnH_ItemDespawn);
         _onRecv.Add(PacketType.G_ItemGain          , PacketHandlers.OnG_ItemGain);

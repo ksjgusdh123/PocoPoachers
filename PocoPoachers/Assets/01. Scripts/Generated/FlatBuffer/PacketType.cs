@@ -19,59 +19,60 @@ public enum PacketType : byte
   G_Shoot = 12,
   H_Shoot = 13,
   H_ShootRejected = 14,
-  H_ItemSpawn = 15,
-  H_ItemDespawn = 16,
-  G_ItemGain = 17,
-  H_ItemGainResult = 18,
-  H_ItemBoxUpdate = 19,
-  G_ItemExchange = 20,
-  H_ItemExchangeResult = 21,
-  S_GuestJoined = 22,
-  H_GuestJoined = 23,
-  G_Equip = 24,
-  H_Equip = 25,
-  G_ConsumeItem = 26,
-  H_ConsumeItemResult = 27,
-  G_Durability = 28,
-  H_Durability = 29,
-  G_GunPartEquip = 30,
-  G_GunAmmoSave = 31,
-  H_GunState = 32,
-  G_StatSync = 33,
-  H_StatSync = 34,
-  G_Rescue = 35,
-  H_Rescue = 36,
-  H_EnemySpawn = 37,
-  H_EnemyMove = 38,
-  H_EnemyHit = 39,
-  H_EnemyDie = 40,
-  G_Leave = 41,
-  H_Leave = 42,
-  G_ShelterLevel = 43,
-  H_ShelterLevel = 44,
-  H_SandbagDestroy = 45,
-  H_LoadScene = 46,
-  G_SceneReady = 47,
-  H_EnemySpeak = 48,
-  H_EnemyShoot = 49,
-  H_GuestRestore = 50,
-  G_EnhanceItem = 51,
-  G_RequestGunState = 52,
-  G_DropItem = 53,
-  G_RescueBeamPlay = 54,
-  H_RescueBeamPlay = 55,
-  G_QuestAccept = 56,
-  H_QuestAccept = 57,
-  G_QuestSubmit = 58,
-  H_QuestSubmit = 59,
-  G_QuestComplete = 60,
-  H_QuestComplete = 61,
-  G_GuestSnapshot = 62,
-  H_MoveRequest = 63,
-  G_MoveReply = 64,
-  H_MoveCancel = 65,
-  H_MoveProgress = 66,
-  H_EscapeState = 67,
+  H_HitConfirm = 15,
+  H_ItemSpawn = 16,
+  H_ItemDespawn = 17,
+  G_ItemGain = 18,
+  H_ItemGainResult = 19,
+  H_ItemBoxUpdate = 20,
+  G_ItemExchange = 21,
+  H_ItemExchangeResult = 22,
+  S_GuestJoined = 23,
+  H_GuestJoined = 24,
+  G_Equip = 25,
+  H_Equip = 26,
+  G_ConsumeItem = 27,
+  H_ConsumeItemResult = 28,
+  G_Durability = 29,
+  H_Durability = 30,
+  G_GunPartEquip = 31,
+  G_GunAmmoSave = 32,
+  H_GunState = 33,
+  G_StatSync = 34,
+  H_StatSync = 35,
+  G_Rescue = 36,
+  H_Rescue = 37,
+  H_EnemySpawn = 38,
+  H_EnemyMove = 39,
+  H_EnemyHit = 40,
+  H_EnemyDie = 41,
+  G_Leave = 42,
+  H_Leave = 43,
+  G_ShelterLevel = 44,
+  H_ShelterLevel = 45,
+  H_SandbagDestroy = 46,
+  H_LoadScene = 47,
+  G_SceneReady = 48,
+  H_EnemySpeak = 49,
+  H_EnemyShoot = 50,
+  H_GuestRestore = 51,
+  G_EnhanceItem = 52,
+  G_RequestGunState = 53,
+  G_DropItem = 54,
+  G_RescueBeamPlay = 55,
+  H_RescueBeamPlay = 56,
+  G_QuestAccept = 57,
+  H_QuestAccept = 58,
+  G_QuestSubmit = 59,
+  H_QuestSubmit = 60,
+  G_QuestComplete = 61,
+  H_QuestComplete = 62,
+  G_GuestSnapshot = 63,
+  H_MoveRequest = 64,
+  G_MoveReply = 65,
+  H_MoveCancel = 66,
+  H_MoveProgress = 67,
+  H_EscapeState = 68,
 };
 
 public class PacketTypeUnion {
@@ -112,6 +113,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_Shoot(H_ShootT _h_shoot) { return new PacketTypeUnion{ Type = PacketType.H_Shoot, Value = _h_shoot }; }
   public H_ShootRejectedT AsH_ShootRejected() { return this.As<H_ShootRejectedT>(); }
   public static PacketTypeUnion FromH_ShootRejected(H_ShootRejectedT _h_shootrejected) { return new PacketTypeUnion{ Type = PacketType.H_ShootRejected, Value = _h_shootrejected }; }
+  public H_HitConfirmT AsH_HitConfirm() { return this.As<H_HitConfirmT>(); }
+  public static PacketTypeUnion FromH_HitConfirm(H_HitConfirmT _h_hitconfirm) { return new PacketTypeUnion{ Type = PacketType.H_HitConfirm, Value = _h_hitconfirm }; }
   public H_ItemSpawnT AsH_ItemSpawn() { return this.As<H_ItemSpawnT>(); }
   public static PacketTypeUnion FromH_ItemSpawn(H_ItemSpawnT _h_itemspawn) { return new PacketTypeUnion{ Type = PacketType.H_ItemSpawn, Value = _h_itemspawn }; }
   public H_ItemDespawnT AsH_ItemDespawn() { return this.As<H_ItemDespawnT>(); }
@@ -236,6 +239,7 @@ public class PacketTypeUnion {
       case PacketType.G_Shoot: return G_Shoot.Pack(builder, _o.AsG_Shoot()).Value;
       case PacketType.H_Shoot: return H_Shoot.Pack(builder, _o.AsH_Shoot()).Value;
       case PacketType.H_ShootRejected: return H_ShootRejected.Pack(builder, _o.AsH_ShootRejected()).Value;
+      case PacketType.H_HitConfirm: return H_HitConfirm.Pack(builder, _o.AsH_HitConfirm()).Value;
       case PacketType.H_ItemSpawn: return H_ItemSpawn.Pack(builder, _o.AsH_ItemSpawn()).Value;
       case PacketType.H_ItemDespawn: return H_ItemDespawn.Pack(builder, _o.AsH_ItemDespawn()).Value;
       case PacketType.G_ItemGain: return G_ItemGain.Pack(builder, _o.AsG_ItemGain()).Value;
@@ -343,6 +347,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_ShootRejected:
         result = H_ShootRejectedVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_HitConfirm:
+        result = H_HitConfirmVerify.Verify(verifier, tablePos);
         break;
       case PacketType.H_ItemSpawn:
         result = H_ItemSpawnVerify.Verify(verifier, tablePos);
