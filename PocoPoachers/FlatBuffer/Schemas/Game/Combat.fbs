@@ -34,10 +34,11 @@ table H_ShootRejected
 }
 
 // 호스트가 게스트의 G_Shoot로 스폰한 권위 총알이 대상을 처치했을 때, 쏜 게스트에게만 되돌려줘
-// 히트마커를 빨간색으로 확인시키는 용도 (게스트 자신의 로컬 총알은 데미지를 적용하지 않아 사망 여부를 모른다)
+// 히트마커를 빨간색(헤드샷이면 주황빨강)으로 확인시키는 용도 (게스트 자신의 로컬 총알은 데미지를 적용하지 않아 사망 여부를 모른다)
 table H_HitConfirm
 {
-    is_kill: bool;
+    is_kill:     bool;
+    is_headshot: bool;
 }
 
 table G_StatSync

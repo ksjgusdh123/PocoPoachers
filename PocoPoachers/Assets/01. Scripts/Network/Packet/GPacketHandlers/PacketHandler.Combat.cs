@@ -74,7 +74,7 @@ public static partial class PacketHandlers
                     // 호스트가 대신 시뮬레이션한 권위 총알의 결과를 쏜 게스트에게 돌려줘 히트마커를 빨간색으로 확인시킨다
                     if (isKill)
                         PacketBuilder.SendReliableToGuest(guestId,
-                            new H_HitConfirmT { IsKill = true },
+                            new H_HitConfirmT { IsKill = true, IsHeadshot = packet.IsHeadshot },
                             H_HitConfirm.Pack, PacketType.H_HitConfirm);
                 });
         }

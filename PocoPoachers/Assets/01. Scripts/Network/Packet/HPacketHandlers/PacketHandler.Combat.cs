@@ -67,7 +67,7 @@ public static partial class PacketHandlers
     {
         var packet = root.TypeAsH_HitConfirm();
         if (packet.IsKill)
-            CrosshairUI.Instance?.ShowHitMarker(true);
+            CrosshairUI.Instance?.ShowHitMarker(true, packet.IsHeadshot);
     }
 
     public static void OnH_ShootRejected(FlatPacket root)

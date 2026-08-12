@@ -100,7 +100,7 @@ public class Bullet : MonoBehaviour
 
             // showVFX는 IDamageable(적/샌드백)을 맞췄을 때만 true — 벽 등 다른 콜라이더는 히트마커 제외
             if (_showHitMarker && showVFX)
-                CrosshairUI.Instance?.ShowHitMarker(isKill);
+                CrosshairUI.Instance?.ShowHitMarker(isKill, _isHeadshot);
 
             if (IsWallHit(hit.collider))
                 BulletDecalPool.Instance?.Spawn(hit, _color);

@@ -89,6 +89,7 @@ public class CrosshairUI : MonoBehaviour
     [SerializeField] private CanvasGroup _hitMarkerGroup;
     [SerializeField] private Color _hitMarkerColor = Color.white;
     [SerializeField] private Color _hitMarkerKillColor = Color.red;
+    [SerializeField] private Color _hitMarkerHeadshotColor = new Color(1f, 0.55f, 0f); // 주황(#FF8C00) — 헤드샷 전용 (킬 여부 무관)
     [SerializeField] private float _hitMarkerDuration = 0.12f;
     [SerializeField] private float _hitMarkerFadeSpeed = 20f;
     [SerializeField] private float _hitMarkerSpreadScale = 0.7f;
@@ -242,14 +243,16 @@ public class CrosshairUI : MonoBehaviour
         _shakeTimer = _shakeDuration;
     }
 
-    public void ShowHitMarker(bool isKill = false)
+    public void ShowHitMarker(bool isKill = false, bool isHeadshot = false)
     {
         EnsureHitMarker();
         if (_hitMarkerGroup == null) return;
 
         _hitMarkerTimer = _hitMarkerDuration;
         _hitMarkerGroup.alpha = 1f;
-        ApplyHitMarkerColor(isKill ? _hitMarkerKillColor : _hitMarkerColor);
+        // 우선순위: 킬(빨강) > 헤드샷(주황) > 일반(흰색)
+        Color color = isKill ? _hitMarkerKillColor : (isHeadshot ? _hitMarkerHeadshotColor : _hitMarkerColor);
+        ApplyHitMarkerColor(color);
         UpdateActiveHitMarkerDistances();
         ApplyHitMarkerDistance(_activeHitMarkerOuterDistance);
     }

@@ -17,16 +17,20 @@ public struct H_HitConfirm : IFlatbufferObject
   public H_HitConfirm __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public bool IsKill { get { int o = __p.__offset(4); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public bool IsHeadshot { get { int o = __p.__offset(6); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
 
   public static Offset<H_HitConfirm> CreateH_HitConfirm(FlatBufferBuilder builder,
-      bool is_kill = false) {
-    builder.StartTable(1);
+      bool is_kill = false,
+      bool is_headshot = false) {
+    builder.StartTable(2);
+    H_HitConfirm.AddIsHeadshot(builder, is_headshot);
     H_HitConfirm.AddIsKill(builder, is_kill);
     return H_HitConfirm.EndH_HitConfirm(builder);
   }
 
-  public static void StartH_HitConfirm(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void StartH_HitConfirm(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddIsKill(FlatBufferBuilder builder, bool isKill) { builder.AddBool(0, isKill, false); }
+  public static void AddIsHeadshot(FlatBufferBuilder builder, bool isHeadshot) { builder.AddBool(1, isHeadshot, false); }
   public static Offset<H_HitConfirm> EndH_HitConfirm(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_HitConfirm>(o);
@@ -38,21 +42,25 @@ public struct H_HitConfirm : IFlatbufferObject
   }
   public void UnPackTo(H_HitConfirmT _o) {
     _o.IsKill = this.IsKill;
+    _o.IsHeadshot = this.IsHeadshot;
   }
   public static Offset<H_HitConfirm> Pack(FlatBufferBuilder builder, H_HitConfirmT _o) {
     if (_o == null) return default(Offset<H_HitConfirm>);
     return CreateH_HitConfirm(
       builder,
-      _o.IsKill);
+      _o.IsKill,
+      _o.IsHeadshot);
   }
 }
 
 public class H_HitConfirmT
 {
   public bool IsKill { get; set; }
+  public bool IsHeadshot { get; set; }
 
   public H_HitConfirmT() {
     this.IsKill = false;
+    this.IsHeadshot = false;
   }
 }
 
@@ -63,6 +71,7 @@ static public class H_HitConfirmVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*IsKill*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyField(tablePos, 6 /*IsHeadshot*/, 1 /*bool*/, 1, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
