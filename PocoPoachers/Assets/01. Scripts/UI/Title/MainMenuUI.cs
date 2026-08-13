@@ -33,9 +33,15 @@ public class MainMenuUI : MonoBehaviour
     [Tooltip("디버그용 — 켜면 캐릭터 생성 씬을 건너뛰고 기본 이름으로 바로 시작한다")]
     [SerializeField] bool       _skipCharacterCreate;
 
+    [Tooltip("디버그용 — 켜면 튜토리얼 씬을 건너뛰고 새 게임도 바로 쉘터로 들어간다")]
+    [SerializeField] bool       _skipTutorial;
+
     void Awake()
     {
         SoundManager.GetInstance().PlayBgm("bgm_main");
+
+        // 캐릭터 생성 씬을 거쳐 가도 유지되도록 새 게임 진입부에 미리 넘겨둔다
+        NewGameStart.SkipTutorial = _skipTutorial;
 
         RoomManager.Instance.OnRoomJoinFailed += OnRoomJoinFailed;
         SaveSlotButtonUI.OnSlotSelected       += OnSaveSlotSelected;

@@ -16,6 +16,8 @@ public class SceneLoader : Singleton<SceneLoader>
 
     public void LoadShelterScene() => LoadViaLoadingScreen(SceneName.Shelter);
 
+    public void LoadTutorialScene() => LoadViaLoadingScreen(SceneName.Tutorial);
+
     // 결과 화면은 가벼운 씬이라 로딩 화면을 거치지 않는다 (한 프레임 스치듯 지나가면 오히려 거슬린다).
     public void LoadResultScene()
     {

@@ -93,6 +93,14 @@ public class RoomManager : Singleton<RoomManager>
             return;
         }
 
+        // 새 게임(캐릭터 생성 확정 또는 건너뛰기)으로 시작한 첫 진입은 쉘터 대신 튜토리얼 씬으로 보낸다
+        if (NewGameStart.ConsumePendingTutorial())
+        {
+            GameManager.Instance?.SetSpawnId(SpawnId.FromTitle);
+            SceneLoader.Instance?.LoadTutorialScene();
+            return;
+        }
+
         EnterShelterFromMenu();
     }
 
