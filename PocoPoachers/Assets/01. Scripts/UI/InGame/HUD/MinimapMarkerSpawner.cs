@@ -43,7 +43,7 @@ public class MinimapMarkerSpawner : MonoBehaviour
         if (_markerPrefab == null || _mapRect == null) return;
 
         PlayerMarker marker = Instantiate(_markerPrefab, _mapRect);
-        marker.Init(_mapData, _mapRect, target);
+        marker.Init(_mapData, _mapRect, target, id);
         _markers[id] = marker;
     }
 

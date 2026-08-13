@@ -13,6 +13,7 @@
 | 필드 | 내용 |
 |------|------|
 | `lastSavedAt` | 타임스탬프. `HasSave` 판정 기준이기도 함 |
+| `nickname` | 캐릭터 생성(`SC_CharacterCreate`)에서 정한 이름. 슬롯 목록 표시에 사용. 이 항목 이전에 만들어진 슬롯은 비어 있음 |
 | `shelterLevel` | 쉘터 레벨 |
 | `inventories` | 키(`"player_inventory"`, `"storage"`)별 `{slotIndex, itemId, amount, uid}` 목록 |
 | `equipSlots` | 장착 슬롯 0~4 `{slotIndex, itemId, uid}` (무기 2 + 방어구 2 + 가방 1) |

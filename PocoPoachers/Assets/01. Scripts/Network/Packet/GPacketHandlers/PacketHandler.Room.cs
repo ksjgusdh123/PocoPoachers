@@ -55,6 +55,28 @@ public static partial class PacketHandlers
         MainThreadDispatcher.Enqueue(() => SceneMoveVote.Instance?.HandleGuestReply(guestId, accepted));
     }
 
+    // 게스트가 보고한 자기 닉네임. 명부에 넣고 갱신된 전체 명부를 전원에게 다시 뿌린다.
+    // 패킷 안의 player_id는 믿지 않는다 — 실제 송신자 id로 키를 잡아 남의 이름을 덮어쓰지 못하게 한다.
+    public static void OnG_Nickname(FlatPacket root)
+    {
+        if (!RoomManager.IsHost) return;
+
+        // 접속 직후라 아직 게스트 등록 전일 수 있어 autoRegister를 켠다 (G_SceneReady와 같은 이유).
+        // 자동 등록도 대기 목록의 엔드포인트와 일치할 때만 통과하므로 사칭은 막힌다.
+        var packet = root.TypeAsG_Nickname();
+        if (!RoomManager.TryGetGuestIdFromPacket(packet.PlayerId, autoRegister: true, out int guestId))
+            return;
+
+        string nickname = packet.Nickname;
+        MainThreadDispatcher.Enqueue(() =>
+        {
+            PlayerNameRegistry.Set(guestId, nickname);
+            // 방 세계에 남겨 이 게스트가 다음에 들어와도 같은 이름을 쓰게 한다
+            SaveManager.GetInstance()?.SaveGuestNickname(guestId, PlayerNameRegistry.Get(guestId));
+            RoomSync.Roster();
+        });
+    }
+
     // 게스트가 씬 전환 직전에 올린 자기 상태. 호스트는 방 세계 세이브에 기록해 맵 이동마다 오토세이브가 되게 한다.
     // 게스트 복원은 이 패킷을 기다리지 않으므로(로컬 캐리오버) 늦게 도착해도 무방하다.
     public static void OnG_GuestSnapshot(FlatPacket root)

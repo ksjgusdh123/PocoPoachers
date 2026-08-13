@@ -44,6 +44,16 @@ public static partial class PacketHandlers
         }
     }
 
+    // 호스트가 뿌린 방 전체 닉네임 명부. 델타가 아니라 전체 스냅샷이라 통째로 교체하면 된다.
+    public static void OnH_Roster(FlatPacket root)
+    {
+        var packet = root.TypeAsH_Roster().UnPack();
+        var ids = packet.PlayerIds;
+        var names = packet.Nicknames;
+
+        MainThreadDispatcher.Enqueue(() => PlayerNameRegistry.SetAll(ids, names));
+    }
+
     public static void OnH_ShelterLevel(FlatPacket root)
     {
         var packet = root.TypeAsH_ShelterLevel();

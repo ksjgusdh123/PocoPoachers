@@ -73,6 +73,8 @@ public enum PacketType : byte
   H_MoveCancel = 66,
   H_MoveProgress = 67,
   H_EscapeState = 68,
+  G_Nickname = 69,
+  H_Roster = 70,
 };
 
 public class PacketTypeUnion {
@@ -221,6 +223,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_MoveProgress(H_MoveProgressT _h_moveprogress) { return new PacketTypeUnion{ Type = PacketType.H_MoveProgress, Value = _h_moveprogress }; }
   public H_EscapeStateT AsH_EscapeState() { return this.As<H_EscapeStateT>(); }
   public static PacketTypeUnion FromH_EscapeState(H_EscapeStateT _h_escapestate) { return new PacketTypeUnion{ Type = PacketType.H_EscapeState, Value = _h_escapestate }; }
+  public G_NicknameT AsG_Nickname() { return this.As<G_NicknameT>(); }
+  public static PacketTypeUnion FromG_Nickname(G_NicknameT _g_nickname) { return new PacketTypeUnion{ Type = PacketType.G_Nickname, Value = _g_nickname }; }
+  public H_RosterT AsH_Roster() { return this.As<H_RosterT>(); }
+  public static PacketTypeUnion FromH_Roster(H_RosterT _h_roster) { return new PacketTypeUnion{ Type = PacketType.H_Roster, Value = _h_roster }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -293,6 +299,8 @@ public class PacketTypeUnion {
       case PacketType.H_MoveCancel: return H_MoveCancel.Pack(builder, _o.AsH_MoveCancel()).Value;
       case PacketType.H_MoveProgress: return H_MoveProgress.Pack(builder, _o.AsH_MoveProgress()).Value;
       case PacketType.H_EscapeState: return H_EscapeState.Pack(builder, _o.AsH_EscapeState()).Value;
+      case PacketType.G_Nickname: return G_Nickname.Pack(builder, _o.AsG_Nickname()).Value;
+      case PacketType.H_Roster: return H_Roster.Pack(builder, _o.AsH_Roster()).Value;
     }
   }
 }
@@ -509,6 +517,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_EscapeState:
         result = H_EscapeStateVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_Nickname:
+        result = G_NicknameVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_Roster:
+        result = H_RosterVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

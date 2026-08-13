@@ -160,6 +160,60 @@ public class SaveManager : Singleton<SaveManager>
         return data.hasVitals;
     }
 
+    // 협동 참여는 슬롯을 고르지 않고 들어가므로(활성 슬롯이 0으로 남음) 마지막에 쓴 닉네임을 따로 남겨둔다
+    private const string PrefLastNickname = "last_nickname";
+
+    // 캐릭터 생성에서 정한 닉네임 — 슬롯당 하나. 저장과 동시에 lastSavedAt이 찍혀 슬롯 목록에 나타난다.
+    public void SaveNickname(string nickname)
+    {
+        var data = GetOrLoad(_activeSlot);
+        data.nickname = nickname;
+        data.lastSavedAt = NowTimestamp();
+        SaveSlotToDisk(_activeSlot);
+
+        SaveLastNickname(nickname);
+    }
+
+    // 세이브 슬롯 없이 쓰는 이름(협동 참여). 슬롯 저장과 별개로 기기에 마지막 값을 남긴다.
+    public void SaveLastNickname(string nickname)
+    {
+        if (string.IsNullOrEmpty(nickname)) return;
+        PlayerPrefs.SetString(PrefLastNickname, nickname);
+        PlayerPrefs.Save();
+    }
+
+    // 활성 슬롯의 닉네임, 없으면 마지막에 쓴 닉네임
+    public string LoadNickname()
+    {
+        string fromSlot = GetOrLoad(_activeSlot).nickname;
+        return string.IsNullOrEmpty(fromSlot) ? PlayerPrefs.GetString(PrefLastNickname, null) : fromSlot;
+    }
+
+    public string GetNickname(int slotIndex) => GetOrLoad(slotIndex).nickname;
+
+    // 호스트 전용 — 방 세계에 기록된 그 게스트의 닉네임 (없으면 null → 이 월드에 처음 온 게스트)
+    public string LoadGuestNickname(int playerId) => LoadGuestRoomState(playerId)?.nickname;
+
+    // 호스트 전용 — 게스트가 보고한 닉네임을 방 세계에 남겨 다음 접속에도 같은 이름을 쓰게 한다
+    public void SaveGuestNickname(int playerId, string nickname)
+    {
+        if (!RoomManager.IsHost || string.IsNullOrEmpty(nickname)) return;
+
+        var data = GetOrLoad(_activeSlot);
+        var state = data.guestStates.Find(g => g.playerId == playerId);
+        if (state == null)
+        {
+            state = new GuestRoomState { playerId = playerId };
+            data.guestStates.Add(state);
+        }
+
+        if (state.nickname == nickname) return;
+
+        state.nickname = nickname;
+        data.lastSavedAt = NowTimestamp();
+        SaveSlotToDisk(_activeSlot);
+    }
+
     public bool HasSave(int slotIndex) =>
         !string.IsNullOrEmpty(GetOrLoad(slotIndex).lastSavedAt);
 
@@ -220,6 +274,9 @@ public class SaveManager : Singleton<SaveManager>
     public class GuestRoomState
     {
         public int playerId;
+
+        // 이 게스트가 이 월드에서 쓰는 이름. 비어 있으면 아직 이 월드에 온 적 없는 게스트다.
+        public string nickname;
         public List<SlotSaveEntry> inventory = new List<SlotSaveEntry>();
         public List<EquipSlotEntry> equipSlots = new List<EquipSlotEntry>();
         public List<SlotSaveEntry> quickSlots = new List<SlotSaveEntry>();
@@ -261,7 +318,13 @@ public class SaveManager : Singleton<SaveManager>
         if (!RoomManager.IsHost || state == null) return;
         var data = GetOrLoad(_activeSlot);
         int idx = data.guestStates.FindIndex(g => g.playerId == state.playerId);
-        if (idx >= 0) data.guestStates[idx] = state;
+        if (idx >= 0)
+        {
+            // 인벤/장비만 담아 오는 호출부(퇴장 시 수집, 씬 전환 스냅샷)가 기존 닉네임을 지우지 않게 한다
+            if (string.IsNullOrEmpty(state.nickname))
+                state.nickname = data.guestStates[idx].nickname;
+            data.guestStates[idx] = state;
+        }
         else data.guestStates.Add(state);
         data.lastSavedAt = NowTimestamp();
         SaveSlotToDisk(_activeSlot);
@@ -275,6 +338,7 @@ public class SaveManager : Singleton<SaveManager>
     private class GameSaveData
     {
         public string lastSavedAt;
+        public string nickname;
         public int shelterLevel = 1;
         public List<InventorySaveEntry> inventories = new List<InventorySaveEntry>();
         public List<EquipSlotEntry> equipSlots = new List<EquipSlotEntry>();
