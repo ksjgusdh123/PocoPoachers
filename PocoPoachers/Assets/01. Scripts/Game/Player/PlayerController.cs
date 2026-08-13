@@ -406,14 +406,17 @@ public class PlayerController : MonoBehaviour
         // 시간 초과 또는 F 홀드로 게이지가 소진되면 OnFaintingComplete → FinalizeDeath로 완전 사망한다.
         // 그 사이 살아있는 동료가 구조하면 OnRevive → StopFainting으로 취소된다.
         // 기절 중 동료가 전원 사망하면 Update에서 감지해 즉시 FinalizeDeath로 이어진다.
-        if (_faintingUI != null)
+        //
+        // 단, 사망 시점에 이미 구조해 줄 동료가 없으면 게이지를 띄우지 않고 곧바로 완전 사망으로 넘어간다.
+        // (Update에 맡기면 한 프레임이지만 게이지가 떴다 사라진다)
+        if (_faintingUI != null && HasOtherLivingPlayer())
         {
             _isFainting = true;
             _faintingUI.StartFainting();
             return;
         }
 
-        // 게이지 UI가 없으면(안전장치) 기절 없이 즉시 최종 사망 처리로 폴백
+        // 게이지 UI가 없거나(안전장치) 구조가 불가능하면 기절 없이 즉시 최종 사망 처리
         FinalizeDeath();
     }
 
