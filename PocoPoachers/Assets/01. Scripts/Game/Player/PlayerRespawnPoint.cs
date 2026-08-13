@@ -26,11 +26,15 @@ public class PlayerRespawnPoint : MonoBehaviour
 
     private CharacterController _characterController;
     private PlayerStat _stat;
+    private PlayerInputHandler _inputHandler;
+    private PlayerMovement _movement;
 
     private void Awake()
     {
         _characterController = GetComponent<CharacterController>();
         _stat = GetComponent<PlayerStat>();
+        _inputHandler = GetComponent<PlayerInputHandler>();
+        _movement = GetComponent<PlayerMovement>();
 
         if (_initialPoint != null)
             SetPoint(_initialPoint.position, _initialPoint.rotation);
@@ -55,6 +59,10 @@ public class PlayerRespawnPoint : MonoBehaviour
 
     private IEnumerator RespawnRoutine()
     {
+        // 쓰러진 동안 움직이거나 쏘지 못하게 전투 입력이 없는 맵으로 돌린다
+        // (PlayerController.PlayEscapeBeam이 호송 연출 중에 쓰는 것과 같은 방식)
+        _inputHandler?.SwitchInputActionMap(PlayerInputMapType.Inventory);
+
         // 부활 지점에 먼저 이펙트를 띄워서 어디로 돌아가는지 보이게 한다.
         // 임시로 적 사망 VFX를 빌려 쓰는 중 — 전용 이펙트가 나오면 교체할 것.
         DeathVFXPool.Instance?.Spawn(_position);
@@ -63,6 +71,10 @@ public class PlayerRespawnPoint : MonoBehaviour
         if (_respawnDelay > 0f) yield return new WaitForSeconds(_respawnDelay);
 
         DoRespawn();
+
+        // 다음 프레임으로 미뤄야 이번 입력의 뗌(release)을 새 맵이 놓치지 않는다
+        _inputHandler?.SwitchToGameplayMapNextFrame();
+
         _respawning = false;
     }
 
@@ -71,6 +83,10 @@ public class PlayerRespawnPoint : MonoBehaviour
         // 부활보다 이동이 먼저다 — Revive가 쏘는 OnRevive를 PlayerController가 받아
         // 관전 해제와 카메라 복귀를 하는데, 그 시점엔 위치가 이미 맞아야 한다
         Teleport();
+
+        // 쓰러짐 자세는 옮겨지는 순간에 푼다. Revive의 OnRevive로도 풀리지만,
+        // 구독 순서에 맡기지 않고 위치와 같은 타이밍에 맞춘다
+        _movement?.SetDown(false);
 
         if (_stat == null) return;
 
