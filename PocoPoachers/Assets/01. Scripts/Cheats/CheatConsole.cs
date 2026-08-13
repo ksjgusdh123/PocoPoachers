@@ -384,16 +384,10 @@ public class CheatConsole : Singleton<CheatConsole>
         TryGetPlayerInventory(out var player);
         var storage = FindStorageInventory();
 
-        if (data.NeedItem1Id != 0)
+        foreach ((int itemId, int count) in data.NeedItems)
         {
-            int have = shelter.GetCombinedItemCount(player, storage, data.NeedItem1Id);
-            Log($"  item {data.NeedItem1Id}: {have} / {data.NeedItem1Count}");
-        }
-
-        if (data.NeedItem2Id != 0)
-        {
-            int have = shelter.GetCombinedItemCount(player, storage, data.NeedItem2Id);
-            Log($"  item {data.NeedItem2Id}: {have} / {data.NeedItem2Count}");
+            int have = shelter.GetCombinedItemCount(player, storage, itemId);
+            Log($"  item {itemId}: {have} / {count}");
         }
     }
 
@@ -409,8 +403,8 @@ public class CheatConsole : Singleton<CheatConsole>
         if (!TryGetPlayerInventory(out var inventory))
             return;
 
-        GiveUpgradeItem(inventory, next.NeedItem1Id, next.NeedItem1Count);
-        GiveUpgradeItem(inventory, next.NeedItem2Id, next.NeedItem2Count);
+        foreach ((int itemId, int count) in next.NeedItems)
+            GiveUpgradeItem(inventory, itemId, count);
         Log($"[CHEAT] Lv.{next.ShelterLevel} 업그레이드 재료 지급");
     }
 

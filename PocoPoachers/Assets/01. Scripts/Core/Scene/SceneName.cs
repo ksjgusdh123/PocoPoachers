@@ -4,6 +4,7 @@
     public const string CharacterCreate = "SC_CharacterCreate";
     public const string Loading = "SC_Loading";
     public const string Shelter = "SC_RocketShelter";
+    public const string Tutorial = "SC_Tutorial";
     public const string RaidTest = "SC_Raid_1001";
     public const string Result = "SC_Result";
 
