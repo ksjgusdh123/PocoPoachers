@@ -4035,7 +4035,7 @@ Transform:
   m_GameObject: {fileID: 326634061}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: 0.7071068, z: -0, w: 0.7071068}
-  m_LocalPosition: {x: 0, y: 1, z: 4}
+  m_LocalPosition: {x: 0, y: 0.05, z: 4}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7298,6 +7298,67 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 469248, guid: 3845c7234a0ed4843ba4e38e2404f54d, type: 3}
   m_PrefabInstance: {fileID: 638525737}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &642157201
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 5312665673439748527, guid: cd059033607bc4e408133d494b5d957b, type: 3}
+      propertyPath: _useLoadingScreen
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508115860932702304, guid: cd059033607bc4e408133d494b5d957b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 30.974678
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508115860932702304, guid: cd059033607bc4e408133d494b5d957b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.15101497
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508115860932702304, guid: cd059033607bc4e408133d494b5d957b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -0.38359904
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508115860932702304, guid: cd059033607bc4e408133d494b5d957b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508115860932702304, guid: cd059033607bc4e408133d494b5d957b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508115860932702304, guid: cd059033607bc4e408133d494b5d957b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508115860932702304, guid: cd059033607bc4e408133d494b5d957b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508115860932702304, guid: cd059033607bc4e408133d494b5d957b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508115860932702304, guid: cd059033607bc4e408133d494b5d957b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6508115860932702304, guid: cd059033607bc4e408133d494b5d957b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8181980696915096274, guid: cd059033607bc4e408133d494b5d957b, type: 3}
+      propertyPath: m_Name
+      value: RaidRocket
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: cd059033607bc4e408133d494b5d957b, type: 3}
 --- !u!1001 &643553561
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -22760,6 +22821,7 @@ MonoBehaviour:
   _initialPoint: {fileID: 326634062}
   _reviveRatio: 1
   _respawnDelay: 1
+  _heightOffset: 1
 --- !u!1001 &1994629312
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -24743,6 +24805,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 665426261}
     m_Modifications:
+    - target: {fileID: 1905244708236612414, guid: bb7b97b1afeab6d4a9bf57841faffd7b, type: 3}
+      propertyPath: m_ClearFlags
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 1905244708236612414, guid: bb7b97b1afeab6d4a9bf57841faffd7b, type: 3}
+      propertyPath: m_BackGroundColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1905244708236612414, guid: bb7b97b1afeab6d4a9bf57841faffd7b, type: 3}
+      propertyPath: m_BackGroundColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1905244708236612414, guid: bb7b97b1afeab6d4a9bf57841faffd7b, type: 3}
+      propertyPath: m_BackGroundColor.r
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 6540121478864256490, guid: bb7b97b1afeab6d4a9bf57841faffd7b, type: 3}
       propertyPath: m_Name
       value: RaidCamera
@@ -24907,3 +24985,4 @@ SceneRoots:
   - {fileID: 1210753505}
   - {fileID: 550788819}
   - {fileID: 1003853408}
+  - {fileID: 642157201}

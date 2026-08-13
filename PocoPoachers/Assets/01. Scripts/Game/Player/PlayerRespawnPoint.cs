@@ -18,6 +18,9 @@ public class PlayerRespawnPoint : MonoBehaviour
     [Tooltip("쓰러진 뒤 부활까지의 대기 시간(초)")]
     [SerializeField] private float _respawnDelay = 0.5f;
 
+    [Tooltip("부활 지점보다 이만큼 위에 내려놓는다 — 바닥에 박히는 것 방지")]
+    [SerializeField] private float _heightOffset = 1f;
+
     public bool HasPoint { get; private set; }
 
     private Vector3 _position;
@@ -102,7 +105,7 @@ public class PlayerRespawnPoint : MonoBehaviour
     {
         if (_characterController != null) _characterController.enabled = false;
 
-        transform.SetPositionAndRotation(_position, _rotation);
+        transform.SetPositionAndRotation(_position + Vector3.up * _heightOffset, _rotation);
 
         if (_characterController != null) _characterController.enabled = true;
     }

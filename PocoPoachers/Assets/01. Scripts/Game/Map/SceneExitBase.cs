@@ -10,6 +10,9 @@ public abstract class SceneExitBase : MonoBehaviour
     [SerializeField] protected SpawnId _spawnId = SpawnId.None;
     [SerializeField] protected bool _showResultUI = false; // 탈출 성공 연출을 띄운 뒤 이동할지 (레이드 탈출 지점)
 
+    [SerializeField, Tooltip("끄면 로딩 화면을 거치지 않고 곧바로 이동한다. 대신 게스트에게 전파되지 않는 로컬 이동이 되므로 혼자 하는 구간(튜토리얼 등)에만 끌 것.")]
+    protected bool _useLoadingScreen = true;
+
     protected string TargetSceneName => ToSceneName(_targetScene);
 
     // 실제 이탈. 팀 공용 전환이라 호스트면 게스트도 함께 이동한다.
@@ -26,6 +29,13 @@ public abstract class SceneExitBase : MonoBehaviour
         }
 
         if (_showResultUI && TryShowResult()) return;
+
+        if (!_useLoadingScreen)
+        {
+            GameManager.Instance?.SetSpawnId(_spawnId);
+            SceneLoader.Instance?.LoadSceneDirect(TargetSceneName);
+            return;
+        }
 
         SceneTransition.Go(TargetSceneName, _spawnId);
     }
