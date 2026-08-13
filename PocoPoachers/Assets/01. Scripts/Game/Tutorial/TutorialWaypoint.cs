@@ -63,6 +63,9 @@ public class TutorialWaypoint : MonoBehaviour
     {
         _reached = true;
 
+        // 여기까지 온 진행을 죽어도 잃지 않도록 부활 지점을 갱신한다
+        _player.GetComponent<PlayerRespawnPoint>()?.SetPoint(transform.position);
+
         TutorialDialogue.Open(_dialogueId, _player);
 
         if (_next != null) _next.gameObject.SetActive(true);

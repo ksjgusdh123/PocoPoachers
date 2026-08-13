@@ -41,6 +41,7 @@ public class PlayerController : MonoBehaviour
     private InventoryUI _playerBagInventoryUI;
     private PlayerStat _playerStat;
     private FaintingUI _faintingUI;
+    private PlayerRespawnPoint _respawnPoint; // 체크포인트가 등록돼 있으면 사망 대신 부활시킨다 (튜토리얼)
     private bool _isFainting;   // 기절(다운) 상태 진행 중 여부
     private bool _finalized;    // 완전 사망 처리(상자 스폰)를 이미 실행했는지 — 중복 방지
     private bool _raidWipeHandled; // 레이드 전멸 → 결과 씬 이동을 이미 처리했는지 (씬당 1회)
@@ -98,6 +99,8 @@ public class PlayerController : MonoBehaviour
         _faintingUI = FindAnyObjectByType<FaintingUI>(FindObjectsInactive.Include);
         if (_faintingUI != null)
             _faintingUI.OnFaintingComplete += FinalizeDeath;
+
+        _respawnPoint = GetComponent<PlayerRespawnPoint>();
 
         // 코옵 게스트는 개인 세이브를 쓰지 않는다 — 방 세계(호스트 소유)에서 상태를 받는다.
         // 호스트/솔로만 자기 개인 세이브에서 복원한다(호스트 세이브 = 방 세계).
@@ -402,6 +405,14 @@ public class PlayerController : MonoBehaviour
 
     private void HandleDeath()
     {
+        // 부활 지점이 등록된 씬(튜토리얼)에서는 기절/호송/관전 대신 마지막 체크포인트에서 다시 시작한다.
+        // 상자 드롭과 장비 해제는 FinalizeDeath에 있으므로 이 경로로 빠지면 소지품을 잃지 않는다.
+        if (_respawnPoint != null && _respawnPoint.HasPoint)
+        {
+            _respawnPoint.Respawn();
+            return;
+        }
+
         // HP/배터리 0 → 기절 상태로 진입. FaintingUI 게이지(30초) 시작.
         // 시간 초과 또는 F 홀드로 게이지가 소진되면 OnFaintingComplete → FinalizeDeath로 완전 사망한다.
         // 그 사이 살아있는 동료가 구조하면 OnRevive → StopFainting으로 취소된다.
