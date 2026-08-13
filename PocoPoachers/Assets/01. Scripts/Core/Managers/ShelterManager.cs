@@ -59,8 +59,10 @@ public class ShelterManager : Singleton<ShelterManager>
 
     public bool HasRequiredItems(Inventory player, Inventory storage, ShelterData data)
     {
-        return CheckItem(player, storage, data.NeedItem1Id, data.NeedItem1Count)
-            && CheckItem(player, storage, data.NeedItem2Id, data.NeedItem2Count);
+        foreach ((int itemId, int count) in data.NeedItems)
+            if (!CheckItem(player, storage, itemId, count)) return false;
+
+        return true;
     }
 
     public int GetCombinedItemCount(Inventory player, Inventory storage, int itemId)
@@ -84,8 +86,8 @@ public class ShelterManager : Singleton<ShelterManager>
 
     private void ConsumeItems(Inventory player, Inventory storage, ShelterData data)
     {
-        TryConsume(player, storage, data.NeedItem1Id, data.NeedItem1Count);
-        TryConsume(player, storage, data.NeedItem2Id, data.NeedItem2Count);
+        foreach ((int itemId, int count) in data.NeedItems)
+            TryConsume(player, storage, itemId, count);
     }
 
     private void TryConsume(Inventory player, Inventory storage, int itemId, int count)
