@@ -1,7 +1,9 @@
 public enum EnhancementStatType
 {
-    MaxHp,
-    MaxBattery,
-    MaxStamina,
+    AttackPower,
     MoveSpeed,
+    MaxHp,
+    DefenseRate,
+    VisionRange,
+    AttackSpeed,
 }

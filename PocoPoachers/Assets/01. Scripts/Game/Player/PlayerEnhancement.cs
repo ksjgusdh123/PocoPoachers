@@ -1,69 +1,85 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using UnityEngine;
 
+// 스탯별 레벨당 성장치. 인스펙터에 항목을 추가/삭제하는 것만으로 강화 가능한 스탯을 늘리거나 줄일 수 있다.
+[Serializable]
+public class StatGrowthConfig
+{
+    public EnhancementStatType statType;
+    public float valuePerLevel;
+    // true면 valuePerLevel을 배율 성장률로 해석한다: 최종 배율 = 1 + level * valuePerLevel (공격력/공격속도용)
+    // false면 valuePerLevel만큼 매 레벨 가산한다 (체력/이동속도/방어력/시야용)
+    public bool isPercentGrowth;
+}
+
 [RequireComponent(typeof(PlayerStat))]
 public class PlayerEnhancement : MonoBehaviour
 {
-    [Header("Level")]
-    [SerializeField] private int _maxHpLevel;
-    [SerializeField] private int _maxBatteryLevel;
-    [SerializeField] private int _maxStaminaLevel;
-    [SerializeField] private int _moveSpeedLevel;
+    [Header("기체 레벨")]
+    [SerializeField] private int _characterLevel;
+    [SerializeField] private int _statPoints;
+    [SerializeField] private int _maxCharacterLevel = 20;
 
-    [Header("Config")]
-    [SerializeField] private int _maxLevel = 10;
-    [SerializeField] private float _maxHpIncreasePerLevel = 10f;
-    [SerializeField] private float _maxBatteryIncreasePerLevel = 10f;
-    [SerializeField] private float _maxStaminaIncreasePerLevel = 10f;
-    [SerializeField] private float _moveSpeedIncreasePerLevel = 0.25f;
+    [Header("스탯별 성장률 (여기에 항목을 추가/삭제하면 강화 가능한 스탯이 바뀐다)")]
+    [SerializeField] private List<StatGrowthConfig> _growthConfigs = new()
+    {
+        new StatGrowthConfig { statType = EnhancementStatType.AttackPower, valuePerLevel = 0.05f, isPercentGrowth = true },
+        new StatGrowthConfig { statType = EnhancementStatType.MoveSpeed,   valuePerLevel = 0.25f, isPercentGrowth = false },
+        new StatGrowthConfig { statType = EnhancementStatType.MaxHp,       valuePerLevel = 10f,   isPercentGrowth = false },
+        new StatGrowthConfig { statType = EnhancementStatType.DefenseRate, valuePerLevel = 0.02f, isPercentGrowth = false },
+        new StatGrowthConfig { statType = EnhancementStatType.VisionRange, valuePerLevel = 1f,    isPercentGrowth = false },
+        new StatGrowthConfig { statType = EnhancementStatType.AttackSpeed, valuePerLevel = 0.05f, isPercentGrowth = true },
+    };
+
+    // 스탯별 현재 레벨 — 딕셔너리라 _growthConfigs에 없는 스탯이 들어와도, 새 스탯이 추가돼도 코드 변경 없이 동작한다.
+    private readonly Dictionary<EnhancementStatType, int> _statLevels = new();
 
     private PlayerStat _playerStat;
+    private PlayerVision _playerVision;
+    private WeaponMount _weaponMount;
     private Inventory _inventory;
+
+    public int CharacterLevel => _characterLevel;
+    public int StatPoints => _statPoints;
+    public int MaxCharacterLevel => _maxCharacterLevel;
+
+    public event Action OnChanged;
 
     private void Awake()
     {
         _playerStat = GetComponent<PlayerStat>();
+        _playerVision = GetComponent<PlayerVision>();
+        _weaponMount = GetComponent<WeaponMount>();
         _inventory = GetComponent<Inventory>();
+
+        if (SaveManager.Instance != null &&
+            SaveManager.Instance.TryLoadCharacterEnhancement(out int level, out int points, out var statLevels))
+        {
+            _characterLevel = level;
+            _statPoints = points;
+            foreach (var entry in statLevels)
+                _statLevels[entry.statType] = entry.level;
+        }
     }
 
     private void Start()
     {
-        ApplyToPlayerStat();
+        ApplyAll();
     }
 
-    public int GetLevel(EnhancementStatType statType)
-    {
-        return statType switch
-        {
-            EnhancementStatType.MaxHp => _maxHpLevel,
-            EnhancementStatType.MaxBattery => _maxBatteryLevel,
-            EnhancementStatType.MaxStamina => _maxStaminaLevel,
-            EnhancementStatType.MoveSpeed => _moveSpeedLevel,
-            _ => 0
-        };
-    }
+    public int GetStatLevel(EnhancementStatType statType) =>
+        _statLevels.TryGetValue(statType, out int level) ? level : 0;
 
-    public bool IsMaxLevel(EnhancementStatType statType)
-    {
-        return GetLevel(statType) >= _maxLevel;
-    }
+    public bool IsCharacterMaxLevel() => _characterLevel >= _maxCharacterLevel;
 
-    public float GetCurrentBonus(EnhancementStatType statType)
+    public string GetCharacterLevelCostText()
     {
-        return GetLevel(statType) * GetIncreasePerLevel(statType);
-    }
+        if (IsCharacterMaxLevel()) return "MAX";
 
-    public float GetNextIncrease(EnhancementStatType statType)
-    {
-        return IsMaxLevel(statType) ? 0f : GetIncreasePerLevel(statType);
-    }
-
-    public string GetCostText(EnhancementStatType statType)
-    {
-        if (IsMaxLevel(statType)) return "MAX";
-
-        var costData = GetCostData(statType);
+        var costData = GetCharacterLevelCostData();
         if (costData == null) return "-";
 
         var sb = new StringBuilder();
@@ -71,6 +87,96 @@ public class PlayerEnhancement : MonoBehaviour
         AppendCostText(sb, costData.NeedItem2Id, costData.NeedItem2Count);
 
         return sb.Length > 0 ? sb.ToString() : "-";
+    }
+
+    public bool TryLevelUpCharacter()
+    {
+        if (IsCharacterMaxLevel()) return false;
+
+        var costData = GetCharacterLevelCostData();
+        if (costData == null) return false;
+        if (_inventory == null) return false;
+
+        if (!HasItem(costData.NeedItem1Id, costData.NeedItem1Count) ||
+            !HasItem(costData.NeedItem2Id, costData.NeedItem2Count))
+            return false;
+
+        RemoveItem(costData.NeedItem1Id, costData.NeedItem1Count);
+        RemoveItem(costData.NeedItem2Id, costData.NeedItem2Count);
+
+        _characterLevel++;
+        _statPoints += costData.StatPoints;
+
+        Save();
+        OnChanged?.Invoke();
+        return true;
+    }
+
+    public bool TrySpendPoint(EnhancementStatType statType)
+    {
+        if (_statPoints <= 0) return false;
+
+        _statPoints--;
+        _statLevels[statType] = GetStatLevel(statType) + 1;
+
+        ApplyAll();
+        Save();
+        OnChanged?.Invoke();
+        return true;
+    }
+
+    // 가산형이면 레벨*증가량, 배율형이면 1 + 레벨*성장률을 반환한다.
+    public float GetBonus(EnhancementStatType statType) => GetBonusAtLevel(statType, GetStatLevel(statType));
+
+    public float GetBonusAtLevel(EnhancementStatType statType, int level)
+    {
+        var config = _growthConfigs.FirstOrDefault(c => c.statType == statType);
+        if (config == null) return statType is EnhancementStatType.AttackPower or EnhancementStatType.AttackSpeed ? 1f : 0f;
+
+        return config.isPercentGrowth ? 1f + level * config.valuePerLevel : level * config.valuePerLevel;
+    }
+
+    private void ApplyAll()
+    {
+        _playerStat?.ApplyEnhancementStats(
+            GetBonus(EnhancementStatType.MaxHp),
+            GetBonus(EnhancementStatType.MoveSpeed),
+            GetBonus(EnhancementStatType.DefenseRate));
+
+        _playerVision?.SetRangeBonus(GetBonus(EnhancementStatType.VisionRange));
+
+        RefreshEquippedGuns();
+    }
+
+    private void RefreshEquippedGuns()
+    {
+        if (_weaponMount == null) return;
+        for (int i = 0; i < 2; i++)
+            _weaponMount.GetGun(i)?.RefreshEnhancementMultipliers();
+    }
+
+    private CharacterLevelCostData GetCharacterLevelCostData()
+    {
+        int nextLevel = _characterLevel + 1;
+        return CharacterLevelCostTable.Instance.All.FirstOrDefault(d => d.Level == nextLevel);
+    }
+
+    private bool HasItem(int itemId, int amount)
+    {
+        if (itemId <= 0 || amount <= 0) return true;
+
+        var itemData = DataManager.GetItem(itemId);
+        return itemData != null && _inventory.HasItem(itemData, amount);
+    }
+
+    private void RemoveItem(int itemId, int amount)
+    {
+        if (itemId <= 0 || amount <= 0) return;
+
+        var itemData = DataManager.GetItem(itemId);
+        if (itemData == null) return;
+
+        _inventory.RemoveItem(itemData, amount);
     }
 
     private void AppendCostText(StringBuilder sb, int itemId, int amount)
@@ -86,101 +192,8 @@ public class PlayerEnhancement : MonoBehaviour
         sb.Append(amount);
     }
 
-    public bool TryEnhance(EnhancementStatType statType)
+    private void Save()
     {
-        if (IsMaxLevel(statType)) return false;
-        if (!CanConsumeCost(statType)) return false;
-
-        ConsumeCost(statType);
-        SetLevel(statType, GetLevel(statType) + 1);
-        ApplyToPlayerStat();
-        return true;
-    }
-
-    private void SetLevel(EnhancementStatType statType, int level)
-    {
-        level = Mathf.Clamp(level, 0, _maxLevel);
-
-        switch (statType)
-        {
-            case EnhancementStatType.MaxHp:
-                _maxHpLevel = level;
-                break;
-            case EnhancementStatType.MaxBattery:
-                _maxBatteryLevel = level;
-                break;
-            case EnhancementStatType.MaxStamina:
-                _maxStaminaLevel = level;
-                break;
-            case EnhancementStatType.MoveSpeed:
-                _moveSpeedLevel = level;
-                break;
-        }
-    }
-
-    private float GetIncreasePerLevel(EnhancementStatType statType)
-    {
-        return statType switch
-        {
-            EnhancementStatType.MaxHp => _maxHpIncreasePerLevel,
-            EnhancementStatType.MaxBattery => _maxBatteryIncreasePerLevel,
-            EnhancementStatType.MaxStamina => _maxStaminaIncreasePerLevel,
-            EnhancementStatType.MoveSpeed => _moveSpeedIncreasePerLevel,
-            _ => 0f
-        };
-    }
-
-    private EnhancementCostData GetCostData(EnhancementStatType statType)
-    {
-        int nextLevel = GetLevel(statType) + 1;
-        return EnhancementCostTable.Instance.All.FirstOrDefault(d => d.stat == statType.ToString() && d.level == nextLevel);
-    }
-
-    private bool CanConsumeCost(EnhancementStatType statType)
-    {
-        var costData = GetCostData(statType);
-        if (costData == null) return false;
-        if (_inventory == null) return false;
-
-        return HasItem(costData.NeedItem1Id, costData.NeedItem1Count)
-            && HasItem(costData.NeedItem2Id, costData.NeedItem2Count);
-    }
-
-    private bool HasItem(int itemId, int amount)
-    {
-        if (itemId <= 0 || amount <= 0) return true;
-
-        var itemData = DataManager.GetItem(itemId);
-        return itemData != null && _inventory.HasItem(itemData, amount);
-    }
-
-    private void ConsumeCost(EnhancementStatType statType)
-    {
-        var costData = GetCostData(statType);
-        if (costData == null) return;
-
-        RemoveItem(costData.NeedItem1Id, costData.NeedItem1Count);
-        RemoveItem(costData.NeedItem2Id, costData.NeedItem2Count);
-    }
-
-    private void RemoveItem(int itemId, int amount)
-    {
-        if (itemId <= 0 || amount <= 0) return;
-
-        var itemData = DataManager.GetItem(itemId);
-        if (itemData == null) return;
-
-        _inventory.RemoveItem(itemData, amount);
-    }
-
-    private void ApplyToPlayerStat()
-    {
-        if (_playerStat == null) return;
-
-        _playerStat.ApplyEnhancementStats(
-            GetCurrentBonus(EnhancementStatType.MaxHp),
-            GetCurrentBonus(EnhancementStatType.MaxBattery),
-            GetCurrentBonus(EnhancementStatType.MaxStamina),
-            GetCurrentBonus(EnhancementStatType.MoveSpeed));
+        SaveManager.Instance?.SaveCharacterEnhancement(_characterLevel, _statPoints, _statLevels);
     }
 }

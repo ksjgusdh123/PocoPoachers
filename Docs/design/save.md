@@ -20,6 +20,7 @@
 | `equipment` | `WorldEquipmentManager.SaveData` — uid별 내구도(현재/최대), 탄약(`currentAmmo/maxAmmo/ammoSet`), 파츠(`slotType/partId/partUid`), 강화 레벨. uid 없는 스택형 아이템은 itemId 키로 강화 레벨만 별도 저장 |
 | `guestStates` | 호스트 전용. 게스트별 `{playerId, inventory, equipSlots, equipment}` — 게스트는 별도 세이브 파일이 없고 호스트 파일 안에 보관됨 |
 | `hasVitals, hp, stamina, battery` | `hasVitals`가 true일 때만 유효. 사망 시 저장하지 않고 `ClearVitals()` — 다음 접속 시 0에서 시작하지 않도록 방지 |
+| `hasCharacterEnhancement, characterLevel, statPoints, statLevels` | 기체(플레이어 캐릭터) 레벨/미사용 스탯 포인트/스탯별 레벨(`SaveManager.StatLevelEntry` 목록) — [progression.md](progression.md#플레이어기체-강화--레벨--스탯-포인트) 참고 |
 | `questProgress` | `QuestManager.SaveData` — 퀘스트별 진행 상태(Available/InProgress/Completed). 쉘터 레벨처럼 파티 전체가 공유하는 값이라 `guestStates`가 아니라 최상위에 하나만 있음. 호스트 전용 저장(`SaveQuestState`) — [multiplayer.md](multiplayer.md#동기화-미구현-항목) 참고, 아직 게스트 브로드캐스트 패킷 없음 |
 
 > **강화·장착·내구도·Vital 저장은 이미 구현되어 있다.** 과거 문서에 남아있던 "미저장" 기재는 오래된 상태였음.
@@ -42,6 +43,7 @@
 | `PlayerController.OnDestroy` | 인벤·장착 슬롯·장비 상태(내구도/탄약/파츠/강화)·Vital | 호스트/솔로만. 씬 전환·종료마다 발생 |
 | `Storage.LateUpdate` (dirty flag) | 창고 인벤 | 슬롯 변경 시 `_isDirty` 세팅, 프레임당 1회 저장. 호스트만 로컬 저장 |
 | `ShelterManager.ApplyLevel` | 쉘터 레벨 | 업그레이드 성공 즉시 |
+| `PlayerEnhancement.TryLevelUpCharacter`/`TrySpendPoint` | 기체 레벨·스탯 포인트 | 레벨업/포인트 소비 성공 즉시(게스트도 로컬 저장) |
 | `MainMenuUI` | 슬롯 메타 | 새 게임(슬롯 생성)·로드(슬롯 선택) 시점 |
 
 `OnApplicationQuit`이나 주기적 오토세이브는 없다 — 정상적인 씬 종료(`OnDestroy`)를 거치지 않고 프로세스가 강제 종료되면 마지막 dirty flush 이후 변경분이 유실될 수 있다.

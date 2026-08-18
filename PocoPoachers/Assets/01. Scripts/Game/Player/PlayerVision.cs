@@ -21,6 +21,11 @@ public class PlayerVision : MonoBehaviour
     public event Action<GameObject> OnTargetDetected;
     public event Action<GameObject> OnTargetLost;
 
+    // 강화로 얻은 시야 보너스 — 공유 VisionConfig 애셋은 건드리지 않고 인스턴스별로만 가산
+    private float _rangeBonus;
+    public void SetRangeBonus(float bonus) => _rangeBonus = Mathf.Max(0f, bonus);
+    private float EffectiveRange => _visionConfig.detectRange + _rangeBonus;
+
     private readonly List<GameObject> _detectedTargets = new();
     private LineRenderer _lineRenderer;
 
@@ -86,9 +91,9 @@ public class PlayerVision : MonoBehaviour
             float angle = -half + _visionConfig.fovAngle / segments * i;
             Vector3 dir = Quaternion.Euler(0, angle, 0) * transform.forward;
 
-            Vector3 endpoint = Physics.Raycast(eyePos, dir, out RaycastHit hit, _visionConfig.detectRange, _wallLayer)
+            Vector3 endpoint = Physics.Raycast(eyePos, dir, out RaycastHit hit, EffectiveRange, _wallLayer)
                 ? hit.point
-                : eyePos + dir * _visionConfig.detectRange;
+                : eyePos + dir * EffectiveRange;
 
             _lineRenderer.SetPosition(i + 1, endpoint);
         }
@@ -112,7 +117,7 @@ public class PlayerVision : MonoBehaviour
         // OverlapSphere는 매 호출 배열을 새로 만든다 — NonAlloc + 재사용 버퍼로 대체.
         Collider[] buffer = _overlapBuffer;
         int count = Physics.OverlapSphereNonAlloc(
-            transform.position, _visionConfig.detectRange, buffer, _targetLayer);
+            transform.position, EffectiveRange, buffer, _targetLayer);
 
         // 버퍼가 꽉 찼으면 감지 대상이 잘렸을 수 있으므로 다음 스캔을 위해 키운다.
         // 이번 결과는 방금 채워진 기존 버퍼(buffer)로 처리한다.
@@ -204,7 +209,7 @@ public class PlayerVision : MonoBehaviour
         if (_visionConfig == null) return;
 
         Vector3 eyePos = transform.position + Vector3.up * _eyeHeight;
-        float range = _visionConfig.detectRange;
+        float range = EffectiveRange;
         float half = _visionConfig.fovAngle * 0.5f;
 
         Gizmos.color = _detectedTargets.Count > 0 ? Color.red : Color.green;

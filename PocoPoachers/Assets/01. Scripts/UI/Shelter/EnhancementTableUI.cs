@@ -5,36 +5,57 @@ using UnityEngine.UI;
 
 public class EnhancementTableUI : MonoBehaviour
 {
-    private const float PowerCost = 50f;
+    private const float LevelUpPowerCost = 50f;
+
+    [Header("기체 레벨업")]
+    [SerializeField] private TextMeshProUGUI _characterLevelText;
+    [SerializeField] private TextMeshProUGUI _levelUpCostText;
+    [SerializeField] private TextMeshProUGUI _levelUpPowerCostText;
+    [SerializeField] private Button _levelUpButton;
 
     [Header("Stat Select Buttons")]
-    [SerializeField] private Button _hpButton;
-    [SerializeField] private Button _batteryButton;
-    [SerializeField] private Button _staminaButton;
-    [SerializeField] private Button _speedButton;
+    [SerializeField] private Button _attackPowerButton;
+    [SerializeField] private Button _moveSpeedButton;
+    [SerializeField] private Button _maxHpButton;
+    [SerializeField] private Button _defenseRateButton;
+    [SerializeField] private Button _visionRangeButton;
+    [SerializeField] private Button _attackSpeedButton;
 
     [Header("Detail Panel")]
     [SerializeField] private TextMeshProUGUI _nameText;
     [SerializeField] private TextMeshProUGUI _levelText;
     [SerializeField] private TextMeshProUGUI _valueText;
-    [SerializeField] private TextMeshProUGUI _costText;
-    [SerializeField] private TextMeshProUGUI _powerCostText;
+    [SerializeField] private TextMeshProUGUI _statPointsText;
     [SerializeField] private Button _enhanceButton;
 
     private PlayerController _player;
-    private PlayerStat _playerStat;
     private PlayerEnhancement _playerEnhancement;
     private EnhancementStatType _selectedStatType = EnhancementStatType.MaxHp;
 
     public event Action<EnhancementStatType> EnhanceRequested;
 
+    private Button[] StatButtons => new[] { _attackPowerButton, _moveSpeedButton, _maxHpButton, _defenseRateButton, _visionRangeButton, _attackSpeedButton };
+    private static readonly EnhancementStatType[] StatTypes =
+    {
+        EnhancementStatType.AttackPower,
+        EnhancementStatType.MoveSpeed,
+        EnhancementStatType.MaxHp,
+        EnhancementStatType.DefenseRate,
+        EnhancementStatType.VisionRange,
+        EnhancementStatType.AttackSpeed,
+    };
+
     private void Awake()
     {
-        _hpButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MaxHp));
-        _batteryButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MaxBattery));
-        _staminaButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MaxStamina));
-        _speedButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MoveSpeed));
+        var buttons = StatButtons;
+        for (int i = 0; i < buttons.Length; i++)
+        {
+            var statType = StatTypes[i];
+            buttons[i]?.onClick.AddListener(() => SelectStat(statType));
+        }
+
         _enhanceButton?.onClick.AddListener(OnClickEnhance);
+        _levelUpButton?.onClick.AddListener(OnClickLevelUp);
     }
 
     private void OnEnable()
@@ -49,16 +70,12 @@ public class EnhancementTableUI : MonoBehaviour
             Generator.Instance.OnPowerChanged -= HandlePowerChanged;
     }
 
-    private void HandlePowerChanged(float current, float max) => RefreshPowerCostUI();
+    private void HandlePowerChanged(float current, float max) => RefreshLevelUpPanel();
 
     public void Open(PlayerController player)
     {
         _player = player;
-        _playerStat = player != null ? player.GetComponent<PlayerStat>() : null;
         _playerEnhancement = player != null ? player.GetComponent<PlayerEnhancement>() : null;
-
-        if (_playerStat == null)
-            Debug.LogWarning("EnhancementTableUI requires PlayerStat on player.");
 
         if (_playerEnhancement == null)
             Debug.LogWarning("EnhancementTableUI requires PlayerEnhancement on player.");
@@ -68,42 +85,60 @@ public class EnhancementTableUI : MonoBehaviour
 
     public void Refresh()
     {
-        if (_playerStat == null || _playerEnhancement == null)
+        RefreshLevelUpPanel();
+
+        if (_playerEnhancement == null)
         {
             SetUnavailable();
             return;
         }
 
-        float currentValue = GetCurrentValue(_selectedStatType);
-        float nextValue = currentValue + GetPreviewIncrease(_selectedStatType);
+        int level = _playerEnhancement.GetStatLevel(_selectedStatType);
+        float currentBonus = _playerEnhancement.GetBonusAtLevel(_selectedStatType, level);
+        float nextBonus = _playerEnhancement.GetBonusAtLevel(_selectedStatType, level + 1);
 
         if (_nameText != null)
             _nameText.text = GetDisplayName(_selectedStatType);
 
         if (_levelText != null)
-            _levelText.text = $"Lv. {GetCurrentLevel(_selectedStatType)}";
+            _levelText.text = $"Lv. {level}";
 
         if (_valueText != null)
-            _valueText.text = $"{FormatValue(currentValue)} > {FormatValue(nextValue)}";
+            _valueText.text = $"{FormatBonus(_selectedStatType, currentBonus)} > {FormatBonus(_selectedStatType, nextBonus)}";
 
-        if (_costText != null)
-            _costText.text = GetCostText(_selectedStatType);
-
-        RefreshPowerCostUI();
-    }
-
-    private void RefreshPowerCostUI()
-    {
-        bool canAffordPower = Generator.Instance != null && Generator.Instance.CurrentPower >= PowerCost;
-
-        if (_powerCostText != null)
-        {
-            _powerCostText.text = string.Format(LocalizationManager.GetInstance().GetString("generator.power_cost_format"), PowerCost.ToString("0"));
-            _powerCostText.color = canAffordPower ? UITheme.InkPositive : UITheme.InkNegative;
-        }
+        if (_statPointsText != null)
+            _statPointsText.text = $"{LocalizationManager.GetInstance().GetString("enhancement.stat_points")}: {_playerEnhancement.StatPoints}";
 
         if (_enhanceButton != null)
-            _enhanceButton.interactable = canAffordPower;
+            _enhanceButton.interactable = _playerEnhancement.StatPoints > 0;
+    }
+
+    private void RefreshLevelUpPanel()
+    {
+        if (_playerEnhancement == null)
+        {
+            if (_characterLevelText != null) _characterLevelText.text = "-";
+            if (_levelUpCostText != null) _levelUpCostText.text = "-";
+            if (_levelUpButton != null) _levelUpButton.interactable = false;
+            return;
+        }
+
+        if (_characterLevelText != null)
+            _characterLevelText.text = $"Lv. {_playerEnhancement.CharacterLevel} / {_playerEnhancement.MaxCharacterLevel}";
+
+        if (_levelUpCostText != null)
+            _levelUpCostText.text = _playerEnhancement.GetCharacterLevelCostText();
+
+        bool canAffordPower = Generator.Instance != null && Generator.Instance.CurrentPower >= LevelUpPowerCost;
+
+        if (_levelUpPowerCostText != null)
+        {
+            _levelUpPowerCostText.text = string.Format(LocalizationManager.GetInstance().GetString("generator.power_cost_format"), LevelUpPowerCost.ToString("0"));
+            _levelUpPowerCostText.color = canAffordPower ? UITheme.InkPositive : UITheme.InkNegative;
+        }
+
+        if (_levelUpButton != null)
+            _levelUpButton.interactable = !_playerEnhancement.IsCharacterMaxLevel() && canAffordPower;
     }
 
     private void SelectStat(EnhancementStatType statType)
@@ -115,14 +150,7 @@ public class EnhancementTableUI : MonoBehaviour
 
     private void RefreshStatSelection()
     {
-        Button[] buttons = { _hpButton, _batteryButton, _staminaButton, _speedButton };
-        EnhancementStatType[] types =
-        {
-            EnhancementStatType.MaxHp,
-            EnhancementStatType.MaxBattery,
-            EnhancementStatType.MaxStamina,
-            EnhancementStatType.MoveSpeed
-        };
+        Button[] buttons = StatButtons;
 
         Color selectedColor = UITheme.InkPrimary;
         Color normalColor = UITheme.InkSecondary;
@@ -132,7 +160,7 @@ public class EnhancementTableUI : MonoBehaviour
             Button button = buttons[i];
             if (button == null) continue;
 
-            bool selected = types[i] == _selectedStatType;
+            bool selected = StatTypes[i] == _selectedStatType;
             Transform accent = button.transform.Find("SelectionAccent");
             if (accent != null) accent.gameObject.SetActive(selected);
 
@@ -146,64 +174,57 @@ public class EnhancementTableUI : MonoBehaviour
         EnhanceRequested?.Invoke(_selectedStatType);
 
         if (_playerEnhancement == null) return;
+        if (!_playerEnhancement.TrySpendPoint(_selectedStatType)) return;
 
-        if (Generator.Instance == null || Generator.Instance.CurrentPower < PowerCost)
+        Refresh();
+    }
+
+    private void OnClickLevelUp()
+    {
+        if (_playerEnhancement == null) return;
+
+        if (Generator.Instance == null || Generator.Instance.CurrentPower < LevelUpPowerCost)
         {
             var loc = LocalizationManager.GetInstance();
             UIManager.GetInstance().ShowNotice(loc.GetString("generator.title"), loc.GetString("generator.power_insufficient_message"));
             return;
         }
 
-        if (!_playerEnhancement.TryEnhance(_selectedStatType)) return;
+        if (!_playerEnhancement.TryLevelUpCharacter()) return;
 
-        Generator.Instance.TryConsume(PowerCost);
+        Generator.Instance.TryConsume(LevelUpPowerCost);
         Refresh();
-    }
-
-    private float GetCurrentValue(EnhancementStatType statType)
-    {
-        return statType switch
-        {
-            EnhancementStatType.MaxHp => _playerStat.MaxHp,
-            EnhancementStatType.MaxBattery => _playerStat.MaxBattery,
-            EnhancementStatType.MaxStamina => _playerStat.MaxStamina,
-            EnhancementStatType.MoveSpeed => _playerStat.MoveSpeed,
-            _ => 0f
-        };
-    }
-
-    private float GetPreviewIncrease(EnhancementStatType statType)
-    {
-        return _playerEnhancement.GetNextIncrease(statType);
-    }
-
-    private int GetCurrentLevel(EnhancementStatType statType)
-    {
-        return _playerEnhancement.GetLevel(statType);
     }
 
     private static string GetDisplayName(EnhancementStatType statType)
     {
         return statType switch
         {
-            EnhancementStatType.MaxHp => "HP",
-            EnhancementStatType.MaxBattery => "Battery",
-            EnhancementStatType.MaxStamina => "Stamina",
-            EnhancementStatType.MoveSpeed => "Move Speed",
+            EnhancementStatType.AttackPower => "공격력",
+            EnhancementStatType.MoveSpeed => "이동속도",
+            EnhancementStatType.MaxHp => "체력",
+            EnhancementStatType.DefenseRate => "방어력",
+            EnhancementStatType.VisionRange => "시야",
+            EnhancementStatType.AttackSpeed => "공격속도",
             _ => statType.ToString()
         };
     }
 
-    private string GetCostText(EnhancementStatType statType)
+    // 배율형(공격력/공격속도)은 %로, 가산형은 소숫점 값 그대로 표시
+    private static string FormatBonus(EnhancementStatType statType, float bonus)
     {
-        return _playerEnhancement.GetCostText(statType);
-    }
+        if (statType is EnhancementStatType.AttackPower or EnhancementStatType.AttackSpeed)
+        {
+            int pct = Mathf.RoundToInt((bonus - 1f) * 100f);
+            return pct >= 0 ? $"+{pct}%" : $"{pct}%";
+        }
 
-    private static string FormatValue(float value)
-    {
-        return Mathf.Approximately(value, Mathf.Round(value))
-            ? Mathf.RoundToInt(value).ToString()
-            : value.ToString("0.##");
+        if (statType == EnhancementStatType.DefenseRate)
+            return $"+{bonus * 100f:F0}%";
+
+        return Mathf.Approximately(bonus, Mathf.Round(bonus))
+            ? $"+{Mathf.RoundToInt(bonus)}"
+            : $"+{bonus:0.##}";
     }
 
     private void SetUnavailable()
@@ -217,11 +238,8 @@ public class EnhancementTableUI : MonoBehaviour
         if (_valueText != null)
             _valueText.text = "-";
 
-        if (_costText != null)
-            _costText.text = "Missing PlayerEnhancement";
-
-        if (_powerCostText != null)
-            _powerCostText.text = "-";
+        if (_statPointsText != null)
+            _statPointsText.text = "Missing PlayerEnhancement";
 
         if (_enhanceButton != null)
             _enhanceButton.interactable = false;

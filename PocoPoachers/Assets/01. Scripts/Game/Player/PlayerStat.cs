@@ -20,7 +20,7 @@ public class PlayerStat : StatBase
     [SerializeField] private float _maxBattery = 100f;
     [SerializeField] private float _reduceBatteryRate = 1f;  // 초당 감소량
 
-    public float MaxStamina => _maxStamina + _enhancementMaxStaminaBonus;
+    public float MaxStamina => _maxStamina;
     public float CurrentStamina { get; private set; }
 
     // 방어구 등으로 인한 이동속도 배율 (내부에서만 관리)
@@ -45,7 +45,7 @@ public class PlayerStat : StatBase
 
     protected override float DefenseRate => base.DefenseRate;
 
-    public float MaxBattery => _maxBattery + _enhancementMaxBatteryBonus;
+    public float MaxBattery => _maxBattery;
     public float CurrentBattery { get; private set; }
 
     public event Action<float, float> OnStaminaChanged;
@@ -56,8 +56,6 @@ public class PlayerStat : StatBase
     private const float VitalSyncInterval = 2f;
     private float _totalMaxHpBonus;
     private float _enhancementMaxHpBonus;
-    private float _enhancementMaxBatteryBonus;
-    private float _enhancementMaxStaminaBonus;
     private float _enhancementMoveSpeedBonus;
 
     // 쉘터(전투 없는 씬)에서는 배터리가 닳지 않는다 — 이동해 온 씬으로 판별해 스폰 시 1회 캐싱.
@@ -191,26 +189,17 @@ public class PlayerStat : StatBase
         OnLocalHpChanged(CurrentHp, MaxHp);
     }
 
-    public void ApplyEnhancementStats(float maxHpBonus, float maxBatteryBonus, float maxStaminaBonus, float moveSpeedBonus)
+    public void ApplyEnhancementStats(float maxHpBonus, float moveSpeedBonus, float defenseRateBonus)
     {
         float previousMaxHp = MaxHp;
-        float previousMaxBattery = MaxBattery;
-        float previousMaxStamina = MaxStamina;
 
         _enhancementMaxHpBonus = Mathf.Max(0f, maxHpBonus);
-        _enhancementMaxBatteryBonus = Mathf.Max(0f, maxBatteryBonus);
-        _enhancementMaxStaminaBonus = Mathf.Max(0f, maxStaminaBonus);
         _enhancementMoveSpeedBonus = Mathf.Max(0f, moveSpeedBonus);
+        _enhancementDefenseRateBonus = Mathf.Max(0f, defenseRateBonus);
 
         MaxHp = GetCalculatedMaxHp();
         CurrentHp = Mathf.Clamp(CurrentHp + Mathf.Max(0f, MaxHp - previousMaxHp), 0f, MaxHp);
         RaiseHpChanged();
-
-        CurrentBattery = Mathf.Clamp(CurrentBattery + Mathf.Max(0f, MaxBattery - previousMaxBattery), 0f, MaxBattery);
-        OnBatteryChanged?.Invoke(CurrentBattery, MaxBattery);
-
-        CurrentStamina = Mathf.Clamp(CurrentStamina + Mathf.Max(0f, MaxStamina - previousMaxStamina), 0f, MaxStamina);
-        OnStaminaChanged?.Invoke(CurrentStamina, MaxStamina);
 
         OnLocalHpChanged(CurrentHp, MaxHp);
     }

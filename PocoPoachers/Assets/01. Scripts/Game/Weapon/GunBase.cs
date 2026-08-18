@@ -33,6 +33,9 @@ public abstract class GunBase : EquippableItemBase
             _isLocalPlayerOwner = value != null && value.TryGetComponent<PlayerController>(out _);
             // 소유자가 적이면 사격을 적 전용 경로로 전파하기 위해 캐시 (플레이어 총알과 attacker/레이어가 다름)
             _ownerEnemy = value != null ? value.GetComponent<EnemyNetSync>() : null;
+            // 플레이어 강화(공격력/공격속도)를 이 총의 기준 스탯에 반영하기 위해 캐시
+            _ownerEnhancement = value != null ? value.GetComponent<PlayerEnhancement>() : null;
+            ApplyOwnerCombatMultipliers();
         }
     }
 
@@ -65,6 +68,7 @@ public abstract class GunBase : EquippableItemBase
     private GameObject _owner;
     private bool _isLocalPlayerOwner;
     private EnemyNetSync _ownerEnemy;
+    private PlayerEnhancement _ownerEnhancement;
     private int _currentAmmo;
     private bool _isReloading;
     private float _nextFireTime;
@@ -183,7 +187,20 @@ public abstract class GunBase : EquippableItemBase
             _stat.max_magazine       += part.max_magazine_bonus;
             _stat.sound_range        *= part.sound_range_multiplier;
         }
+        ApplyOwnerCombatMultipliers();
     }
+
+    // 소유자의 강화(공격력/공격속도) 배율을 기준 스탯에 곱해 넣는다.
+    // RecalculateStat()이 매번 _baseStat.Clone()부터 다시 시작하므로 중복 적용될 걱정은 없다.
+    private void ApplyOwnerCombatMultipliers()
+    {
+        if (_ownerEnhancement == null || _stat == null) return;
+        _stat.damage *= _ownerEnhancement.GetBonus(EnhancementStatType.AttackPower);
+        _stat.rpm    *= _ownerEnhancement.GetBonus(EnhancementStatType.AttackSpeed);
+    }
+
+    // 스탯 포인트를 새로 소비해 강화 배율이 바뀌었을 때, 이미 장착된 총에 즉시 반영하기 위해 외부(PlayerEnhancement)에서 호출
+    public void RefreshEnhancementMultipliers() => RecalculateStat();
 
     public bool IsAiming { get; set; }
 
