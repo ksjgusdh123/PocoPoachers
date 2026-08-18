@@ -33,7 +33,9 @@
 |--------|------|
 | `PlayerEnhancement` | 기체 레벨업(재료 소비 → 포인트 지급), 포인트 소비(스탯 레벨업), `GetBonus`로 보너스 계산 후 `PlayerStat`/`PlayerVision`/장착 `GunBase`에 반영 |
 | `EnhancementTable` | 월드 상호작용 오브젝트 |
-| `EnhancementTableUI` | 기체 레벨업 패널 + 6개 스탯 선택/포인트 소비 UI. `PlayerEnhancement` 미존재 시 `SetUnavailable()`로 방어적 폴백 |
+| `EnhancementTableUI` | 상단 탭(레벨/스탯) 전환만 담당하는 컨테이너. 선택된 탭에 따라 `_levelPanel`/`_statPanel` GameObject를 켜고 끄며, `EnhancementLevelUpUI`/`EnhancementStatUI`에 `PlayerEnhancement`를 전달 |
+| `EnhancementLevelUpUI` | 레벨 탭 패널 — 기체 레벨/비용/레벨업 버튼만 다룸 |
+| `EnhancementStatUI` | 스탯 탭 패널 — 6개 스탯 선택 + 상세/포인트 소비 버튼. `PlayerEnhancement` 미존재 시 `SetUnavailable()`로 방어적 폴백 |
 | `GunBase` | `Owner` 설정 시 `PlayerEnhancement`를 캐시해 `_stat.damage`/`_stat.rpm`에 공격력/공격속도 배율을 곱함(`ApplyOwnerCombatMultipliers`) — 파츠 재계산(`RecalculateStat`) 때마다 재적용되므로 중복 적용 없음 |
 
 데이터: `character_level_cost.csv` — `level`당 1행(재료 최대 2종 + `stat_points`). 기존 `enhancement_cost.csv`(스탯별 개별 강화 비용)는 이 구조로 대체되어 제거됨.
