@@ -9,6 +9,8 @@ public class DescriptionUI : ItemInfoPanel
     private GunPartPanelUI _gunPartPanel;
     private MiniDescriptionUI _miniDescriptionUI;
 
+    private void Awake() => ApplyAlwaysOnTopSorting();
+
     protected override void Show(ItemData data, int uid)
     {
         // 파츠 패널이 떠 있는 동안엔 일반 툴팁을 띄우지 않는다.

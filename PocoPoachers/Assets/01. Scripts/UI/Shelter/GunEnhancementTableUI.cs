@@ -15,15 +15,14 @@ public class GunEnhancementTableUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _powerCostText;
     [SerializeField] private Button _enhanceButton;
 
-    [Header("재료 슬롯 (최대 2개)")]
-    [SerializeField] private GameObject[] _ingredientRows;
-    [SerializeField] private Image[] _ingredientIcons;
-    [SerializeField] private TextMeshProUGUI[] _ingredientNameTexts;
-    [SerializeField] private TextMeshProUGUI[] _ingredientCountTexts;
+    [Header("재료 슬롯")]
+    [SerializeField] private Transform _ingredientListContent;
+    [SerializeField] private IngredientEntryUI _ingredientEntryPrefab;
 
     private const int MaxLevel = 3;
 
     private Inventory _inventory;
+    private readonly List<IngredientEntryUI> _ingredientEntries = new();
 
     private void Awake()
     {
@@ -225,39 +224,43 @@ public class GunEnhancementTableUI : MonoBehaviour
             .FirstOrDefault(d => d.ItemId == itemId && d.Level == currentLevel + 1);
     }
 
+    // 엔트리는 파괴하지 않고 재사용한다 — 슬롯/레벨이 바뀔 때마다 Destroy/Instantiate가 반복되면 GC 스파이크가 생긴다.
     private void RefreshIngredients(ItemEnhancementCostData cost)
     {
-        var ingredients = GetIngredients(cost);
+        int used = 0;
+        var ingredients = cost != null ? cost.NeedItems : null;
 
-        for (int i = 0; i < _ingredientRows.Length; i++)
+        for (int n = 0; ingredients != null && n < ingredients.Count; n++)
         {
-            bool active = i < ingredients.Count;
-            _ingredientRows[i].SetActive(active);
-            if (!active) continue;
-
-            var (itemId, required) = ingredients[i];
+            var (itemId, required) = ingredients[n];
             var item = ItemTable.Instance.Get(itemId);
             if (item == null) continue;
 
-            _ingredientIcons[i].sprite = ResourceManager.Instance.LoadSprite(item.icon);
-            _ingredientNameTexts[i].text = LocalizationManager.GetInstance().GetString(item.ItemName);
+            if (used == _ingredientEntries.Count)
+                _ingredientEntries.Add(Instantiate(_ingredientEntryPrefab, _ingredientListContent));
 
-            int owned = _inventory?.GetItemCount(item) ?? 0;
-            _ingredientCountTexts[i].text = $"{owned} / {required}";
-            _ingredientCountTexts[i].color = owned >= required ? UITheme.InkPositive : UITheme.InkNegative;
+            var entry = _ingredientEntries[used];
+            used++;
+            if (entry == null) continue;
+
+            if (!entry.gameObject.activeSelf) entry.gameObject.SetActive(true);
+            entry.transform.SetSiblingIndex(used - 1);   // 표시 순서 유지
+            entry.Setup(item, _inventory != null ? _inventory.GetItemCount(item) : 0, required);
+        }
+
+        for (int i = used; i < _ingredientEntries.Count; i++)
+        {
+            var entry = _ingredientEntries[i];
+            if (entry != null && entry.gameObject.activeSelf) entry.gameObject.SetActive(false);
         }
     }
 
-    private void HideAllIngredients()
-    {
-        foreach (var row in _ingredientRows)
-            row.SetActive(false);
-    }
+    private void HideAllIngredients() => RefreshIngredients(null);
 
     private bool CanAfford(ItemEnhancementCostData cost)
     {
         if (_inventory == null || cost == null) return false;
-        foreach (var (itemId, required) in GetIngredients(cost))
+        foreach (var (itemId, required) in cost.NeedItems)
         {
             var item = ItemTable.Instance.Get(itemId);
             if (item == null || _inventory.GetItemCount(item) < required) return false;
@@ -268,24 +271,11 @@ public class GunEnhancementTableUI : MonoBehaviour
     private void ConsumeCost(ItemEnhancementCostData cost)
     {
         if (cost == null) return;
-        RemoveItem(cost.NeedItem1Id, cost.NeedItem1Count);
-        RemoveItem(cost.NeedItem2Id, cost.NeedItem2Count);
-    }
 
-    private void RemoveItem(int itemId, int count)
-    {
-        if (itemId <= 0 || count <= 0) return;
-        var item = ItemTable.Instance.Get(itemId);
-        if (item == null) return;
-        _inventory.RemoveItem(item, count);
-    }
-
-    private static List<(int itemId, int count)> GetIngredients(ItemEnhancementCostData cost)
-    {
-        var list = new List<(int, int)>();
-        if (cost == null) return list;
-        if (cost.NeedItem1Id > 0) list.Add((cost.NeedItem1Id, cost.NeedItem1Count));
-        if (cost.NeedItem2Id > 0) list.Add((cost.NeedItem2Id, cost.NeedItem2Count));
-        return list;
+        foreach (var (itemId, required) in cost.NeedItems)
+        {
+            var item = ItemTable.Instance.Get(itemId);
+            if (item != null) _inventory.RemoveItem(item, required);
+        }
     }
 }

@@ -7,10 +7,8 @@ public partial class ItemEnhancementCostData
     public int id;
     public int item_id;
     public int level;
-    public int need_item1_id;
-    public int need_item1_count;
-    public int need_item2_id;
-    public int need_item2_count;
+    public string need_item_ids = "";
+    public string need_item_counts = "";
 
     public int Id { get => id; set => id = value; }
 
@@ -18,12 +16,8 @@ public partial class ItemEnhancementCostData
 
     public int Level { get => level; set => level = value; }
 
-    public int NeedItem1Id { get => need_item1_id; set => need_item1_id = value; }
+    public string NeedItemIds { get => need_item_ids; set => need_item_ids = value; }
 
-    public int NeedItem1Count { get => need_item1_count; set => need_item1_count = value; }
-
-    public int NeedItem2Id { get => need_item2_id; set => need_item2_id = value; }
-
-    public int NeedItem2Count { get => need_item2_count; set => need_item2_count = value; }
+    public string NeedItemCounts { get => need_item_counts; set => need_item_counts = value; }
 
 }
