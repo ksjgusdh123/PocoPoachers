@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 // 스탯별 레벨당 성장치. 인스펙터에 항목을 추가/삭제하는 것만으로 강화 가능한 스탯을 늘리거나 줄일 수 있다.
@@ -75,20 +74,6 @@ public class PlayerEnhancement : MonoBehaviour
 
     public bool IsCharacterMaxLevel() => _characterLevel >= _maxCharacterLevel;
 
-    public string GetCharacterLevelCostText()
-    {
-        if (IsCharacterMaxLevel()) return "MAX";
-
-        var costData = GetCharacterLevelCostData();
-        if (costData == null) return "-";
-
-        var sb = new StringBuilder();
-        AppendCostText(sb, costData.NeedItem1Id, costData.NeedItem1Count);
-        AppendCostText(sb, costData.NeedItem2Id, costData.NeedItem2Count);
-
-        return sb.Length > 0 ? sb.ToString() : "-";
-    }
-
     public bool TryLevelUpCharacter()
     {
         if (IsCharacterMaxLevel()) return false;
@@ -155,7 +140,7 @@ public class PlayerEnhancement : MonoBehaviour
             _weaponMount.GetGun(i)?.RefreshEnhancementMultipliers();
     }
 
-    private CharacterLevelCostData GetCharacterLevelCostData()
+    public CharacterLevelCostData GetCharacterLevelCostData()
     {
         int nextLevel = _characterLevel + 1;
         return CharacterLevelCostTable.Instance.All.FirstOrDefault(d => d.Level == nextLevel);
@@ -177,19 +162,6 @@ public class PlayerEnhancement : MonoBehaviour
         if (itemData == null) return;
 
         _inventory.RemoveItem(itemData, amount);
-    }
-
-    private void AppendCostText(StringBuilder sb, int itemId, int amount)
-    {
-        if (itemId <= 0 || amount <= 0) return;
-
-        var itemData = DataManager.GetItem(itemId);
-        string itemName = itemData != null ? LocalizationManager.GetInstance().GetString(itemData.ItemName) : $"Unknown Item({itemId})";
-
-        if (sb.Length > 0) sb.Append(", ");
-        sb.Append(itemName);
-        sb.Append(" x");
-        sb.Append(amount);
     }
 
     private void Save()

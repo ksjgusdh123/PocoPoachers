@@ -36,7 +36,7 @@ public class EnhancementTableUI : MonoBehaviour
         if (_playerEnhancement == null)
             Debug.LogWarning("EnhancementTableUI requires PlayerEnhancement on player.");
 
-        _levelUpUI?.Open(_playerEnhancement);
+        _levelUpUI?.Open(_playerEnhancement, _player != null ? _player.PlayerInventory : null);
         _statUI?.Open(_playerEnhancement);
 
         SelectTab(_selectedTab);
