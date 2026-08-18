@@ -110,6 +110,18 @@ public class ItemInfoPanel : MonoBehaviour
         UnbindGunPartsSync();
     }
 
+    // 툴팁은 Canvas 바로 아래에 있어도 형제 순서로는 패널을 못 이긴다 — UIManager가 열린 패널의
+    // Canvas.sortingOrder를 _panelSortingOrderBase부터 올려 잡기 때문이다.
+    // 자체 Canvas를 붙이고 패널 범위보다 높은 순서를 주면 어떤 패널 위에도 그려진다. (DragIcon과 같은 방식)
+    protected void ApplyAlwaysOnTopSorting()
+    {
+        if (!TryGetComponent(out Canvas canvas))
+            canvas = gameObject.AddComponent<Canvas>();
+
+        canvas.overrideSorting = true;
+        canvas.sortingOrder = UIManager.TooltipSortingOrder;
+    }
+
     // 파생 패널이 파츠 동기화를 자체적으로 관리하면(예: GunPartPanelUI) base의 자동 요청을 끈다.
     // 켜둔 채로 파생이 응답 시 재표시까지 하면 요청→응답→재표시→재요청 루프가 생긴다.
     protected virtual bool AutoSyncGunPartsOnShow => true;

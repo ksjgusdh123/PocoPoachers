@@ -183,6 +183,8 @@ GameObject:
   - component: {fileID: 7142420487476980187}
   - component: {fileID: 6253080971929962361}
   - component: {fileID: 6088223405291781745}
+  - component: {fileID: 7112480365199401643}
+  - component: {fileID: 7112480365199401644}
   m_Layer: 5
   m_Name: InventoryUI
   m_TagString: Untagged
@@ -229,17 +231,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.47058824}
+  m_Color: {r: 0.06585964, g: 0.40251803, b: 0.5660378, a: 0.7882353}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -249,6 +251,43 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7112480365199401643
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512266917503940902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
+  m_EffectColor: {r: 0.47632605, g: 0.5127455, b: 0.6792453, a: 0.32}
+  m_EffectDistance: {x: 7, y: 7}
+  m_UseGraphicAlpha: 0
+--- !u!114 &7112480365199401644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1512266917503940902}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d6f9b3e8c1a4750d9e2b5c8f1a4703e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::UIRoundedOutline
+  _outlineMaterial: {fileID: 2100000, guid: 7e1b4d9c6a3f8025b1d4e7a0c3f69b28, type: 2}
+  _outlineColor: {r: 0.30980393, g: 0.84705883, b: 0.9607843, a: 1}
+  _thickness: 3.57
+  _glowColor: {r: 0.30980393, g: 0.84705883, b: 0.9607843, a: 1}
+  _glowWidth: 16
+  _glowIntensity: 0.14
+  _pulseSpeed: 0
+  _pulseAmount: 0.25
+  _bodyAlpha: 0.668
+  _cornerRadius: 12
 --- !u!114 &6253080971929962361
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -344,7 +383,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1721858139964829837}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 
@@ -747,6 +786,7 @@ GameObject:
   - component: {fileID: 8488273169115432251}
   - component: {fileID: 1696237478214734562}
   - component: {fileID: 4431720763636478332}
+  - component: {fileID: 7112480365199401640}
   m_Layer: 5
   m_Name: PlayerBagUI
   m_TagString: Untagged
@@ -794,10 +834,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.8980392, b: 1, a: 1}
+  m_Color: {r: 0.039215688, g: 0.05882353, b: 0.11372549, a: 0.08627451}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
@@ -807,13 +847,13 @@ MonoBehaviour:
   m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   m_Type: 1
   m_PreserveAspect: 0
-  m_FillCenter: 0
+  m_FillCenter: 1
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_PixelsPerUnitMultiplier: 0.2
 --- !u!114 &1696237478214734562
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -824,11 +864,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: Assembly-CSharp::ThemedGraphicUI
-  _role: 0
+  _role: 1
   _keepAlpha: 1
   _theme: {fileID: 0}
+--- !u!114 &7112480365199401640
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4117983229800789143}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
+  m_EffectColor: {r: 0, g: 0.8980392, b: 1, a: 0.32}
+  m_EffectDistance: {x: 1, y: -1}
+  m_UseGraphicAlpha: 1
 --- !u!114 &4431720763636478332
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1524,6 +1579,8 @@ GameObject:
   - component: {fileID: 8106819875545857122}
   - component: {fileID: 8276387717255774523}
   - component: {fileID: 3403061821603294363}
+  - component: {fileID: 7112480365199401641}
+  - component: {fileID: 7112480365199401642}
   m_Layer: 5
   m_Name: EquippedWeaponUI
   m_TagString: Untagged
@@ -1570,17 +1627,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
+  m_Name:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0, b: 0, a: 0.47058824}
+  m_Color: {r: 0.06585964, g: 0.40251803, b: 0.5660378, a: 0.7882353}
   m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1590,6 +1647,43 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &7112480365199401641
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6455359322011086170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e19747de3f5aca642ab2be37e372fb86, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Outline
+  m_EffectColor: {r: 0.47632605, g: 0.5127455, b: 0.6792453, a: 0.32}
+  m_EffectDistance: {x: 7, y: 7}
+  m_UseGraphicAlpha: 0
+--- !u!114 &7112480365199401642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6455359322011086170}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d6f9b3e8c1a4750d9e2b5c8f1a4703e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::UIRoundedOutline
+  _outlineMaterial: {fileID: 2100000, guid: 7e1b4d9c6a3f8025b1d4e7a0c3f69b28, type: 2}
+  _outlineColor: {r: 0.30980393, g: 0.84705883, b: 0.9607843, a: 1}
+  _thickness: 3.57
+  _glowColor: {r: 0.30980393, g: 0.84705883, b: 0.9607843, a: 1}
+  _glowWidth: 16
+  _glowIntensity: 0.14
+  _pulseSpeed: 0
+  _pulseAmount: 0.25
+  _bodyAlpha: 0.668
+  _cornerRadius: 12
 --- !u!1 &6958523249967883282
 GameObject:
   m_ObjectHideFlags: 0
@@ -1970,7 +2064,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 9095566926259130632}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
   m_Name: 

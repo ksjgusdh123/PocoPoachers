@@ -1,5 +1,5 @@
+using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,11 +10,16 @@ public class RepairWorkbenchUI : MonoBehaviour
 
     [SerializeField] private RepairSlotDropHandler _repairSlot;
     [SerializeField] private TextMeshProUGUI _durabilityText;
-    [SerializeField] private TextMeshProUGUI _costText;
     [SerializeField] private TextMeshProUGUI _powerCostText;
+
+    [Header("Cost - Ingredients")]
+    [SerializeField] private Transform _ingredientListContent;
+    [SerializeField] private IngredientEntryUI _ingredientEntryPrefab;
+
     [SerializeField] private Button _repairButton;
 
     private Inventory _player;
+    private readonly List<IngredientEntryUI> _ingredientEntries = new();
 
     private void Awake()
     {
@@ -56,12 +61,10 @@ public class RepairWorkbenchUI : MonoBehaviour
 
     private void Refresh()
     {
-        bool hasItem = _repairSlot.IsSetted;
-
-        if (!hasItem)
+        if (!_repairSlot.IsSetted)
         {
             _durabilityText.text = "- / -";
-            _costText.text = "-";
+            RefreshIngredients(null);
             RefreshPowerCostUI();
             return;
         }
@@ -70,9 +73,41 @@ public class RepairWorkbenchUI : MonoBehaviour
             _durabilityText.text = $"{cur:F0} / {max:F0}";
         else
             _durabilityText.text = "? / ?";
-        _costText.text = BuildCostText(_repairSlot.DroppedItemData);
+
+        RefreshIngredients(FindCost(_repairSlot.DroppedItemData));
 
         RefreshPowerCostUI();
+    }
+
+    // 엔트리는 파괴하지 않고 재사용한다 — 슬롯을 바꿀 때마다 Destroy/Instantiate가 반복되면 GC 스파이크가 생긴다.
+    private void RefreshIngredients(RepairCostData cost)
+    {
+        int used = 0;
+        var ingredients = cost != null ? cost.NeedItems : null;
+
+        for (int n = 0; ingredients != null && n < ingredients.Count; n++)
+        {
+            var (itemId, required) = ingredients[n];
+            var mat = ItemTable.Instance.Get(itemId);
+            if (mat == null) continue;
+
+            if (used == _ingredientEntries.Count)
+                _ingredientEntries.Add(Instantiate(_ingredientEntryPrefab, _ingredientListContent));
+
+            var entry = _ingredientEntries[used];
+            used++;
+            if (entry == null) continue;
+
+            if (!entry.gameObject.activeSelf) entry.gameObject.SetActive(true);
+            entry.transform.SetSiblingIndex(used - 1);   // 표시 순서 유지
+            entry.Setup(mat, _player != null ? _player.GetItemCount(mat) : 0, required);
+        }
+
+        for (int i = used; i < _ingredientEntries.Count; i++)
+        {
+            var entry = _ingredientEntries[i];
+            if (entry != null && entry.gameObject.activeSelf) entry.gameObject.SetActive(false);
+        }
     }
 
     private void RefreshPowerCostUI()
@@ -88,28 +123,9 @@ public class RepairWorkbenchUI : MonoBehaviour
         _repairButton.interactable = _repairSlot.IsSetted && canAffordPower;
     }
 
-    private string BuildCostText(ItemData itemData)
+    private static RepairCostData FindCost(ItemData itemData)
     {
-        var cost = RepairCostTable.Instance.All.FirstOrDefault(d => d.ItemId == itemData.Id);
-        if (cost == null) return "-";
-
-        var sb = new StringBuilder();
-        AppendItemRow(sb, cost.NeedItem1Id, cost.NeedItem1Count);
-        AppendItemRow(sb, cost.NeedItem2Id, cost.NeedItem2Count);
-
-        return sb.Length > 0 ? sb.ToString() : "-";
-    }
-
-    private void AppendItemRow(StringBuilder sb, int itemId, int required)
-    {
-        if (itemId == 0 || required <= 0) return;
-
-        var itemData = ItemTable.Instance.Get(itemId);
-        string name = itemData != null ? LocalizationManager.GetInstance().GetString(itemData.Name) : $"ID:{itemId}";
-        int current = _player != null ? _player.GetItemCount(itemData) : 0;
-
-        if (sb.Length > 0) sb.Append('\n');
-        sb.Append($"{name} {current} / {required}");
+        return itemData == null ? null : RepairCostTable.Instance.All.FirstOrDefault(d => d.ItemId == itemData.Id);
     }
 
     private void OnClickRepair()
@@ -117,7 +133,7 @@ public class RepairWorkbenchUI : MonoBehaviour
         if (!_repairSlot.IsSetted) return;
 
         var itemData = _repairSlot.DroppedItemData;
-        var cost = RepairCostTable.Instance.All.FirstOrDefault(d => d.ItemId == itemData.Id);
+        var cost = FindCost(itemData);
         if (cost == null) return;
         if (!CanRepair(cost)) return;
 
@@ -143,28 +159,22 @@ public class RepairWorkbenchUI : MonoBehaviour
 
     private bool CanRepair(RepairCostData cost)
     {
-        return HasEnoughItem(cost.NeedItem1Id, cost.NeedItem1Count)
-            && HasEnoughItem(cost.NeedItem2Id, cost.NeedItem2Count);
-    }
+        if (_player == null) return false;
 
-    private bool HasEnoughItem(int itemId, int amount)
-    {
-        if (itemId <= 0 || amount <= 0) return true;
-        var item = ItemTable.Instance.Get(itemId);
-        return item != null && _player.HasItem(item, amount);
+        foreach (var (itemId, required) in cost.NeedItems)
+        {
+            var item = ItemTable.Instance.Get(itemId);
+            if (item == null || !_player.HasItem(item, required)) return false;
+        }
+        return true;
     }
 
     private void ConsumeRepairCost(RepairCostData cost)
     {
-        RemoveRepairItem(cost.NeedItem1Id, cost.NeedItem1Count);
-        RemoveRepairItem(cost.NeedItem2Id, cost.NeedItem2Count);
-    }
-
-    private void RemoveRepairItem(int itemId, int amount)
-    {
-        if (itemId <= 0 || amount <= 0) return;
-        var item = ItemTable.Instance.Get(itemId);
-        if (item == null) return;
-        _player.RemoveItem(item, amount);
+        foreach (var (itemId, required) in cost.NeedItems)
+        {
+            var item = ItemTable.Instance.Get(itemId);
+            if (item != null) _player.RemoveItem(item, required);
+        }
     }
 }

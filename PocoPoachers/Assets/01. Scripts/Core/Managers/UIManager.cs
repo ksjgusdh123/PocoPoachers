@@ -43,6 +43,9 @@ public class UIManager : Singleton<UIManager>
     // 드래그 아이콘처럼 항상 모든 패널 위에 떠야 하는 요소가 쓰는 정렬 순서.
     public const int OverlaySortingOrder = 1000;
 
+    // 호버 툴팁처럼 모든 패널 위에 떠야 하지만 드래그 아이콘보다는 아래여야 하는 요소가 쓰는 정렬 순서.
+    public const int TooltipSortingOrder = 900;
+
     [Header("Input")]
     [SerializeField]
     private InputAction _cancelAction = new InputAction("UICancel", InputActionType.Button, "<Keyboard>/escape");
