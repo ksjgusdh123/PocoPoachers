@@ -630,9 +630,10 @@ public class PlayerController : MonoBehaviour
 
     private void OnPanelOpened(UIType type)
     {
-        if (type == UIType.Inventory || type == UIType.Minimap || type == UIType.Skill)
+        if (type == UIType.Inventory || type == UIType.Minimap)
             SetMainGameUIActive(false);
-        else if (type != UIType.IngameMenu && type != UIType.EnhancementTable && type != UIType.VotePopup)
+        else if (type != UIType.IngameMenu && type != UIType.EnhancementTable && type != UIType.VotePopup &&
+                 type != UIType.Skill)
             return;
 
         LockCamera(true);
@@ -664,7 +665,7 @@ public class PlayerController : MonoBehaviour
             type != UIType.Minimap && type != UIType.VotePopup && type != UIType.Skill) return;
         if (UIManager.GetInstance().IsAnyPanelOpen) return;
 
-        if (type == UIType.Inventory || type == UIType.Minimap || type == UIType.Skill)
+        if (type == UIType.Inventory || type == UIType.Minimap)
             SetMainGameUIActive(true);
 
         LockCamera(false);

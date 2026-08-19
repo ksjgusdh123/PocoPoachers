@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 // 보유 스킬을 행으로 나열하고 장착 버튼으로 빈 슬롯에 자동 장착한다.
 public class SkillEquipUI : UIBase
@@ -9,9 +11,14 @@ public class SkillEquipUI : UIBase
 
     [SerializeField] private SkillEquipRowUI _rowPrefab;
     [SerializeField] private Transform _listContent;
+    [SerializeField] private GameObject _slotPrompt;
+    [SerializeField] private TextMeshProUGUI _slotPromptText;
 
     private PlayerSkillManager _manager;
     private readonly List<SkillEquipRowUI> _rows = new();
+    private static readonly Key[] SlotKeys = { Key.Digit1, Key.Digit2, Key.Digit3 };
+
+    private PlayerSkillData _pendingSkill;
 
     public void Setup(PlayerSkillManager manager)
     {
@@ -40,6 +47,8 @@ public class SkillEquipUI : UIBase
 
     private void OnEnable()
     {
+        CancelSlotSelection();
+
         if (_manager != null)
             RefreshEquippedState();
     }
@@ -86,15 +95,45 @@ public class SkillEquipUI : UIBase
         }
     }
 
+    // 버튼을 누르면 바로 장착하지 않고, 어느 슬롯에 넣을지 키 입력을 기다린다.
     private void OnClickEquip(PlayerSkillData data)
     {
         if (_manager == null || data == null) return;
 
-        if (_manager.EquipToEmptySlot(data.id) >= 0) return;
+        _pendingSkill = data;
 
-        LocalizationManager localization = LocalizationManager.GetInstance();
-        UIManager.Instance?.ShowNotice(
-            localization.GetString("skill.slot_full_title"),
-            localization.GetString("skill.slot_full_message"));
+        if (_slotPromptText != null)
+            _slotPromptText.text = LocalizationManager.GetInstance().GetString("skill.select_slot");
+        if (_slotPrompt != null)
+            _slotPrompt.SetActive(true);
+    }
+
+    private void CancelSlotSelection()
+    {
+        _pendingSkill = null;
+        if (_slotPrompt != null)
+            _slotPrompt.SetActive(false);
+    }
+
+    protected override void OnHide() => CancelSlotSelection();
+
+    private void Update()
+    {
+        if (_pendingSkill == null || _manager == null) return;
+
+        Keyboard keyboard = Keyboard.current;
+        if (keyboard == null) return;
+
+        for (int i = 0; i < SlotKeys.Length && i < PlayerSkillManager.SlotCount; i++)
+        {
+            if (!keyboard[SlotKeys[i]].wasPressedThisFrame) continue;
+
+            _manager.Equip(i, _pendingSkill.id);
+            CancelSlotSelection();
+            return;
+        }
+
+        if (keyboard.escapeKey.wasPressedThisFrame)
+            CancelSlotSelection();
     }
 }
