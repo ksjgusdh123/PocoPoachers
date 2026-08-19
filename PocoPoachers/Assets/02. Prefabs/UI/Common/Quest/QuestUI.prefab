@@ -1,5 +1,57 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &219061360015234832
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6125648952718765407}
+  - component: {fileID: 2650891338366355582}
+  m_Layer: 5
+  m_Name: BlurBackground (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &6125648952718765407
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 219061360015234832}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5562212869972981686}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 260, y: 0}
+  m_SizeDelta: {x: -520, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &2650891338366355582
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 219061360015234832}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17a04e4ad22876942852da9c6b8c3982, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIRealtimeBackdropBlur
+  _backdropMaterial: {fileID: 2100000, guid: 08668806c278252429d30d82296dac29, type: 2}
+  _useThemeTint: 1
+  _tint: {r: 0.35, g: 0.38, b: 0.45, a: 1}
+  _blockRaycast: 1
 --- !u!1 &845599405538668989
 GameObject:
   m_ObjectHideFlags: 0
@@ -393,6 +445,7 @@ GameObject:
   - component: {fileID: 7061527143191148804}
   - component: {fileID: 1642290738115250067}
   - component: {fileID: 2987339285031110920}
+  - component: {fileID: 9048172309237038809}
   m_Layer: 5
   m_Name: QuestDescriptionUI
   m_TagString: Untagged
@@ -446,14 +499,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.039215688, g: 0.05882353, b: 0.11372549, a: 0.392}
-  m_RaycastTarget: 1
+  m_Color: {r: 0.039215688, g: 0.05882353, b: 0.11372549, a: 0.7882353}
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -489,7 +542,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1819271502583760928}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
   m_Name: 
@@ -497,6 +550,28 @@ MonoBehaviour:
   _role: 1
   _keepAlpha: 1
   _theme: {fileID: 0}
+--- !u!114 &9048172309237038809
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1819271502583760928}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d6f9b3e8c1a4750d9e2b5c8f1a4703e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIRoundedOutline
+  _outlineMaterial: {fileID: 2100000, guid: 7e1b4d9c6a3f8025b1d4e7a0c3f69b28, type: 2}
+  _outlineColor: {r: 0.30980393, g: 0.84705883, b: 0.9607843, a: 1}
+  _thickness: 3.57
+  _glowColor: {r: 0.30980393, g: 0.84705883, b: 0.9607843, a: 1}
+  _glowWidth: 6.3
+  _glowIntensity: 0.14
+  _pulseSpeed: 0
+  _pulseAmount: 0.25
+  _bodyAlpha: 0.668
+  _cornerRadius: 12
 --- !u!1 &2034013011827695529
 GameObject:
   m_ObjectHideFlags: 0
@@ -591,7 +666,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &5562212869972981686
 RectTransform:
   m_ObjectHideFlags: 0
@@ -604,6 +679,8 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 990857564375717311}
+  - {fileID: 6125648952718765407}
   - {fileID: 1121954240304007404}
   - {fileID: 5819156712044149906}
   m_Father: {fileID: 0}
@@ -646,7 +723,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SceneUIRegistrar
   _uiType: 19
   _useSharedDimmer: 0
-  _useBackdropBlur: 1
+  _useBackdropBlur: 0
 --- !u!1 &2840308733651130778
 GameObject:
   m_ObjectHideFlags: 0
@@ -1059,10 +1136,10 @@ RectTransform:
   - {fileID: 2917027101968142914}
   m_Father: {fileID: 7402368344779804616}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 179.16667, y: -45}
-  m_SizeDelta: {x: 318.33334, y: 50}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &7635385564854874601
 CanvasRenderer:
@@ -1396,8 +1473,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 0.392}
-  m_RaycastTarget: 1
+  m_Color: {r: 0.3584906, g: 0.3584906, b: 0.3584906, a: 0.8392157}
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -1604,10 +1681,10 @@ RectTransform:
   - {fileID: 691525856572780175}
   m_Father: {fileID: 7402368344779804616}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 1}
-  m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 394.1667, y: -45}
-  m_SizeDelta: {x: 71.66667, y: 50}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4931493315534669357
 CanvasRenderer:
@@ -2265,6 +2342,58 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Mask
   m_ShowMaskGraphic: 0
+--- !u!1 &6522684796781331668
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 990857564375717311}
+  - component: {fileID: 591069606509972442}
+  m_Layer: 5
+  m_Name: BlurBackground
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!224 &990857564375717311
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6522684796781331668}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5562212869972981686}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: -535, y: 0}
+  m_SizeDelta: {x: -1070, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &591069606509972442
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6522684796781331668}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 17a04e4ad22876942852da9c6b8c3982, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIRealtimeBackdropBlur
+  _backdropMaterial: {fileID: 2100000, guid: 08668806c278252429d30d82296dac29, type: 2}
+  _useThemeTint: 1
+  _tint: {r: 0.35, g: 0.38, b: 0.45, a: 1}
+  _blockRaycast: 1
 --- !u!1 &7051930130022666449
 GameObject:
   m_ObjectHideFlags: 0
@@ -2414,6 +2543,7 @@ GameObject:
   - component: {fileID: 7264646788592417520}
   - component: {fileID: 3814942010747358417}
   - component: {fileID: 5937648277554874727}
+  - component: {fileID: 6202785453017362644}
   m_Layer: 5
   m_Name: QuestListUI
   m_TagString: Untagged
@@ -2464,14 +2594,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
   m_Material: {fileID: 0}
-  m_Color: {r: 0.039215688, g: 0.05882353, b: 0.11372549, a: 0.392}
-  m_RaycastTarget: 1
+  m_Color: {r: 0.039215688, g: 0.05882353, b: 0.11372549, a: 0.7882353}
+  m_RaycastTarget: 0
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
+  m_Sprite: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -2488,7 +2618,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7133057993174853888}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 260e215d798744145a66f3e0037fb761, type: 3}
   m_Name: 
@@ -2496,6 +2626,28 @@ MonoBehaviour:
   _role: 1
   _keepAlpha: 1
   _theme: {fileID: 0}
+--- !u!114 &6202785453017362644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7133057993174853888}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2d6f9b3e8c1a4750d9e2b5c8f1a4703e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UIRoundedOutline
+  _outlineMaterial: {fileID: 2100000, guid: 7e1b4d9c6a3f8025b1d4e7a0c3f69b28, type: 2}
+  _outlineColor: {r: 0.30980393, g: 0.84705883, b: 0.9607843, a: 1}
+  _thickness: 3.57
+  _glowColor: {r: 0.30980393, g: 0.84705883, b: 0.9607843, a: 1}
+  _glowWidth: 6.3
+  _glowIntensity: 0.14
+  _pulseSpeed: 0
+  _pulseAmount: 0.25
+  _bodyAlpha: 0.668
+  _cornerRadius: 12
 --- !u!1 &7398035910880714716
 GameObject:
   m_ObjectHideFlags: 0
