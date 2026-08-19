@@ -5,14 +5,13 @@ using UnityEngine;
 using UnityEngine.UI;
 
 // 스탯 포인트 강화 전용 패널.
-// StatRow 프리팹을 스탯 개수만큼 Instantiate해 (이름 / 10칸 블록바 / ＋버튼) 행을 만든다.
-// ＋는 포인트를 즉시 소비하지 않고 예약(pending)만 하며, 예약 수만큼 블록바가 왼쪽부터 채워진다.
-// 저장 버튼을 눌러야 PlayerEnhancement에 일괄 반영된다.
+// StatRow 프리팹을 스탯 개수만큼 Instantiate해 (이름 / 강화 수치 / -버튼 / 10칸 블록바 / ＋버튼) 행을 만든다.
+// 블록바는 "이미 저장된 레벨 + 이번 세션에 예약(pending)한 만큼"을 합쳐서 채운다 — 스탯당 최대 PlayerEnhancement.MaxStatLevel(10)칸.
+// ＋는 포인트를 즉시 소비하지 않고 예약만 하며, 저장 버튼을 눌러야 PlayerEnhancement에 반영된다.
+// 저장해도 채워진 블록은 그대로 유지된다(예약분이 레벨로 흡수될 뿐이라 다음에 켜도 채워진 채로 보인다).
 // 기체 레벨업은 EnhancementLevelUpUI가 담당.
 public class EnhancementStatUI : MonoBehaviour
 {
-    private const int MaxPendingPerStat = 10;
-
     [Header("Row Prefab")]
     [SerializeField] private EnhancementStatRowUI _rowPrefab;
     [SerializeField] private Transform _rowContainer;
@@ -23,7 +22,7 @@ public class EnhancementStatUI : MonoBehaviour
 
     private readonly Dictionary<EnhancementStatType, EnhancementStatRowUI> _rows = new();
 
-    // 저장 전까지의 예약 포인트. 스탯당 최대 MaxPendingPerStat개.
+    // 저장 전까지의 예약 포인트 — 이미 저장된 레벨과 합쳐서 블록바에 표시된다.
     private readonly Dictionary<EnhancementStatType, int> _pending = new();
 
     private PlayerEnhancement _playerEnhancement;
@@ -74,10 +73,10 @@ public class EnhancementStatUI : MonoBehaviour
         int remaining = _playerEnhancement.StatPoints - TotalPending();
         if (remaining <= 0) return;
 
-        int current = GetPending(statType);
-        if (current >= MaxPendingPerStat) return;
+        int filled = _playerEnhancement.GetStatLevel(statType) + GetPending(statType);
+        if (filled >= PlayerEnhancement.MaxStatLevel) return;
 
-        _pending[statType] = current + 1;
+        _pending[statType] = GetPending(statType) + 1;
         RefreshAll();
     }
 
@@ -113,9 +112,12 @@ public class EnhancementStatUI : MonoBehaviour
         {
             EnhancementStatRowUI row = kv.Value;
             int pending = GetPending(kv.Key);
+            int committed = available ? _playerEnhancement.GetStatLevel(kv.Key) : 0;
+            int filled = committed + pending;
 
-            row.SetFilled(pending);
-            row.SetInteractable(available && remaining > 0 && pending < MaxPendingPerStat, pending > 0);
+            row.SetFilled(filled);
+            row.SetValue(available ? _playerEnhancement.FormatBonus(kv.Key, _playerEnhancement.GetBonusAtLevel(kv.Key, filled)) : "-");
+            row.SetInteractable(available && remaining > 0 && filled < PlayerEnhancement.MaxStatLevel, pending > 0);
         }
 
         if (_statPointsText != null)

@@ -12,11 +12,17 @@ public class StatGrowthConfig
     // true면 valuePerLevel을 배율 성장률로 해석한다: 최종 배율 = 1 + level * valuePerLevel (공격력/공격속도용)
     // false면 valuePerLevel만큼 매 레벨 가산한다 (체력/이동속도/방어력/시야용)
     public bool isPercentGrowth;
+    // 강화 UI에 보여줄 강화 수치를 %로 표시할지. isPercentGrowth(성장 공식)와는 별개 —
+    // 방어력처럼 가산형이어도 결과값 자체는 %로 보여주고 싶은 경우가 있다.
+    public bool displayAsPercent;
 }
 
 [RequireComponent(typeof(PlayerStat))]
 public class PlayerEnhancement : MonoBehaviour
 {
+    // 스탯 하나당 찍을 수 있는 최대 레벨 — 강화 UI의 10칸 블록바와 맞춘 값.
+    public const int MaxStatLevel = 10;
+
     [Header("기체 레벨")]
     [SerializeField] private int _characterLevel;
     [SerializeField] private int _statPoints;
@@ -25,12 +31,12 @@ public class PlayerEnhancement : MonoBehaviour
     [Header("스탯별 성장률 (여기에 항목을 추가/삭제하면 강화 가능한 스탯이 바뀐다)")]
     [SerializeField] private List<StatGrowthConfig> _growthConfigs = new()
     {
-        new StatGrowthConfig { statType = EnhancementStatType.AttackPower, valuePerLevel = 0.05f, isPercentGrowth = true },
-        new StatGrowthConfig { statType = EnhancementStatType.MoveSpeed,   valuePerLevel = 0.25f, isPercentGrowth = false },
-        new StatGrowthConfig { statType = EnhancementStatType.MaxHp,       valuePerLevel = 10f,   isPercentGrowth = false },
-        new StatGrowthConfig { statType = EnhancementStatType.DefenseRate, valuePerLevel = 0.02f, isPercentGrowth = false },
-        new StatGrowthConfig { statType = EnhancementStatType.VisionRange, valuePerLevel = 1f,    isPercentGrowth = false },
-        new StatGrowthConfig { statType = EnhancementStatType.AttackSpeed, valuePerLevel = 0.05f, isPercentGrowth = true },
+        new StatGrowthConfig { statType = EnhancementStatType.AttackPower, valuePerLevel = 0.05f, isPercentGrowth = true,  displayAsPercent = true },
+        new StatGrowthConfig { statType = EnhancementStatType.MoveSpeed,   valuePerLevel = 0.25f, isPercentGrowth = false, displayAsPercent = false },
+        new StatGrowthConfig { statType = EnhancementStatType.MaxHp,       valuePerLevel = 10f,   isPercentGrowth = false, displayAsPercent = false },
+        new StatGrowthConfig { statType = EnhancementStatType.DefenseRate, valuePerLevel = 0.02f, isPercentGrowth = false, displayAsPercent = true },
+        new StatGrowthConfig { statType = EnhancementStatType.VisionRange, valuePerLevel = 1f,    isPercentGrowth = false, displayAsPercent = false },
+        new StatGrowthConfig { statType = EnhancementStatType.AttackSpeed, valuePerLevel = 0.05f, isPercentGrowth = true,  displayAsPercent = true },
     };
 
     // 스탯별 현재 레벨 — 딕셔너리라 _growthConfigs에 없는 스탯이 들어와도, 새 스탯이 추가돼도 코드 변경 없이 동작한다.
@@ -104,6 +110,7 @@ public class PlayerEnhancement : MonoBehaviour
     {
         if (count <= 0) return false;
         if (_statPoints < count) return false;
+        if (GetStatLevel(statType) + count > MaxStatLevel) return false;
 
         _statPoints -= count;
         _statLevels[statType] = GetStatLevel(statType) + count;
@@ -123,6 +130,22 @@ public class PlayerEnhancement : MonoBehaviour
         if (config == null) return statType is EnhancementStatType.AttackPower or EnhancementStatType.AttackSpeed ? 1f : 0f;
 
         return config.isPercentGrowth ? 1f + level * config.valuePerLevel : level * config.valuePerLevel;
+    }
+
+    // 강화 UI가 보여줄 강화 수치 문자열. displayAsPercent면 "+n%"(음수면 "-n%"), 아니면 "+n"(소수면 소숫점 유지).
+    public string FormatBonus(EnhancementStatType statType, float bonus)
+    {
+        var config = _growthConfigs.FirstOrDefault(c => c.statType == statType);
+        if (config != null && config.displayAsPercent)
+        {
+            float percent = config.isPercentGrowth ? (bonus - 1f) * 100f : bonus * 100f;
+            int rounded = Mathf.RoundToInt(percent);
+            return rounded >= 0 ? $"+{rounded}%" : $"{rounded}%";
+        }
+
+        return Mathf.Approximately(bonus, Mathf.Round(bonus))
+            ? $"+{Mathf.RoundToInt(bonus)}"
+            : $"+{bonus:0.##}";
     }
 
     private void ApplyAll()

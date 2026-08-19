@@ -3,11 +3,12 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// EnhancementStatUI가 스탯 개수만큼 Instantiate하는 한 행 — (이름 / -버튼 / 10칸 블록바 / ＋버튼).
-// 프리팹 자체에는 NameText/MinusButton/PlusButton/Blocks만 한 번 연결해두면 되고, 스탯별 내용은 Setup()으로 주입한다.
+// EnhancementStatUI가 스탯 개수만큼 Instantiate하는 한 행 — (이름 / 강화 수치 / -버튼 / 10칸 블록바 / ＋버튼).
+// 프리팹 자체에는 NameText/ValueText/MinusButton/PlusButton/Blocks만 한 번 연결해두면 되고, 스탯별 내용은 Setup()으로 주입한다.
 public class EnhancementStatRowUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI _nameText;
+    [SerializeField] private TextMeshProUGUI _valueText;
     [SerializeField] private Button _minusButton;
     [SerializeField] private Button _plusButton;
 
@@ -34,6 +35,12 @@ public class EnhancementStatRowUI : MonoBehaviour
             _minusButton.onClick.RemoveAllListeners();
             _minusButton.onClick.AddListener(() => onMinusClicked?.Invoke());
         }
+    }
+
+    public void SetValue(string valueText)
+    {
+        if (_valueText != null)
+            _valueText.text = valueText;
     }
 
     public void SetFilled(int filledCount)
