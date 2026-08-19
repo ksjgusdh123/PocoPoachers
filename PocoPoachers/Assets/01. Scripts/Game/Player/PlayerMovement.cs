@@ -25,6 +25,7 @@ public class PlayerMovement : MonoBehaviour
     private CharacterController _characterController;
     private PlayerInputHandler _inputHandler;
     private PlayerDodge _playerDodge;
+    private PlayerSkillManager _skillManager;
     private Animator _animator;
     private WeaponController _weaponController;
     private PlayerStat _playerStat;
@@ -57,6 +58,7 @@ public class PlayerMovement : MonoBehaviour
         _characterController = GetComponent<CharacterController>();
         _inputHandler = GetComponent<PlayerInputHandler>();
         _playerDodge = GetComponent<PlayerDodge>();
+        _skillManager = GetComponent<PlayerSkillManager>();
         _animator = GetComponentInChildren<Animator>();
         _weaponController = GetComponent<WeaponController>();
         _playerStat = GetComponent<PlayerStat>();
@@ -127,9 +129,9 @@ public class PlayerMovement : MonoBehaviour
           return;
       }
 
-      if (_playerDodge.IsRolling)
+      if (_playerDodge.IsRolling || (_skillManager != null && _skillManager.IsMovementLocked))
       {
-          // 구르기 중 수평 이동은 PlayerDodge가 담당, 여기서는 중력만 적용
+          // 구르기·대시 중 수평 이동은 해당 로직이 담당, 여기서는 중력만 적용
           _characterController.Move(Vector3.up * (_verticalVelocity * Time.deltaTime));
           return;
       }

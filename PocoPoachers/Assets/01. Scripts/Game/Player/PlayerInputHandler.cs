@@ -33,6 +33,7 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action<int> WeaponSwitch;
     public event Action<int> RegisterItemNumberKey;
     public event Action<int> ConsumeItemNumberKey;
+    public event Action<int> SkillUse;
     public event Action Dodge;
     public event Action CancelItemUse;
     public event Action CancelReload;
@@ -41,6 +42,7 @@ public class PlayerInputHandler : MonoBehaviour
     private PlayerInput _inputMap;
     private readonly Key[] _weaponKeys = { Key.Digit1, Key.Digit2 };
     private readonly Key[] _numberKeys = { Key.Digit3, Key.Digit4, Key.Digit5, Key.Digit6, Key.Digit7, Key.Digit8 };
+    private readonly Key[] _skillKeys = { Key.Digit1, Key.Digit2, Key.Digit3 };
     private PlayerInputMapType _inputType;
 
     // 이 플레이어가 있는 씬의 기본 게임플레이 맵 — 상호작용(창고 등)을 닫고 복귀할 맵.
@@ -147,6 +149,7 @@ public class PlayerInputHandler : MonoBehaviour
     {
         var keyboard = Keyboard.current;
         if (null == keyboard) return;
+        if (IsSkillModifierHeld(keyboard)) return; // Shift+숫자는 스킬 발동이라 퀵슬롯으로 소비하지 않는다
 
         for (int i = 0; i < _numberKeys.Length; i++)
         {
@@ -171,12 +174,36 @@ public class PlayerInputHandler : MonoBehaviour
 
         if (Keyboard.current[Key.M].wasPressedThisFrame)
             ToggleMinimap?.Invoke();
+
+        PollSkillKeys();
+    }
+
+    private static bool IsSkillModifierHeld(Keyboard keyboard) =>
+        keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed;
+
+    // Shift+1/2/3. 숫자키가 무기 교체·퀵슬롯과 겹쳐 액션 에셋 바인딩 대신 직접 폴링한다.
+    private void PollSkillKeys()
+    {
+        if (_inputType != GameplayMap) return;
+
+        var keyboard = Keyboard.current;
+        if (keyboard == null || !IsSkillModifierHeld(keyboard)) return;
+
+        for (int i = 0; i < _skillKeys.Length; i++)
+        {
+            if (keyboard[_skillKeys[i]].wasPressedThisFrame)
+            {
+                SkillUse?.Invoke(i);
+                break;
+            }
+        }
     }
 
     void OnChangeGun()
     {
         var keyboard = Keyboard.current;
         if (keyboard == null) return;
+        if (IsSkillModifierHeld(keyboard)) return; // Shift+숫자는 스킬 발동이라 무기 교체로 소비하지 않는다
 
         for (int i = 0; i < _weaponKeys.Length; i++)
         {
