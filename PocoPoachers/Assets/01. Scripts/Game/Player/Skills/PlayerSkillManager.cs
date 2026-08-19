@@ -44,6 +44,7 @@ public class PlayerSkillManager : MonoBehaviour
         }
 
         FindAnyObjectByType<SkillHudUI>(FindObjectsInactive.Include)?.Setup(this);
+        FindAnyObjectByType<SkillEquipUI>(FindObjectsInactive.Include)?.Setup(this);
     }
 
     private void OnDestroy()
@@ -54,23 +55,55 @@ public class PlayerSkillManager : MonoBehaviour
 
     private void HandleSkillInput(int slotIndex) => TryUse(slotIndex);
 
-    public void Equip(int slotIndex, int skillId)
+    public bool Equip(int slotIndex, int skillId)
     {
-        if (!IsValidSlot(slotIndex)) return;
+        if (!IsValidSlot(slotIndex)) return false;
 
         PlayerSkillData data = PlayerSkillTable.Instance.Get(skillId);
         if (data == null)
         {
             Debug.LogWarning($"[PlayerSkillManager] player_skill.csv에 없는 id: {skillId}");
-            return;
+            return false;
         }
 
         IPlayerSkill skill = PlayerSkillFactory.Create(data);
-        if (skill == null) return;
+        if (skill == null) return false;
 
         Unequip(slotIndex);
         _slots[slotIndex] = skill;
         OnSlotChanged?.Invoke(slotIndex, skill);
+        return true;
+    }
+
+    public bool IsEquipped(int skillId)
+    {
+        foreach (IPlayerSkill skill in _slots)
+        {
+            if (skill != null && skill.Data.id == skillId)
+                return true;
+        }
+        return false;
+    }
+
+    public int FindEmptySlot()
+    {
+        for (int i = 0; i < SlotCount; i++)
+        {
+            if (_slots[i] == null)
+                return i;
+        }
+        return -1;
+    }
+
+    // 빈 슬롯에 자동 장착 — 성공하면 장착된 슬롯 인덱스, 실패하면 -1
+    public int EquipToEmptySlot(int skillId)
+    {
+        if (IsEquipped(skillId)) return -1;
+
+        int slotIndex = FindEmptySlot();
+        if (slotIndex < 0) return -1;
+
+        return Equip(slotIndex, skillId) ? slotIndex : -1;
     }
 
     public void Unequip(int slotIndex)

@@ -5,6 +5,8 @@ using System;
 public partial class PlayerSkillData
 {
     public int id;
+    public string name = "";
+    public string description = "";
     public string skill = "";
     public float cooldown;
     public float duration;
@@ -16,6 +18,11 @@ public partial class PlayerSkillData
     public string icon = "";
 
     public int Id { get => id; set => id = value; }
+
+    public string Name { get => name; set => name = value; }
+    public string PlayerSkillName { get => Name; set => Name = value; }
+
+    public string Description { get => description; set => description = value; }
 
     public string Skill { get => skill; set => skill = value; }
 

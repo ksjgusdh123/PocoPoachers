@@ -133,6 +133,7 @@ public class PlayerController : MonoBehaviour
         _inputHandler.GoInventory += ShowInventory;
         _inputHandler.GoQuest += ShowQuest;
         _inputHandler.ToggleMinimap += ShowMinimap;
+        _inputHandler.ToggleSkillPanel += ToggleSkill;
         _inputHandler.RegisterItemNumberKey += RegisterItem;
         _inputHandler.ConsumeItemNumberKey += StartConsuming;
         _inputHandler.StartInteraction += Interaction;
@@ -592,6 +593,7 @@ public class PlayerController : MonoBehaviour
             _inputHandler.GoInventory -= ShowInventory;
             _inputHandler.GoQuest -= ShowQuest;
             _inputHandler.ToggleMinimap -= ShowMinimap;
+            _inputHandler.ToggleSkillPanel -= ToggleSkill;
             _inputHandler.RegisterItemNumberKey -= RegisterItem;
             _inputHandler.ConsumeItemNumberKey -= StartConsuming;
             _inputHandler.StartInteraction -= Interaction;
@@ -628,7 +630,7 @@ public class PlayerController : MonoBehaviour
 
     private void OnPanelOpened(UIType type)
     {
-        if (type == UIType.Inventory || type == UIType.Minimap)
+        if (type == UIType.Inventory || type == UIType.Minimap || type == UIType.Skill)
             SetMainGameUIActive(false);
         else if (type != UIType.IngameMenu && type != UIType.EnhancementTable && type != UIType.VotePopup)
             return;
@@ -659,10 +661,10 @@ public class PlayerController : MonoBehaviour
             _gunPartPanel?.Close();
 
         if (type != UIType.Inventory && type != UIType.IngameMenu && type != UIType.EnhancementTable &&
-            type != UIType.Minimap && type != UIType.VotePopup) return;
+            type != UIType.Minimap && type != UIType.VotePopup && type != UIType.Skill) return;
         if (UIManager.GetInstance().IsAnyPanelOpen) return;
 
-        if (type == UIType.Inventory || type == UIType.Minimap)
+        if (type == UIType.Inventory || type == UIType.Minimap || type == UIType.Skill)
             SetMainGameUIActive(true);
 
         LockCamera(false);
@@ -787,6 +789,8 @@ public class PlayerController : MonoBehaviour
         ui.HideAll();
         ui.Show(UIType.Minimap);
     }
+
+    void ToggleSkill() => UIManager.GetInstance().Toggle(UIType.Skill);
 
     void ShowQuest()
     {

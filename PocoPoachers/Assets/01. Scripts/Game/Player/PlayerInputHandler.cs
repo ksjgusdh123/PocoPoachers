@@ -38,6 +38,7 @@ public class PlayerInputHandler : MonoBehaviour
     public event Action CancelItemUse;
     public event Action CancelReload;
     public event Action ToggleMinimap;
+    public event Action ToggleSkillPanel;
 
     private PlayerInput _inputMap;
     private readonly Key[] _weaponKeys = { Key.Digit1, Key.Digit2 };
@@ -174,6 +175,9 @@ public class PlayerInputHandler : MonoBehaviour
 
         if (Keyboard.current[Key.M].wasPressedThisFrame)
             ToggleMinimap?.Invoke();
+
+        if (Keyboard.current[Key.K].wasPressedThisFrame)
+            ToggleSkillPanel?.Invoke();
 
         PollSkillKeys();
     }
