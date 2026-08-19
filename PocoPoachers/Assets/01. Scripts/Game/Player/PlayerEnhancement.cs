@@ -97,12 +97,14 @@ public class PlayerEnhancement : MonoBehaviour
         return true;
     }
 
-    public bool TrySpendPoint(EnhancementStatType statType)
+    // count만큼 한 번에 소비한다. 강화 UI가 예약해둔(pending) 포인트를 저장 시점에 일괄 반영할 때 쓴다.
+    public bool TrySpendPoints(EnhancementStatType statType, int count)
     {
-        if (_statPoints <= 0) return false;
+        if (count <= 0) return false;
+        if (_statPoints < count) return false;
 
-        _statPoints--;
-        _statLevels[statType] = GetStatLevel(statType) + 1;
+        _statPoints -= count;
+        _statLevels[statType] = GetStatLevel(statType) + count;
 
         ApplyAll();
         Save();

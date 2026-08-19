@@ -1,32 +1,26 @@
-using System;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// 스탯 포인트 강화 전용 패널 — 6개 스탯 선택 + 상세/강화 버튼. 기체 레벨업은 EnhancementLevelUpUI가 담당.
+// 스탯 포인트 강화 전용 패널.
+// StatRow 프리팹을 스탯 개수만큼 Instantiate해 (이름 / 10칸 블록바 / ＋버튼) 행을 만든다.
+// ＋는 포인트를 즉시 소비하지 않고 예약(pending)만 하며, 예약 수만큼 블록바가 왼쪽부터 채워진다.
+// 저장 버튼을 눌러야 PlayerEnhancement에 일괄 반영된다.
+// 기체 레벨업은 EnhancementLevelUpUI가 담당.
 public class EnhancementStatUI : MonoBehaviour
 {
-    [Header("Stat Select Buttons")]
-    [SerializeField] private Button _attackPowerButton;
-    [SerializeField] private Button _moveSpeedButton;
-    [SerializeField] private Button _maxHpButton;
-    [SerializeField] private Button _defenseRateButton;
-    [SerializeField] private Button _visionRangeButton;
-    [SerializeField] private Button _attackSpeedButton;
+    private const int MaxPendingPerStat = 10;
 
-    [Header("Detail Panel")]
-    [SerializeField] private TextMeshProUGUI _nameText;
-    [SerializeField] private TextMeshProUGUI _levelText;
-    [SerializeField] private TextMeshProUGUI _valueText;
+    [Header("Row Prefab")]
+    [SerializeField] private EnhancementStatRowUI _rowPrefab;
+    [SerializeField] private Transform _rowContainer;
+
+    [Header("Footer")]
     [SerializeField] private TextMeshProUGUI _statPointsText;
-    [SerializeField] private Button _enhanceButton;
+    [SerializeField] private Button _saveButton;
 
-    private PlayerEnhancement _playerEnhancement;
-    private EnhancementStatType _selectedStatType = EnhancementStatType.MaxHp;
-
-    public event Action<EnhancementStatType> EnhanceRequested;
-
-    private Button[] StatButtons => new[] { _attackPowerButton, _moveSpeedButton, _maxHpButton, _defenseRateButton, _visionRangeButton, _attackSpeedButton };
     private static readonly EnhancementStatType[] StatTypes =
     {
         EnhancementStatType.AttackPower,
@@ -37,88 +31,99 @@ public class EnhancementStatUI : MonoBehaviour
         EnhancementStatType.AttackSpeed,
     };
 
+    private readonly Dictionary<EnhancementStatType, EnhancementStatRowUI> _rows = new();
+
+    // 저장 전까지의 예약 포인트. 스탯당 최대 MaxPendingPerStat개.
+    private readonly Dictionary<EnhancementStatType, int> _pending = new();
+
+    private PlayerEnhancement _playerEnhancement;
+    private bool _rowsBuilt;
+
     private void Awake()
     {
-        var buttons = StatButtons;
-        for (int i = 0; i < buttons.Length; i++)
+        BuildRows();
+        _saveButton?.onClick.AddListener(OnClickSave);
+    }
+
+    private void BuildRows()
+    {
+        if (_rowsBuilt || _rowPrefab == null || _rowContainer == null) return;
+
+        foreach (EnhancementStatType statType in StatTypes)
         {
-            var statType = StatTypes[i];
-            buttons[i]?.onClick.AddListener(() => SelectStat(statType));
+            EnhancementStatRowUI row = Instantiate(_rowPrefab, _rowContainer);
+            row.Setup(statType, GetDisplayName(statType), () => OnClickPlus(statType));
+            _rows[statType] = row;
         }
 
-        _enhanceButton?.onClick.AddListener(OnClickEnhance);
+        _rowsBuilt = true;
     }
 
     public void Open(PlayerEnhancement playerEnhancement)
     {
         _playerEnhancement = playerEnhancement;
-        SelectStat(_selectedStatType);
+        _pending.Clear();
+        RefreshAll();
     }
 
-    public void Refresh()
+    public void Refresh() => RefreshAll();
+
+    private int GetPending(EnhancementStatType statType) =>
+        _pending.TryGetValue(statType, out int value) ? value : 0;
+
+    private int TotalPending() => _pending.Values.Sum();
+
+    private void OnClickPlus(EnhancementStatType statType)
     {
-        if (_playerEnhancement == null)
+        if (_playerEnhancement == null) return;
+
+        int remaining = _playerEnhancement.StatPoints - TotalPending();
+        if (remaining <= 0) return;
+
+        int current = GetPending(statType);
+        if (current >= MaxPendingPerStat) return;
+
+        _pending[statType] = current + 1;
+        RefreshAll();
+    }
+
+    private void OnClickSave()
+    {
+        if (_playerEnhancement == null) return;
+
+        foreach (var kv in _pending)
         {
-            SetUnavailable();
-            return;
+            if (kv.Value <= 0) continue;
+            _playerEnhancement.TrySpendPoints(kv.Key, kv.Value);
         }
 
-        int level = _playerEnhancement.GetStatLevel(_selectedStatType);
-        float currentBonus = _playerEnhancement.GetBonusAtLevel(_selectedStatType, level);
-        float nextBonus = _playerEnhancement.GetBonusAtLevel(_selectedStatType, level + 1);
+        _pending.Clear();
+        RefreshAll();
+    }
 
-        if (_nameText != null)
-            _nameText.text = GetDisplayName(_selectedStatType);
+    private void RefreshAll()
+    {
+        bool available = _playerEnhancement != null;
+        int remaining = available ? _playerEnhancement.StatPoints - TotalPending() : 0;
 
-        if (_levelText != null)
-            _levelText.text = $"Lv. {level}";
+        foreach (var kv in _rows)
+        {
+            EnhancementStatRowUI row = kv.Value;
+            int pending = GetPending(kv.Key);
 
-        if (_valueText != null)
-            _valueText.text = $"{FormatBonus(_selectedStatType, currentBonus)} > {FormatBonus(_selectedStatType, nextBonus)}";
+            row.SetFilled(pending);
+            row.SetInteractable(available && remaining > 0 && pending < MaxPendingPerStat);
+        }
 
         if (_statPointsText != null)
-            _statPointsText.text = $"{LocalizationManager.GetInstance().GetString("enhancement.stat_points")}: {_playerEnhancement.StatPoints}";
-
-        if (_enhanceButton != null)
-            _enhanceButton.interactable = _playerEnhancement.StatPoints > 0;
-    }
-
-    private void SelectStat(EnhancementStatType statType)
-    {
-        _selectedStatType = statType;
-        RefreshStatSelection();
-        Refresh();
-    }
-
-    private void RefreshStatSelection()
-    {
-        Button[] buttons = StatButtons;
-
-        Color selectedColor = UITheme.InkPrimary;
-        Color normalColor = UITheme.InkSecondary;
-
-        for (int i = 0; i < buttons.Length; i++)
         {
-            Button button = buttons[i];
-            if (button == null) continue;
-
-            bool selected = StatTypes[i] == _selectedStatType;
-            Transform accent = button.transform.Find("SelectionAccent");
-            if (accent != null) accent.gameObject.SetActive(selected);
-
-            TextMeshProUGUI label = button.GetComponentInChildren<TextMeshProUGUI>(true);
-            if (label != null) label.color = selected ? selectedColor : normalColor;
+            _statPointsText.text = available
+                ? $"{LocalizationManager.GetInstance().GetString("enhancement.stat_points")}: {remaining}"
+                : "Missing PlayerEnhancement";
         }
-    }
 
-    private void OnClickEnhance()
-    {
-        EnhanceRequested?.Invoke(_selectedStatType);
-
-        if (_playerEnhancement == null) return;
-        if (!_playerEnhancement.TrySpendPoint(_selectedStatType)) return;
-
-        Refresh();
+        if (_saveButton != null)
+            _saveButton.interactable = available && TotalPending() > 0;
     }
 
     private static string GetDisplayName(EnhancementStatType statType)
@@ -133,40 +138,5 @@ public class EnhancementStatUI : MonoBehaviour
             EnhancementStatType.AttackSpeed => "공격속도",
             _ => statType.ToString()
         };
-    }
-
-    // 배율형(공격력/공격속도)은 %로, 가산형은 소숫점 값 그대로 표시
-    private static string FormatBonus(EnhancementStatType statType, float bonus)
-    {
-        if (statType is EnhancementStatType.AttackPower or EnhancementStatType.AttackSpeed)
-        {
-            int pct = Mathf.RoundToInt((bonus - 1f) * 100f);
-            return pct >= 0 ? $"+{pct}%" : $"{pct}%";
-        }
-
-        if (statType == EnhancementStatType.DefenseRate)
-            return $"+{bonus * 100f:F0}%";
-
-        return Mathf.Approximately(bonus, Mathf.Round(bonus))
-            ? $"+{Mathf.RoundToInt(bonus)}"
-            : $"+{bonus:0.##}";
-    }
-
-    private void SetUnavailable()
-    {
-        if (_nameText != null)
-            _nameText.text = "Unavailable";
-
-        if (_levelText != null)
-            _levelText.text = "Lv. -";
-
-        if (_valueText != null)
-            _valueText.text = "-";
-
-        if (_statPointsText != null)
-            _statPointsText.text = "Missing PlayerEnhancement";
-
-        if (_enhanceButton != null)
-            _enhanceButton.interactable = false;
     }
 }

@@ -43,7 +43,7 @@
 | `PlayerController.OnDestroy` | 인벤·장착 슬롯·장비 상태(내구도/탄약/파츠/강화)·Vital | 호스트/솔로만. 씬 전환·종료마다 발생 |
 | `Storage.LateUpdate` (dirty flag) | 창고 인벤 | 슬롯 변경 시 `_isDirty` 세팅, 프레임당 1회 저장. 호스트만 로컬 저장 |
 | `ShelterManager.ApplyLevel` | 쉘터 레벨 | 업그레이드 성공 즉시 |
-| `PlayerEnhancement.TryLevelUpCharacter`/`TrySpendPoint` | 기체 레벨·스탯 포인트 | 레벨업/포인트 소비 성공 즉시(게스트도 로컬 저장) |
+| `PlayerEnhancement.TryLevelUpCharacter`/`TrySpendPoints` | 기체 레벨·스탯 포인트 | 레벨업/포인트 소비 성공 즉시(게스트도 로컬 저장) |
 | `MainMenuUI` | 슬롯 메타 | 새 게임(슬롯 생성)·로드(슬롯 선택) 시점 |
 
 `OnApplicationQuit`이나 주기적 오토세이브는 없다 — 정상적인 씬 종료(`OnDestroy`)를 거치지 않고 프로세스가 강제 종료되면 마지막 dirty flush 이후 변경분이 유실될 수 있다.
