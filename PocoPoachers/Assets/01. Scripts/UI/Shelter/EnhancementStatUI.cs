@@ -21,16 +21,6 @@ public class EnhancementStatUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _statPointsText;
     [SerializeField] private Button _saveButton;
 
-    private static readonly EnhancementStatType[] StatTypes =
-    {
-        EnhancementStatType.AttackPower,
-        EnhancementStatType.MoveSpeed,
-        EnhancementStatType.MaxHp,
-        EnhancementStatType.DefenseRate,
-        EnhancementStatType.VisionRange,
-        EnhancementStatType.AttackSpeed,
-    };
-
     private readonly Dictionary<EnhancementStatType, EnhancementStatRowUI> _rows = new();
 
     // 저장 전까지의 예약 포인트. 스탯당 최대 MaxPendingPerStat개.
@@ -41,18 +31,21 @@ public class EnhancementStatUI : MonoBehaviour
 
     private void Awake()
     {
-        BuildRows();
         _saveButton?.onClick.AddListener(OnClickSave);
     }
 
+    // StatPanel은 탭 전환마다 SetActive로 켜진다 — 레벨 탭에서 포인트를 얻고 스탯 탭으로 돌아왔을 때도
+    // 남은 포인트 표시가 갱신되도록 여기서 새로고침한다.
+    private void OnEnable() => RefreshAll();
+
     private void BuildRows()
     {
-        if (_rowsBuilt || _rowPrefab == null || _rowContainer == null) return;
+        if (_rowsBuilt || _rowPrefab == null || _rowContainer == null || _playerEnhancement == null) return;
 
-        foreach (EnhancementStatType statType in StatTypes)
+        foreach (EnhancementStatType statType in _playerEnhancement.ConfiguredStatTypes)
         {
             EnhancementStatRowUI row = Instantiate(_rowPrefab, _rowContainer);
-            row.Setup(statType, GetDisplayName(statType), () => OnClickPlus(statType));
+            row.Setup(statType, GetDisplayName(statType), () => OnClickPlus(statType), () => OnClickMinus(statType));
             _rows[statType] = row;
         }
 
@@ -62,6 +55,7 @@ public class EnhancementStatUI : MonoBehaviour
     public void Open(PlayerEnhancement playerEnhancement)
     {
         _playerEnhancement = playerEnhancement;
+        BuildRows();
         _pending.Clear();
         RefreshAll();
     }
@@ -84,6 +78,15 @@ public class EnhancementStatUI : MonoBehaviour
         if (current >= MaxPendingPerStat) return;
 
         _pending[statType] = current + 1;
+        RefreshAll();
+    }
+
+    private void OnClickMinus(EnhancementStatType statType)
+    {
+        int current = GetPending(statType);
+        if (current <= 0) return;
+
+        _pending[statType] = current - 1;
         RefreshAll();
     }
 
@@ -112,7 +115,7 @@ public class EnhancementStatUI : MonoBehaviour
             int pending = GetPending(kv.Key);
 
             row.SetFilled(pending);
-            row.SetInteractable(available && remaining > 0 && pending < MaxPendingPerStat);
+            row.SetInteractable(available && remaining > 0 && pending < MaxPendingPerStat, pending > 0);
         }
 
         if (_statPointsText != null)

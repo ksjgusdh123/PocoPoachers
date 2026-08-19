@@ -43,6 +43,8 @@ public class PlayerEnhancement : MonoBehaviour
 
     public int CharacterLevel => _characterLevel;
     public int StatPoints => _statPoints;
+    // 인스펙터의 _growthConfigs 순서 그대로 노출 — 강화 UI가 이 순서대로 행을 만들면 스탯 추가/삭제가 코드 변경 없이 반영된다.
+    public IEnumerable<EnhancementStatType> ConfiguredStatTypes => _growthConfigs.Select(c => c.statType);
     public int MaxCharacterLevel => _maxCharacterLevel;
 
     public event Action OnChanged;
