@@ -44,12 +44,9 @@ public class SkillEquipRowUI : MonoBehaviour
 
     public void SetEquipped(bool equipped)
     {
-        if (_equipButton != null)
-            _equipButton.interactable = !equipped;
-
         if (_equipButtonText != null)
             _equipButtonText.text = LocalizationManager.GetInstance()
-                .GetString(equipped ? "skill.equipped" : "skill.equip");
+                .GetString(equipped ? "skill.unequip" : "skill.equip");
     }
 
     private void OnClickEquip() => _onEquip?.Invoke(_data);

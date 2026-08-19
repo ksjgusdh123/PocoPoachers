@@ -95,10 +95,14 @@ public class SkillEquipUI : UIBase
         }
     }
 
-    // 버튼을 누르면 바로 장착하지 않고, 어느 슬롯에 넣을지 키 입력을 기다린다.
+    // 장착돼 있으면 해제, 아니면 어느 슬롯에 넣을지 키 입력을 기다린다.
     private void OnClickEquip(PlayerSkillData data)
     {
         if (_manager == null || data == null) return;
+
+        CancelSlotSelection();
+
+        if (_manager.UnequipSkill(data.id)) return;
 
         _pendingSkill = data;
 

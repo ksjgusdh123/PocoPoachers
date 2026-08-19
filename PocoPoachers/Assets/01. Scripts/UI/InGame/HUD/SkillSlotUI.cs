@@ -9,6 +9,12 @@ public class SkillSlotUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _cooldownText;
     [SerializeField] private TextMeshProUGUI _keyLabel;
 
+    [SerializeField, Tooltip("스킬이 장착되지 않은 슬롯에 표시할 이미지")]
+    private Sprite _emptyIcon;
+
+    [SerializeField, Tooltip("빈 슬롯 아이콘에 곱할 색. RGB를 낮추면 어두워진다.")]
+    private Color _emptyIconTint = new Color(0.45f, 0.45f, 0.45f, 0.7f);
+
     private void Awake()
     {
         if (_cooldownOverlay == null) return;
@@ -27,7 +33,8 @@ public class SkillSlotUI : MonoBehaviour
 
         if (_icon != null)
         {
-            _icon.sprite = hasSkill ? ResourceManager.Instance.LoadSprite(skill.Data.icon) : null;
+            _icon.sprite = hasSkill ? ResourceManager.Instance.LoadSprite(skill.Data.icon) : _emptyIcon;
+            _icon.color = hasSkill ? Color.white : _emptyIconTint;
             _icon.enabled = _icon.sprite != null;
         }
 

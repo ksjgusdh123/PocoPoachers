@@ -75,14 +75,26 @@ public class PlayerSkillManager : MonoBehaviour
         return true;
     }
 
-    public bool IsEquipped(int skillId)
+    // 해당 스킬이 장착된 슬롯 인덱스, 없으면 -1
+    public int FindSlotOf(int skillId)
     {
-        foreach (IPlayerSkill skill in _slots)
+        for (int i = 0; i < SlotCount; i++)
         {
-            if (skill != null && skill.Data.id == skillId)
-                return true;
+            if (_slots[i] != null && _slots[i].Data.id == skillId)
+                return i;
         }
-        return false;
+        return -1;
+    }
+
+    public bool IsEquipped(int skillId) => FindSlotOf(skillId) >= 0;
+
+    public bool UnequipSkill(int skillId)
+    {
+        int slotIndex = FindSlotOf(skillId);
+        if (slotIndex < 0) return false;
+
+        Unequip(slotIndex);
+        return true;
     }
 
     public int FindEmptySlot()
