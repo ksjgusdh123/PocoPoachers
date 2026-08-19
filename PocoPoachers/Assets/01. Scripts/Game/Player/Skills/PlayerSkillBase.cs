@@ -1,6 +1,6 @@
 public abstract class PlayerSkillBase : IPlayerSkill
 {
-    protected readonly PlayerSkillData Data;
+    public PlayerSkillData Data { get; }
 
     protected PlayerSkillBase(PlayerSkillData data)
     {

@@ -42,6 +42,8 @@ public class PlayerSkillManager : MonoBehaviour
             if (_startSkillIds[i] > 0)
                 Equip(i, _startSkillIds[i]);
         }
+
+        FindAnyObjectByType<SkillHudUI>(FindObjectsInactive.Include)?.Setup(this);
     }
 
     private void OnDestroy()

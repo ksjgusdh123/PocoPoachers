@@ -2,6 +2,7 @@
 public interface IPlayerSkill
 {
     PlayerSkillId Id { get; }
+    PlayerSkillData Data { get; }
     float Cooldown { get; }
 
     // 진행 중 PlayerMovement의 수평 이동을 막고 스킬이 직접 이동시킨다 (대시 등)

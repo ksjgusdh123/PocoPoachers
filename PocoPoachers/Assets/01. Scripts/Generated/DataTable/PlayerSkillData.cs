@@ -13,6 +13,7 @@ public partial class PlayerSkillData
     public float power;
     public float radius;
     public string clip_name = "";
+    public string icon = "";
 
     public int Id { get => id; set => id = value; }
 
@@ -31,5 +32,7 @@ public partial class PlayerSkillData
     public float Radius { get => radius; set => radius = value; }
 
     public string ClipName { get => clip_name; set => clip_name = value; }
+
+    public string IconPath { get => icon; set => icon = value; }
 
 }
