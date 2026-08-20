@@ -19,6 +19,7 @@ public class UISoundManager : Singleton<UISoundManager>
         _slotInteractionManager.OnDragBegin += OnSlotDragBegin;
         _slotInteractionManager.OnItemPlaced += OnItemPlaced;
         _slotInteractionManager.OnItemPlaceFailed += OnItemPlaceFailed;
+        _slotInteractionManager.OnItemRegistered += OnItemRegistered;
 
         _uiManager = UIManager.GetInstance();
         _uiManager.OnPanelOpened += OnPanelOpened;
@@ -34,6 +35,7 @@ public class UISoundManager : Singleton<UISoundManager>
             _slotInteractionManager.OnDragBegin -= OnSlotDragBegin;
             _slotInteractionManager.OnItemPlaced -= OnItemPlaced;
             _slotInteractionManager.OnItemPlaceFailed -= OnItemPlaceFailed;
+            _slotInteractionManager.OnItemRegistered -= OnItemRegistered;
         }
 
         if (_uiManager != null)
@@ -48,6 +50,8 @@ public class UISoundManager : Singleton<UISoundManager>
     private void OnItemPlaced() => SoundManager.GetInstance().PlaySfx("ui_item_place");
 
     private void OnItemPlaceFailed() => SoundManager.GetInstance().PlaySfx("ui_item_place_fail");
+
+    private void OnItemRegistered() => SoundManager.GetInstance().PlaySfx("ui_item_register");
 
     private void OnPanelOpened(UIType type)
     {

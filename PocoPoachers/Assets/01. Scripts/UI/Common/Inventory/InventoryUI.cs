@@ -55,14 +55,22 @@ public class InventoryUI : MonoBehaviour
         if (targetSlot == null) return;
 
         // 아직 공개되지 않은(리빌 진행 중) 박스 슬롯은 가져갈 수 없음
-        if (IsSlotUnrevealed(targetSlot.SlotIndex)) return;
+        if (IsSlotUnrevealed(targetSlot.SlotIndex))
+        {
+            SlotInteractionManager.GetInstance().InvokeItemPlaceFailed();
+            return;
+        }
 
         var target = _inventory.InteractionInventory;
         ItemData itemData = targetSlot.SlotItemData;
         int amount = targetSlot.SavedAmountItem;
 
         int addedSlotIndex = target?.CanAddItem(itemData, amount) ?? -1;
-        if (addedSlotIndex < 0) return;
+        if (addedSlotIndex < 0)
+        {
+            SlotInteractionManager.GetInstance().InvokeItemPlaceFailed();
+            return;
+        }
 
         GameManager.GetInstance().SaveChangeInventorys(_inventory, target);
 
@@ -86,6 +94,9 @@ public class InventoryUI : MonoBehaviour
             if (isNetworked)
                 RoomSync.ItemBoxUpdate(boxWo.Id, itemData.id, boxInventory != _inventory ? amount : -amount, boxInventory != _inventory ? -1 : targetSlot.SlotIndex, itemUid);
         }
+
+        // 드래그로 옮길 때와 같은 사운드를 내기 위해 UISoundManager가 듣는 이벤트를 그대로 재사용한다
+        SlotInteractionManager.GetInstance().InvokeItemPlaced();
     }
 
     // 아직 공개(리빌)되지 않은 박스 슬롯인지 — 가져가기/설명 표시 차단에 사용

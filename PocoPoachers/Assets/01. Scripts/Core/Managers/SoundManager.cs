@@ -17,6 +17,7 @@ public class SoundManager : Singleton<SoundManager>
 
     private AudioSource _bgmSource;
     private AudioSource _sfxSource;
+    private AudioSource _cancelableSource;
     private readonly List<AudioSource> _sfx3DSources = new List<AudioSource>();
     private int _next3DSourceIndex;
     private float _bgmClipVolume = 1f;
@@ -36,6 +37,9 @@ public class SoundManager : Singleton<SoundManager>
         _sfxSource = gameObject.AddComponent<AudioSource>();
         _sfxSource.playOnAwake = false;
 
+        _cancelableSource = gameObject.AddComponent<AudioSource>();
+        _cancelableSource.playOnAwake = false;
+
         MasterVolume = PlayerPrefs.GetFloat(PREF_MASTER_VOLUME, 1f);
         BgmVolume    = PlayerPrefs.GetFloat(PREF_BGM_VOLUME, 1f);
         SfxVolume    = PlayerPrefs.GetFloat(PREF_SFX_VOLUME, 1f);
@@ -44,6 +48,8 @@ public class SoundManager : Singleton<SoundManager>
 
     public void PlayBgm(string key)
     {
+        if (string.IsNullOrEmpty(key)) return;
+
         var data = SoundTable.Instance.Get(key);
         if (data == null || string.IsNullOrEmpty(data.Path)) return;
 
@@ -56,6 +62,8 @@ public class SoundManager : Singleton<SoundManager>
 
     public void PlaySfx(string key)
     {
+        if (string.IsNullOrEmpty(key)) return;
+
         var data = SoundTable.Instance.Get(key);
         if (data == null || string.IsNullOrEmpty(data.Path)) return;
 
@@ -65,6 +73,8 @@ public class SoundManager : Singleton<SoundManager>
     // 총성처럼 발생 위치가 있는 효과음. 2D PlaySfx로 재생하면 맵 반대편 총성이 귀 옆에서 울린다.
     public void PlaySfxAt(string key, Vector3 position, float maxDistance = 0f)
     {
+        if (string.IsNullOrEmpty(key)) return;
+
         var data = SoundTable.Instance.Get(key);
         if (data == null || string.IsNullOrEmpty(data.Path)) return;
 
@@ -77,6 +87,25 @@ public class SoundManager : Singleton<SoundManager>
         source.volume = MasterVolume * SfxVolume * data.Volume;
         source.PlayOneShot(clip);
     }
+
+    // 도중에 멈춰야 하는 2D 효과음(아이템 사용 등). PlayOneShot은 정지할 수 없어 전용 소스를 쓴다.
+    // 동시에 하나만 재생되며, 새로 재생하면 이전 것은 끊긴다.
+    public void PlayCancelableSfx(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return;
+
+        var data = SoundTable.Instance.Get(key);
+        if (data == null || string.IsNullOrEmpty(data.Path)) return;
+
+        var clip = ResourceManager.GetInstance().Load<AudioClip>(data.Path);
+        if (clip == null) return;
+
+        _cancelableSource.clip = clip;
+        _cancelableSource.volume = MasterVolume * SfxVolume * data.Volume;
+        _cancelableSource.Play();
+    }
+
+    public void StopCancelableSfx() => _cancelableSource.Stop();
 
     public void PlayButtonClick() => PlaySfx(CLICK_SFX_KEY);
 
