@@ -5,6 +5,8 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerInputHandler))]
 public class PlayerDodge : MonoBehaviour
 {
+    private const string RollSfxKey = "sfx_roll";
+
     [SerializeField] private float _dodgeSpeed = 10f;
     [SerializeField] private float _dodgeDuration = 0.5f;
     [SerializeField] private float _cooldown = 1f;
@@ -64,6 +66,7 @@ public class PlayerDodge : MonoBehaviour
         transform.rotation = Quaternion.LookRotation(direction);
         _weaponController?.SetCurrentGunVisible(false);
         _animator.SetTrigger("Roll");
+        SoundManager.GetInstance()?.PlaySfx(RollSfxKey);
         _animator.SetLayerWeight(1, 0f);
 
         float elapsed = 0f;

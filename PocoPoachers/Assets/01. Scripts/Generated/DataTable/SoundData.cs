@@ -7,6 +7,7 @@ public partial class SoundData
     public string key = "";
     public SoundType type;
     public string path = "";
+    public float volume;
 
     public string Key { get => key; set => key = value; }
 
@@ -14,5 +15,7 @@ public partial class SoundData
     public SoundType SoundType { get => Type; set => Type = value; }
 
     public string Path { get => path; set => path = value; }
+
+    public float Volume { get => volume; set => volume = value; }
 
 }

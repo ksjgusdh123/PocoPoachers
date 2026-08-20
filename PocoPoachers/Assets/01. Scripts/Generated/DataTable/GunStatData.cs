@@ -12,6 +12,7 @@ public partial class GunStatData
     public int max_magazine;
     public float reload_time;
     public float sound_range;
+    public float fire_audible_range;
     public int ammo_item_id;
     public float bullet_speed;
     public float bullet_range;
@@ -53,6 +54,8 @@ public partial class GunStatData
     public float ReloadTime { get => reload_time; set => reload_time = value; }
 
     public float SoundRange { get => sound_range; set => sound_range = value; }
+
+    public float FireAudibleRange { get => fire_audible_range; set => fire_audible_range = value; }
 
     public int AmmoItemId { get => ammo_item_id; set => ammo_item_id = value; }
 

@@ -17,8 +17,15 @@ public abstract class GunBase : EquippableItemBase
     public GunStatData Stat => _stat;
     // 원격 사격 재현용 — 수신측이 이 총의 실제 총알 프리팹으로 스폰해 총기별 비주얼을 맞춘다
     public GameObject BulletPrefab => _bulletPrefab;
-    // 원격 사격 재현용 — 수신측이 이 총의 총구 화염을 총기 색으로 재생한다 (방아쇠 1회당 1번)
-    public void PlayMuzzleFlash() => _muzzleFlash?.Play(_stat.MuzzleColor);
+    // 원격 사격 재현용 — 수신측이 이 총의 총구 화염과 총성을 재생한다 (방아쇠 1회당 1번)
+    public void PlayFireEffects()
+    {
+        // 발사 패킷이 장착/스폰보다 먼저 도착하면 스탯이 아직 없다
+        if (_stat == null) return;
+
+        _muzzleFlash?.Play(_stat.MuzzleColor);
+        SoundManager.GetInstance().PlaySfxAt(_stat.FireSound, _muzzle.position, _stat.FireAudibleRange);
+    }
     public float DurabilityPerShot => _durabilityDecreasePerShot;
     public Transform Muzzle => _muzzle;
     public int CurrentAmmo => _currentAmmo;
@@ -123,6 +130,12 @@ public abstract class GunBase : EquippableItemBase
         bool isHeadshot = HeadshotProvider?.Invoke() ?? false;
         Shoot(isHeadshot);
         _muzzleFlash?.Play(_stat.MuzzleColor);
+        // 내 총은 2D로 또렷하게, 적/원격 총기는 위치 기반으로 — 리스너가 카메라라 내 총도 3D로 쏘면 감쇠된다.
+        // 가청 거리는 fire_audible_range다. sound_range는 AI가 총성을 듣고 반응하는 거리라 별개로 둔다.
+        if (_isLocalPlayerOwner)
+            SoundManager.GetInstance().PlaySfx(_stat.FireSound);
+        else
+            SoundManager.GetInstance().PlaySfxAt(_stat.FireSound, _muzzle.position, _stat.FireAudibleRange);
         ShellCasingPool.Instance?.Eject(_shellEjectPort);
         _soundGizmoPosition = _muzzle.position;
         _soundGizmoRange = _stat.SoundRange;

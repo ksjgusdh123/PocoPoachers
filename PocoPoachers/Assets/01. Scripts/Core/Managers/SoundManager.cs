@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SoundManager : Singleton<SoundManager>
@@ -8,8 +9,17 @@ public class SoundManager : Singleton<SoundManager>
 
     private const string CLICK_SFX_KEY = "ui_click";
 
+    private const int SFX_3D_MAX_SOURCES = 24;
+    // 리스너가 RaidCamera에 붙어 있고 카메라 오프셋이 (0,10,-7)이라, 발밑에서 난 소리도 리스너와는
+    // 12m쯤 떨어져 있다. minDistance를 그만큼 확보해야 가까운 총성이 감쇠로 먹히지 않는다.
+    private const float SFX_3D_MIN_DISTANCE = 12f;
+    private const float SFX_3D_DEFAULT_MAX_DISTANCE = 30f;
+
     private AudioSource _bgmSource;
     private AudioSource _sfxSource;
+    private readonly List<AudioSource> _sfx3DSources = new List<AudioSource>();
+    private int _next3DSourceIndex;
+    private float _bgmClipVolume = 1f;
 
     public float MasterVolume { get; private set; }
     public float BgmVolume { get; private set; }
@@ -37,6 +47,8 @@ public class SoundManager : Singleton<SoundManager>
         var data = SoundTable.Instance.Get(key);
         if (data == null || string.IsNullOrEmpty(data.Path)) return;
 
+        _bgmClipVolume = data.Volume;
+        ApplyBgmVolume();
         PlayBgmClip(ResourceManager.GetInstance().Load<AudioClip>(data.Path));
     }
 
@@ -47,7 +59,23 @@ public class SoundManager : Singleton<SoundManager>
         var data = SoundTable.Instance.Get(key);
         if (data == null || string.IsNullOrEmpty(data.Path)) return;
 
-        PlaySfxClip(ResourceManager.GetInstance().Load<AudioClip>(data.Path));
+        PlaySfxClip(ResourceManager.GetInstance().Load<AudioClip>(data.Path), data.Volume);
+    }
+
+    // 총성처럼 발생 위치가 있는 효과음. 2D PlaySfx로 재생하면 맵 반대편 총성이 귀 옆에서 울린다.
+    public void PlaySfxAt(string key, Vector3 position, float maxDistance = 0f)
+    {
+        var data = SoundTable.Instance.Get(key);
+        if (data == null || string.IsNullOrEmpty(data.Path)) return;
+
+        var clip = ResourceManager.GetInstance().Load<AudioClip>(data.Path);
+        if (clip == null) return;
+
+        AudioSource source = Get3DSource();
+        source.transform.position = position;
+        source.maxDistance = maxDistance > 0f ? maxDistance : SFX_3D_DEFAULT_MAX_DISTANCE;
+        source.volume = MasterVolume * SfxVolume * data.Volume;
+        source.PlayOneShot(clip);
     }
 
     public void PlayButtonClick() => PlaySfx(CLICK_SFX_KEY);
@@ -81,11 +109,39 @@ public class SoundManager : Singleton<SoundManager>
         _bgmSource.Play();
     }
 
-    private void PlaySfxClip(AudioClip clip)
+    private void PlaySfxClip(AudioClip clip, float clipVolume)
     {
         if (clip == null) return;
-        _sfxSource.PlayOneShot(clip, MasterVolume * SfxVolume);
+        _sfxSource.PlayOneShot(clip, MasterVolume * SfxVolume * clipVolume);
     }
 
-    private void ApplyBgmVolume() => _bgmSource.volume = MasterVolume * BgmVolume;
+    // 재생이 끝난 소스를 우선 재사용하고, 상한에 닿으면 가장 오래 쓴 것을 뺏는다.
+    // 최대 720RPM 연사 중에는 소스가 모자랄 수 있는데, 그때는 무음보다 겹쳐 끊기는 편이 낫다.
+    private AudioSource Get3DSource()
+    {
+        for (int i = 0; i < _sfx3DSources.Count; i++)
+            if (!_sfx3DSources[i].isPlaying) return _sfx3DSources[i];
+
+        if (_sfx3DSources.Count < SFX_3D_MAX_SOURCES)
+        {
+            var go = new GameObject($"Sfx3D_{_sfx3DSources.Count}");
+            go.transform.SetParent(transform);
+
+            var source = go.AddComponent<AudioSource>();
+            source.playOnAwake = false;
+            source.spatialBlend = 1f;
+            source.rolloffMode = AudioRolloffMode.Linear;
+            source.minDistance = SFX_3D_MIN_DISTANCE;
+            source.dopplerLevel = 0f;
+            _sfx3DSources.Add(source);
+            return source;
+        }
+
+        AudioSource oldest = _sfx3DSources[_next3DSourceIndex];
+        _next3DSourceIndex = (_next3DSourceIndex + 1) % _sfx3DSources.Count;
+        oldest.Stop();
+        return oldest;
+    }
+
+    private void ApplyBgmVolume() => _bgmSource.volume = MasterVolume * BgmVolume * _bgmClipVolume;
 }

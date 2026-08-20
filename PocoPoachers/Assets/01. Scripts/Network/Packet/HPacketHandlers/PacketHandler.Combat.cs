@@ -41,7 +41,7 @@ public static partial class PacketHandlers
         GameObject prefab = ResolveBulletPrefab(gun, pool, out Color bulletColor);
         if (prefab == null) return;
 
-        gun?.PlayMuzzleFlash();
+        gun?.PlayFireEffects();
 
         // 다발(샷건) 방향이 있으면 펠릿별로, 없으면 baseDir 단발로 스폰
         int pelletCount = Mathf.Max(1, packet.DirectionsLength);
