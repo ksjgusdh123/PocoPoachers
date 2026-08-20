@@ -34,6 +34,9 @@ public partial class GunStatData
     public float muzzle_color_r;
     public float muzzle_color_g;
     public float muzzle_color_b;
+    public string fire_sound = "";
+    public string reload_start_sound = "";
+    public string reload_end_sound = "";
 
     public int Id { get => id; set => id = value; }
 
@@ -94,5 +97,11 @@ public partial class GunStatData
     public float MuzzleColorG { get => muzzle_color_g; set => muzzle_color_g = value; }
 
     public float MuzzleColorB { get => muzzle_color_b; set => muzzle_color_b = value; }
+
+    public string FireSound { get => fire_sound; set => fire_sound = value; }
+
+    public string ReloadStartSound { get => reload_start_sound; set => reload_start_sound = value; }
+
+    public string ReloadEndSound { get => reload_end_sound; set => reload_end_sound = value; }
 
 }

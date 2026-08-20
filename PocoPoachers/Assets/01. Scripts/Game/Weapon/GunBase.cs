@@ -246,6 +246,8 @@ public abstract class GunBase : EquippableItemBase
         {
             OnReloadStarted?.Invoke(_stat.ReloadTime);
             CrosshairUI.Instance?.StartReloadGauge(_stat.ReloadTime);
+            // 재장전음은 2D 전역 재생이라 원격 플레이어/적 총기까지 울리면 거리감이 깨진다
+            SoundManager.GetInstance().PlaySfx(_stat.ReloadStartSound);
         }
         yield return new WaitForSeconds(_stat.ReloadTime);
         int needed = _stat.MaxMagazine - _currentAmmo;
@@ -254,7 +256,11 @@ public abstract class GunBase : EquippableItemBase
         _isReloading = false;
         _reloadCoroutine = null;
         OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
-        if (_isLocalPlayerOwner) OnReloadEnded?.Invoke();
+        if (_isLocalPlayerOwner)
+        {
+            OnReloadEnded?.Invoke();
+            SoundManager.GetInstance().PlaySfx(_stat.ReloadEndSound);
+        }
         OnReloadComplete?.Invoke(actual);
     }
 

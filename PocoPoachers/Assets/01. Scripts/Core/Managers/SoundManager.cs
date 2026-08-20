@@ -35,7 +35,7 @@ public class SoundManager : Singleton<SoundManager>
     public void PlayBgm(string key)
     {
         var data = SoundTable.Instance.Get(key);
-        if (data == null) return;
+        if (data == null || string.IsNullOrEmpty(data.Path)) return;
 
         PlayBgmClip(ResourceManager.GetInstance().Load<AudioClip>(data.Path));
     }
@@ -45,7 +45,7 @@ public class SoundManager : Singleton<SoundManager>
     public void PlaySfx(string key)
     {
         var data = SoundTable.Instance.Get(key);
-        if (data == null) return;
+        if (data == null || string.IsNullOrEmpty(data.Path)) return;
 
         PlaySfxClip(ResourceManager.GetInstance().Load<AudioClip>(data.Path));
     }
