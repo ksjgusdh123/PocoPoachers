@@ -17,7 +17,7 @@ public abstract class BaseDropHandler : MonoBehaviour, IDropHandler
         if (manager.DraggedSlot == null) return;
         if (HandleDrop(manager))
         {
-            manager.InvokeItemPlaced();
+            InvokeDropSucceeded(manager);
         }
         else
         {
@@ -28,4 +28,7 @@ public abstract class BaseDropHandler : MonoBehaviour, IDropHandler
     }
 
     protected abstract bool HandleDrop(SlotInteractionManager manager);
+
+    // 놓기 성공 피드백 — 다른 소리를 내야 하는 슬롯이 override 한다
+    protected virtual void InvokeDropSucceeded(SlotInteractionManager manager) => manager.InvokeItemPlaced();
 }

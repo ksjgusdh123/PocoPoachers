@@ -37,6 +37,9 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     // 슬롯 간 드래그를 내려놓았지만 배치에 실패함
     public event Action OnItemPlaceFailed;
 
+    // 퀵슬롯 등록(단축키/드래그) — 일반 아이템 이동과 다른 소리를 내기 위해 분리
+    public event Action OnItemRegistered;
+
     // Ctrl 클릭 누적 상태
     public ItemSlotUI PendingSlot { get; private set; }
     public int PendingAmount { get; private set; }
@@ -297,5 +300,10 @@ public class SlotInteractionManager : Singleton<SlotInteractionManager>
     public void InvokeItemPlaceFailed()
     {
         OnItemPlaceFailed?.Invoke();
+    }
+
+    public void InvokeItemRegistered()
+    {
+        OnItemRegistered?.Invoke();
     }
 }

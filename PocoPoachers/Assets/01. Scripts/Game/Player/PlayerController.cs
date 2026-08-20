@@ -133,6 +133,7 @@ public class PlayerController : MonoBehaviour
         _inputHandler.GoInventory += ShowInventory;
         _inputHandler.GoQuest += ShowQuest;
         _inputHandler.ToggleMinimap += ShowMinimap;
+        _inputHandler.ToggleSkillPanel += ToggleSkill;
         _inputHandler.RegisterItemNumberKey += RegisterItem;
         _inputHandler.ConsumeItemNumberKey += StartConsuming;
         _inputHandler.StartInteraction += Interaction;
@@ -592,6 +593,7 @@ public class PlayerController : MonoBehaviour
             _inputHandler.GoInventory -= ShowInventory;
             _inputHandler.GoQuest -= ShowQuest;
             _inputHandler.ToggleMinimap -= ShowMinimap;
+            _inputHandler.ToggleSkillPanel -= ToggleSkill;
             _inputHandler.RegisterItemNumberKey -= RegisterItem;
             _inputHandler.ConsumeItemNumberKey -= StartConsuming;
             _inputHandler.StartInteraction -= Interaction;
@@ -630,7 +632,8 @@ public class PlayerController : MonoBehaviour
     {
         if (type == UIType.Inventory || type == UIType.Minimap)
             SetMainGameUIActive(false);
-        else if (type != UIType.IngameMenu && type != UIType.EnhancementTable && type != UIType.VotePopup)
+        else if (type != UIType.IngameMenu && type != UIType.EnhancementTable && type != UIType.VotePopup &&
+                 type != UIType.Skill)
             return;
 
         LockCamera(true);
@@ -659,7 +662,7 @@ public class PlayerController : MonoBehaviour
             _gunPartPanel?.Close();
 
         if (type != UIType.Inventory && type != UIType.IngameMenu && type != UIType.EnhancementTable &&
-            type != UIType.Minimap && type != UIType.VotePopup) return;
+            type != UIType.Minimap && type != UIType.VotePopup && type != UIType.Skill) return;
         if (UIManager.GetInstance().IsAnyPanelOpen) return;
 
         if (type == UIType.Inventory || type == UIType.Minimap)
@@ -788,6 +791,8 @@ public class PlayerController : MonoBehaviour
         ui.Show(UIType.Minimap);
     }
 
+    void ToggleSkill() => UIManager.GetInstance().Toggle(UIType.Skill);
+
     void ShowQuest()
     {
         bool wasOpen = UIManager.GetInstance().GetPanel(UIType.Quest)?.activeSelf ?? false;
@@ -809,6 +814,14 @@ public class PlayerController : MonoBehaviour
         _useCoroutine = StartCoroutine(UseItemRoutine(index));
     }
 
+    // 아이템별 사용 효과음(item.csv의 use_sound) — 사용 시간 동안 깔리도록 시작 시점에 낸다.
+    // 사용을 취소하면 소리도 끊어야 하므로 정지 가능한 경로로 재생한다.
+    private void PlayUseSound(ItemData item)
+    {
+        if (item == null) return;
+        SoundManager.GetInstance()?.PlayCancelableSfx(item.UseSound);
+    }
+
     // 입력 측에서 호출: 사용 취소
     public void CancelConsuming()
     {
@@ -816,12 +829,14 @@ public class PlayerController : MonoBehaviour
 
         StopCoroutine(_useCoroutine);
         _useCoroutine = null;
+        SoundManager.GetInstance()?.StopCancelableSfx();
         OnUseCancelled?.Invoke();
     }
 
     private IEnumerator UseItemRoutine(int index)
     {
         OnUseStarted?.Invoke(_useItemDuration);
+        PlayUseSound(_quickSlots[index].DroppedItemData);
 
         yield return new WaitForSeconds(_useItemDuration);
 
@@ -841,6 +856,7 @@ public class PlayerController : MonoBehaviour
     private IEnumerator UseInventoryItemRoutine(ItemData item, Inventory inventory)
     {
         OnUseStarted?.Invoke(_useItemDuration);
+        PlayUseSound(item);
 
         yield return new WaitForSeconds(_useItemDuration);
 

@@ -61,6 +61,7 @@ GameObject:
   - component: {fileID: 1609504111525019161}
   - component: {fileID: 2028800699039618474}
   - component: {fileID: -1205869497009923905}
+  - component: {fileID: 1208734926139634473}
   m_Layer: 6
   m_Name: ShelterPlayer
   m_TagString: Untagged
@@ -304,6 +305,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WeaponController
   _switchMidTime: 0.15
   _crosshairUI: {fileID: 0}
+  _aimHitMask:
+    serializedVersion: 2
+    m_Bits: 0
+  _headHitMask:
+    serializedVersion: 2
+    m_Bits: 0
+  _maxAimDistance: 200
+  _aimHeightSampleRadius: 0.25
 --- !u!114 &3840131265392853747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -443,6 +452,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5c7dc6428a6c3042b673e395fabbe78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerItemBoxDropper
+--- !u!114 &1208734926139634473
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1500275326456394333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28a537892716417faf62d8a62df834e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillManager
+  _startSkillIds: 
 --- !u!1 &1625204939884970969
 GameObject:
   m_ObjectHideFlags: 0

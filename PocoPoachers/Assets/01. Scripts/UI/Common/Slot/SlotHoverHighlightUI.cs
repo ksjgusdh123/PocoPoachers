@@ -48,6 +48,11 @@ public class SlotHoverHighlightUI : MonoBehaviour, IPointerEnterHandler, IPointe
     public void OnPointerExit(PointerEventData eventData)
     {
         _isPointerOver = false;
+        // 아직 뒤집히지 않은 카드는 OnPointerEnter에서 하이라이트를 켜지 않았으므로 되돌릴 것도 없다.
+        // 여기서 DOTween.Kill을 부르면 같은 Image(SlotFrame)에 걸린 리빌 페이드까지 죽어
+        // OnComplete가 실행되지 않고 카드가 영영 뒤집히지 않는다.
+        if (IsRevealBlocked()) return;
+
         Cache();
         var theme = Theme;
         float duration = theme != null ? theme.ButtonMotionDuration : 0.08f;

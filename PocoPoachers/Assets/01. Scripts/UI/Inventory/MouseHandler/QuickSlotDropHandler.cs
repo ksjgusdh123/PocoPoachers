@@ -36,15 +36,26 @@ public class QuickSlotDropHandler : ItemHolderDropHandler
         // TakeFrom 내부에서 인벤토리 slot.Clear()가 호출되어 UI가 자동 갱신된다
     }
 
+    // 드래그로 넣을 때도 단축키 등록과 같은 소리를 낸다
+    protected override void InvokeDropSucceeded(SlotInteractionManager manager) => manager.InvokeItemRegistered();
+
     // 인벤토리에서 호버 중인 아이템을 퀵슬롯에 등록 (단축키 경로)
     public bool TryRegisterItem()
     {
-        ItemSlotUI slotUI = SlotInteractionManager.GetInstance().HoveredSlot;
+        var manager = SlotInteractionManager.GetInstance();
+        ItemSlotUI slotUI = manager.HoveredSlot;
+        // 아무것도 가리키지 않은 채 단축키만 누른 건 시도로 보지 않는다 — 소리 없이 무시
         if (slotUI == null || !slotUI.IsSettedItem) return false;
-        if (slotUI.SlotItemData.ItemType != _itemType) return false;
-        if (_inventoryUI == null) return false;
 
-        return _quickSlotInventory.TakeFrom(_quickSlotCount, slotUI.SlotIndex, _inventoryUI.Inventory);
+        bool registered = slotUI.SlotItemData.ItemType == _itemType
+            && _inventoryUI != null
+            && _quickSlotInventory.TakeFrom(_quickSlotCount, slotUI.SlotIndex, _inventoryUI.Inventory);
+
+        // 등록 성공은 전용 사운드, 실패는 일반 이동과 동일
+        if (registered) manager.InvokeItemRegistered();
+        else manager.InvokeItemPlaceFailed();
+
+        return registered;
     }
 
     // 퀵슬롯에서 아이템 사용

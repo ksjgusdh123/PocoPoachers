@@ -11,6 +11,7 @@ public partial class ItemData
     public EffectType effect_type;
     public int effect_value;
     public float use_time;
+    public string use_sound = "";
     public int max_stack;
     public int price;
     public int weight;
@@ -32,6 +33,8 @@ public partial class ItemData
     public int EffectValue { get => effect_value; set => effect_value = value; }
 
     public float UseTime { get => use_time; set => use_time = value; }
+
+    public string UseSound { get => use_sound; set => use_sound = value; }
 
     public int MaxStack { get => max_stack; set => max_stack = value; }
 

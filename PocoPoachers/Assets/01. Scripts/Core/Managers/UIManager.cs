@@ -33,6 +33,7 @@ public enum UIType
     // 씬·프리팹은 UIType을 정수로 직렬화한다. 중간에 끼워 넣으면 기존 배치가 전부 다른 UI를
     // 가리키게 되므로 새 항목은 반드시 끝에 추가할 것.
     VotePopup,
+    Skill,
 }
 
 public class UIManager : Singleton<UIManager>

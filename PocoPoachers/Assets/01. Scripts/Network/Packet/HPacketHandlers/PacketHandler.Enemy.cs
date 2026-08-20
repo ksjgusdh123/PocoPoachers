@@ -68,7 +68,7 @@ public static partial class PacketHandlers
         GameObject prefab = ResolveBulletPrefab(gun, pool, out Color bulletColor);
         if (prefab == null) return;
 
-        gun?.PlayMuzzleFlash();
+        gun?.PlayFireEffects();
 
         int pelletCount = Mathf.Max(1, packet.DirectionsLength);
         for (int i = 0; i < pelletCount; i++)

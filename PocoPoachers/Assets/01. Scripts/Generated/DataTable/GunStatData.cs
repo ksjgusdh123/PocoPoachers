@@ -12,6 +12,7 @@ public partial class GunStatData
     public int max_magazine;
     public float reload_time;
     public float sound_range;
+    public float fire_audible_range;
     public int ammo_item_id;
     public float bullet_speed;
     public float bullet_range;
@@ -34,6 +35,9 @@ public partial class GunStatData
     public float muzzle_color_r;
     public float muzzle_color_g;
     public float muzzle_color_b;
+    public string fire_sound = "";
+    public string reload_start_sound = "";
+    public string reload_end_sound = "";
 
     public int Id { get => id; set => id = value; }
 
@@ -50,6 +54,8 @@ public partial class GunStatData
     public float ReloadTime { get => reload_time; set => reload_time = value; }
 
     public float SoundRange { get => sound_range; set => sound_range = value; }
+
+    public float FireAudibleRange { get => fire_audible_range; set => fire_audible_range = value; }
 
     public int AmmoItemId { get => ammo_item_id; set => ammo_item_id = value; }
 
@@ -94,5 +100,11 @@ public partial class GunStatData
     public float MuzzleColorG { get => muzzle_color_g; set => muzzle_color_g = value; }
 
     public float MuzzleColorB { get => muzzle_color_b; set => muzzle_color_b = value; }
+
+    public string FireSound { get => fire_sound; set => fire_sound = value; }
+
+    public string ReloadStartSound { get => reload_start_sound; set => reload_start_sound = value; }
+
+    public string ReloadEndSound { get => reload_end_sound; set => reload_end_sound = value; }
 
 }

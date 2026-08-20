@@ -92,6 +92,7 @@ GameObject:
   - component: {fileID: 1609504111525019161}
   - component: {fileID: 2028800699039618474}
   - component: {fileID: 2520297517235123759}
+  - component: {fileID: 175793896788487406}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -338,6 +339,9 @@ MonoBehaviour:
   _aimHitMask:
     serializedVersion: 2
     m_Bits: 2048
+  _headHitMask:
+    serializedVersion: 2
+    m_Bits: 0
   _maxAimDistance: 200
   _aimHeightSampleRadius: 1
 --- !u!114 &3840131265392853747
@@ -479,6 +483,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5c7dc6428a6c3042b673e395fabbe78, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerItemBoxDropper
+--- !u!114 &175793896788487406
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1500275326456394333}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 28a537892716417faf62d8a62df834e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerSkillManager
+  _startSkillIds: 112700000000000000000000
 --- !u!1 &2488523263093707504
 GameObject:
   m_ObjectHideFlags: 0
@@ -594,7 +611,10 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 1852576806548013000, guid: 1bdc295f55155924699e3d8bf166a236, type: 3}
       insertIndex: -1
       addedObject: {fileID: 354100209871535608}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 1bdc295f55155924699e3d8bf166a236, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3310472695118840322}
   m_SourcePrefab: {fileID: 100100000, guid: 1bdc295f55155924699e3d8bf166a236, type: 3}
 --- !u!4 &1277258414275223778 stripped
 Transform:
@@ -616,3 +636,23 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1852576806548013000, guid: 1bdc295f55155924699e3d8bf166a236, type: 3}
   m_PrefabInstance: {fileID: 7567981889229918564}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &3310472695118840321 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1bdc295f55155924699e3d8bf166a236, type: 3}
+  m_PrefabInstance: {fileID: 7567981889229918564}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3310472695118840322
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3310472695118840321}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a3c91f2d84e40c6b25917e0af63cd18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterAudio
+  _footstepAudibleRange: 25
+  _footstepVariationCount: 5
+  _minFootstepInterval: 0.12
