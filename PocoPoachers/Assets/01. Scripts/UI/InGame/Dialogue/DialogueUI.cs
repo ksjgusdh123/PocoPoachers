@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
@@ -28,12 +29,22 @@ public class DialogueUI : UIBase
              "그 순번에 해당하는 선택지가 없으면 버튼이 꺼진다.")]
     [SerializeField] private ChoiceSlot[] _choiceSlots;
 
+    [Header("타이핑 연출")]
+    [Tooltip("글자 하나가 찍히는 간격(초). 0이면 연출 없이 바로 전체 출력")]
+    [SerializeField] private float _charInterval = 0.03f;
+    [Tooltip("몇 글자마다 blip을 낼지. 1이면 매 글자 — 보통 2~3이 자연스럽다")]
+    [SerializeField] private int _blipEveryChars = 2;
+    [Tooltip("재생마다 흔들 피치 폭(±). 0이면 매번 같은 소리라 기계음처럼 들린다")]
+    [SerializeField] private float _blipPitchVariance = 0.12f;
+    [SerializeField] private string _blipSoundKey = "ui_dialogue_blip";
+
     // 현재 줄의 선택지 목록이 바뀔 때마다 호출된다 (빈 리스트면 선택지 없음 — 선택지 UI를 숨기면 됨)
     public event Action<IReadOnlyList<DialogueChoiceData>> OnChoicesChanged;
 
     private int _nextId; // 0이면 다음 대사 없음 — Advance 누르면 닫힘
     private List<DialogueChoiceData> _pendingChoices = new();
     private PlayerController _player;
+    private Coroutine _typingCoroutine;
 
     protected override UIType UiType => UIType.Dialogue;
 
@@ -72,8 +83,8 @@ public class DialogueUI : UIBase
     public void Open(string speakerName, string dialogue)
     {
         UIManager.GetInstance().HideAll();
+        Show(); // 타이핑 코루틴은 활성 상태에서만 돌 수 있어 내용 설정보다 먼저 띄운다
         SetContent(speakerName, dialogue);
-        Show();
 
         _nextId = 0;
         SetChoices(new List<DialogueChoiceData>());
@@ -103,7 +114,63 @@ public class DialogueUI : UIBase
     public void SetContent(string speakerName, string dialogue)
     {
         if (_nameText != null) _nameText.text = speakerName;
-        if (_dialogueText != null) _dialogueText.text = dialogue;
+        if (_dialogueText == null) return;
+
+        StopTyping();
+        _dialogueText.text = dialogue;
+
+        if (_charInterval <= 0f || !gameObject.activeInHierarchy)
+        {
+            _dialogueText.maxVisibleCharacters = int.MaxValue;
+            return;
+        }
+
+        _typingCoroutine = StartCoroutine(TypeRoutine());
+    }
+
+    public bool IsTyping => _typingCoroutine != null;
+
+    // 남은 글자를 한 번에 전부 표시한다 (스킵)
+    public void CompleteTyping()
+    {
+        if (_typingCoroutine == null) return;
+
+        StopTyping();
+        _dialogueText.maxVisibleCharacters = int.MaxValue;
+    }
+
+    private void StopTyping()
+    {
+        if (_typingCoroutine == null) return;
+
+        StopCoroutine(_typingCoroutine);
+        _typingCoroutine = null;
+    }
+
+    private IEnumerator TypeRoutine()
+    {
+        // maxVisibleCharacters를 늘려가는 방식 — 매 글자 문자열을 새로 만들지 않아 GC가 없다
+        _dialogueText.ForceMeshUpdate();
+        int total = _dialogueText.textInfo.characterCount;
+        _dialogueText.maxVisibleCharacters = 0;
+
+        int sinceBlip = 0;
+        for (int i = 0; i < total; i++)
+        {
+            _dialogueText.maxVisibleCharacters = i + 1;
+
+            // 공백·문장부호에서는 소리를 내지 않는다 — 말소리처럼 들리게 하는 핵심
+            char c = _dialogueText.textInfo.characterInfo[i].character;
+            if (!char.IsWhiteSpace(c) && !char.IsPunctuation(c) && ++sinceBlip >= _blipEveryChars)
+            {
+                sinceBlip = 0;
+                SoundManager.GetInstance()?.PlaySfxPitched(_blipSoundKey, _blipPitchVariance);
+            }
+
+            yield return new WaitForSecondsRealtime(_charInterval);
+        }
+
+        _typingCoroutine = null;
     }
 
     // 외부 선택지 UI가 버튼 클릭 등으로 호출 — index는 현재 선택지 목록(OnChoicesChanged로 받은 것) 기준
@@ -136,6 +203,13 @@ public class DialogueUI : UIBase
     private void Advance()
     {
         if (_pendingChoices.Count > 0) return; // 선택지 표시 중엔 F 무시
+
+        // 타이핑 중이면 먼저 전체를 띄운다 — 다음 줄로 넘어가려면 한 번 더 눌러야 한다
+        if (IsTyping)
+        {
+            CompleteTyping();
+            return;
+        }
 
         DialogueData next = _nextId > 0 ? DialogueTable.Instance.Get(_nextId) : null;
         if (next == null)
@@ -183,6 +257,7 @@ public class DialogueUI : UIBase
 
     protected override void OnHide()
     {
+        StopTyping();
         SetChoices(new List<DialogueChoiceData>());
 
         if (_player != null)

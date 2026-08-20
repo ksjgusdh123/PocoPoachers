@@ -18,6 +18,7 @@ public class SoundManager : Singleton<SoundManager>
     private AudioSource _bgmSource;
     private AudioSource _sfxSource;
     private AudioSource _cancelableSource;
+    private AudioSource _pitchedSource;
     private readonly List<AudioSource> _sfx3DSources = new List<AudioSource>();
     private int _next3DSourceIndex;
     private float _bgmClipVolume = 1f;
@@ -39,6 +40,9 @@ public class SoundManager : Singleton<SoundManager>
 
         _cancelableSource = gameObject.AddComponent<AudioSource>();
         _cancelableSource.playOnAwake = false;
+
+        _pitchedSource = gameObject.AddComponent<AudioSource>();
+        _pitchedSource.playOnAwake = false;
 
         MasterVolume = PlayerPrefs.GetFloat(PREF_MASTER_VOLUME, 1f);
         BgmVolume    = PlayerPrefs.GetFloat(PREF_BGM_VOLUME, 1f);
@@ -106,6 +110,23 @@ public class SoundManager : Singleton<SoundManager>
     }
 
     public void StopCancelableSfx() => _cancelableSource.Stop();
+
+    // 대사 blip처럼 짧은 소리를 연달아 낼 때 쓴다. 매번 같은 피치로 반복하면 말소리가 아니라
+    // 기계음으로 들리므로 재생마다 피치를 조금씩 흔든다. 공용 _sfxSource의 피치를 건드리면
+    // 다른 UI 소리까지 변조되므로 전용 소스를 쓴다.
+    public void PlaySfxPitched(string key, float pitchVariance)
+    {
+        if (string.IsNullOrEmpty(key)) return;
+
+        var data = SoundTable.Instance.Get(key);
+        if (data == null || string.IsNullOrEmpty(data.Path)) return;
+
+        var clip = ResourceManager.GetInstance().Load<AudioClip>(data.Path);
+        if (clip == null) return;
+
+        _pitchedSource.pitch = 1f + Random.Range(-pitchVariance, pitchVariance);
+        _pitchedSource.PlayOneShot(clip, MasterVolume * SfxVolume * data.Volume);
+    }
 
     public void PlayButtonClick() => PlaySfx(CLICK_SFX_KEY);
 
