@@ -24,6 +24,7 @@ public abstract class StatBase : MonoBehaviour, IDamageable
 #endif
 
     protected float _totalDefenseRate;
+    protected float _enhancementDefenseRateBonus;
 
     protected virtual void Awake()
     {
@@ -31,7 +32,7 @@ public abstract class StatBase : MonoBehaviour, IDamageable
         OnDamaged += (_, __, ___) => HpWorldUI.Show(this);
     }
 
-    protected virtual float DefenseRate => _totalDefenseRate;
+    protected virtual float DefenseRate => _totalDefenseRate + _enhancementDefenseRateBonus;
 
     public virtual void ApplyArmorStat(ArmorStatData data)
     {

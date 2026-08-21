@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEngine;
 
 public class SaveManager : Singleton<SaveManager>
@@ -182,6 +183,35 @@ public class SaveManager : Singleton<SaveManager>
         PlayerPrefs.Save();
     }
 
+    // 기체(플레이어 캐릭터) 레벨/스탯 포인트/스탯별 레벨 저장 — 활력치와 동일하게 게스트도 로컬 저장
+    public void SaveCharacterEnhancement(int level, int points, IReadOnlyDictionary<EnhancementStatType, int> statLevels)
+    {
+        var data = GetOrLoad(_activeSlot);
+        data.hasCharacterEnhancement = true;
+        data.characterLevel = level;
+        data.statPoints = points;
+        data.statLevels = statLevels.Select(kv => new StatLevelEntry { statType = kv.Key, level = kv.Value }).ToList();
+        data.lastSavedAt = NowTimestamp();
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    // 저장된 기체 강화 상태가 있으면 true. 없으면(새 게임 등) false — 호출측이 레벨 0/포인트 0으로 폴백한다.
+    public bool TryLoadCharacterEnhancement(out int level, out int points, out List<StatLevelEntry> statLevels)
+    {
+        var data = GetOrLoad(_activeSlot);
+        level = data.characterLevel;
+        points = data.statPoints;
+        statLevels = data.statLevels;
+        return data.hasCharacterEnhancement;
+    }
+
+    [Serializable]
+    public class StatLevelEntry
+    {
+        public EnhancementStatType statType;
+        public int level;
+    }
+
     // 활성 슬롯의 닉네임, 없으면 마지막에 쓴 닉네임
     public string LoadNickname()
     {
@@ -356,6 +386,12 @@ public class SaveManager : Singleton<SaveManager>
         public float hp;
         public float stamina;
         public float battery;
+
+        // 기체 레벨/스탯 포인트 — hasCharacterEnhancement가 false면 미저장(새 게임)이라 레벨 0/포인트 0으로 시작
+        public bool hasCharacterEnhancement;
+        public int characterLevel;
+        public int statPoints;
+        public List<StatLevelEntry> statLevels = new List<StatLevelEntry>();
 
         public void SetInventory(string key, List<SlotSaveEntry> entries)
         {

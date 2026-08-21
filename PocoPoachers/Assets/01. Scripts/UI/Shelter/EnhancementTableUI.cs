@@ -1,229 +1,77 @@
-using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+// 강화대 상위 UI — 상단 탭(레벨/스탯)으로 EnhancementLevelUpUI / EnhancementStatUI 패널을 전환한다.
+// 실제 레벨업·강화 로직은 각 하위 패널이 담당.
 public class EnhancementTableUI : MonoBehaviour
 {
-    private const float PowerCost = 50f;
+    private enum Tab { Level, Stat }
 
-    [Header("Stat Select Buttons")]
-    [SerializeField] private Button _hpButton;
-    [SerializeField] private Button _batteryButton;
-    [SerializeField] private Button _staminaButton;
-    [SerializeField] private Button _speedButton;
+    [Header("탭 메뉴")]
+    [SerializeField] private Button _levelTabButton;
+    [SerializeField] private Button _statTabButton;
 
-    [Header("Detail Panel")]
-    [SerializeField] private TextMeshProUGUI _nameText;
-    [SerializeField] private TextMeshProUGUI _levelText;
-    [SerializeField] private TextMeshProUGUI _valueText;
-    [SerializeField] private TextMeshProUGUI _costText;
-    [SerializeField] private TextMeshProUGUI _powerCostText;
-    [SerializeField] private Button _enhanceButton;
+    [Header("하위 패널")]
+    [SerializeField] private GameObject _levelPanel;
+    [SerializeField] private GameObject _statPanel;
+    [SerializeField] private EnhancementLevelUpUI _levelUpUI;
+    [SerializeField] private EnhancementStatUI _statUI;
 
     private PlayerController _player;
-    private PlayerStat _playerStat;
     private PlayerEnhancement _playerEnhancement;
-    private EnhancementStatType _selectedStatType = EnhancementStatType.MaxHp;
-
-    public event Action<EnhancementStatType> EnhanceRequested;
+    private Tab _selectedTab = Tab.Level;
 
     private void Awake()
     {
-        _hpButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MaxHp));
-        _batteryButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MaxBattery));
-        _staminaButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MaxStamina));
-        _speedButton?.onClick.AddListener(() => SelectStat(EnhancementStatType.MoveSpeed));
-        _enhanceButton?.onClick.AddListener(OnClickEnhance);
+        _levelTabButton?.onClick.AddListener(() => SelectTab(Tab.Level));
+        _statTabButton?.onClick.AddListener(() => SelectTab(Tab.Stat));
     }
-
-    private void OnEnable()
-    {
-        if (Generator.Instance != null)
-            Generator.Instance.OnPowerChanged += HandlePowerChanged;
-    }
-
-    private void OnDisable()
-    {
-        if (Generator.Instance != null)
-            Generator.Instance.OnPowerChanged -= HandlePowerChanged;
-    }
-
-    private void HandlePowerChanged(float current, float max) => RefreshPowerCostUI();
 
     public void Open(PlayerController player)
     {
         _player = player;
-        _playerStat = player != null ? player.GetComponent<PlayerStat>() : null;
         _playerEnhancement = player != null ? player.GetComponent<PlayerEnhancement>() : null;
-
-        if (_playerStat == null)
-            Debug.LogWarning("EnhancementTableUI requires PlayerStat on player.");
 
         if (_playerEnhancement == null)
             Debug.LogWarning("EnhancementTableUI requires PlayerEnhancement on player.");
 
-        SelectStat(_selectedStatType);
+        _levelUpUI?.Open(_playerEnhancement, _player != null ? _player.PlayerInventory : null);
+        _statUI?.Open(_playerEnhancement);
+
+        SelectTab(_selectedTab);
     }
 
     public void Refresh()
     {
-        if (_playerStat == null || _playerEnhancement == null)
-        {
-            SetUnavailable();
-            return;
-        }
-
-        float currentValue = GetCurrentValue(_selectedStatType);
-        float nextValue = currentValue + GetPreviewIncrease(_selectedStatType);
-
-        if (_nameText != null)
-            _nameText.text = GetDisplayName(_selectedStatType);
-
-        if (_levelText != null)
-            _levelText.text = $"Lv. {GetCurrentLevel(_selectedStatType)}";
-
-        if (_valueText != null)
-            _valueText.text = $"{FormatValue(currentValue)} > {FormatValue(nextValue)}";
-
-        if (_costText != null)
-            _costText.text = GetCostText(_selectedStatType);
-
-        RefreshPowerCostUI();
+        _levelUpUI?.Refresh();
+        _statUI?.Refresh();
     }
 
-    private void RefreshPowerCostUI()
+    private void SelectTab(Tab tab)
     {
-        bool canAffordPower = Generator.Instance != null && Generator.Instance.CurrentPower >= PowerCost;
+        _selectedTab = tab;
 
-        if (_powerCostText != null)
-        {
-            _powerCostText.text = string.Format(LocalizationManager.GetInstance().GetString("generator.power_cost_format"), PowerCost.ToString("0"));
-            _powerCostText.color = canAffordPower ? UITheme.InkPositive : UITheme.InkNegative;
-        }
+        if (_levelPanel != null) _levelPanel.SetActive(tab == Tab.Level);
+        if (_statPanel != null) _statPanel.SetActive(tab == Tab.Stat);
 
-        if (_enhanceButton != null)
-            _enhanceButton.interactable = canAffordPower;
+        RefreshTabSelection();
     }
 
-    private void SelectStat(EnhancementStatType statType)
+    private void RefreshTabSelection()
     {
-        _selectedStatType = statType;
-        RefreshStatSelection();
-        Refresh();
+        SetTabHighlight(_levelTabButton, _selectedTab == Tab.Level);
+        SetTabHighlight(_statTabButton, _selectedTab == Tab.Stat);
     }
 
-    private void RefreshStatSelection()
+    private static void SetTabHighlight(Button button, bool selected)
     {
-        Button[] buttons = { _hpButton, _batteryButton, _staminaButton, _speedButton };
-        EnhancementStatType[] types =
-        {
-            EnhancementStatType.MaxHp,
-            EnhancementStatType.MaxBattery,
-            EnhancementStatType.MaxStamina,
-            EnhancementStatType.MoveSpeed
-        };
+        if (button == null) return;
 
-        Color selectedColor = UITheme.InkPrimary;
-        Color normalColor = UITheme.InkSecondary;
+        Transform accent = button.transform.Find("SelectionAccent");
+        if (accent != null) accent.gameObject.SetActive(selected);
 
-        for (int i = 0; i < buttons.Length; i++)
-        {
-            Button button = buttons[i];
-            if (button == null) continue;
-
-            bool selected = types[i] == _selectedStatType;
-            Transform accent = button.transform.Find("SelectionAccent");
-            if (accent != null) accent.gameObject.SetActive(selected);
-
-            TextMeshProUGUI label = button.GetComponentInChildren<TextMeshProUGUI>(true);
-            if (label != null) label.color = selected ? selectedColor : normalColor;
-        }
-    }
-
-    private void OnClickEnhance()
-    {
-        EnhanceRequested?.Invoke(_selectedStatType);
-
-        if (_playerEnhancement == null) return;
-
-        if (Generator.Instance == null || Generator.Instance.CurrentPower < PowerCost)
-        {
-            var loc = LocalizationManager.GetInstance();
-            UIManager.GetInstance().ShowNotice(loc.GetString("generator.title"), loc.GetString("generator.power_insufficient_message"));
-            return;
-        }
-
-        if (!_playerEnhancement.TryEnhance(_selectedStatType)) return;
-
-        Generator.Instance.TryConsume(PowerCost);
-        Refresh();
-    }
-
-    private float GetCurrentValue(EnhancementStatType statType)
-    {
-        return statType switch
-        {
-            EnhancementStatType.MaxHp => _playerStat.MaxHp,
-            EnhancementStatType.MaxBattery => _playerStat.MaxBattery,
-            EnhancementStatType.MaxStamina => _playerStat.MaxStamina,
-            EnhancementStatType.MoveSpeed => _playerStat.MoveSpeed,
-            _ => 0f
-        };
-    }
-
-    private float GetPreviewIncrease(EnhancementStatType statType)
-    {
-        return _playerEnhancement.GetNextIncrease(statType);
-    }
-
-    private int GetCurrentLevel(EnhancementStatType statType)
-    {
-        return _playerEnhancement.GetLevel(statType);
-    }
-
-    private static string GetDisplayName(EnhancementStatType statType)
-    {
-        return statType switch
-        {
-            EnhancementStatType.MaxHp => "HP",
-            EnhancementStatType.MaxBattery => "Battery",
-            EnhancementStatType.MaxStamina => "Stamina",
-            EnhancementStatType.MoveSpeed => "Move Speed",
-            _ => statType.ToString()
-        };
-    }
-
-    private string GetCostText(EnhancementStatType statType)
-    {
-        return _playerEnhancement.GetCostText(statType);
-    }
-
-    private static string FormatValue(float value)
-    {
-        return Mathf.Approximately(value, Mathf.Round(value))
-            ? Mathf.RoundToInt(value).ToString()
-            : value.ToString("0.##");
-    }
-
-    private void SetUnavailable()
-    {
-        if (_nameText != null)
-            _nameText.text = "Unavailable";
-
-        if (_levelText != null)
-            _levelText.text = "Lv. -";
-
-        if (_valueText != null)
-            _valueText.text = "-";
-
-        if (_costText != null)
-            _costText.text = "Missing PlayerEnhancement";
-
-        if (_powerCostText != null)
-            _powerCostText.text = "-";
-
-        if (_enhanceButton != null)
-            _enhanceButton.interactable = false;
+        TextMeshProUGUI label = button.GetComponentInChildren<TextMeshProUGUI>(true);
+        if (label != null) label.color = selected ? UITheme.InkPrimary : UITheme.InkSecondary;
     }
 }

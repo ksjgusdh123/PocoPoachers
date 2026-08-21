@@ -37,9 +37,9 @@ XxxTable.Instance.Get(id) / .All
 | `planet.csv` | `PlanetTable`, `PlanetData` | tier(미사용), need_shelter_level(사용), need_power/use_time_limit/max_session_time/fog_density/draw_distance(전부 미사용) | 행성 선택 — [planet-sectors.md](planet-sectors.md) |
 | `shelter.csv` | `ShelterTable`, `ShelterData` | need_item_ids, need_item_counts, unlocked_planet_tier | `ShelterManager` — need_item은 `\|` 구분 목록, `ShelterData.Parsed.cs`의 `NeedItems`가 파싱 |
 | `skill.csv` | `SkillTable`, `SkillData` | skill, cooldown, speed, distance, duration, power, clip_name (범용 컬럼, 스킬마다 재해석) | `SkillManager`, `DodgeRollSkill`, `RetreatSkill`, `HealSkill` |
-| `enhancement_cost.csv` | `EnhancementCostTable` | stat, level, need_item1/2 | `PlayerEnhancement` |
-| `item_enhancement_cost.csv` | `ItemEnhancementCostTable` | item_id, level, need_item_ids, need_item_counts | `GunEnhancementTableUI` — need_item은 `\|` 구분 목록(재료 개수 제한 없음), `ItemEnhancementCostData.Parsed.cs`(손으로 쓴 partial)의 `NeedItems`가 파싱 |
-| `repair_cost.csv` | `RepairCostTable` | item_id, need_item_ids, need_item_counts | `RepairWorkbenchUI` — need_item은 `\|` 구분 목록(재료 개수 제한 없음), `RepairCostData.Parsed.cs`(손으로 쓴 partial)의 `NeedItems`가 파싱 |
+| `character_level_cost.csv` | `CharacterLevelCostTable` | level, need_item1/2, stat_points | `PlayerEnhancement` (기체 레벨업 비용 + 레벨당 지급 스탯 포인트) |
+| `item_enhancement_cost.csv` | `ItemEnhancementCostTable` | item_id, level, need_item1/2 | `GunEnhancementTableUI` |
+| `repair_cost.csv` | `RepairCostTable` | item_id, need_item1/2 | `RepairWorkbenchUI` |
 | `crafting_recipe.csv` | `CraftingRecipeTable` | result_item_id, result_count, need_item1~3 | `CraftingTableUI` |
 | `generator_fuel.csv` | `GeneratorFuelTable`, `GeneratorFuelData` | id(=연료 item_id), power_seconds | `Generator.TryInsertFuel` |
 | `quest.csv` | `QuestTable`, `QuestData` | npc_id, npc_name, name, description, goal_item_ids, goal_item_counts, reward_item_ids, reward_item_counts | `QuestListUI`/`QuestDescriptionUI` — goal/reward는 `\|` 구분 Item ID 목록(복수 아이템 지원), `QuestData.Parsed.cs`(손으로 쓴 partial)의 `GoalItems`/`RewardItems`가 파싱. 완료 시 보상 지급은 미구현 |

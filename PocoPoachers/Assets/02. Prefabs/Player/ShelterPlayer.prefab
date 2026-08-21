@@ -400,15 +400,34 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5f8adcc067994e2a9a2d2c3bb1cbf519, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerEnhancement
-  _maxHpLevel: 0
-  _maxBatteryLevel: 0
-  _maxStaminaLevel: 0
-  _moveSpeedLevel: 0
-  _maxLevel: 4
-  _maxHpIncreasePerLevel: 4
-  _maxBatteryIncreasePerLevel: 4
-  _maxStaminaIncreasePerLevel: 4
-  _moveSpeedIncreasePerLevel: 0.25
+  _characterLevel: 0
+  _statPoints: 0
+  _maxCharacterLevel: 20
+  _growthConfigs:
+  - statType: 0
+    valuePerLevel: 0.05
+    isPercentGrowth: 1
+    displayAsPercent: 1
+  - statType: 1
+    valuePerLevel: 0.03
+    isPercentGrowth: 1
+    displayAsPercent: 1
+  - statType: 2
+    valuePerLevel: 30
+    isPercentGrowth: 0
+    displayAsPercent: 0
+  - statType: 3
+    valuePerLevel: 0.02
+    isPercentGrowth: 1
+    displayAsPercent: 1
+  - statType: 4
+    valuePerLevel: 1
+    isPercentGrowth: 0
+    displayAsPercent: 0
+  - statType: 5
+    valuePerLevel: 0.05
+    isPercentGrowth: 1
+    displayAsPercent: 1
 --- !u!114 &1609504111525019161
 MonoBehaviour:
   m_ObjectHideFlags: 0
