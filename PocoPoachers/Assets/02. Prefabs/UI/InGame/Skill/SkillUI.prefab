@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1345309087382285984}
   - component: {fileID: 3830280561672152651}
+  - component: {fileID: 8811010293710000001}
   m_Layer: 5
   m_Name: SkillUI
   m_TagString: Untagged
@@ -54,10 +55,6 @@ MonoBehaviour:
   _startVisible: 0
   _useSharedDimmer: 0
   _backdropBlur: 2
-  _rowPrefab: {fileID: 4670161811810393373, guid: cb3d51e9c45f1a6429208632b7fb6aec, type: 3}
-  _listContent: {fileID: 249827223412552504}
-  _slotPrompt: {fileID: 7906177648170985083}
-  _slotPromptText: {fileID: 1375645322447185843}
 --- !u!1 &1151577200716305939
 GameObject:
   m_ObjectHideFlags: 0
@@ -1238,3 +1235,19 @@ MonoBehaviour:
   _colorRole: 1
   _keepAlpha: 1
   _theme: {fileID: 0}
+--- !u!114 &8811010293710000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 287169997169989665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2f9906fa16a74727995ecae77625a566, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SkillEquipPanel
+  _rowPrefab: {fileID: 4670161811810393373, guid: cb3d51e9c45f1a6429208632b7fb6aec, type: 3}
+  _listContent: {fileID: 249827223412552504}
+  _slotPrompt: {fileID: 7906177648170985083}
+  _slotPromptText: {fileID: 1375645322447185843}
