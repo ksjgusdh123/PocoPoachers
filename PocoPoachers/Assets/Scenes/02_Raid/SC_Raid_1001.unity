@@ -46011,6 +46011,11 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.3, y: 5, z: 0.5}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!1 &925669606 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1500275326456394333, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
+  m_PrefabInstance: {fileID: 1501632533}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &926110352
 GameObject:
   m_ObjectHideFlags: 0
@@ -54748,6 +54753,27 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 6953031429018234555, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
   m_PrefabInstance: {fileID: 1501632533}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1099955978
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 925669606}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4726609a76b51cc489dd13e6e92f9371, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FogOfWarRenderer
+  _visionConfig: {fileID: 11400000, guid: 645df1c7444f4a148a6b1bc4721f06a1, type: 2}
+  _groundOffset: 0.05
+  _overlaySize: 500
+  _darkColor: {r: 0, g: 0, b: 0, a: 0.6}
+  _wallLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  _blurSize: 3
+  _blurIterations: 2
 --- !u!1 &1100003408
 GameObject:
   m_ObjectHideFlags: 0
@@ -75988,7 +76014,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1500275326456394333, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1099955978}
   m_SourcePrefab: {fileID: 100100000, guid: 986a90e5c6eab6a4f942451d19634aac, type: 3}
 --- !u!1 &1501886785
 GameObject:
@@ -113941,7 +113970,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5650270513854883327, guid: 9d5e865135ed787418a3e18f3faf09be, type: 3}
       propertyPath: m_Layer
-      value: 8
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
