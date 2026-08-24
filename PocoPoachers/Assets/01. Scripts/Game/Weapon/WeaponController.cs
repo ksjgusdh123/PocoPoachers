@@ -410,7 +410,11 @@ public class WeaponController : EquipableController
         Plane plane = new Plane(Vector3.up, new Vector3(0f, planeHeight, 0f));
         Vector3 targetPoint = plane.Raycast(ray, out float distance) ? ray.GetPoint(distance) : ray.GetPoint(_maxAimDistance);
 
-        Vector3 dir = targetPoint - muzzle.position;
+        // 총구는 플레이어 중심에서 좌우/앞으로 오프셋돼 있어, 크로스헤어가 플레이어 가까이 있을 때
+        // 총구 기준으로 방향을 잡으면 총알이 플레이어 쪽으로 꺾여 나간다.
+        // 방향은 총구 높이의 플레이어 중심을 기준으로 계산하고, 실제 발사 위치(총구)는 그대로 사용한다.
+        Vector3 dirOrigin = new Vector3(transform.position.x, muzzle.position.y, transform.position.z);
+        Vector3 dir = targetPoint - dirOrigin;
         return dir.sqrMagnitude < 0.001f ? muzzle.up : dir.normalized;
     }
 
