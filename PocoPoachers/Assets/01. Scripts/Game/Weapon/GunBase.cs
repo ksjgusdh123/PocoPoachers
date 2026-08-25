@@ -53,12 +53,12 @@ public abstract class GunBase : EquippableItemBase
     // 사격 네트워크 전파 — 소유자가 적이면 적 전용(enemyId 기반), 아니면 플레이어 경로로 보낸다.
     // 적 총알을 플레이어 경로(RoomSync.Shoot, MyId)로 보내면 게스트에서 호스트 플레이어로 오귀속돼
     // 같은 레이어(적끼리) 스킵이 깨진다 — 그래서 적은 반드시 이 분기를 타야 한다.
-    protected void BroadcastShoot(Vector3 origin, Vector3 direction, System.Collections.Generic.IReadOnlyList<Vector3> pelletDirections = null, bool isHeadshot = false)
+    protected void BroadcastShoot(Vector3 origin, Vector3 direction, System.Collections.Generic.IReadOnlyList<Vector3> pelletDirections = null, bool isHeadshot = false, System.Collections.Generic.List<int> bulletSeqs = null)
     {
         if (_ownerEnemy != null)
             RoomSync.EnemyShoot(_ownerEnemy.EnemyId, origin, direction, _stat, pelletDirections);
         else
-            RoomSync.Shoot(origin, direction, _stat, pelletDirections, isHeadshot);
+            RoomSync.Shoot(origin, direction, _stat, pelletDirections, isHeadshot, bulletSeqs);
     }
 
     public static event Action<float> OnReloadStarted;
@@ -175,6 +175,15 @@ public abstract class GunBase : EquippableItemBase
 
         if (_currentAmmo <= 0) OnReloadRequested?.Invoke();
         return true;
+    }
+
+    // 쏜 클라가 자기 탄환에 붙이는 식별자. 호스트가 명중을 통보할 때 이 번호로 지목한다.
+    // 게스트가 원격 총알을 그릴 때는 패킷으로 받은 번호를 그대로 쓰므로 여기서 발급하지 않는다.
+    protected int AssignBulletSeq(Bullet bullet)
+    {
+        int seq = Bullet.NextSeq();
+        bullet.SetNetworkId(RoomSync.MyPlayerId, seq);
+        return seq;
     }
 
     protected abstract void Shoot(bool isHeadshot);

@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class SingleGun : GunBase
 {
@@ -18,6 +18,7 @@ public class SingleGun : GunBase
             isHeadshot
         );
 
-        BroadcastShoot(_muzzle.position, fireDir, isHeadshot: isHeadshot);
+        var seqs = new System.Collections.Generic.List<int> { AssignBulletSeq(bullet) };
+        BroadcastShoot(_muzzle.position, fireDir, isHeadshot: isHeadshot, bulletSeqs: seqs);
     }
 }

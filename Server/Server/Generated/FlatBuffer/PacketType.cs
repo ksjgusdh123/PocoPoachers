@@ -82,6 +82,8 @@ public enum PacketType : byte
   G_DroneState = 75,
   H_DroneState = 76,
   H_DroneShoot = 77,
+  G_Invincible = 78,
+  H_BulletHit = 79,
 };
 
 public class PacketTypeUnion {
@@ -248,6 +250,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_DroneState(H_DroneStateT _h_dronestate) { return new PacketTypeUnion{ Type = PacketType.H_DroneState, Value = _h_dronestate }; }
   public H_DroneShootT AsH_DroneShoot() { return this.As<H_DroneShootT>(); }
   public static PacketTypeUnion FromH_DroneShoot(H_DroneShootT _h_droneshoot) { return new PacketTypeUnion{ Type = PacketType.H_DroneShoot, Value = _h_droneshoot }; }
+  public G_InvincibleT AsG_Invincible() { return this.As<G_InvincibleT>(); }
+  public static PacketTypeUnion FromG_Invincible(G_InvincibleT _g_invincible) { return new PacketTypeUnion{ Type = PacketType.G_Invincible, Value = _g_invincible }; }
+  public H_BulletHitT AsH_BulletHit() { return this.As<H_BulletHitT>(); }
+  public static PacketTypeUnion FromH_BulletHit(H_BulletHitT _h_bullethit) { return new PacketTypeUnion{ Type = PacketType.H_BulletHit, Value = _h_bullethit }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -329,6 +335,8 @@ public class PacketTypeUnion {
       case PacketType.G_DroneState: return G_DroneState.Pack(builder, _o.AsG_DroneState()).Value;
       case PacketType.H_DroneState: return H_DroneState.Pack(builder, _o.AsH_DroneState()).Value;
       case PacketType.H_DroneShoot: return H_DroneShoot.Pack(builder, _o.AsH_DroneShoot()).Value;
+      case PacketType.G_Invincible: return G_Invincible.Pack(builder, _o.AsG_Invincible()).Value;
+      case PacketType.H_BulletHit: return H_BulletHit.Pack(builder, _o.AsH_BulletHit()).Value;
     }
   }
 }
@@ -572,6 +580,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_DroneShoot:
         result = H_DroneShootVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_Invincible:
+        result = G_InvincibleVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_BulletHit:
+        result = H_BulletHitVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

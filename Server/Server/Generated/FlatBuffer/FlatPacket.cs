@@ -96,6 +96,8 @@ public struct FlatPacket : IFlatbufferObject
   public G_DroneState TypeAsG_DroneState() { return Type<G_DroneState>().Value; }
   public H_DroneState TypeAsH_DroneState() { return Type<H_DroneState>().Value; }
   public H_DroneShoot TypeAsH_DroneShoot() { return Type<H_DroneShoot>().Value; }
+  public G_Invincible TypeAsG_Invincible() { return Type<G_Invincible>().Value; }
+  public H_BulletHit TypeAsH_BulletHit() { return Type<H_BulletHit>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -355,6 +357,12 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_DroneShoot:
         _o.Type.Value = this.Type<H_DroneShoot>().HasValue ? this.Type<H_DroneShoot>().Value.UnPack() : null;
+        break;
+      case PacketType.G_Invincible:
+        _o.Type.Value = this.Type<G_Invincible>().HasValue ? this.Type<G_Invincible>().Value.UnPack() : null;
+        break;
+      case PacketType.H_BulletHit:
+        _o.Type.Value = this.Type<H_BulletHit>().HasValue ? this.Type<H_BulletHit>().Value.UnPack() : null;
         break;
     }
   }

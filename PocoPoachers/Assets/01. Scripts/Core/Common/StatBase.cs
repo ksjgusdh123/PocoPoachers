@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public abstract class StatBase : MonoBehaviour, IDamageable
@@ -15,12 +15,59 @@ public abstract class StatBase : MonoBehaviour, IDamageable
 
     // 무적 상태 (구르기 등에서 켜고 끔) — 켜져 있으면 데미지를 받지 않음
     public bool IsInvincible { get; private set; }
-    public void SetInvincible(bool value) => IsInvincible = value;
+
+    // 다른 클라이언트가 "이 대상은 지금 피해 면역"이라고 알려준 값.
+    // 원격 대상은 무적을 건 주체가 여기 없으므로(적 AI는 호스트 전용, 치트는 호스트 전용) 이 값으로만 안다.
+    private bool _networkImmune;
+
+    // 피해 면역 여부의 정본. 무적 원인이 늘어나도 판정하는 쪽은 이것만 보면 된다.
+    // 총알 관통·혈흔·히트마커가 전부 이 하나로 갈리므로, 원인별로 따로 검사하면 반드시 어딘가 빠진다.
+    public bool IsDamageImmune
+    {
+        get
+        {
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+            if (IsGodMode) return true;
+#endif
+            return IsInvincible || _networkImmune;
+        }
+    }
+
+    // 무적을 거는 입구. 호출부는 네트워크를 몰라도 되고, 어떤 효과가 걸든 자동으로 전파된다.
+    public void SetInvincible(bool value)
+    {
+        if (IsInvincible == value) return;
+
+        IsInvincible = value;
+        NotifyImmunityChanged();
+    }
+
+    // 네트워크로 받은 면역 상태를 반영 (되돌려 보내지 않는다)
+    public void ApplyImmunityFromNetwork(bool value) => _networkImmune = value;
+
+    // 마지막으로 알린 면역 상태 — 원인(무적/치트)이 여럿이라 실제로 바뀔 때만 보내기 위해 기억한다
+    private bool _notifiedImmune;
+
+    protected void NotifyImmunityChanged()
+    {
+        bool immune = IsDamageImmune;
+        if (_notifiedImmune == immune) return;
+
+        _notifiedImmune = immune;
+        RoomSync.Invincible(this, immune);
+    }
 
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     // 치트 무적 — 구르기 무적과 별개로 유지되어 구르기 종료에 꺼지지 않음
     public bool IsGodMode { get; private set; }
-    public void SetGodMode(bool value) => IsGodMode = value;
+
+    public void SetGodMode(bool value)
+    {
+        if (IsGodMode == value) return;
+
+        IsGodMode = value;
+        NotifyImmunityChanged();   // 치트도 같은 경로로 전파해야 게스트 총알이 관통한다
+    }
 #endif
 
     protected float _totalDefenseRate;
@@ -46,10 +93,7 @@ public abstract class StatBase : MonoBehaviour, IDamageable
 
     public virtual bool TakeDamage(float damage, GameObject attacker = null)
     {
-        if (IsInvincible) return false;
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        if (IsGodMode) return false;
-#endif
+        if (IsDamageImmune) return false;
         if (CurrentHp <= 0f) return false;
 
         float actualDamage = damage * (1f - Mathf.Clamp01(DefenseRate));

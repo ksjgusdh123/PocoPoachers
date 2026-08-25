@@ -27,7 +27,7 @@ public static class RoomSync
     }
 
     // pelletDirections: 샷건 등 다발 발사의 펠릿별 방향. null/비어 있으면 direction 단발로 처리
-    public static void Shoot(Vector3 origin, Vector3 direction, GunStatData stat, IReadOnlyList<Vector3> pelletDirections = null, bool isHeadshot = false)
+    public static void Shoot(Vector3 origin, Vector3 direction, GunStatData stat, IReadOnlyList<Vector3> pelletDirections = null, bool isHeadshot = false, List<int> bulletSeqs = null)
     {
         if (IsSolo) return;
 
@@ -38,11 +38,11 @@ public static class RoomSync
 
         if (RoomManager.IsHost)
             PacketBuilder.BroadcastToGuests(
-                new H_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, Directions = dirsT, IsHeadshot = isHeadshot },
+                new H_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, Directions = dirsT, IsHeadshot = isHeadshot, BulletSeqs = bulletSeqs },
                 H_Shoot.Pack, PacketType.H_Shoot);
         else
             PacketBuilder.SendToHost(
-                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, SoundRange = stat.SoundRange, Directions = dirsT, IsHeadshot = isHeadshot },
+                new G_ShootT { PlayerId = id, Origin = originT, Direction = dirT, BulletSpeed = stat.BulletSpeed, Damage = stat.Damage, MaxRange = stat.BulletRange, SoundRange = stat.SoundRange, Directions = dirsT, IsHeadshot = isHeadshot, BulletSeqs = bulletSeqs },
                 G_Shoot.Pack, PacketType.G_Shoot);
     }
 
@@ -640,6 +640,41 @@ public static class RoomSync
             ItemId = itemId,
             Amount = amount,
         }, H_FurnaceGive.Pack, PacketType.H_FurnaceGive);
+    }
+
+    // 탄환 명중 전파 (호스트 전용). 게스트 탄환은 적 충돌을 판정하지 않으므로
+    // 혈흔과 탄환 소멸이 전부 이 통보로 일어난다. 빗나가면 보내지 않는다.
+    public static void BulletHit(int shooterId, int seq, Vector3 point, Vector3 normal, bool isKill, bool isHeadshot)
+    {
+        if (IsSolo || !RoomManager.IsHost) return;
+
+        PacketBuilder.BroadcastToGuests(new H_BulletHitT
+        {
+            ShooterId  = shooterId,
+            Seq        = seq,
+            Pos        = new Vec3T { X = point.x,  Y = point.y,  Z = point.z },
+            Normal     = new Vec3T { X = normal.x, Y = normal.y, Z = normal.z },
+            IsKill     = isKill,
+            IsHeadshot = isHeadshot,
+        }, H_BulletHit.Pack, PacketType.H_BulletHit);
+    }
+
+    // ── 무적 ──────────────────────────────────────────────────
+    // 플레이어 HP는 호스트 권위다 — 호스트가 자기 씬의 RemotePlayerStat에 데미지를 넣고
+    // H_StatSync로 결과를 돌려준다. 그래서 게스트가 구르기 무적을 알리지 않으면
+    // 호스트는 모르고 그대로 데미지를 넣어, 게스트만 회피가 작동하지 않는다.
+    //
+    // 반대 방향(호스트→게스트)은 필요 없다. 게스트 탄환은 적과의 충돌을 판정하지 않고
+    // 호스트의 H_BulletHit만 보고 처리하므로, 남의 무적 상태를 알 이유가 없다.
+    public static void Invincible(StatBase stat, bool value)
+    {
+        if (IsSolo || RoomManager.IsHost) return;
+
+        // 내 캐릭터만 보고한다 — 적/남의 무적은 호스트가 정한다
+        if (stat is not PlayerStat) return;
+
+        PacketBuilder.SendReliableToHost(new G_InvincibleT { Value = value },
+            G_Invincible.Pack, PacketType.G_Invincible);
     }
 
     // ── 추가탄 드론 ────────────────────────────────────────────

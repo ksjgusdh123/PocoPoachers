@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Bullet : MonoBehaviour
@@ -38,6 +39,18 @@ public class Bullet : MonoBehaviour
     // 없으면 유도탄이 또 유도탄을 불러 무한 연쇄가 된다.
     private bool _suppressHitEvent;
 
+    // 탄환 식별 — 쏜 클라가 발급한 (shooterId, seq).
+    // 게스트는 적과의 충돌을 스스로 판정하지 않으므로, 호스트가 이 키로 "네 탄환이 맞았다"를 알려준다.
+    private int _shooterId;
+    private int _seq;
+    private bool _hasNetworkId;
+
+    private static readonly Dictionary<(int shooterId, int seq), Bullet> Registry = new();
+
+    // 쏜 클라가 자기 탄환에 붙이는 순번. shooterId와 짝이라 클라끼리 겹쳐도 무방하다.
+    private static int _nextSeq;
+    public static int NextSeq() => ++_nextSeq;
+
     // 로컬 플레이어가 쏜 총알이 적을 맞춘 순간 (피격 대상, 명중 지점).
     // 데미지 적용(_applyDamage)과 무관하게 발생한다 — 게스트의 연출용 총알도 명중은 판정하기 때문.
     public static event Action<Collider, Vector3> OnLocalPlayerHitTarget;
@@ -67,10 +80,34 @@ public class Bullet : MonoBehaviour
         // 호스트가 게스트의 권위 총알을 대신 시뮬레이션할 때, 데미지 적용 결과(킬 여부)를 원 발사자에게 알리는 용도
         _onDamageResult = onDamageResult;
 
+        Unregister();   // 풀 재사용 — 이전 발사의 식별자가 남아 있으면 엉뚱한 탄환이 지목된다
+
         // 풀에서 돌려쓰는 오브젝트라 이전 발사의 유도/억제 상태를 반드시 지운다
         _homingTarget = null;
         _homingTurnRate = 0f;
         _suppressHitEvent = false;
+    }
+
+    // 네트워크 식별자 부여. Initialize 다음에 호출한다.
+    public void SetNetworkId(int shooterId, int seq)
+    {
+        if (shooterId == 0 || seq == 0) return;
+
+        Unregister();
+        _shooterId = shooterId;
+        _seq = seq;
+        _hasNetworkId = true;
+        Registry[(shooterId, seq)] = this;
+    }
+
+    private void Unregister()
+    {
+        if (!_hasNetworkId) return;
+
+        if (Registry.TryGetValue((_shooterId, _seq), out var b) && b == this)
+            Registry.Remove((_shooterId, _seq));
+
+        _hasNetworkId = false;
     }
 
     // 유도 설정. Initialize 다음에 호출한다. turnRate는 초당 회전 각도.
@@ -100,6 +137,18 @@ public class Bullet : MonoBehaviour
 
             if (hit.collider.TryGetComponent<IDamageable>(out var damageable))
             {
+                // 게스트는 적과의 충돌을 판정하지 않는다 — 명중 여부는 호스트만 정하고
+                // 결과를 H_BulletHit으로 알려준다. 여기서 멈추면 호스트가 관통시킨 탄환이
+                // 게스트 화면에서만 사라지고, 헛피가 튄다.
+                if (!_applyDamage)
+                {
+                    transform.position = origin + _direction * step;
+                    _traveledDistance += step;
+                    if (_traveledDistance >= _range)
+                        Release();
+                    return;
+                }
+
                 if (_applyDamage)
                 {
                     float damage = _isHeadshot ? _damage * HeadshotDamageMultiplier : _damage;
@@ -115,6 +164,10 @@ public class Bullet : MonoBehaviour
                     // 데미지가 실제로 적용된 이 클라이언트(호스트)에서만 사망 여부를 알 수 있음
                     isKill = damageable is StatBase stat && stat.IsDead;
                     _onDamageResult?.Invoke(isKill, hit.collider);
+
+                    // 게스트는 이 통보로만 혈흔을 뿌리고 탄환을 지운다
+                    if (_hasNetworkId)
+                        RoomSync.BulletHit(_shooterId, _seq, hit.point, hit.normal, isKill, _isHeadshot);
                 }
                 showVFX = true;
             }
@@ -228,10 +281,25 @@ public class Bullet : MonoBehaviour
         EnsureWallMask();
     }
 
+    // 호스트가 알려준 명중을 반영 — 그 자리에서 혈흔을 뿌리고 탄환을 지운다
+    public static void ApplyNetworkHit(int shooterId, int seq, Vector3 point, Vector3 normal, bool isKill, bool isHeadshot)
+    {
+        BloodVFXPool.Instance?.Spawn(point, normal);
+
+        if (!Registry.TryGetValue((shooterId, seq), out var bullet) || bullet == null) return;
+
+        if (bullet._showHitMarker)
+            CrosshairUI.Instance?.ShowHitMarker(isKill, isHeadshot);
+
+        bullet.transform.position = point;
+        bullet.Release();
+    }
+
     private void Release()
     {
         if (_isReleased) return;
         _isReleased = true;
+        Unregister();
         _trail?.Clear();
         _onRelease?.Invoke();
     }

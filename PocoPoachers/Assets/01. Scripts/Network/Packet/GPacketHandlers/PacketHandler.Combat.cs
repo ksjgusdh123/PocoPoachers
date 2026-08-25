@@ -67,6 +67,11 @@ public static partial class PacketHandlers
             }
 
             var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(dir));
+
+            // 쏜 게스트가 발급한 순번을 그대로 쓴다 — 명중 통보를 그 게스트가 자기 탄환과 맞춰야 한다
+            if (i < packet.BulletSeqsLength)
+                bullet.SetNetworkId(guestId, packet.BulletSeqs(i));
+
             bullet.Initialize(bulletSpeed, damage, maxRange, dir, () => pool.Release(prefab, bullet), attacker, bulletColor, packet.IsHeadshot,
                 onDamageResult: (isKill, target) =>
                 {
@@ -99,6 +104,14 @@ public static partial class PacketHandlers
                 }
             }
 
+            List<int> rebroadcastSeqs = null;
+            if (packet.BulletSeqsLength > 0)
+            {
+                rebroadcastSeqs = new List<int>(packet.BulletSeqsLength);
+                for (int i = 0; i < packet.BulletSeqsLength; i++)
+                    rebroadcastSeqs.Add(packet.BulletSeqs(i));
+            }
+
             PacketBuilder.BroadcastToGuests(guestId,
                 new H_ShootT
                 {
@@ -110,6 +123,7 @@ public static partial class PacketHandlers
                     MaxRange    = maxRange,
                     Directions  = rebroadcastDirs,
                     IsHeadshot  = packet.IsHeadshot,
+                    BulletSeqs  = rebroadcastSeqs,
                 },
                 H_Shoot.Pack, PacketType.H_Shoot);
         }

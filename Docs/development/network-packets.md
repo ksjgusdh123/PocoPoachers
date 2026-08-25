@@ -19,8 +19,8 @@ flowchart TB
     end
 
     subgraph UDP["UDP P2P Star (게임, 게스트는 호스트하고만 통신)"]
-        G["G_* 게스트→호스트 (17종)"]
-        H["H_* 호스트→게스트 (30종)"]
+        G["G_* 게스트→호스트 (18종)"]
+        H["H_* 호스트→게스트 (31종)"]
     end
 
     Client --> TCP
@@ -40,8 +40,8 @@ flowchart TB
 |--------|------|------------|-----|
 | `C_` | Client → Master (TCP) | 5 | `C_Login`, `C_CreateRoom` |
 | `S_` | Master → Client (TCP) | 5 | `S_LoginResult`, `S_GuestJoined` |
-| `G_` | Guest → Host (UDP) | 17 | `G_Move`, `G_ItemGain` |
-| `H_` | Host → Guest(s) (UDP) | 30 | `H_Move`, `H_ItemBoxUpdate` |
+| `G_` | Guest → Host (UDP) | 18 | `G_Move`, `G_ItemGain` |
+| `H_` | Host → Guest(s) (UDP) | 31 | `H_Move`, `H_ItemBoxUpdate` |
 
 `Main.fbs`의 `union PacketType` 안에 `FlatPacket{ type }`으로 전체 목록 정의(약 50종). 핸들러는 패킷 1개당 파일 1개가 아니라 **도메인별 partial class**로 묶여 있다: `GPacketHandlers/`·`HPacketHandlers/` 각 10개 파일(Combat/Durability/Equip/GunAmmo/GunPart/GunState/Item/Movement/Rescue/Room/Stat/Enemy 등), `SPacketHandlers/` 3개 파일(Auth/Heartbeat/Room).
 
@@ -136,6 +136,8 @@ UDP 수신 핸들러는 **반드시 메인 스레드**에서 실행돼야 한다
 | `G/H_Equip` | 양방향 | 장비 변경 |
 | `G/H_Durability` | G→H 요청, H→G 결과 | 무기 내구도 |
 | `G/H_StatSync` | 양방향 | HP 등 스탯 (호스트가 `GuestValidator`로 클램프) |
+| `G_Invincible` | G→H (신뢰) | 내 캐릭터의 무적 on/off (구르기 등) |
+| `H_Invincible` | H→G (신뢰) | 대상의 무적 on/off — `kind` 0=Player(playerId) 1=Enemy(EnemyId) |
 | `G/H_Leave` | — | 퇴장 |
 | `G_SceneReady` | G→H (신뢰) | 씬 로드 완료 알림 — 호스트가 박스/적 스냅샷 전송 트리거 |
 | `H_MoveRequest` | H→G (신뢰) | 팀 이동 제안 — 게스트가 수락/거절 팝업을 띄운다 |
@@ -171,6 +173,22 @@ UDP 수신 핸들러는 **반드시 메인 스레드**에서 실행돼야 한다
 ### 적 (전부 호스트→게스트 단방향, `G_Enemy*` 없음)
 
 `H_EnemySpawn`, `H_EnemyMove`, `H_EnemyHit`, `H_EnemyDie`, `H_EnemySpeak`, `H_EnemyShoot`
+
+### 무적 동기화
+
+**무적은 총알이 관통할지 막힐지를 정하므로 클라마다 따로 판단하면 안 된다.** 동기화가 없으면 회피 중인 적에게
+게스트의 총알이 박히고 헛되이 피가 튄다 — 호스트에서는 관통하는데도.
+
+전파 지점은 `StatBase.SetInvincible` **한 곳뿐**이다. 구르기(`PlayerDodge`, `DodgeRollSkill`)든 앞으로 추가될
+어떤 효과든 이 입구만 지나면 자동으로 전파되므로, 호출부는 네트워크를 몰라도 된다.
+네트워크로 받은 값은 `ApplyInvincibleFromNetwork`로 넣어 되돌려 보내지 않는다.
+
+| 주체 | 동작 |
+|------|------|
+| 호스트 | `H_Invincible` 브로드캐스트. 대상은 `EnemyNetSync`(적) → `WorldObject`(원격 플레이어) → `PlayerStat`(자기 자신) 순으로 식별 |
+| 게스트 | **자기 캐릭터만** `G_Invincible`로 보고 — 적/남의 무적은 호스트가 정한다. 호스트는 그 게스트의 `RemotePlayerStat`에 반영하고 나머지에게 중계 |
+
+게스트→호스트 방향이 없으면 게스트가 굴러도 호스트는 모르고 그대로 데미지를 넣는다.
 
 ### 쉘터 창고 (Storage)
 

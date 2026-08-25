@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 using UnityEngine.VFX;
@@ -17,12 +17,19 @@ public class SandVFXPool : Singleton<SandVFXPool>
     public void Spawn(RaycastHit hit)
     {
         if (hit.collider == null) return;
+
+        Spawn(hit.point, hit.normal);
+    }
+
+    // 호스트가 판정한 명중을 좌표로 받아 뿌릴 때 쓴다 (게스트는 적 충돌을 스스로 판정하지 않는다)
+    public void Spawn(Vector3 point, Vector3 normal)
+    {
         if (_sandVfxAsset == null) return;
 
         EnsurePool();
 
-        Vector3 position = hit.point + hit.normal * SurfaceOffset;
-        Quaternion rotation = Quaternion.FromToRotation(Vector3.up, hit.normal);
+        Vector3 position = point + normal * SurfaceOffset;
+        Quaternion rotation = Quaternion.FromToRotation(Vector3.up, normal);
 
         VisualEffect vfx = _pool.Get();
         Transform vfxTransform = vfx.transform;

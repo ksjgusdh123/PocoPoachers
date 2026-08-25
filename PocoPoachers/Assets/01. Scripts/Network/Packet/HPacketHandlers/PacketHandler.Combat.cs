@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public static partial class PacketHandlers
 {
@@ -57,6 +57,10 @@ public static partial class PacketHandlers
 
             var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(dir));
             bullet.Initialize(packet.BulletSpeed, packet.Damage, packet.MaxRange, dir, () => pool.Release(prefab, bullet), attacker, bulletColor, packet.IsHeadshot);
+
+            // 쏜 클라가 발급한 순번 — 이 탄환의 명중 통보(H_BulletHit)를 받아 처리하려면 필요하다
+            if (i < packet.BulletSeqsLength)
+                bullet.SetNetworkId(packet.PlayerId, packet.BulletSeqs(i));
         }
 
         if (soundRange > 0f)
