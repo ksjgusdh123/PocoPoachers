@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public static partial class PacketHandlers
@@ -68,8 +68,12 @@ public static partial class PacketHandlers
 
             var bullet = pool.Get(prefab, origin, Quaternion.LookRotation(dir));
             bullet.Initialize(bulletSpeed, damage, maxRange, dir, () => pool.Release(prefab, bullet), attacker, bulletColor, packet.IsHeadshot,
-                onDamageResult: isKill =>
+                onDamageResult: (isKill, target) =>
                 {
+                    // 게스트가 추가탄 드론을 켜두었으면 호스트가 대신 유도탄을 쏜다.
+                    // 데미지는 호스트에서만 적용되므로 이 경로가 없으면 게스트의 드론은 연출뿐이다.
+                    CombatDrone.FindFor(guestId)?.TryFireAt(target);
+
                     // 게스트 본인의 로컬(연출용) 총알은 데미지를 적용하지 않아 킬 여부를 모르므로,
                     // 호스트가 대신 시뮬레이션한 권위 총알의 결과를 쏜 게스트에게 돌려줘 히트마커를 빨간색으로 확인시킨다
                     if (isKill)

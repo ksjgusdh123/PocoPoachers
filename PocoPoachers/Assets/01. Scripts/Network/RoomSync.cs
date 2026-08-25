@@ -4,6 +4,9 @@ using UnityEngine;
 public static class RoomSync
 {
     private static int MyId => NetworkManager.Instance?.MyPlayerId ?? 0;
+
+    // 드론처럼 "내 것"을 playerId로 등록해야 하는 쪽에서 쓴다
+    public static int MyPlayerId => MyId;
     private static bool IsSolo => RoomManager.IsHost && !RoomManager.HasGuests;
 
     public static void Move(Vector3 pos, float yaw, sbyte moveType, float velX, float velZ, bool isSprinting, bool isRolling, bool isAiming = false, bool isReloading = false, bool isDown = false)
@@ -637,5 +640,52 @@ public static class RoomSync
             ItemId = itemId,
             Amount = amount,
         }, H_FurnaceGive.Pack, PacketType.H_FurnaceGive);
+    }
+
+    // ── 추가탄 드론 ────────────────────────────────────────────
+    // 드론은 플레이어를 따라다니는 장식이라 위치 동기화가 필요 없다.
+    // 켜짐/꺼짐만 알리면 각 클라이언트가 그 플레이어 옆에 로컬로 띄운다.
+
+    public static void DroneState(bool active, float damage)
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastReliableToGuests(new H_DroneStateT
+            {
+                PlayerId = MyId,
+                Active   = active,
+                Damage   = damage,
+            }, H_DroneState.Pack, PacketType.H_DroneState);
+        else
+            PacketBuilder.SendReliableToHost(new G_DroneStateT
+            {
+                Active = active,
+                Damage = damage,
+            }, G_DroneState.Pack, PacketType.G_DroneState);
+    }
+
+    // 드론 유도탄 발사 전파 (호스트 전용).
+    // 소유자 본인에게도 보낸다 — 게스트는 추측 발사를 하지 않고 이 통보만 보고 그리기 때문이다.
+    public static void DroneShoot(int ownerPlayerId, int enemyId)
+    {
+        if (IsSolo || !RoomManager.IsHost) return;
+
+        PacketBuilder.BroadcastToGuests(new H_DroneShootT
+        {
+            PlayerId = ownerPlayerId,
+            EnemyId  = enemyId,
+        }, H_DroneShoot.Pack, PacketType.H_DroneShoot);
+    }
+
+    // 호스트가 게스트의 드론 상태를 나머지에게 중계 (요청자 본인은 이미 로컬에 띄워둠)
+    public static void DroneStateRelay(int ownerPlayerId, bool active, float damage)
+    {
+        PacketBuilder.BroadcastReliableToGuests(ownerPlayerId, new H_DroneStateT
+        {
+            PlayerId = ownerPlayerId,
+            Active   = active,
+            Damage   = damage,
+        }, H_DroneState.Pack, PacketType.H_DroneState);
     }
 }

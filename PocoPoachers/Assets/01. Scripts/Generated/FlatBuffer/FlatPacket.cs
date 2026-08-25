@@ -93,6 +93,9 @@ public struct FlatPacket : IFlatbufferObject
   public G_FurnaceTake TypeAsG_FurnaceTake() { return Type<G_FurnaceTake>().Value; }
   public H_FurnaceState TypeAsH_FurnaceState() { return Type<H_FurnaceState>().Value; }
   public H_FurnaceGive TypeAsH_FurnaceGive() { return Type<H_FurnaceGive>().Value; }
+  public G_DroneState TypeAsG_DroneState() { return Type<G_DroneState>().Value; }
+  public H_DroneState TypeAsH_DroneState() { return Type<H_DroneState>().Value; }
+  public H_DroneShoot TypeAsH_DroneShoot() { return Type<H_DroneShoot>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -343,6 +346,15 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_FurnaceGive:
         _o.Type.Value = this.Type<H_FurnaceGive>().HasValue ? this.Type<H_FurnaceGive>().Value.UnPack() : null;
+        break;
+      case PacketType.G_DroneState:
+        _o.Type.Value = this.Type<G_DroneState>().HasValue ? this.Type<G_DroneState>().Value.UnPack() : null;
+        break;
+      case PacketType.H_DroneState:
+        _o.Type.Value = this.Type<H_DroneState>().HasValue ? this.Type<H_DroneState>().Value.UnPack() : null;
+        break;
+      case PacketType.H_DroneShoot:
+        _o.Type.Value = this.Type<H_DroneShoot>().HasValue ? this.Type<H_DroneShoot>().Value.UnPack() : null;
         break;
     }
   }

@@ -79,6 +79,9 @@ public enum PacketType : byte
   G_FurnaceTake = 72,
   H_FurnaceState = 73,
   H_FurnaceGive = 74,
+  G_DroneState = 75,
+  H_DroneState = 76,
+  H_DroneShoot = 77,
 };
 
 public class PacketTypeUnion {
@@ -239,6 +242,12 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_FurnaceState(H_FurnaceStateT _h_furnacestate) { return new PacketTypeUnion{ Type = PacketType.H_FurnaceState, Value = _h_furnacestate }; }
   public H_FurnaceGiveT AsH_FurnaceGive() { return this.As<H_FurnaceGiveT>(); }
   public static PacketTypeUnion FromH_FurnaceGive(H_FurnaceGiveT _h_furnacegive) { return new PacketTypeUnion{ Type = PacketType.H_FurnaceGive, Value = _h_furnacegive }; }
+  public G_DroneStateT AsG_DroneState() { return this.As<G_DroneStateT>(); }
+  public static PacketTypeUnion FromG_DroneState(G_DroneStateT _g_dronestate) { return new PacketTypeUnion{ Type = PacketType.G_DroneState, Value = _g_dronestate }; }
+  public H_DroneStateT AsH_DroneState() { return this.As<H_DroneStateT>(); }
+  public static PacketTypeUnion FromH_DroneState(H_DroneStateT _h_dronestate) { return new PacketTypeUnion{ Type = PacketType.H_DroneState, Value = _h_dronestate }; }
+  public H_DroneShootT AsH_DroneShoot() { return this.As<H_DroneShootT>(); }
+  public static PacketTypeUnion FromH_DroneShoot(H_DroneShootT _h_droneshoot) { return new PacketTypeUnion{ Type = PacketType.H_DroneShoot, Value = _h_droneshoot }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -317,6 +326,9 @@ public class PacketTypeUnion {
       case PacketType.G_FurnaceTake: return G_FurnaceTake.Pack(builder, _o.AsG_FurnaceTake()).Value;
       case PacketType.H_FurnaceState: return H_FurnaceState.Pack(builder, _o.AsH_FurnaceState()).Value;
       case PacketType.H_FurnaceGive: return H_FurnaceGive.Pack(builder, _o.AsH_FurnaceGive()).Value;
+      case PacketType.G_DroneState: return G_DroneState.Pack(builder, _o.AsG_DroneState()).Value;
+      case PacketType.H_DroneState: return H_DroneState.Pack(builder, _o.AsH_DroneState()).Value;
+      case PacketType.H_DroneShoot: return H_DroneShoot.Pack(builder, _o.AsH_DroneShoot()).Value;
     }
   }
 }
@@ -551,6 +563,15 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_FurnaceGive:
         result = H_FurnaceGiveVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_DroneState:
+        result = G_DroneStateVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_DroneState:
+        result = H_DroneStateVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_DroneShoot:
+        result = H_DroneShootVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;
