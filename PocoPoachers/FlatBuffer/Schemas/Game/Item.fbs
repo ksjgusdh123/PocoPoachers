@@ -188,3 +188,35 @@ table G_DropItem
     pos:      Vec3;
     rotation: float;
 }
+
+// 화로 — 호스트가 내용물과 제련 진행의 권위를 갖는다. 게스트는 요청만 보내고,
+// 게스트 개인 인벤은 호스트가 추적하지 않으므로 투입 내용은 G_DropItem과 같은 기준으로 신뢰한다
+// (발신자가 등록된 게스트인지와 수량 상한만 검증).
+table G_FurnaceInsert
+{
+    item_id: int;
+    amount:  int;
+}
+
+// take_output=true면 결과물 수령, false면 아직 안 녹은 투입 광석 회수
+table G_FurnaceTake
+{
+    take_output: bool;
+}
+
+// 내용물이 바뀔 때만 보낸다. 진행 게이지는 게스트가 elapsed부터 로컬로 이어 센다.
+table H_FurnaceState
+{
+    input_item_id:  int;
+    input_count:    int;
+    output_item_id: int;
+    output_count:   int;
+    elapsed:        float;
+}
+
+// 요청한 게스트에게만 보낸다 — 결과물 수령/광석 회수/투입 거절 환불에 공용으로 쓴다.
+table H_FurnaceGive
+{
+    item_id: int;
+    amount:  int;
+}

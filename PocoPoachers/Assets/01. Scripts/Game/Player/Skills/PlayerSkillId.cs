@@ -1,5 +1,7 @@
-public enum PlayerSkillId
+﻿public enum PlayerSkillId
 {
     None,
-    Dash
+    Dash,
+    InstantReload,
+    InfiniteAmmo
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
@@ -16,6 +16,22 @@ public class WeaponController : EquipableController
 
     public bool IsAiming    => _currentGun != null && _currentGun.IsAiming;
     public bool IsReloading => _currentGun != null && _currentGun.IsReloading;
+
+    // 스킬 버프 — 무기를 바꿔도 유지되도록 총이 아니라 여기에 들고 있다가 현재 총에 걸어준다
+    public bool InfiniteAmmo
+    {
+        get => _infiniteAmmo;
+        set
+        {
+            _infiniteAmmo = value;
+            if (_currentGun != null) _currentGun.InfiniteAmmo = value;
+        }
+    }
+    private bool _infiniteAmmo;
+
+    // 스킬 버프 — 켜져 있는 동안 재장전이 대기 없이 곧바로 끝난다.
+    // 재장전 진입점이 TryReloadFromInventory 하나뿐이라 총에 따로 걸어줄 필요가 없다.
+    public bool InstantReloadBuff { get; set; }
     public GunBase CurrentGun => _currentGun;
 
     // 슬롯에 장착된 총 (없으면 null) — 파츠 패널 등 외부에서 조회
@@ -237,9 +253,14 @@ public class WeaponController : EquipableController
             _currentGun.OnShoot += _cameraShakeHandler;
             _currentGun.AimDirectionProvider = () => GetCrosshairAimDirection(gun.Muzzle);
             _currentGun.HeadshotProvider = CheckHeadshot;
+            _currentGun.InfiniteAmmo = _infiniteAmmo;   // 버프 도중 무기를 바꿔도 이어지도록
 
             _reloadRequestedHandler = () => TryReloadFromInventory();
-            _reloadCompleteHandler = consumed => ConsumeAmmoFromInventory(consumed);
+            _reloadCompleteHandler = consumed =>
+            {
+                ConsumeAmmoFromInventory(consumed);
+                SyncAmmoToHost();
+            };
             _ammoChangedHandler = (cur, max) =>
             {
                 // 현재 탄약을 영속 저장소에 반영해 씬 전환 후 재장착 시 복원되게 한다 (호스트 권위)
@@ -296,7 +317,21 @@ public class WeaponController : EquipableController
         var ammoData = ItemTable.Instance.Get(_currentGun.Stat.AmmoItemId);
         if (ammoData == null) return;
         int available = _inventory.GetItemCount(ammoData);
-        _currentGun.StartReload(available);
+
+        if (InstantReloadBuff)
+            _currentGun.InstantReload(available);
+        else
+            _currentGun.StartReload(available);
+    }
+
+    // 호스트가 들고 있는 내 총 사본의 탄약을 실제 값으로 맞춘다 (게스트 전용).
+    // 호스트는 G_Shoot을 인증하면서 그 사본의 탄약을 깎는데, 재장전과 무한 탄약 버프는
+    // 사본에 반영되지 않는다. 그대로 두면 사본만 바닥나 정상 사격이 H_ShootRejected로 거부된다.
+    public void SyncAmmoToHost()
+    {
+        if (RoomManager.IsHost || _currentGun == null || _currentGun.Uid == 0) return;
+
+        RoomSync.GunAmmoSave(_currentGun.Uid, _currentGun.CurrentAmmo, _currentGun.Stat.MaxMagazine);
     }
 
     private void ConsumeAmmoFromInventory(int consumed)

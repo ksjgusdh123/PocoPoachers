@@ -19,8 +19,8 @@ flowchart TB
     end
 
     subgraph UDP["UDP P2P Star (게임, 게스트는 호스트하고만 통신)"]
-        G["G_* 게스트→호스트 (14종)"]
-        H["H_* 호스트→게스트 (26종)"]
+        G["G_* 게스트→호스트 (16종)"]
+        H["H_* 호스트→게스트 (28종)"]
     end
 
     Client --> TCP
@@ -40,8 +40,8 @@ flowchart TB
 |--------|------|------------|-----|
 | `C_` | Client → Master (TCP) | 5 | `C_Login`, `C_CreateRoom` |
 | `S_` | Master → Client (TCP) | 5 | `S_LoginResult`, `S_GuestJoined` |
-| `G_` | Guest → Host (UDP) | 14 | `G_Move`, `G_ItemGain` |
-| `H_` | Host → Guest(s) (UDP) | 26 | `H_Move`, `H_ItemBoxUpdate` |
+| `G_` | Guest → Host (UDP) | 16 | `G_Move`, `G_ItemGain` |
+| `H_` | Host → Guest(s) (UDP) | 28 | `H_Move`, `H_ItemBoxUpdate` |
 
 `Main.fbs`의 `union PacketType` 안에 `FlatPacket{ type }`으로 전체 목록 정의(약 50종). 핸들러는 패킷 1개당 파일 1개가 아니라 **도메인별 partial class**로 묶여 있다: `GPacketHandlers/`·`HPacketHandlers/` 각 10개 파일(Combat/Durability/Equip/GunAmmo/GunPart/GunState/Item/Movement/Rescue/Room/Stat/Enemy 등), `SPacketHandlers/` 3개 파일(Auth/Heartbeat/Room).
 
@@ -158,6 +158,10 @@ UDP 수신 핸들러는 **반드시 메인 스레드**에서 실행돼야 한다
 | `H_ItemExchangeResult` | H→G (신뢰) | 성공/실패 (실패 시 롤백) |
 | `H_ItemBoxUpdate` | H→G | 박스 슬롯 델타 |
 | `G_ConsumeItem` / `H_ConsumeItemResult` | 양방향 | 퀵슬롯 소모품 사용 — 일반 아이템 교환과 별도 경로 |
+| `G_FurnaceInsert` | G→H (신뢰) | 화로 광석 투입 요청 |
+| `G_FurnaceTake` | G→H (신뢰) | 화로 결과물 수령(`take_output=true`) / 안 녹은 광석 회수(false) |
+| `H_FurnaceState` | H→G (신뢰) | 화로 내용물 스냅샷 — 바뀔 때만 전송, 진행 게이지는 게스트가 `elapsed`부터 로컬로 이어 센다 |
+| `H_FurnaceGive` | H→G (신뢰) | 화로가 요청자에게 아이템 지급 — 결과물 수령/광석 회수/투입 거절 환불 공용 |
 
 상세 교환 규칙: [inventory-exchange.md](../design/inventory-exchange.md)
 
@@ -168,6 +172,21 @@ UDP 수신 핸들러는 **반드시 메인 스레드**에서 실행돼야 한다
 ### 쉘터 창고 (Storage)
 
 씬에 미리 배치 + `ObjectManager.RegisterSceneObject`로 고정 UID(`Storage.STORAGE_UID = 1`, 필드 박스는 1000~) 자기등록. `WorldObject`가 붙으면서 `InventoryUI.IsBox`가 true가 되어 기존 박스 교환 패킷이 그대로 동작한다. 내용물은 호스트만 `SaveManager`로 영속화하고(슬롯 변경 이벤트 기반), 게스트는 씬 준비 후 `H_ItemSpawn` 스냅샷으로 받는다.
+
+### 쉘터 화로 (Furnace)
+
+창고와 달리 `Inventory`가 아니라 투입/결과 1칸씩과 타이머를 들고 있어 박스 패킷을 재사용하지 않고 전용 패킷을 쓴다.
+내용물과 제련 진행의 권위는 **호스트**에 있고, 게스트 `Update`는 게이지 표시용으로만 시간을 이어 센다.
+
+| 조작 | 게스트 동작 |
+|------|------------|
+| 광석 투입 | 자기 인벤에서 먼저 빼고 낙관적으로 반영 후 `G_FurnaceInsert`. 호스트가 거절하면 `H_FurnaceGive`로 환불 + `H_FurnaceState`로 화면 원복 |
+| 결과물 수령 / 광석 회수 | 인벤을 **건드리지 않고** `G_FurnaceTake`만 전송. `H_FurnaceGive`가 와야 인벤에 들어간다 — 복사·유실 경로를 없애기 위해 방향을 나눴다 |
+
+게스트 입장·씬 진입 스냅샷은 `RoomManager.SendWorldObjectsToGuest`에서 `Furnace.SendStateToGuest`로 보낸다(박스 목록과 별개).
+솔로는 `RoomManager.IsHost`가 true라 그대로 호스트 경로를 타고 패킷은 나가지 않는다.
+
+> 발전기(`Generator`)·제작대(`CraftingTable`)는 아직 로컬 전용이다 — 전력량이 클라이언트마다 다르게 보인다.
 
 ### 씬 전환 시 월드 오브젝트 동기화
 

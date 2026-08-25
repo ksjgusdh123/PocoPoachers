@@ -3,28 +3,32 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+// 좌측 목록의 한 줄 — 아이콘과 이름만 보여주고, 클릭하면 우측 상세를 갱신하도록 알린다.
 public class SkillEquipRowUI : MonoBehaviour
 {
     [SerializeField] private Image _icon;
     [SerializeField] private TextMeshProUGUI _nameText;
-    [SerializeField] private TextMeshProUGUI _descriptionText;
-    [SerializeField] private TextMeshProUGUI _cooldownText;
-    [SerializeField] private Button _equipButton;
-    [SerializeField] private TextMeshProUGUI _equipButtonText;
+    [SerializeField] private Image _background;
+
+    [SerializeField, Tooltip("장착 중 표시. 없으면 표시하지 않는다.")]
+    private GameObject _equippedMark;
+
+    [SerializeField] private Color _normalColor = new(0.055f, 0.259f, 0.341f, 0.2f);
+    [SerializeField] private Color _selectedColor = new(0.176f, 0.541f, 0.639f, 0.45f);
 
     private PlayerSkillData _data;
-    private Action<PlayerSkillData> _onEquip;
+    private Action<PlayerSkillData> _onSelected;
 
     private void Awake()
     {
-        if (_equipButton != null)
-            _equipButton.onClick.AddListener(OnClickEquip);
+        GetComponent<Button>()?.onClick.AddListener(OnClick);
+        if (_background == null) _background = GetComponent<Image>();
     }
 
-    public void Setup(PlayerSkillData data, Action<PlayerSkillData> onEquip)
+    public void Setup(PlayerSkillData data, Action<PlayerSkillData> onSelected)
     {
         _data = data;
-        _onEquip = onEquip;
+        _onSelected = onSelected;
 
         if (_icon != null)
         {
@@ -32,22 +36,20 @@ public class SkillEquipRowUI : MonoBehaviour
             _icon.enabled = _icon.sprite != null;
         }
 
-        LocalizationManager localization = LocalizationManager.GetInstance();
-
         if (_nameText != null)
-            _nameText.text = localization.GetString(data.name);
-        if (_descriptionText != null)
-            _descriptionText.text = localization.GetString(data.description);
-        if (_cooldownText != null)
-            _cooldownText.text = $"{data.cooldown:0.#}s";
+            _nameText.text = LocalizationManager.GetInstance().GetString(data.name);
     }
 
     public void SetEquipped(bool equipped)
     {
-        if (_equipButtonText != null)
-            _equipButtonText.text = LocalizationManager.GetInstance()
-                .GetString(equipped ? "skill.unequip" : "skill.equip");
+        if (_equippedMark != null) _equippedMark.SetActive(equipped);
     }
 
-    private void OnClickEquip() => _onEquip?.Invoke(_data);
+    public void SetSelected(bool selected)
+    {
+        if (_background != null)
+            _background.color = selected ? _selectedColor : _normalColor;
+    }
+
+    private void OnClick() => _onSelected?.Invoke(_data);
 }

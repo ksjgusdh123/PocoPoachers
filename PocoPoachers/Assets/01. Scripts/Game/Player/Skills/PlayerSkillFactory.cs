@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 public static class PlayerSkillFactory
@@ -18,6 +18,10 @@ public static class PlayerSkillFactory
         {
             case PlayerSkillId.Dash:
                 return new DashSkill(data);
+            case PlayerSkillId.InstantReload:
+                return new InstantReloadSkill(data);
+            case PlayerSkillId.InfiniteAmmo:
+                return new InfiniteAmmoSkill(data);
             default:
                 Debug.LogWarning($"[PlayerSkillFactory] 미구현 skill: {id} (id={data.id})");
                 return null;

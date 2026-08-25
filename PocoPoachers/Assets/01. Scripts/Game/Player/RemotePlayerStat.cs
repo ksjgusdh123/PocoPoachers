@@ -109,14 +109,9 @@ public class RemotePlayerStat : StatBase
             case EffectType.HP:
                 Heal(data.effect_value);
                 break;
-            case EffectType.Hunger:
             case EffectType.Thirst:
                 CurrentBattery = Mathf.Min(MaxBattery, CurrentBattery + data.effect_value);
                 OnBatteryChanged?.Invoke(CurrentBattery, MaxBattery);
-                break;
-            case EffectType.Stamina:
-                CurrentStamina = Mathf.Min(MaxStamina, CurrentStamina + data.effect_value);
-                OnStaminaChanged?.Invoke(CurrentStamina, MaxStamina);
                 break;
         }
     }

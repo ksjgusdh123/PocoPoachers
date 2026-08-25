@@ -634,6 +634,9 @@ public class RoomManager : Singleton<RoomManager>
     {
         EnemyNetSync.SendAllToGuest(guestId);
 
+        // 화로는 박스가 아니라 자체 상태(투입/결과/진행)를 들고 있어 스냅샷을 따로 보낸다
+        Furnace.Instance?.SendStateToGuest(guestId);
+
         var objectManager = ObjectManager.Instance;
         if (objectManager == null) return;
 

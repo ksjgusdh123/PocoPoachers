@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -181,6 +181,24 @@ public class SaveManager : Singleton<SaveManager>
         if (string.IsNullOrEmpty(nickname)) return;
         PlayerPrefs.SetString(PrefLastNickname, nickname);
         PlayerPrefs.Save();
+    }
+
+    // 장착 스킬 슬롯 저장 — 스킬 효과는 전부 클라이언트 로컬이라 호스트/게스트 구분 없이 각자 저장한다
+    public void SaveSkillSlots(IReadOnlyList<int> skillIds)
+    {
+        var data = GetOrLoad(_activeSlot);
+        data.hasSkillSlots = true;
+        data.skillSlots = skillIds != null ? new List<int>(skillIds) : new List<int>();
+        data.lastSavedAt = NowTimestamp();
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    // 저장된 장착 스킬이 있으면 true. 없으면(새 게임 등) false — 호출측이 프리팹 기본값으로 폴백한다.
+    public bool TryLoadSkillSlots(out List<int> skillIds)
+    {
+        var data = GetOrLoad(_activeSlot);
+        skillIds = data.skillSlots;
+        return data.hasSkillSlots;
     }
 
     // 기체(플레이어 캐릭터) 레벨/스탯 포인트/스탯별 레벨 저장 — 활력치와 동일하게 게스트도 로컬 저장
@@ -386,6 +404,11 @@ public class SaveManager : Singleton<SaveManager>
         public float hp;
         public float stamina;
         public float battery;
+
+        // 장착 스킬 슬롯 — hasSkillSlots가 false면 미저장(새 게임)이라 프리팹 기본값으로 시작.
+        // 빈 슬롯을 0으로 채운 고정 길이 배열이라 "전부 해제" 상태와 미저장을 구분하려면 플래그가 필요하다.
+        public bool hasSkillSlots;
+        public List<int> skillSlots = new List<int>();
 
         // 기체 레벨/스탯 포인트 — hasCharacterEnhancement가 false면 미저장(새 게임)이라 레벨 0/포인트 0으로 시작
         public bool hasCharacterEnhancement;

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -37,13 +37,10 @@ public class PlayerSkillManager : MonoBehaviour
         if (_inputHandler != null)
             _inputHandler.SkillUse += HandleSkillInput;
 
-        for (int i = 0; i < SlotCount && i < _startSkillIds.Length; i++)
-        {
-            if (_startSkillIds[i] > 0)
-                Equip(i, _startSkillIds[i]);
-        }
+        RestoreEquippedSkills();
 
         FindAnyObjectByType<SkillHudUI>(FindObjectsInactive.Include)?.Setup(this);
+        FindAnyObjectByType<SkillBuffIndicatorUI>(FindObjectsInactive.Include)?.Setup(this);
         FindAnyObjectByType<SkillEquipUI>(FindObjectsInactive.Include)?.Setup(this);
     }
 
@@ -54,6 +51,44 @@ public class PlayerSkillManager : MonoBehaviour
     }
 
     private void HandleSkillInput(int slotIndex) => TryUse(slotIndex);
+
+    // 플레이어는 씬마다 프리팹에서 새로 생성되므로, 장착 스킬은 세이브에서 되돌린다.
+    // 저장된 게 없으면(새 게임) 프리팹의 _startSkillIds로 시작한다.
+    private void RestoreEquippedSkills()
+    {
+        _suppressSave = true;
+
+        if (SaveManager.Instance != null && SaveManager.Instance.TryLoadSkillSlots(out var saved))
+        {
+            for (int i = 0; i < SlotCount && i < saved.Count; i++)
+            {
+                if (saved[i] > 0) Equip(i, saved[i]);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < SlotCount && i < _startSkillIds.Length; i++)
+            {
+                if (_startSkillIds[i] > 0) Equip(i, _startSkillIds[i]);
+            }
+        }
+
+        _suppressSave = false;
+    }
+
+    // 복원 도중에는 매 슬롯마다 디스크에 쓰지 않는다 (방금 읽은 값을 그대로 되쓰는 낭비)
+    private bool _suppressSave;
+
+    private void SaveEquippedSkills()
+    {
+        if (_suppressSave) return;
+
+        var ids = new int[SlotCount];
+        for (int i = 0; i < SlotCount; i++)
+            ids[i] = _slots[i]?.Data.id ?? 0;
+
+        SaveManager.Instance?.SaveSkillSlots(ids);
+    }
 
     public bool Equip(int slotIndex, int skillId)
     {
@@ -69,9 +104,10 @@ public class PlayerSkillManager : MonoBehaviour
         IPlayerSkill skill = PlayerSkillFactory.Create(data);
         if (skill == null) return false;
 
-        Unequip(slotIndex);
+        ClearSlot(slotIndex);   // 교체 — 여기서 저장하면 아래 저장과 겹쳐 디스크에 두 번 쓴다
         _slots[slotIndex] = skill;
         OnSlotChanged?.Invoke(slotIndex, skill);
+        SaveEquippedSkills();
         return true;
     }
 
@@ -120,11 +156,20 @@ public class PlayerSkillManager : MonoBehaviour
 
     public void Unequip(int slotIndex)
     {
-        if (!IsValidSlot(slotIndex) || _slots[slotIndex] == null) return;
+        if (!ClearSlot(slotIndex)) return;
+
+        SaveEquippedSkills();
+    }
+
+    // 슬롯 비우기 본체. 교체(Equip)는 저장 없이 이것만 쓰고 자기가 한 번만 저장한다.
+    private bool ClearSlot(int slotIndex)
+    {
+        if (!IsValidSlot(slotIndex) || _slots[slotIndex] == null) return false;
 
         EndSkill(slotIndex);
         _slots[slotIndex] = null;
         OnSlotChanged?.Invoke(slotIndex, null);
+        return true;
     }
 
     public IPlayerSkill GetSkill(int slotIndex) => IsValidSlot(slotIndex) ? _slots[slotIndex] : null;
@@ -137,6 +182,19 @@ public class PlayerSkillManager : MonoBehaviour
         if (skill == null) return 0f;
 
         return Mathf.Max(0f, _lastUsedTime[slotIndex] + skill.Cooldown - Time.time);
+    }
+
+    // 지속시간이 있는 스킬이 켜져 있는 동안 남은 시간(초), 아니면 0.
+    // 스킬이 각자 세는 _elapsed가 아니라 사용 시각을 기준으로 잡는다 — 매니저가 이미 갖고 있는 값이라
+    // 스킬 구현을 건드리지 않고 UI에서 바로 쓸 수 있다.
+    public float GetDurationRemaining(int slotIndex)
+    {
+        if (!IsActive(slotIndex)) return 0f;
+
+        IPlayerSkill skill = GetSkill(slotIndex);
+        if (skill == null || skill.Data.duration <= 0f) return 0f;
+
+        return Mathf.Max(0f, _lastUsedTime[slotIndex] + skill.Data.duration - Time.time);
     }
 
     public bool CanUse(int slotIndex)

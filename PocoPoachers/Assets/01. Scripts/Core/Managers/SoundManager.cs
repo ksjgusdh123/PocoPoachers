@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class SoundManager : Singleton<SoundManager>
@@ -72,6 +72,19 @@ public class SoundManager : Singleton<SoundManager>
         if (data == null || string.IsNullOrEmpty(data.Path)) return;
 
         PlaySfxClip(ResourceManager.GetInstance().Load<AudioClip>(data.Path), data.Volume);
+    }
+
+    // 효과음 길이(초). 클립을 못 찾으면 0.
+    // 두 효과음을 끊김 없이 이어 재생할 때 다음 소리의 시작 시점을 잡는 데 쓴다.
+    public float GetSfxLength(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return 0f;
+
+        var data = SoundTable.Instance.Get(key);
+        if (data == null || string.IsNullOrEmpty(data.Path)) return 0f;
+
+        var clip = ResourceManager.GetInstance().Load<AudioClip>(data.Path);
+        return clip != null ? clip.length : 0f;
     }
 
     // 총성처럼 발생 위치가 있는 효과음. 2D PlaySfx로 재생하면 맵 반대편 총성이 귀 옆에서 울린다.

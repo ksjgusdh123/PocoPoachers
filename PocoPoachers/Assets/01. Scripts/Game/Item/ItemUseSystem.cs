@@ -43,12 +43,8 @@ public static class ItemUseSystem
             case EffectType.HP:
                 _playerStat.Heal(itemData.effect_value);
                 break;
-            case EffectType.Hunger:
             case EffectType.Thirst:
                 _playerStat.ChargeBattery(itemData.effect_value);
-                break;
-            case EffectType.Stamina:
-                _playerStat.RestoreStamina(itemData.effect_value);
                 break;
         }
 
