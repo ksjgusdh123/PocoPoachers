@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public static class RoomSync
@@ -573,5 +573,69 @@ public static class RoomSync
             ItemCount = itemCounts,
             ItemUids = itemUids,
         }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
+    }
+
+    // ── 화로 ──────────────────────────────────────────────────
+    // 내용물과 제련 진행의 권위는 호스트에 있다. 게스트는 요청만 보내고 결과를 되돌려받는다.
+
+    // 게스트 → 호스트: 광석 투입 요청 (게스트는 이미 자기 인벤에서 뺀 상태 — 거절되면 환불받는다)
+    public static void FurnaceInsert(int itemId, int amount)
+    {
+        if (RoomManager.IsHost) return;
+
+        PacketBuilder.SendReliableToHost(new G_FurnaceInsertT
+        {
+            ItemId = itemId,
+            Amount = amount,
+        }, G_FurnaceInsert.Pack, PacketType.G_FurnaceInsert);
+    }
+
+    // 게스트 → 호스트: 결과물 수령(true) / 안 녹은 광석 회수(false) 요청
+    public static void FurnaceTake(bool takeOutput)
+    {
+        if (RoomManager.IsHost) return;
+
+        PacketBuilder.SendReliableToHost(new G_FurnaceTakeT
+        {
+            TakeOutput = takeOutput,
+        }, G_FurnaceTake.Pack, PacketType.G_FurnaceTake);
+    }
+
+    // 호스트 → 전체: 화로 내용물이 바뀔 때만 보낸다 (게이지는 게스트가 로컬로 이어 센다)
+    public static void FurnaceState(int inputItemId, int inputCount, int outputItemId, int outputCount, float elapsed)
+    {
+        if (!RoomManager.HasGuests) return;
+
+        PacketBuilder.BroadcastReliableToGuests(BuildFurnaceState(inputItemId, inputCount, outputItemId, outputCount, elapsed),
+            H_FurnaceState.Pack, PacketType.H_FurnaceState);
+    }
+
+    // 호스트 → 특정 게스트: 입장/씬 진입 스냅샷
+    public static void FurnaceStateTo(int guestId, int inputItemId, int inputCount, int outputItemId, int outputCount, float elapsed)
+    {
+        PacketBuilder.SendReliableToGuest(guestId, BuildFurnaceState(inputItemId, inputCount, outputItemId, outputCount, elapsed),
+            H_FurnaceState.Pack, PacketType.H_FurnaceState);
+    }
+
+    private static H_FurnaceStateT BuildFurnaceState(int inputItemId, int inputCount, int outputItemId, int outputCount, float elapsed)
+    {
+        return new H_FurnaceStateT
+        {
+            InputItemId  = inputItemId,
+            InputCount   = inputCount,
+            OutputItemId = outputItemId,
+            OutputCount  = outputCount,
+            Elapsed      = elapsed,
+        };
+    }
+
+    // 호스트 → 요청한 게스트: 결과물 수령 / 광석 회수 / 투입 거절 환불 공용
+    public static void FurnaceGive(int guestId, int itemId, int amount)
+    {
+        PacketBuilder.SendReliableToGuest(guestId, new H_FurnaceGiveT
+        {
+            ItemId = itemId,
+            Amount = amount,
+        }, H_FurnaceGive.Pack, PacketType.H_FurnaceGive);
     }
 }

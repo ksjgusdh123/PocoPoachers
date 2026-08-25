@@ -89,6 +89,10 @@ public struct FlatPacket : IFlatbufferObject
   public H_EscapeState TypeAsH_EscapeState() { return Type<H_EscapeState>().Value; }
   public G_Nickname TypeAsG_Nickname() { return Type<G_Nickname>().Value; }
   public H_Roster TypeAsH_Roster() { return Type<H_Roster>().Value; }
+  public G_FurnaceInsert TypeAsG_FurnaceInsert() { return Type<G_FurnaceInsert>().Value; }
+  public G_FurnaceTake TypeAsG_FurnaceTake() { return Type<G_FurnaceTake>().Value; }
+  public H_FurnaceState TypeAsH_FurnaceState() { return Type<H_FurnaceState>().Value; }
+  public H_FurnaceGive TypeAsH_FurnaceGive() { return Type<H_FurnaceGive>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -327,6 +331,18 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_Roster:
         _o.Type.Value = this.Type<H_Roster>().HasValue ? this.Type<H_Roster>().Value.UnPack() : null;
+        break;
+      case PacketType.G_FurnaceInsert:
+        _o.Type.Value = this.Type<G_FurnaceInsert>().HasValue ? this.Type<G_FurnaceInsert>().Value.UnPack() : null;
+        break;
+      case PacketType.G_FurnaceTake:
+        _o.Type.Value = this.Type<G_FurnaceTake>().HasValue ? this.Type<G_FurnaceTake>().Value.UnPack() : null;
+        break;
+      case PacketType.H_FurnaceState:
+        _o.Type.Value = this.Type<H_FurnaceState>().HasValue ? this.Type<H_FurnaceState>().Value.UnPack() : null;
+        break;
+      case PacketType.H_FurnaceGive:
+        _o.Type.Value = this.Type<H_FurnaceGive>().HasValue ? this.Type<H_FurnaceGive>().Value.UnPack() : null;
         break;
     }
   }

@@ -75,6 +75,10 @@ public enum PacketType : byte
   H_EscapeState = 68,
   G_Nickname = 69,
   H_Roster = 70,
+  G_FurnaceInsert = 71,
+  G_FurnaceTake = 72,
+  H_FurnaceState = 73,
+  H_FurnaceGive = 74,
 };
 
 public class PacketTypeUnion {
@@ -227,6 +231,14 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_Nickname(G_NicknameT _g_nickname) { return new PacketTypeUnion{ Type = PacketType.G_Nickname, Value = _g_nickname }; }
   public H_RosterT AsH_Roster() { return this.As<H_RosterT>(); }
   public static PacketTypeUnion FromH_Roster(H_RosterT _h_roster) { return new PacketTypeUnion{ Type = PacketType.H_Roster, Value = _h_roster }; }
+  public G_FurnaceInsertT AsG_FurnaceInsert() { return this.As<G_FurnaceInsertT>(); }
+  public static PacketTypeUnion FromG_FurnaceInsert(G_FurnaceInsertT _g_furnaceinsert) { return new PacketTypeUnion{ Type = PacketType.G_FurnaceInsert, Value = _g_furnaceinsert }; }
+  public G_FurnaceTakeT AsG_FurnaceTake() { return this.As<G_FurnaceTakeT>(); }
+  public static PacketTypeUnion FromG_FurnaceTake(G_FurnaceTakeT _g_furnacetake) { return new PacketTypeUnion{ Type = PacketType.G_FurnaceTake, Value = _g_furnacetake }; }
+  public H_FurnaceStateT AsH_FurnaceState() { return this.As<H_FurnaceStateT>(); }
+  public static PacketTypeUnion FromH_FurnaceState(H_FurnaceStateT _h_furnacestate) { return new PacketTypeUnion{ Type = PacketType.H_FurnaceState, Value = _h_furnacestate }; }
+  public H_FurnaceGiveT AsH_FurnaceGive() { return this.As<H_FurnaceGiveT>(); }
+  public static PacketTypeUnion FromH_FurnaceGive(H_FurnaceGiveT _h_furnacegive) { return new PacketTypeUnion{ Type = PacketType.H_FurnaceGive, Value = _h_furnacegive }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -301,6 +313,10 @@ public class PacketTypeUnion {
       case PacketType.H_EscapeState: return H_EscapeState.Pack(builder, _o.AsH_EscapeState()).Value;
       case PacketType.G_Nickname: return G_Nickname.Pack(builder, _o.AsG_Nickname()).Value;
       case PacketType.H_Roster: return H_Roster.Pack(builder, _o.AsH_Roster()).Value;
+      case PacketType.G_FurnaceInsert: return G_FurnaceInsert.Pack(builder, _o.AsG_FurnaceInsert()).Value;
+      case PacketType.G_FurnaceTake: return G_FurnaceTake.Pack(builder, _o.AsG_FurnaceTake()).Value;
+      case PacketType.H_FurnaceState: return H_FurnaceState.Pack(builder, _o.AsH_FurnaceState()).Value;
+      case PacketType.H_FurnaceGive: return H_FurnaceGive.Pack(builder, _o.AsH_FurnaceGive()).Value;
     }
   }
 }
@@ -523,6 +539,18 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_Roster:
         result = H_RosterVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_FurnaceInsert:
+        result = G_FurnaceInsertVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_FurnaceTake:
+        result = G_FurnaceTakeVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_FurnaceState:
+        result = H_FurnaceStateVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_FurnaceGive:
+        result = H_FurnaceGiveVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

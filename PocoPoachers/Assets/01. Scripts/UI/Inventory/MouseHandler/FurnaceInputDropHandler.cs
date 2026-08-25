@@ -44,12 +44,12 @@ public class FurnaceInputDropHandler : ItemHolderDropHandler
     }
 
     // 광석을 들고 있는 주체가 슬롯이 아니라 화로이므로, 반환도 화로를 거친다.
+    // 표시는 지우지 않는다 — 게스트는 호스트 응답이 와야 실제로 비고, 그때 FurnaceUI가 갱신한다.
     public override void Unequip()
     {
         if (Furnace.Instance == null || _inventoryUI == null) return;
-        if (!Furnace.Instance.TryTakeInput(_inventoryUI.Inventory)) return;
 
-        ClearDisplay();
+        Furnace.Instance.TryTakeInput(_inventoryUI.Inventory);
     }
 
     // 화로가 제련 중이면 매 프레임 호출되므로, 바뀐 게 없으면 스프라이트 로드까지 가지 않고 끊는다.
