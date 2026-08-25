@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -30,6 +30,10 @@ public abstract class GunBase : EquippableItemBase
     public Transform Muzzle => _muzzle;
     public int CurrentAmmo => _currentAmmo;
     public bool IsReloading => _isReloading;
+
+    // 스킬 버프 — 켜져 있는 동안 발사해도 탄창이 줄지 않는다.
+    // 소유자(WeaponController)가 무기를 바꿀 때마다 새 총에 다시 걸어준다.
+    public bool InfiniteAmmo { get; set; }
     public GameObject Owner
     {
         get => _owner;
@@ -80,6 +84,12 @@ public abstract class GunBase : EquippableItemBase
     private bool _isReloading;
     private float _nextFireTime;
     private Coroutine _reloadCoroutine;
+
+    // 즉시 장전의 시작음→마무리음 연결 재생
+    private Coroutine _instantReloadSfx;
+
+    // 재장전이 시작된 시각 — 즉시 장전이 끼어들 때 시작음의 남은 길이를 계산하는 데 쓴다
+    private float _reloadStartTime;
 
     private Vector3 _originLocalPos;
     private float _recoilDist;
@@ -144,8 +154,11 @@ public abstract class GunBase : EquippableItemBase
         _soundGizmoPosition = _muzzle.position;
         _soundGizmoRange = _stat.SoundRange;
         _soundGizmoTimer = 1f;
-        _currentAmmo--;
-        OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
+        if (!InfiniteAmmo)
+        {
+            _currentAmmo--;
+            OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
+        }
         // 로컬 낙관적 반영. 호스트만 권위 있는 내구도를 계산해 브로드캐스트한다.
         SetDurability(_currentDurability - _durabilityDecreasePerShot);
         if (RoomManager.IsHost)
@@ -272,6 +285,7 @@ public abstract class GunBase : EquippableItemBase
     private IEnumerator ReloadRoutine(int availableAmmo)
     {
         _isReloading = true;
+        _reloadStartTime = Time.time;
         if (_isLocalPlayerOwner)
         {
             OnReloadStarted?.Invoke(_stat.ReloadTime);
@@ -280,16 +294,75 @@ public abstract class GunBase : EquippableItemBase
             SoundManager.GetInstance().PlaySfx(_stat.ReloadStartSound);
         }
         yield return new WaitForSeconds(_stat.ReloadTime);
+        _reloadCoroutine = null;
+        FinishReload(availableAmmo);
+    }
+
+    // 재장전 모션을 건너뛰고 그 자리에서 탄창을 채운다 (스킬용).
+    // 진행 중이던 재장전이 있으면 남은 대기를 버리고 완료 처리한다.
+    public bool InstantReload(int availableAmmo)
+    {
+        if (availableAmmo <= 0 || _currentAmmo >= _stat.MaxMagazine) return false;
+
+        bool wasReloading = _isReloading;
+        if (_reloadCoroutine != null)
+        {
+            StopCoroutine(_reloadCoroutine);
+            _reloadCoroutine = null;
+        }
+
+        // 게이지는 재장전이 실제로 떠 있던 경우에만 내린다
+        if (wasReloading && _isLocalPlayerOwner)
+            CrosshairUI.Instance?.StopReloadGauge();
+
+        // 탄창은 즉시 채우되 마무리음은 여기서 내지 않는다 — 시작음과 이어 붙여야 하기 때문
+        FinishReload(availableAmmo, playEndSound: false);
+
+        if (_isLocalPlayerOwner)
+        {
+            if (_instantReloadSfx != null) StopCoroutine(_instantReloadSfx);
+            _instantReloadSfx = StartCoroutine(InstantReloadSfxRoutine(wasReloading));
+        }
+        return true;
+    }
+
+    // 즉시 장전은 탄창을 곧바로 채우지만, 소리는 "장전 시작음 → 마무리음"이 이어져 들려야 한다.
+    // 이미 재장전 중이었다면 시작음이 벌써 나가고 있으므로 남은 길이만큼만 기다린다.
+    private IEnumerator InstantReloadSfxRoutine(bool startSoundAlreadyPlaying)
+    {
+        var sound = SoundManager.GetInstance();
+        float startLength = sound.GetSfxLength(_stat.ReloadStartSound);
+        float wait;
+
+        if (startSoundAlreadyPlaying)
+        {
+            wait = Mathf.Max(0f, startLength - (Time.time - _reloadStartTime));
+        }
+        else
+        {
+            sound.PlaySfx(_stat.ReloadStartSound);
+            wait = startLength;
+        }
+
+        if (wait > 0f) yield return new WaitForSeconds(wait);
+
+        sound.PlaySfx(_stat.ReloadEndSound);
+        _instantReloadSfx = null;
+    }
+
+    // 탄창 채우기 + 완료 통보. 정상 재장전과 즉시 장전이 공유한다.
+    // playEndSound=false는 즉시 장전용 — 마무리음을 시작음 뒤에 붙여 내려고 호출측이 직접 재생한다.
+    private void FinishReload(int availableAmmo, bool playEndSound = true)
+    {
         int needed = _stat.MaxMagazine - _currentAmmo;
         int actual = Mathf.Min(needed, availableAmmo);
         _currentAmmo += actual;
         _isReloading = false;
-        _reloadCoroutine = null;
         OnAmmoChanged?.Invoke(_currentAmmo, _stat.MaxMagazine);
         if (_isLocalPlayerOwner)
         {
             OnReloadEnded?.Invoke();
-            SoundManager.GetInstance().PlaySfx(_stat.ReloadEndSound);
+            if (playEndSound) SoundManager.GetInstance().PlaySfx(_stat.ReloadEndSound);
         }
         OnReloadComplete?.Invoke(actual);
     }
