@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public static partial class PacketHandlers
 {
@@ -31,7 +31,7 @@ public static partial class PacketHandlers
 
         if (stat is RemotePlayerStat remote)
         {
-            remote.ApplyNetworkStats(packet.Hp, packet.MaxHp, packet.Stamina, packet.Battery, packet.Defense);
+            remote.ApplyNetworkStats(packet.Hp, packet.MaxHp, packet.Stamina, packet.Battery, packet.Defense, packet.CritMultiplier, packet.RangeMultiplier);
             return;
         }
 

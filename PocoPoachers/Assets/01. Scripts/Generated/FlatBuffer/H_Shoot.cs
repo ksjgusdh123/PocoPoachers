@@ -25,6 +25,14 @@ public struct H_Shoot : IFlatbufferObject
   public Vec3? Directions(int j) { int o = __p.__offset(16); return o != 0 ? (Vec3?)(new Vec3()).__assign(__p.__vector(o) + j * 12, __p.bb) : null; }
   public int DirectionsLength { get { int o = __p.__offset(16); return o != 0 ? __p.__vector_len(o) : 0; } }
   public bool IsHeadshot { get { int o = __p.__offset(18); return o != 0 ? 0!=__p.bb.Get(o + __p.bb_pos) : (bool)false; } }
+  public int BulletSeqs(int j) { int o = __p.__offset(20); return o != 0 ? __p.bb.GetInt(__p.__vector(o) + j * 4) : (int)0; }
+  public int BulletSeqsLength { get { int o = __p.__offset(20); return o != 0 ? __p.__vector_len(o) : 0; } }
+#if ENABLE_SPAN_T
+  public Span<int> GetBulletSeqsBytes() { return __p.__vector_as_span<int>(20, 4); }
+#else
+  public ArraySegment<byte>? GetBulletSeqsBytes() { return __p.__vector_as_arraysegment(20); }
+#endif
+  public int[] GetBulletSeqsArray() { return __p.__vector_as_array<int>(20); }
 
   public static Offset<H_Shoot> CreateH_Shoot(FlatBufferBuilder builder,
       int player_id = 0,
@@ -34,8 +42,10 @@ public struct H_Shoot : IFlatbufferObject
       float damage = 0.0f,
       float max_range = 0.0f,
       VectorOffset directionsOffset = default(VectorOffset),
-      bool is_headshot = false) {
-    builder.StartTable(8);
+      bool is_headshot = false,
+      VectorOffset bullet_seqsOffset = default(VectorOffset)) {
+    builder.StartTable(9);
+    H_Shoot.AddBulletSeqs(builder, bullet_seqsOffset);
     H_Shoot.AddDirections(builder, directionsOffset);
     H_Shoot.AddMaxRange(builder, max_range);
     H_Shoot.AddDamage(builder, damage);
@@ -47,7 +57,7 @@ public struct H_Shoot : IFlatbufferObject
     return H_Shoot.EndH_Shoot(builder);
   }
 
-  public static void StartH_Shoot(FlatBufferBuilder builder) { builder.StartTable(8); }
+  public static void StartH_Shoot(FlatBufferBuilder builder) { builder.StartTable(9); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddOrigin(FlatBufferBuilder builder, Offset<Vec3> originOffset) { builder.AddStruct(1, originOffset.Value, 0); }
   public static void AddDirection(FlatBufferBuilder builder, Offset<Vec3> directionOffset) { builder.AddStruct(2, directionOffset.Value, 0); }
@@ -57,6 +67,12 @@ public struct H_Shoot : IFlatbufferObject
   public static void AddDirections(FlatBufferBuilder builder, VectorOffset directionsOffset) { builder.AddOffset(6, directionsOffset.Value, 0); }
   public static void StartDirectionsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(12, numElems, 4); }
   public static void AddIsHeadshot(FlatBufferBuilder builder, bool isHeadshot) { builder.AddBool(7, isHeadshot, false); }
+  public static void AddBulletSeqs(FlatBufferBuilder builder, VectorOffset bulletSeqsOffset) { builder.AddOffset(8, bulletSeqsOffset.Value, 0); }
+  public static VectorOffset CreateBulletSeqsVector(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddInt(data[i]); return builder.EndVector(); }
+  public static VectorOffset CreateBulletSeqsVectorBlock(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateBulletSeqsVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateBulletSeqsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartBulletSeqsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<H_Shoot> EndH_Shoot(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_Shoot>(o);
@@ -76,6 +92,8 @@ public struct H_Shoot : IFlatbufferObject
     _o.Directions = new List<Vec3T>();
     for (var _j = 0; _j < this.DirectionsLength; ++_j) {_o.Directions.Add(this.Directions(_j).HasValue ? this.Directions(_j).Value.UnPack() : null);}
     _o.IsHeadshot = this.IsHeadshot;
+    _o.BulletSeqs = new List<int>();
+    for (var _j = 0; _j < this.BulletSeqsLength; ++_j) {_o.BulletSeqs.Add(this.BulletSeqs(_j));}
   }
   public static Offset<H_Shoot> Pack(FlatBufferBuilder builder, H_ShootT _o) {
     if (_o == null) return default(Offset<H_Shoot>);
@@ -84,6 +102,11 @@ public struct H_Shoot : IFlatbufferObject
       StartDirectionsVector(builder, _o.Directions.Count);
       for (var _j = _o.Directions.Count - 1; _j >= 0; --_j) { Vec3.Pack(builder, _o.Directions[_j]); }
       _directions = builder.EndVector();
+    }
+    var _bullet_seqs = default(VectorOffset);
+    if (_o.BulletSeqs != null) {
+      var __bullet_seqs = _o.BulletSeqs.ToArray();
+      _bullet_seqs = CreateBulletSeqsVector(builder, __bullet_seqs);
     }
     return CreateH_Shoot(
       builder,
@@ -94,7 +117,8 @@ public struct H_Shoot : IFlatbufferObject
       _o.Damage,
       _o.MaxRange,
       _directions,
-      _o.IsHeadshot);
+      _o.IsHeadshot,
+      _bullet_seqs);
   }
 }
 
@@ -108,6 +132,7 @@ public class H_ShootT
   public float MaxRange { get; set; }
   public List<Vec3T> Directions { get; set; }
   public bool IsHeadshot { get; set; }
+  public List<int> BulletSeqs { get; set; }
 
   public H_ShootT() {
     this.PlayerId = 0;
@@ -118,6 +143,7 @@ public class H_ShootT
     this.MaxRange = 0.0f;
     this.Directions = null;
     this.IsHeadshot = false;
+    this.BulletSeqs = null;
   }
 }
 
@@ -135,6 +161,7 @@ static public class H_ShootVerify
       && verifier.VerifyField(tablePos, 14 /*MaxRange*/, 4 /*float*/, 4, false)
       && verifier.VerifyVectorOfData(tablePos, 16 /*Directions*/, 12 /*Vec3*/, false)
       && verifier.VerifyField(tablePos, 18 /*IsHeadshot*/, 1 /*bool*/, 1, false)
+      && verifier.VerifyVectorOfData(tablePos, 20 /*BulletSeqs*/, 4 /*int*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

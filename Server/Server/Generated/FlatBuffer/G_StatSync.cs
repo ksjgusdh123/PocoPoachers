@@ -21,14 +21,20 @@ public struct G_StatSync : IFlatbufferObject
   public float Stamina { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float Battery { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float Defense { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public float CritMultiplier { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)2.0f; } }
+  public float RangeMultiplier { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)1.0f; } }
 
   public static Offset<G_StatSync> CreateG_StatSync(FlatBufferBuilder builder,
       float hp = 0.0f,
       float max_hp = 0.0f,
       float stamina = 0.0f,
       float battery = 0.0f,
-      float defense = 0.0f) {
-    builder.StartTable(5);
+      float defense = 0.0f,
+      float crit_multiplier = 2.0f,
+      float range_multiplier = 1.0f) {
+    builder.StartTable(7);
+    G_StatSync.AddRangeMultiplier(builder, range_multiplier);
+    G_StatSync.AddCritMultiplier(builder, crit_multiplier);
     G_StatSync.AddDefense(builder, defense);
     G_StatSync.AddBattery(builder, battery);
     G_StatSync.AddStamina(builder, stamina);
@@ -37,12 +43,14 @@ public struct G_StatSync : IFlatbufferObject
     return G_StatSync.EndG_StatSync(builder);
   }
 
-  public static void StartG_StatSync(FlatBufferBuilder builder) { builder.StartTable(5); }
+  public static void StartG_StatSync(FlatBufferBuilder builder) { builder.StartTable(7); }
   public static void AddHp(FlatBufferBuilder builder, float hp) { builder.AddFloat(0, hp, 0.0f); }
   public static void AddMaxHp(FlatBufferBuilder builder, float maxHp) { builder.AddFloat(1, maxHp, 0.0f); }
   public static void AddStamina(FlatBufferBuilder builder, float stamina) { builder.AddFloat(2, stamina, 0.0f); }
   public static void AddBattery(FlatBufferBuilder builder, float battery) { builder.AddFloat(3, battery, 0.0f); }
   public static void AddDefense(FlatBufferBuilder builder, float defense) { builder.AddFloat(4, defense, 0.0f); }
+  public static void AddCritMultiplier(FlatBufferBuilder builder, float critMultiplier) { builder.AddFloat(5, critMultiplier, 2.0f); }
+  public static void AddRangeMultiplier(FlatBufferBuilder builder, float rangeMultiplier) { builder.AddFloat(6, rangeMultiplier, 1.0f); }
   public static Offset<G_StatSync> EndG_StatSync(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<G_StatSync>(o);
@@ -58,6 +66,8 @@ public struct G_StatSync : IFlatbufferObject
     _o.Stamina = this.Stamina;
     _o.Battery = this.Battery;
     _o.Defense = this.Defense;
+    _o.CritMultiplier = this.CritMultiplier;
+    _o.RangeMultiplier = this.RangeMultiplier;
   }
   public static Offset<G_StatSync> Pack(FlatBufferBuilder builder, G_StatSyncT _o) {
     if (_o == null) return default(Offset<G_StatSync>);
@@ -67,7 +77,9 @@ public struct G_StatSync : IFlatbufferObject
       _o.MaxHp,
       _o.Stamina,
       _o.Battery,
-      _o.Defense);
+      _o.Defense,
+      _o.CritMultiplier,
+      _o.RangeMultiplier);
   }
 }
 
@@ -78,6 +90,8 @@ public class G_StatSyncT
   public float Stamina { get; set; }
   public float Battery { get; set; }
   public float Defense { get; set; }
+  public float CritMultiplier { get; set; }
+  public float RangeMultiplier { get; set; }
 
   public G_StatSyncT() {
     this.Hp = 0.0f;
@@ -85,6 +99,8 @@ public class G_StatSyncT
     this.Stamina = 0.0f;
     this.Battery = 0.0f;
     this.Defense = 0.0f;
+    this.CritMultiplier = 2.0f;
+    this.RangeMultiplier = 1.0f;
   }
 }
 
@@ -99,6 +115,8 @@ static public class G_StatSyncVerify
       && verifier.VerifyField(tablePos, 8 /*Stamina*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 10 /*Battery*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 12 /*Defense*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 14 /*CritMultiplier*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 16 /*RangeMultiplier*/, 4 /*float*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -11,6 +11,7 @@ table G_Shoot
     sound_range:  float;
     directions:   [Vec3]; // 샷건 등 다발 발사의 펠릿별 방향. 비어 있으면 direction 단발로 처리
     is_headshot:  bool;   // 발사 순간 크로스헤어 기준 헤드샷 판정
+    bullet_seqs:  [int]; // directions와 같은 순서. 쏜 클라가 발급하며 (player_id, seq)로 유일하다
 }
 
 table H_Shoot
@@ -23,6 +24,7 @@ table H_Shoot
     max_range:    float;
     directions:   [Vec3]; // 샷건 등 다발 발사의 펠릿별 방향. 비어 있으면 direction 단발로 처리
     is_headshot:  bool;   // 발사 순간 크로스헤어 기준 헤드샷 판정
+    bullet_seqs:  [int]; // directions와 같은 순서. 쏜 클라가 발급하며 (player_id, seq)로 유일하다
 }
 
 // 호스트가 G_Shoot를 거부했을 때 게스트 로컬 탄약/내구도를 권위 값으로 되돌림
@@ -48,6 +50,8 @@ table G_StatSync
     stamina: float;
     battery:  float;
     defense: float;
+    crit_multiplier: float = 2.0; // 크리티컬(헤드샷) 데미지 배율. 기본값이라 평상시엔 기록되지 않는다
+    range_multiplier: float = 1.0; // 탄환 사거리 배율. 기본값이라 평상시엔 기록되지 않는다
 }
 
 table H_StatSync
@@ -58,6 +62,8 @@ table H_StatSync
     stamina:   float;
     battery:    float;
     defense:   float;
+    crit_multiplier: float = 2.0; // 크리티컬(헤드샷) 데미지 배율. 기본값이라 평상시엔 기록되지 않는다
+    range_multiplier: float = 1.0; // 탄환 사거리 배율. 기본값이라 평상시엔 기록되지 않는다
 }
 
 table H_SandbagDestroy
@@ -92,4 +98,26 @@ table G_RescueBeamPlay
 table H_RescueBeamPlay
 {
     player_id: int;
+}
+
+// 무적 동기화 — 게스트→호스트 단방향이면 충분하다.
+// 플레이어 HP는 호스트 권위(H_StatSync)라, 게스트가 알리지 않으면 구르기 무적이 무시된다.
+// 반대 방향은 필요 없다: 게스트 탄환은 적과의 충돌을 판정하지 않고 H_BulletHit만 보고 처리한다.
+// 게스트 자신의 무적(구르기 등)을 호스트에 알린다 — 호스트가 적 공격을 판정하므로 모르면 그냥 맞는다.
+table G_Invincible
+{
+    value: bool;
+}
+
+// 호스트가 판정한 탄환 명중. 게스트 탄환은 적과의 충돌을 스스로 판정하지 않으므로
+// 혈흔·탄환 소멸이 전부 이 통보로만 일어난다 — 무적/회피로 관통한 경우엔 아예 오지 않는다.
+// 빗나간 탄환은 통보 없이 각자 사거리 끝에서 사라지므로, 명중할 때만 오간다.
+table H_BulletHit
+{
+    shooter_id: int;   // 쏜 플레이어
+    seq:        int;   // 그 플레이어가 발급한 탄환 순번
+    pos:        Vec3;
+    normal:     Vec3;
+    is_kill:    bool;  // 히트마커 색 구분용
+    is_headshot: bool;
 }

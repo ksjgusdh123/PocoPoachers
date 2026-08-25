@@ -75,5 +75,10 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.G_FurnaceTake       , PacketHandlers.OnG_FurnaceTake);
         _onRecv.Add(PacketType.H_FurnaceState      , PacketHandlers.OnH_FurnaceState);
         _onRecv.Add(PacketType.H_FurnaceGive       , PacketHandlers.OnH_FurnaceGive);
+        _onRecv.Add(PacketType.G_DroneState        , PacketHandlers.OnG_DroneState);
+        _onRecv.Add(PacketType.H_DroneState        , PacketHandlers.OnH_DroneState);
+        _onRecv.Add(PacketType.H_DroneShoot        , PacketHandlers.OnH_DroneShoot);
+        _onRecv.Add(PacketType.G_Invincible       , PacketHandlers.OnG_Invincible);
+        _onRecv.Add(PacketType.H_BulletHit        , PacketHandlers.OnH_BulletHit);
     }
 }

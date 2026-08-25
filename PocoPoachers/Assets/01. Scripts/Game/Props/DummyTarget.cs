@@ -1,4 +1,4 @@
-using System.Collections;
+﻿using System.Collections;
 using UnityEngine;
 
 public class DummyTarget : StatBase
@@ -20,10 +20,7 @@ public class DummyTarget : StatBase
     // HP 저장값만 1로 바닥을 고정하기 위해 base를 거치지 않고 직접 처리한다
     public override bool TakeDamage(float damage, GameObject attacker = null)
     {
-        if (IsInvincible) return false;
-#if UNITY_EDITOR || DEVELOPMENT_BUILD
-        if (IsGodMode) return false;
-#endif
+        if (IsDamageImmune) return false;
 
         float actualDamage = damage * (1f - Mathf.Clamp01(DefenseRate));
         CurrentHp = Mathf.Max(1f, CurrentHp - actualDamage);

@@ -19,8 +19,8 @@ flowchart TB
     end
 
     subgraph UDP["UDP P2P Star (게임, 게스트는 호스트하고만 통신)"]
-        G["G_* 게스트→호스트 (16종)"]
-        H["H_* 호스트→게스트 (28종)"]
+        G["G_* 게스트→호스트 (18종)"]
+        H["H_* 호스트→게스트 (31종)"]
     end
 
     Client --> TCP
@@ -40,8 +40,8 @@ flowchart TB
 |--------|------|------------|-----|
 | `C_` | Client → Master (TCP) | 5 | `C_Login`, `C_CreateRoom` |
 | `S_` | Master → Client (TCP) | 5 | `S_LoginResult`, `S_GuestJoined` |
-| `G_` | Guest → Host (UDP) | 16 | `G_Move`, `G_ItemGain` |
-| `H_` | Host → Guest(s) (UDP) | 28 | `H_Move`, `H_ItemBoxUpdate` |
+| `G_` | Guest → Host (UDP) | 18 | `G_Move`, `G_ItemGain` |
+| `H_` | Host → Guest(s) (UDP) | 31 | `H_Move`, `H_ItemBoxUpdate` |
 
 `Main.fbs`의 `union PacketType` 안에 `FlatPacket{ type }`으로 전체 목록 정의(약 50종). 핸들러는 패킷 1개당 파일 1개가 아니라 **도메인별 partial class**로 묶여 있다: `GPacketHandlers/`·`HPacketHandlers/` 각 10개 파일(Combat/Durability/Equip/GunAmmo/GunPart/GunState/Item/Movement/Rescue/Room/Stat/Enemy 등), `SPacketHandlers/` 3개 파일(Auth/Heartbeat/Room).
 
@@ -136,6 +136,8 @@ UDP 수신 핸들러는 **반드시 메인 스레드**에서 실행돼야 한다
 | `G/H_Equip` | 양방향 | 장비 변경 |
 | `G/H_Durability` | G→H 요청, H→G 결과 | 무기 내구도 |
 | `G/H_StatSync` | 양방향 | HP 등 스탯 (호스트가 `GuestValidator`로 클램프) |
+| `G_Invincible` | G→H (신뢰) | 내 캐릭터의 무적 on/off (구르기 등) |
+| `H_Invincible` | H→G (신뢰) | 대상의 무적 on/off — `kind` 0=Player(playerId) 1=Enemy(EnemyId) |
 | `G/H_Leave` | — | 퇴장 |
 | `G_SceneReady` | G→H (신뢰) | 씬 로드 완료 알림 — 호스트가 박스/적 스냅샷 전송 트리거 |
 | `H_MoveRequest` | H→G (신뢰) | 팀 이동 제안 — 게스트가 수락/거절 팝업을 띄운다 |
@@ -162,12 +164,31 @@ UDP 수신 핸들러는 **반드시 메인 스레드**에서 실행돼야 한다
 | `G_FurnaceTake` | G→H (신뢰) | 화로 결과물 수령(`take_output=true`) / 안 녹은 광석 회수(false) |
 | `H_FurnaceState` | H→G (신뢰) | 화로 내용물 스냅샷 — 바뀔 때만 전송, 진행 게이지는 게스트가 `elapsed`부터 로컬로 이어 센다 |
 | `H_FurnaceGive` | H→G (신뢰) | 화로가 요청자에게 아이템 지급 — 결과물 수령/광석 회수/투입 거절 환불 공용 |
+| `G_DroneState` | G→H (신뢰) | 추가탄 드론 버프 켜짐/꺼짐 + 유도탄 데미지 |
+| `H_DroneState` | H→G (신뢰) | 특정 플레이어의 드론 켜짐/꺼짐 — 각 클라가 그 플레이어 옆에 로컬로 띄운다 |
+| `H_DroneShoot` | H→G | 드론 유도탄 발사 (누구의 드론이 어느 적을) — 소유자 본인에게도 보낸다 |
 
 상세 교환 규칙: [inventory-exchange.md](../design/inventory-exchange.md)
 
 ### 적 (전부 호스트→게스트 단방향, `G_Enemy*` 없음)
 
 `H_EnemySpawn`, `H_EnemyMove`, `H_EnemyHit`, `H_EnemyDie`, `H_EnemySpeak`, `H_EnemyShoot`
+
+### 무적 동기화
+
+**무적은 총알이 관통할지 막힐지를 정하므로 클라마다 따로 판단하면 안 된다.** 동기화가 없으면 회피 중인 적에게
+게스트의 총알이 박히고 헛되이 피가 튄다 — 호스트에서는 관통하는데도.
+
+전파 지점은 `StatBase.SetInvincible` **한 곳뿐**이다. 구르기(`PlayerDodge`, `DodgeRollSkill`)든 앞으로 추가될
+어떤 효과든 이 입구만 지나면 자동으로 전파되므로, 호출부는 네트워크를 몰라도 된다.
+네트워크로 받은 값은 `ApplyInvincibleFromNetwork`로 넣어 되돌려 보내지 않는다.
+
+| 주체 | 동작 |
+|------|------|
+| 호스트 | `H_Invincible` 브로드캐스트. 대상은 `EnemyNetSync`(적) → `WorldObject`(원격 플레이어) → `PlayerStat`(자기 자신) 순으로 식별 |
+| 게스트 | **자기 캐릭터만** `G_Invincible`로 보고 — 적/남의 무적은 호스트가 정한다. 호스트는 그 게스트의 `RemotePlayerStat`에 반영하고 나머지에게 중계 |
+
+게스트→호스트 방향이 없으면 게스트가 굴러도 호스트는 모르고 그대로 데미지를 넣는다.
 
 ### 쉘터 창고 (Storage)
 
@@ -187,6 +208,31 @@ UDP 수신 핸들러는 **반드시 메인 스레드**에서 실행돼야 한다
 솔로는 `RoomManager.IsHost`가 true라 그대로 호스트 경로를 타고 패킷은 나가지 않는다.
 
 > 발전기(`Generator`)·제작대(`CraftingTable`)는 아직 로컬 전용이다 — 전력량이 클라이언트마다 다르게 보인다.
+
+### 추가탄 드론 (스킬 10004)
+
+드론은 플레이어를 따라다니는 장식이라 **위치를 동기화하지 않는다.** 켜짐/꺼짐만 알리면 각 클라이언트가
+`CombatDrone.SetActiveFor`로 해당 플레이어 오브젝트의 자식으로 띄운다(자식이라 디스폰·씬 전환 때 같이 사라진다).
+패킷은 스킬 1회당 2번(켜짐/꺼짐)뿐이다.
+
+호스트가 게스트의 드론까지 자기 씬에 들고 있어야 하는 이유가 핵심이다 — 데미지는 호스트에서만
+적용되므로(`Bullet._applyDamage`), 호스트에 드론이 없으면 게스트의 유도탄은 연출로 끝난다.
+호스트는 `OnG_Shoot`에서 게스트의 권위 총알을 시뮬레이션하다 명중하면
+`CombatDrone.FindFor(guestId)?.TryFireAt(target)`으로 대신 쏜다. **명중마다 패킷이 오가지 않고 탄약도 소모되지 않는다**
+(`TryAuthorizeHostShot`을 거치지 않기 때문).
+
+`damage`는 게스트의 스킬 테이블·강화에서 나온 값이라 호스트가 재계산할 수 없어 요청값을 신뢰하되 상한만 검증한다.
+
+**발사 판단은 전부 호스트가 한다.** 게스트는 자기 드론이라도 추측 발사하지 않고 `H_DroneShoot`을 받아서 그린다
+(그래서 소유자 본인에게도 보낸다 — `H_Shoot` 재전파가 원 발사자를 건너뛰는 것과 반대다).
+연출과 실제 피해가 항상 일치하고 발사 간격도 호스트 한 곳에서만 돌아 어긋나지 않는 대신,
+자기 드론의 발사가 왕복 지연만큼 늦게 보인다. 드론은 자동 지원이라 이쪽을 택했다.
+
+`H_Shoot`은 원점+방향만 실어 곡선을 표현할 수 없으므로 재사용하지 않는다. 대신 `enemy_id`만 보내고
+각 클라가 `EnemyNetSync.TryGetGameObject`로 자기 로컬 적을 찾아 유도시킨다 —
+속도·사거리·선회율은 드론 프리팹 값이라 모든 클라가 동일하다.
+
+> 미구현: 난입 게스트는 이미 켜져 있는 드론을 보지 못한다(지속 10초라 스냅샷 대상에서 제외).
 
 ### 씬 전환 시 월드 오브젝트 동기화
 

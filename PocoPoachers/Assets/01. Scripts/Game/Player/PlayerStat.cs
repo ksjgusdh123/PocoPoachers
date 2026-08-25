@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -75,7 +75,14 @@ public class PlayerStat : StatBase
 
     protected override void OnLocalHpChanged(float hp, float maxHp)
     {
-        RoomSync.StatSync(hp, maxHp, CurrentStamina, CurrentBattery, DefenseRate);
+        RoomSync.StatSync(hp, maxHp, CurrentStamina, CurrentBattery, DefenseRate, CritMultiplier, RangeMultiplier);
+    }
+
+    // 스킬 버프처럼 HP와 무관하게 스탯이 바뀐 순간 즉시 알린다.
+    // 주기 발신(VitalSyncInterval)만 믿으면 버프가 한 주기만큼 늦게 걸리고 늦게 풀린다.
+    public void SyncStatsNow()
+    {
+        RoomSync.StatSync(CurrentHp, MaxHp, CurrentStamina, CurrentBattery, DefenseRate, CritMultiplier, RangeMultiplier);
     }
 
     private void Start()
@@ -97,7 +104,7 @@ public class PlayerStat : StatBase
         if (_vitalSyncTimer <= 0f)
         {
             _vitalSyncTimer = VitalSyncInterval;
-            RoomSync.StatSync(CurrentHp, MaxHp, CurrentStamina, CurrentBattery, DefenseRate);
+            RoomSync.StatSync(CurrentHp, MaxHp, CurrentStamina, CurrentBattery, DefenseRate, CritMultiplier, RangeMultiplier);
         }
     }
 

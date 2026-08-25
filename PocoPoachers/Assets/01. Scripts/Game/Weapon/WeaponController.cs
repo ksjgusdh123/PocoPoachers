@@ -29,6 +29,11 @@ public class WeaponController : EquipableController
     }
     private bool _infiniteAmmo;
 
+    // 스킬 버프 — 켜져 있는 동안 모든 사격이 헤드샷으로 판정된다.
+    // 판정 자체가 CheckHeadshot 한 곳에서 나오고 그 결과가 기존 is_headshot 필드로 전파되므로,
+    // 네트워크에 추가로 실을 게 없다 (호스트는 게스트가 보낸 헤드샷 여부를 그대로 신뢰한다).
+    public bool ForceHeadshot { get; set; }
+
     // 스킬 버프 — 켜져 있는 동안 재장전이 대기 없이 곧바로 끝난다.
     // 재장전 진입점이 TryReloadFromInventory 하나뿐이라 총에 따로 걸어줄 필요가 없다.
     public bool InstantReloadBuff { get; set; }
@@ -453,6 +458,8 @@ public class WeaponController : EquipableController
     // GunBase.HeadshotProvider로 주입되어 TryShoot() 내부에서 호출된다.
     private bool CheckHeadshot()
     {
+        if (ForceHeadshot) return true;
+
         if (CrosshairUI.Instance == null || Camera.main == null) return false;
 
         Ray ray = Camera.main.ScreenPointToRay(CrosshairUI.Instance.ScreenPosition);

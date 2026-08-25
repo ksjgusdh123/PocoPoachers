@@ -22,6 +22,14 @@ public static class PlayerSkillFactory
                 return new InstantReloadSkill(data);
             case PlayerSkillId.InfiniteAmmo:
                 return new InfiniteAmmoSkill(data);
+            case PlayerSkillId.ExtraShot:
+                return new ExtraShotSkill(data);
+            case PlayerSkillId.ForceHeadshot:
+                return new ForceHeadshotSkill(data);
+            case PlayerSkillId.CritDamage:
+                return new CritDamageSkill(data);
+            case PlayerSkillId.RangeBoost:
+                return new RangeBoostSkill(data);
             default:
                 Debug.LogWarning($"[PlayerSkillFactory] 미구현 skill: {id} (id={data.id})");
                 return null;
