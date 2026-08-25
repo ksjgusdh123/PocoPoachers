@@ -4,5 +4,8 @@
     Dash,
     InstantReload,
     InfiniteAmmo,
-    ExtraShot
+    ExtraShot,
+    ForceHeadshot,
+    CritDamage,
+    RangeBoost
 }

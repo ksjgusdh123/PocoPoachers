@@ -18,7 +18,7 @@ public class ShotgunGun : GunBase
             bullet.Initialize(
                 _stat.BulletSpeed,
                 _stat.Damage,
-                _stat.BulletRange,
+                EffectiveBulletRange,
                 fireDir,
                 () => BulletPool.GetInstance().Release(_bulletPrefab, bullet),
                 Owner,
@@ -26,7 +26,7 @@ public class ShotgunGun : GunBase
                 isHeadshot
             );
 
-            seqs.Add(AssignBulletSeq(bullet));
+            seqs.Add(PrepareBullet(bullet));
         }
 
         // 방아쇠 1회 = 펠릿 방향 배열 1패킷. 호스트가 1회만 인증 후 전 펠릿을 스폰·브로드캐스트한다.

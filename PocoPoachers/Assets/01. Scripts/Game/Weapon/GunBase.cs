@@ -46,6 +46,8 @@ public abstract class GunBase : EquippableItemBase
             _ownerEnemy = value != null ? value.GetComponent<EnemyNetSync>() : null;
             // 플레이어 강화(공격력/공격속도)를 이 총의 기준 스탯에 반영하기 위해 캐시
             _ownerEnhancement = value != null ? value.GetComponent<PlayerEnhancement>() : null;
+            // 크리 배율을 탄환에 실어주기 위한 캐시
+            _ownerStat = value != null ? value.GetComponent<StatBase>() : null;
             ApplyOwnerCombatMultipliers();
         }
     }
@@ -177,12 +179,22 @@ public abstract class GunBase : EquippableItemBase
         return true;
     }
 
-    // 쏜 클라가 자기 탄환에 붙이는 식별자. 호스트가 명중을 통보할 때 이 번호로 지목한다.
-    // 게스트가 원격 총알을 그릴 때는 패킷으로 받은 번호를 그대로 쓰므로 여기서 발급하지 않는다.
-    protected int AssignBulletSeq(Bullet bullet)
+    private StatBase _ownerStat;
+
+    // 사거리 배율은 소유자 스탯에서 온다(스킬·강화 등).
+    // 데미지를 넣는 클라는 자기가 아는 값으로 다시 계산하므로 여기 값은 로컬 연출 기준이다.
+    protected float EffectiveBulletRange =>
+        _stat.BulletRange * (_ownerStat != null ? _ownerStat.RangeMultiplier : StatBase.DefaultRangeMultiplier);
+
+    // 내가 쏜 탄환에 식별자와 소유자 스탯을 실어준다.
+    // 식별자는 호스트가 명중을 통보할 때 이 탄환을 지목하는 데 쓰고,
+    // 크리 배율은 데미지를 넣는 클라가 발사자 스탯 대신 탄환에서 읽게 하려는 것이다.
+    // (게스트가 원격 총알을 그릴 때는 패킷으로 받은 값을 쓰므로 이 경로를 타지 않는다)
+    protected int PrepareBullet(Bullet bullet)
     {
         int seq = Bullet.NextSeq();
         bullet.SetNetworkId(RoomSync.MyPlayerId, seq);
+        bullet.SetCritMultiplier(_ownerStat != null ? _ownerStat.CritMultiplier : StatBase.DefaultCritMultiplier);
         return seq;
     }
 

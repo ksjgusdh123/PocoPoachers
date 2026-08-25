@@ -51,8 +51,20 @@ public static partial class PacketHandlers
         gun.PlayFireEffects();
 
         GameObject attacker = null;
+        // 크리 배율은 쏜 게스트의 스탯에서 읽는다 — 데미지를 넣는 건 이 권위 탄환이다
+        float critMultiplier = StatBase.DefaultCritMultiplier;
         if (ObjectManager.Instance != null && ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var shooterObj))
+        {
             attacker = shooterObj.gameObject;
+            if (shooterObj.TryGetComponent<StatBase>(out var shooterStat))
+            {
+                critMultiplier = shooterStat.CritMultiplier;
+
+                // 사거리도 게스트가 보낸 packet.MaxRange가 아니라
+                // 호스트가 아는 총 스탯 × 호스트가 검증해둔 배율로 계산한다
+                maxRange *= shooterStat.RangeMultiplier;
+            }
+        }
 
         // 다발(샷건) 방향이 있으면 펠릿별로, 없으면 baseDir 단발로 권위 있는 총알을 스폰한다.
         int pelletCount = Mathf.Max(1, packet.DirectionsLength);
@@ -71,6 +83,8 @@ public static partial class PacketHandlers
             // 쏜 게스트가 발급한 순번을 그대로 쓴다 — 명중 통보를 그 게스트가 자기 탄환과 맞춰야 한다
             if (i < packet.BulletSeqsLength)
                 bullet.SetNetworkId(guestId, packet.BulletSeqs(i));
+
+            bullet.SetCritMultiplier(critMultiplier);
 
             bullet.Initialize(bulletSpeed, damage, maxRange, dir, () => pool.Release(prefab, bullet), attacker, bulletColor, packet.IsHeadshot,
                 onDamageResult: (isKill, target) =>

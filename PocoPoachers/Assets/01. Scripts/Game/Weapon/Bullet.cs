@@ -6,7 +6,6 @@ public class Bullet : MonoBehaviour
 {
     private const string WallLayerName = "Wall";
     private const int MaxHitCount = 8;
-    private const float HeadshotDamageMultiplier = 2f;
     private static readonly RaycastHit[] HitBuffer = new RaycastHit[MaxHitCount];
 
     [SerializeField] private float _collisionRadius = 0.08f;
@@ -17,6 +16,9 @@ public class Bullet : MonoBehaviour
     private float _damage;
     private float _range;
     private bool _isHeadshot;
+
+    // 쏜 사람의 크리 배율. 데미지를 넣는 클라(호스트)가 발사자 스탯을 보고 채운다.
+    private float _critMultiplier = StatBase.DefaultCritMultiplier;
     private float _traveledDistance;
     private Vector3 _direction;
     private Action _onRelease;
@@ -68,6 +70,7 @@ public class Bullet : MonoBehaviour
         _damage = damage;
         _range = range;
         _isHeadshot = isHeadshot;
+        _critMultiplier = StatBase.DefaultCritMultiplier;   // 풀 재사용 — 이전 발사의 배율이 남지 않게
         _direction = direction.normalized;
         _onRelease = onRelease;
         _attacker = attacker;
@@ -110,6 +113,9 @@ public class Bullet : MonoBehaviour
         _hasNetworkId = false;
     }
 
+    // 쏜 사람의 크리 배율 주입. Initialize 다음에 호출한다.
+    public void SetCritMultiplier(float value) => _critMultiplier = value;
+
     // 유도 설정. Initialize 다음에 호출한다. turnRate는 초당 회전 각도.
     public void SetHoming(Collider target, float turnRate)
     {
@@ -151,7 +157,7 @@ public class Bullet : MonoBehaviour
 
                 if (_applyDamage)
                 {
-                    float damage = _isHeadshot ? _damage * HeadshotDamageMultiplier : _damage;
+                    float damage = _isHeadshot ? _damage * _critMultiplier : _damage;
                     // 무적 등으로 데미지가 무효면 관통 — 충돌을 무시하고 정상 전진
                     if (!damageable.TakeDamage(damage, _attacker))
                     {

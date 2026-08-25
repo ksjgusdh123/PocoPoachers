@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using UnityEngine;
 
 // 원격 플레이어의 스탯 사본 — PlayerStat과 같은 스탯 구성(HP/스태미나/배터리)을 갖되
@@ -51,8 +51,10 @@ public class RemotePlayerStat : StatBase
         OnRevive += HandleRemoteRevive;
     }
 
-    public void ApplyNetworkStats(float hp, float maxHp, float stamina, float battery, float defense)
+    public void ApplyNetworkStats(float hp, float maxHp, float stamina, float battery, float defense, float critMultiplier, float rangeMultiplier)
     {
+        CritMultiplier = critMultiplier;
+        RangeMultiplier = rangeMultiplier;
         _armorMaxHpBonus = 0f;
         _armorMoveSpeedMultiplier = 1f;
         SetHpFromNetwork(hp, maxHp, 0);

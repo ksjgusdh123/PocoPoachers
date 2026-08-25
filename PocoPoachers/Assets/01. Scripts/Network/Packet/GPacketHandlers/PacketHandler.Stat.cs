@@ -1,7 +1,10 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public static partial class PacketHandlers
 {
+    private const float MaxCritMultiplier = 5f;
+    private const float MaxRangeMultiplier = 5f;
+
     public static void OnG_StatSync(FlatPacket root)
     {
         if (!RoomManager.IsHost) return;
@@ -25,6 +28,11 @@ public static partial class PacketHandlers
         float battery = Mathf.Clamp(packet.Battery, 0f, 200f);
         float defense = 0f;
 
+        // 방어율과 달리 크리 배율은 스킬에서 나오는 값이라 호스트가 재계산할 수 없다.
+        // 그래서 요청값을 신뢰하되 상한만 막는다 (다른 G_ 핸들러의 검증 방식과 동일).
+        float critMultiplier = Mathf.Clamp(packet.CritMultiplier, 1f, MaxCritMultiplier);
+        float rangeMultiplier = Mathf.Clamp(packet.RangeMultiplier, 1f, MaxRangeMultiplier);
+
         if (stat != null)
         {
             // 방어율은 장착 아이템 기준으로 호스트가 직접 계산한 값만 신뢰한다(ApplyRemoteArmorStats).
@@ -32,7 +40,7 @@ public static partial class PacketHandlers
             if (stat is RemotePlayerStat remote)
             {
                 defense = remote.ArmorDefenseRate;
-                remote.ApplyNetworkStats(hp, maxHp, stamina, battery, defense);
+                remote.ApplyNetworkStats(hp, maxHp, stamina, battery, defense, critMultiplier, rangeMultiplier);
             }
             else
                 stat.SetHpFromNetwork(hp, maxHp, 0);
@@ -46,6 +54,8 @@ public static partial class PacketHandlers
             Stamina  = stamina,
             Battery  = battery,
             Defense  = defense,
+            CritMultiplier = critMultiplier,
+            RangeMultiplier = rangeMultiplier,
         }, H_StatSync.Pack, PacketType.H_StatSync);
     }
 }

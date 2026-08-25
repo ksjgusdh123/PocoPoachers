@@ -10,7 +10,7 @@ public class SingleGun : GunBase
         bullet.Initialize(
             _stat.BulletSpeed,
             _stat.Damage,
-            _stat.BulletRange,
+            EffectiveBulletRange,
             fireDir,
             () => BulletPool.GetInstance().Release(_bulletPrefab, bullet),
             Owner,
@@ -18,7 +18,7 @@ public class SingleGun : GunBase
             isHeadshot
         );
 
-        var seqs = new System.Collections.Generic.List<int> { AssignBulletSeq(bullet) };
+        var seqs = new System.Collections.Generic.List<int> { PrepareBullet(bullet) };
         BroadcastShoot(_muzzle.position, fireDir, isHeadshot: isHeadshot, bulletSeqs: seqs);
     }
 }

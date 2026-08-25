@@ -13,6 +13,15 @@ public abstract class StatBase : MonoBehaviour, IDamageable
 
     public bool IsDead { get; private set; }
 
+    // 크리티컬(현재는 헤드샷) 데미지 배율. 방어율처럼 캐릭터 스탯이라 스킬·강화·장비 어디서 올려도 된다.
+    // 데미지는 호스트가 넣으므로, 게스트 값은 StatSync를 타고 호스트의 RemotePlayerStat까지 가야 반영된다.
+    public const float DefaultCritMultiplier = 2f;
+    public float CritMultiplier { get; set; } = DefaultCritMultiplier;
+
+    // 탄환 사거리 배율. 크리 배율과 같은 경로로 호스트까지 간다.
+    public const float DefaultRangeMultiplier = 1f;
+    public float RangeMultiplier { get; set; } = DefaultRangeMultiplier;
+
     // 무적 상태 (구르기 등에서 켜고 끔) — 켜져 있으면 데미지를 받지 않음
     public bool IsInvincible { get; private set; }
 

@@ -50,6 +50,8 @@ table G_StatSync
     stamina: float;
     battery:  float;
     defense: float;
+    crit_multiplier: float = 2.0; // 크리티컬(헤드샷) 데미지 배율. 기본값이라 평상시엔 기록되지 않는다
+    range_multiplier: float = 1.0; // 탄환 사거리 배율. 기본값이라 평상시엔 기록되지 않는다
 }
 
 table H_StatSync
@@ -60,6 +62,8 @@ table H_StatSync
     stamina:   float;
     battery:    float;
     defense:   float;
+    crit_multiplier: float = 2.0; // 크리티컬(헤드샷) 데미지 배율. 기본값이라 평상시엔 기록되지 않는다
+    range_multiplier: float = 1.0; // 탄환 사거리 배율. 기본값이라 평상시엔 기록되지 않는다
 }
 
 table H_SandbagDestroy
