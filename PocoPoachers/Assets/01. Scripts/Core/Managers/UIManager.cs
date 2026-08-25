@@ -1,4 +1,4 @@
-using DG.Tweening;
+﻿using DG.Tweening;
 using System;
 using System.Collections.Generic;
 using UnityEngine;
@@ -34,6 +34,7 @@ public enum UIType
     // 가리키게 되므로 새 항목은 반드시 끝에 추가할 것.
     VotePopup,
     Skill,
+    Furnace,
 }
 
 public class UIManager : Singleton<UIManager>
