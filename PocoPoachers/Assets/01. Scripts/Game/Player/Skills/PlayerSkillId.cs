@@ -9,5 +9,6 @@
     CritDamage,
     RangeBoost,
     Grenade,
-    Stealth
+    Stealth,
+    InfiniteStamina
 }

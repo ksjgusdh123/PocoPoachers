@@ -34,6 +34,8 @@ public static class PlayerSkillFactory
                 return new GrenadeSkill(data);
             case PlayerSkillId.Stealth:
                 return new StealthSkill(data);
+            case PlayerSkillId.InfiniteStamina:
+                return new InfiniteStaminaSkill(data);
             default:
                 Debug.LogWarning($"[PlayerSkillFactory] 미구현 skill: {id} (id={data.id})");
                 return null;

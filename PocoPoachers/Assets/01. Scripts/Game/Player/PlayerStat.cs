@@ -23,6 +23,10 @@ public class PlayerStat : StatBase
     public float MaxStamina => _maxStamina;
     public float CurrentStamina { get; private set; }
 
+    // 스킬로 켜지는 무한 스태미나 — 소모(UseStamina/DrainStamina)만 막고 회복은 그대로 둔다.
+    // 다른 클라 판정에 쓰이는 값이 아니라(구르기 승인은 로컬에서만 함) 네트워크 동기화가 필요 없다.
+    public bool HasInfiniteStamina { get; set; }
+
     // 방어구 등으로 인한 이동속도 배율 (내부에서만 관리)
     private float _armorMoveSpeedMultiplier = 1f;
 
@@ -148,6 +152,7 @@ public class PlayerStat : StatBase
     // 소모 성공 여부를 반환 (부족하면 false)
     private bool UseStamina(float amount)
     {
+        if (HasInfiniteStamina) return true;
         if (CurrentStamina < amount) return false;
 
         CurrentStamina = Mathf.Max(0f, CurrentStamina - amount);
@@ -165,6 +170,8 @@ public class PlayerStat : StatBase
     // 매 프레임 소모용 — 가능한 만큼만 소모
     private void DrainStamina(float amount)
     {
+        if (HasInfiniteStamina) return;
+
         CurrentStamina = Mathf.Max(0f, CurrentStamina - amount);
         _lastStaminaUseTime = Time.time;
         OnStaminaChanged?.Invoke(CurrentStamina, MaxStamina);
