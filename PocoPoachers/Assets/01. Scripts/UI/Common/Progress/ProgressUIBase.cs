@@ -6,8 +6,12 @@ public abstract class ProgressUIBase : MonoBehaviour
     [SerializeField] protected Slider _slider;
 
     private float _duration;
-    private float _elapsed;
     private bool _isFilling;
+
+    // 경과는 deltaTime 누적이 아니라 시작 시각으로 잰다. 이 UI는 MainGameUI 안에 있어
+    // 인벤토리를 열면 통째로 비활성이 되는데, 그동안 Update가 멈춰 누적이 끊긴다.
+    // 그러면 이미 끝난 사용인데도 인벤토리를 닫는 순간 게이지가 0부터 다시 찬다.
+    private float _startTime;
 
     protected virtual void Awake()
     {
@@ -23,14 +27,25 @@ public abstract class ProgressUIBase : MonoBehaviour
     protected abstract void Subscribe();
     protected abstract void Unsubscribe();
 
+    // 꺼져 있는 동안 흐른 시간을 켜지는 즉시 반영한다 — 빈 게이지가 한 프레임 스치지 않도록
+    protected virtual void OnEnable()
+    {
+        if (_isFilling) RefreshFill();
+    }
+
     protected virtual void Update()
     {
         if (!_isFilling) return;
 
-        _elapsed += Time.deltaTime;
-        _slider.value = Mathf.Clamp01(_elapsed / _duration);
+        RefreshFill();
+    }
 
-        if (_elapsed >= _duration)
+    private void RefreshFill()
+    {
+        float elapsed = Time.time - _startTime;
+        _slider.value = _duration > 0f ? Mathf.Clamp01(elapsed / _duration) : 1f;
+
+        if (elapsed >= _duration)
             StopFilling();
     }
 
@@ -40,7 +55,7 @@ public abstract class ProgressUIBase : MonoBehaviour
     protected void StartFilling(float duration)
     {
         _duration = duration;
-        _elapsed = 0f;
+        _startTime = Time.time;
         _slider.value = 0f;
         _isFilling = true;
         Show();

@@ -34,6 +34,10 @@ public class FogOfWarRenderer : MonoBehaviour
     // 시야 기준으로 삼으면 구르기 시작/종료 시점에 홱 튄다. 몸 회전과 분리해 크로스헤어 방향을 직접 쓴다.
     private Vector3 _visionForward = Vector3.forward;
 
+    // 완전 사망 시 부채꼴을 지우고 원점을 죽은 자리에 고정한다 (SetFovVisible)
+    private bool _fovHidden;
+    private Vector3? _frozenGroundPos;
+
     // Update에서 매 프레임 new 하면 프레임당 4개의 배열이 GC로 흘러가므로 재사용한다.
     private Vector3[] _fovVertices;
     private int[] _fovTriangles;
@@ -93,12 +97,23 @@ public class FogOfWarRenderer : MonoBehaviour
         _cmd?.Release();
     }
 
+    // 완전 사망 시 시야 부채꼴을 지우고 원점을 죽은 자리에 고정한다.
+    // 안개(어두운 오버레이)까지 끄면 맵 전체가 한순간에 밝아지므로 부채꼴만 뺀다.
+    // 고정하지 않으면 호송 빔에 실려 올라가는 y를 따라 주변 시야 원이 같이 떠오른다.
+    public void SetFovVisible(bool visible)
+    {
+        _fovHidden = !visible;
+        _frozenGroundPos = visible ? null : GetGroundPosition();
+    }
+
+    private Vector3 GetGroundPosition() => new Vector3(
+        transform.position.x,
+        transform.position.y + _groundOffset,
+        transform.position.z);
+
     private void Update()
     {
-        Vector3 groundPos = new Vector3(
-            transform.position.x,
-            transform.position.y + _groundOffset,
-            transform.position.z);
+        Vector3 groundPos = _frozenGroundPos ?? GetGroundPosition();
 
         _fovMeshTrans.position    = groundPos;
         _fovMeshTrans.rotation    = Quaternion.identity;
@@ -107,7 +122,7 @@ public class FogOfWarRenderer : MonoBehaviour
 
         _visionForward = GetCrosshairForward(groundPos);
 
-        UpdateFovMesh();
+        if (!_fovHidden) UpdateFovMesh();
         UpdateCircleMesh();
     }
 
@@ -123,7 +138,8 @@ public class FogOfWarRenderer : MonoBehaviour
         DrawWallDepth();
 
         // 부채꼴 FOV + 주변 원형 시야를 같은 RT에 렌더
-        _cmd.DrawMesh(_fovMesh,    _fovMeshTrans.localToWorldMatrix,    _fovMaskMat);
+        if (!_fovHidden)
+            _cmd.DrawMesh(_fovMesh, _fovMeshTrans.localToWorldMatrix, _fovMaskMat);
         _cmd.DrawMesh(_circleMesh, _circleMeshTrans.localToWorldMatrix, _fovMaskMat);
 
         Graphics.ExecuteCommandBuffer(_cmd);

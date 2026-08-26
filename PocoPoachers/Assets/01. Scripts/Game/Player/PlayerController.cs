@@ -42,6 +42,8 @@ public class PlayerController : MonoBehaviour
     private Inventory _inventory;
     private InventoryUI _playerBagInventoryUI;
     private PlayerStat _playerStat;
+    private PlayerVision _playerVision;
+    private FogOfWarRenderer _fogOfWar;
     private FaintingUI _faintingUI;
     private PlayerRespawnPoint _respawnPoint; // 체크포인트가 등록돼 있으면 사망 대신 부활시킨다 (튜토리얼)
     private bool _isFainting;   // 기절(다운) 상태 진행 중 여부
@@ -98,6 +100,9 @@ public class PlayerController : MonoBehaviour
             _playerStat.OnDie += HandleDeath;
             _playerStat.OnRevive += HandleRevive;
         }
+
+        _playerVision = GetComponent<PlayerVision>();
+        _fogOfWar = GetComponent<FogOfWarRenderer>();
 
         _faintingUI = FindAnyObjectByType<FaintingUI>(FindObjectsInactive.Include);
         if (_faintingUI != null)
@@ -456,6 +461,10 @@ public class PlayerController : MonoBehaviour
         foreach (var equip in GetComponents<EquipableController>())
             equip.UnequipAll();
 
+        // 시야 부채꼴은 여기서 끈다 — 호송 빔에 실려 올라가면 부채꼴도 같이 떠오르고, 관전 중에도 남는다
+        _playerVision?.SetVisionLineVisible(false);
+        _fogOfWar?.SetFovVisible(false);
+
         PlayRescueBeam();
     }
 
@@ -464,16 +473,46 @@ public class PlayerController : MonoBehaviour
     // 로컬 재생과 별개로 RoomSync를 통해 팀원 화면에도 같은 연출이 재생되도록 알린다.
     private void PlayRescueBeam()
     {
+        BeginRescueCutscene();
         _cameraController?.SetFollowPosition(false);
 
         var effect = new GameObject("RescueBeamEffect").AddComponent<RescueBeamEffect>();
         effect.Play(transform, () =>
         {
             _cameraController?.SetFollowPosition(true);
+            EndRescueCutscene();
             BeginSpectate();
         });
 
         RoomSync.RescueBeamPlay();
+    }
+
+    // 호송 연출 동안에는 HUD(MainGameUI)만 남기고 조작을 막는다.
+    // 인벤토리를 연 채로 죽으면 연출이 창에 가리고, 빔에 실린 채로 이동·사격 입력이 들어간다.
+    private void BeginRescueCutscene()
+    {
+        var ui = UIManager.GetInstance();
+        if (ui != null)
+        {
+            // 잠금보다 먼저 닫는다 — 패널이 닫히며 OnPanelClosed가 카메라·입력 맵을 되돌리기 때문
+            ui.HideAll();
+            ui.SetInputLocked(true);
+        }
+
+        SetMainGameUIActive(true);
+        LockCamera(true);
+        _inputHandler?.SetInputLocked(true);
+    }
+
+    // 연출이 끝나면 조작을 되돌린다 — 관전 중에도 메뉴(ESC)는 열 수 있어야 한다.
+    // 카메라 잠금은 바로 뒤 BeginSpectate의 SetSpectate가 다시 건다.
+    private void EndRescueCutscene()
+    {
+        _inputHandler?.SetInputLocked(false);
+        LockCamera(false);
+
+        var ui = UIManager.GetInstance();
+        if (ui != null) ui.SetInputLocked(false);
     }
 
     // 탈출 확정 — 사망 때와 같은 포드 호송 연출을 재생하고, 끝나면 결과창 콜백을 부른다.
@@ -498,6 +537,8 @@ public class PlayerController : MonoBehaviour
         _isFainting = false;
         _finalized = false;
         _faintingUI?.StopFainting();
+        _playerVision?.SetVisionLineVisible(true);
+        _fogOfWar?.SetFovVisible(true);
 
         PlayerDeathTracker.Clear(NetworkManager.Instance?.MyPlayerId ?? 0);
 

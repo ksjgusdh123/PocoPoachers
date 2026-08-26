@@ -1,8 +1,9 @@
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class SkillSlotUI : MonoBehaviour
+public class SkillSlotUI : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private Image _icon;
     [SerializeField] private Image _cooldownOverlay;
@@ -14,6 +15,10 @@ public class SkillSlotUI : MonoBehaviour
 
     [SerializeField, Tooltip("빈 슬롯 아이콘에 곱할 색. RGB를 낮추면 어두워진다.")]
     private Color _emptyIconTint = new Color(0.45f, 0.45f, 0.45f, 0.7f);
+
+    // 호버 툴팁에 넘길 현재 스킬 (빈 슬롯이면 null)
+    private IPlayerSkill _skill;
+    private SkillDescriptionUI _description;
 
     private void Awake()
     {
@@ -27,9 +32,22 @@ public class SkillSlotUI : MonoBehaviour
         _cooldownOverlay.raycastTarget = false;
     }
 
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (_skill == null) return;   // 빈 슬롯은 설명할 게 없다
+
+        Description()?.Show(_skill.Data);
+    }
+
+    public void OnPointerExit(PointerEventData eventData) => Description()?.Hide();
+
+    private SkillDescriptionUI Description() =>
+        _description ??= FindAnyObjectByType<SkillDescriptionUI>(FindObjectsInactive.Include);
+
     public void SetSkill(IPlayerSkill skill)
     {
         bool hasSkill = skill != null;
+        _skill = skill;
 
         if (_icon != null)
         {

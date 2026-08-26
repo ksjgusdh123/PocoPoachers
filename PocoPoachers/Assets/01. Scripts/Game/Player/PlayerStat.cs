@@ -125,6 +125,9 @@ public class PlayerStat : StatBase
     private void DrainBattery()
     {
         if (_isShelter) return;
+#if UNITY_EDITOR || DEVELOPMENT_BUILD
+        if (IsGodMode) return;  // 치트 무적 중에는 방전 사망도 막아야 하므로 배터리가 닳지 않는다
+#endif
         if (CurrentBattery <= 0f) return;
 
         CurrentBattery = Mathf.Max(0f, CurrentBattery - _reduceBatteryRate * Time.deltaTime);

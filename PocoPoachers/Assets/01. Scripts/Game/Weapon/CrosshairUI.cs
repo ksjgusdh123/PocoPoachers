@@ -717,4 +717,14 @@ public class CrosshairUI : MonoBehaviour
         if (!isGameMode && _hitMarkerGroup != null) _hitMarkerGroup.alpha = 0f;
         //Cursor.lockState = isGameMode ? CursorLockMode.Confined : CursorLockMode.None;
     }
+
+    // 연출 동안 조준선과 시스템 커서를 함께 감춘다.
+    // SetGameMode는 둘 중 하나를 반드시 띄우므로(조준선 아니면 일반 커서) 이 경로가 따로 필요하다.
+    // 되돌리기는 UIManager.RefreshCursor가 SetGameMode로 처리한다.
+    public void Hide()
+    {
+        gameObject.SetActive(false);
+        Cursor.visible = false;
+        if (_hitMarkerGroup != null) _hitMarkerGroup.alpha = 0f;
+    }
 }

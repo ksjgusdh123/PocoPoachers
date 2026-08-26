@@ -6,8 +6,13 @@ using UnityEngine.UI;
 
 public class UISoundManager : Singleton<UISoundManager>
 {
+    private const string DefaultHoverKey = "ui_hover";
+
     private readonly List<RaycastResult> _raycastResults = new List<RaycastResult>();
     private Button _hoveredButton;
+
+    // 호버 대상이 바뀔 때만 갱신한다 — 포인터가 움직이는 매 프레임 GetComponent를 부르지 않도록.
+    private UIButtonSound _hoveredButtonSound;
     private SlotInteractionManager _slotInteractionManager;
     private UIManager _uiManager;
 
@@ -92,12 +97,27 @@ public class UISoundManager : Singleton<UISoundManager>
 
         if (button != _hoveredButton)
         {
-            if (button != null)
-                SoundManager.GetInstance().PlaySfx("ui_hover");
             _hoveredButton = button;
+            _hoveredButtonSound = button != null ? button.GetComponent<UIButtonSound>() : null;
+
+            if (button != null)
+                SoundManager.GetInstance().PlaySfx(HoverKeyOf(_hoveredButtonSound));
         }
 
+        // 클릭 대상은 방금 호버 판정을 마친 그 버튼이라 캐시한 설정을 그대로 쓴다
         if (clicked && button != null)
+            PlayClick(_hoveredButtonSound);
+    }
+
+    // 버튼에 UIButtonSound가 붙어 있고 키가 채워져 있으면 그 소리로 바꾼다
+    private static string HoverKeyOf(UIButtonSound custom) =>
+        custom != null && !string.IsNullOrEmpty(custom.HoverKey) ? custom.HoverKey : DefaultHoverKey;
+
+    private static void PlayClick(UIButtonSound custom)
+    {
+        if (custom != null && !string.IsNullOrEmpty(custom.ClickKey))
+            SoundManager.GetInstance().PlaySfx(custom.ClickKey);
+        else
             SoundManager.GetInstance().PlayButtonClick();
     }
 

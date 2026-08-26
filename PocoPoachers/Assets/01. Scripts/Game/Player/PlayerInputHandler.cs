@@ -55,6 +55,32 @@ public class PlayerInputHandler : MonoBehaviour
 
     public void SwitchToGameplayMap() => SwitchInputActionMap(GameplayMap);
 
+    // 연출(포드 호송 등) 동안 이 플레이어의 입력을 전부 막는다.
+    // 맵 전환만으로는 부족하다 — Update에서 직접 폴링하는 M/K/X는 어떤 맵에서도 살아있다.
+    public bool IsInputLocked { get; private set; }
+
+    public void SetInputLocked(bool locked)
+    {
+        if (IsInputLocked == locked) return;
+
+        IsInputLocked = locked;
+
+        if (locked)
+        {
+            // 맵을 끄면 누르고 있던 키의 뗌(release) 이벤트를 못 받으므로 눌림 상태를 직접 지운다
+            MoveInput = Vector2.zero;
+            IsSprintPressed = false;
+            IsFirePressed = false;
+            IsReloadPressed = false;
+            IsAimPressed = false;
+            _inputMap.DeactivateInput();
+        }
+        else
+        {
+            _inputMap.ActivateInput();
+        }
+    }
+
     // 입력 액션 콜백 처리 도중(같은 프레임) 맵을 바로 바꾸면, 그 입력을 떼는(release) 이벤트를
     // 새로 바뀐 맵 쪽이 놓쳐서 다음 입력이 "새로 눌림"으로 안 잡히는 경우가 있다.
     // 이번 입력 이벤트 처리가 끝난 뒤(다음 프레임)로 복귀를 미룬다.
@@ -170,6 +196,8 @@ public class PlayerInputHandler : MonoBehaviour
 
     private void Update()
     {
+        if (IsInputLocked) return;
+
         if (Keyboard.current[Key.X].wasPressedThisFrame)
             CancelReload?.Invoke();
 
