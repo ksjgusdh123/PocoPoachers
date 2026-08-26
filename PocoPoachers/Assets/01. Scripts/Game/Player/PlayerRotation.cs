@@ -5,17 +5,18 @@ using UnityEngine.InputSystem;
 public class PlayerRotation : MonoBehaviour
 {
     [SerializeField] private float _runRotationSpeed = 10f;
-    [SerializeField] private float _mouseRotationSpeed = 15f;
+    [SerializeField] private float _mouseRotationSpeed = 25f;
     [SerializeField] private float _recoveryRotationSpeed = 3f;
 
-    private static readonly Plane GroundPlane = new Plane(Vector3.up, Vector3.zero);
     private PlayerInputHandler _inputHandler;
     private PlayerDodge _playerDodge;
+    private WeaponController _weaponController;
 
     private void Awake()
     {
         _inputHandler = GetComponent<PlayerInputHandler>();
         _playerDodge = GetComponent<PlayerDodge>();
+        _weaponController = GetComponent<WeaponController>();
     }
 
     private void Update()
@@ -35,13 +36,22 @@ public class PlayerRotation : MonoBehaviour
             : Mouse.current.position.ReadValue();
         Ray ray = Camera.main.ScreenPointToRay(screenPos);
 
-        if (!GroundPlane.Raycast(ray, out float distance)) return;
+        // 총 발사 방향(WeaponController.GetCrosshairAimDirection)과 기준 높이를 맞춘다 —
+        // 몸 회전은 Y=0 고정 평면, 사격 방향은 총구 높이 평면을 쓰면 둘이 어긋나 보일 수 있다.
+        Transform muzzle = _weaponController != null ? _weaponController.CurrentGun?.Muzzle : null;
+        float planeHeight = muzzle != null ? muzzle.position.y : transform.position.y;
+        Plane aimPlane = new Plane(Vector3.up, new Vector3(0f, planeHeight, 0f));
+
+        if (!aimPlane.Raycast(ray, out float distance)) return;
 
         Vector3 hitPoint = ray.GetPoint(distance);
         Vector3 direction = hitPoint - transform.position;
         direction.y = 0f;
 
-        if (direction.sqrMagnitude < 0.001f) return;
+        // 카메라가 높은 각도로 내려다보기 때문에 크로스헤어가 플레이어 바로 밑 화면 영역에 있으면
+        // 지면 교차점이 플레이어 위치 근처의 아주 좁은 반경으로 수렴한다. 데드존이 넓으면 이 구간에서
+        // 회전 갱신이 통째로 스킵되어 직전 방향(예: 위쪽)이 그대로 얼어붙어 버린다.
+        if (direction.sqrMagnitude < 0.0001f) return;
 
         float speed = _playerDodge.IsRecovering ? _recoveryRotationSpeed : _mouseRotationSpeed;
         Quaternion target = Quaternion.LookRotation(direction);

@@ -30,6 +30,10 @@ public class FogOfWarRenderer : MonoBehaviour
     private Mesh _overlayMesh;
     private CommandBuffer _cmd;
 
+    // 캐릭터 몸통 회전(transform.forward)은 구르기 중 PlayerDodge가 이동 방향으로 강제로 틀어버려서
+    // 시야 기준으로 삼으면 구르기 시작/종료 시점에 홱 튄다. 몸 회전과 분리해 크로스헤어 방향을 직접 쓴다.
+    private Vector3 _visionForward = Vector3.forward;
+
     // Update에서 매 프레임 new 하면 프레임당 4개의 배열이 GC로 흘러가므로 재사용한다.
     private Vector3[] _fovVertices;
     private int[] _fovTriangles;
@@ -100,6 +104,8 @@ public class FogOfWarRenderer : MonoBehaviour
         _fovMeshTrans.rotation    = Quaternion.identity;
         _circleMeshTrans.position = groundPos;
         _overlayTrans.position    = groundPos;
+
+        _visionForward = GetCrosshairForward(groundPos);
 
         UpdateFovMesh();
         UpdateCircleMesh();
@@ -232,6 +238,22 @@ public class FogOfWarRenderer : MonoBehaviour
         mr.receiveShadows    = false;
     }
 
+    // 크로스헤어 화면 위치를 플레이어 높이의 지면 평면에 투영해 시야 기준 방향을 구한다.
+    // PlayerRotation.RotateTowardMouse와 같은 방식 — 캐릭터 몸 회전과 무관하게 항상 최신 마우스 위치를 따른다.
+    private Vector3 GetCrosshairForward(Vector3 origin)
+    {
+        if (CrosshairUI.Instance == null) return _visionForward;
+
+        Ray ray = _mainCam.ScreenPointToRay(CrosshairUI.Instance.ScreenPosition);
+        Plane plane = new Plane(Vector3.up, new Vector3(0f, origin.y, 0f));
+        if (!plane.Raycast(ray, out float distance)) return _visionForward;
+
+        Vector3 dir = ray.GetPoint(distance) - origin;
+        dir.y = 0f;
+
+        return dir.sqrMagnitude < 0.0001f ? _visionForward : dir.normalized;
+    }
+
     private void UpdateFovMesh()
     {
         Vector3 origin   = _fovMeshTrans.position;
@@ -258,7 +280,7 @@ public class FogOfWarRenderer : MonoBehaviour
         for (int i = 0; i <= segments; i++)
         {
             float   angle = -half + _visionConfig.fovAngle / segments * i;
-            Vector3 dir   = Quaternion.Euler(0, angle, 0) * transform.forward;
+            Vector3 dir   = Quaternion.Euler(0, angle, 0) * _visionForward;
 
             float dist = Physics.Raycast(origin, dir, out RaycastHit hit, _visionConfig.detectRange, _wallLayer)
                 ? hit.distance
