@@ -64,14 +64,18 @@ public class SoundManager : Singleton<SoundManager>
 
     public void StopBgm() => _bgmSource.Stop();
 
-    public void PlaySfx(string key)
+    public void PlaySfx(string key) => PlaySfx(key, 1f);
+
+    // volumeScale은 sound.csv의 volume에 곱해진다. 같은 소리를 상황에 따라 줄여 낼 때 쓴다
+    // (예: 내 발소리는 2D라 또렷해서 팀원 발소리보다 크게 들린다).
+    public void PlaySfx(string key, float volumeScale)
     {
         if (string.IsNullOrEmpty(key)) return;
 
         var data = SoundTable.Instance.Get(key);
         if (data == null || string.IsNullOrEmpty(data.Path)) return;
 
-        PlaySfxClip(ResourceManager.GetInstance().Load<AudioClip>(data.Path), data.Volume);
+        PlaySfxClip(ResourceManager.GetInstance().Load<AudioClip>(data.Path), data.Volume * volumeScale);
     }
 
     // 효과음 길이(초). 클립을 못 찾으면 0.

@@ -13,6 +13,9 @@ public class CharacterAudio : MonoBehaviour
     // 상태 전환 중에도 마찬가지라, 실제 걸음 간격보다 짧은 재호출은 버린다.
     [SerializeField] private float _minFootstepInterval = 0.12f;
 
+    // 내 발소리는 2D로 나가 감쇠가 없어서 팀원/적 발소리보다 훨씬 크게 들린다. 그만큼 줄인다.
+    [SerializeField, Range(0f, 1f)] private float _localFootstepVolume = 0.5f;
+
     private bool _isLocalPlayer;
     private float _lastFootstepTime = float.NegativeInfinity;
 
@@ -43,7 +46,7 @@ public class CharacterAudio : MonoBehaviour
         if (sound == null) return;
 
         if (_isLocalPlayer)
-            sound.PlaySfx(key);
+            sound.PlaySfx(key, _localFootstepVolume);
         else
             sound.PlaySfxAt(key, transform.position, _footstepAudibleRange);
     }
