@@ -7,5 +7,6 @@
     ExtraShot,
     ForceHeadshot,
     CritDamage,
-    RangeBoost
+    RangeBoost,
+    Grenade
 }

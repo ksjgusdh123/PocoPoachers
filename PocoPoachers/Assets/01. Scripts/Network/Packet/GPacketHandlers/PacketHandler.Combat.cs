@@ -142,4 +142,37 @@ public static partial class PacketHandlers
                 H_Shoot.Pack, PacketType.H_Shoot);
         }
     }
+
+    // 게스트가 던진 수류탄 — 호스트가 대신 시뮬레이션하는 권위 사본을 스폰해 실제 폭발 피해를 넣고,
+    // 결과를 (보낸 게스트를 뺀) 나머지 게스트에게 다시 뿌려 연출을 맞춘다.
+    // 데미지·반경·퓨즈는 게스트 패킷값을 신뢰하지 않고 skill_id로 테이블에서 직접 읽는다(G_Shoot과 같은 이유).
+    public static void OnG_GrenadeThrow(FlatPacket root)
+    {
+        if (!RoomManager.IsHost) return;
+        if (!RoomManager.TryGetGuestIdFromPacket(0, autoRegister: false, out int guestId))
+            return;
+
+        var packet = root.TypeAsG_GrenadeThrow();
+        PlayerSkillData data = PlayerSkillTable.Instance.Get(packet.SkillId);
+        if (data == null) return;
+
+        Vec3? originRaw = packet.Origin;
+        Vec3? targetRaw = packet.Target;
+        Vector3 origin = originRaw.HasValue ? new Vector3(originRaw.Value.X, originRaw.Value.Y, originRaw.Value.Z) : Vector3.zero;
+        Vector3 target = targetRaw.HasValue ? new Vector3(targetRaw.Value.X, targetRaw.Value.Y, targetRaw.Value.Z) : origin;
+
+        GameObject attacker = null;
+        if (ObjectManager.Instance != null && ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var throwerObj))
+            attacker = throwerObj.gameObject;
+
+        GrenadeProjectile.Launch(origin, target, attacker, data, applyDamage: true);
+
+        PacketBuilder.BroadcastReliableToGuests(guestId, new H_GrenadeThrowT
+        {
+            PlayerId = guestId,
+            SkillId  = packet.SkillId,
+            Origin   = originRaw.HasValue ? originRaw.Value.UnPack() : new Vec3T(),
+            Target   = targetRaw.HasValue ? targetRaw.Value.UnPack() : new Vec3T(),
+        }, H_GrenadeThrow.Pack, PacketType.H_GrenadeThrow);
+    }
 }

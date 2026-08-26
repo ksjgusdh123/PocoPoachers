@@ -102,4 +102,28 @@ public static partial class PacketHandlers
             Sandbag.Find(id)?.DestroyFromNetwork();
         });
     }
+
+    // 다른 플레이어(또는 내 던지기를 대신 시뮬레이션한 호스트)가 던진 수류탄의 연출 사본.
+    // 피해는 호스트가 이미 적용했으므로(OnG_GrenadeThrow) 여기서는 넣지 않는다.
+    public static void OnH_GrenadeThrow(FlatPacket root)
+    {
+        var packet = root.TypeAsH_GrenadeThrow();
+
+        var nm = NetworkManager.Instance;
+        if (nm != null && packet.PlayerId == nm.MyPlayerId) return; // 내가 던진 건 이미 로컬 사본이 있다
+
+        PlayerSkillData data = PlayerSkillTable.Instance.Get(packet.SkillId);
+        if (data == null) return;
+
+        Vec3? originRaw = packet.Origin;
+        Vec3? targetRaw = packet.Target;
+        Vector3 origin = originRaw.HasValue ? new Vector3(originRaw.Value.X, originRaw.Value.Y, originRaw.Value.Z) : Vector3.zero;
+        Vector3 target = targetRaw.HasValue ? new Vector3(targetRaw.Value.X, targetRaw.Value.Y, targetRaw.Value.Z) : origin;
+
+        GameObject attacker = null;
+        if (ObjectManager.Instance != null && ObjectManager.Instance.TryGet(ObjectKind.Player, packet.PlayerId, out var throwerObj))
+            attacker = throwerObj.gameObject;
+
+        GrenadeProjectile.Launch(origin, target, attacker, data, applyDamage: false);
+    }
 }

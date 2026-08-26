@@ -30,6 +30,8 @@ public static class PlayerSkillFactory
                 return new CritDamageSkill(data);
             case PlayerSkillId.RangeBoost:
                 return new RangeBoostSkill(data);
+            case PlayerSkillId.Grenade:
+                return new GrenadeSkill(data);
             default:
                 Debug.LogWarning($"[PlayerSkillFactory] 미구현 skill: {id} (id={data.id})");
                 return null;

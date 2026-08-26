@@ -121,3 +121,20 @@ table H_BulletHit
     is_kill:    bool;  // 히트마커 색 구분용
     is_headshot: bool;
 }
+
+// 수류탄 투척 — origin/target만 신는다. 데미지·반경·퓨즈는 skill_id로 player_skill.csv를 찾아
+// 수신측이 직접 계산한다(총알 데미지를 게스트 패킷값 대신 gun.Stat에서 읽는 것과 같은 이유).
+table G_GrenadeThrow
+{
+    skill_id: int;
+    origin:   Vec3;
+    target:   Vec3;
+}
+
+table H_GrenadeThrow
+{
+    player_id: int;
+    skill_id:  int;
+    origin:    Vec3;
+    target:    Vec3;
+}

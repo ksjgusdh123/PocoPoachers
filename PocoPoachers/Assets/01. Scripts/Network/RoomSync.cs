@@ -681,6 +681,34 @@ public static class RoomSync
             G_Invincible.Pack, PacketType.G_Invincible);
     }
 
+    // ── 수류탄 ────────────────────────────────────────────────
+    // 총알과 같은 구조: 호스트는 자기 사본이 이미 권위 있으므로 전체 게스트에 그대로 뿌리고,
+    // 게스트는 호스트에게 요청만 보낸다 — 호스트가 대신 시뮬레이션한 사본이 실제 피해를 넣고,
+    // 그 결과를 (자신을 뺀) 나머지 게스트에게 다시 뿌린다(OnG_GrenadeThrow).
+    public static void GrenadeThrow(int skillId, Vector3 origin, Vector3 target)
+    {
+        if (IsSolo) return;
+
+        var originT = new Vec3T { X = origin.x, Y = origin.y, Z = origin.z };
+        var targetT = new Vec3T { X = target.x, Y = target.y, Z = target.z };
+
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastReliableToGuests(new H_GrenadeThrowT
+            {
+                PlayerId = MyId,
+                SkillId  = skillId,
+                Origin   = originT,
+                Target   = targetT,
+            }, H_GrenadeThrow.Pack, PacketType.H_GrenadeThrow);
+        else
+            PacketBuilder.SendReliableToHost(new G_GrenadeThrowT
+            {
+                SkillId = skillId,
+                Origin  = originT,
+                Target  = targetT,
+            }, G_GrenadeThrow.Pack, PacketType.G_GrenadeThrow);
+    }
+
     // ── 추가탄 드론 ────────────────────────────────────────────
     // 드론은 플레이어를 따라다니는 장식이라 위치 동기화가 필요 없다.
     // 켜짐/꺼짐만 알리면 각 클라이언트가 그 플레이어 옆에 로컬로 띄운다.

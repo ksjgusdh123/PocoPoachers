@@ -33,4 +33,28 @@ public class PlayerSkillContext
 
         return new Vector3(input.x, 0f, input.y).normalized;
     }
+
+    // 크로스헤어가 가리키는 지면 지점(PlayerRotation.RotateTowardMouse와 같은 방식) — maxDistance를 넘으면 그 방향으로 clamp.
+    public Vector3 AimGroundPoint(float maxDistance)
+    {
+        Vector3 origin = Transform.position;
+        if (CrosshairUI.Instance == null || Camera.main == null)
+            return origin + Transform.forward * maxDistance;
+
+        Ray ray = Camera.main.ScreenPointToRay(CrosshairUI.Instance.ScreenPosition);
+        Transform muzzle = Weapon != null ? Weapon.CurrentGun?.Muzzle : null;
+        float planeHeight = muzzle != null ? muzzle.position.y : origin.y;
+        Plane aimPlane = new Plane(Vector3.up, new Vector3(0f, planeHeight, 0f));
+
+        Vector3 point = aimPlane.Raycast(ray, out float distance)
+            ? ray.GetPoint(distance)
+            : origin + Transform.forward * maxDistance;
+
+        Vector3 offset = point - origin;
+        offset.y = 0f;
+        if (offset.magnitude > maxDistance)
+            offset = offset.normalized * maxDistance;
+
+        return origin + offset;
+    }
 }
