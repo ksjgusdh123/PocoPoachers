@@ -55,8 +55,16 @@ public class PlayerVision : MonoBehaviour
 
     private void Update()
     {
-        if (_showVision)
+        if (_showVision && _lineRenderer.enabled)
             UpdateVisionLine();
+    }
+
+    // 완전 사망 시 부채꼴만 감춘다 — 탐지(Scan)는 계속 돌려야 적 렌더러가 마지막 상태로 굳지 않는다.
+    public void SetVisionLineVisible(bool visible)
+    {
+        if (_lineRenderer == null) return;
+
+        _lineRenderer.enabled = visible;
     }
 
     private void InitLineRenderer()

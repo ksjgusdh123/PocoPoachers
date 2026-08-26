@@ -21,6 +21,8 @@ public class PlayerRotation : MonoBehaviour
 
     private void Update()
     {
+        // 마우스 회전은 액션 맵이 아니라 커서 위치를 직접 읽으므로, 맵을 꺼도 연출 중에 몸이 계속 돈다
+        if (_inputHandler.IsInputLocked) return;
         if (_playerDodge.IsRolling) return;
 
         if (_inputHandler.IsSprintPressed && _inputHandler.MoveInput.sqrMagnitude > 0.01f)

@@ -76,6 +76,21 @@ public class UIManager : Singleton<UIManager>
 
     public bool IsAnyPanelOpen => _stack.Count > 0;
 
+    // 연출(포드 호송 등) 동안 UI 조작을 막는다. ESC는 InputSystem 액션으로 항상 살아있어
+    // 플레이어 액션 맵을 꺼도 인게임 메뉴가 열린다.
+    public bool IsInputLocked { get; private set; }
+
+    public void SetInputLocked(bool locked)
+    {
+        IsInputLocked = locked;
+
+        // 조준선이 없는 씬(쉘터)은 건드리지 않는다 — 되돌릴 주체가 없어 일반 커서가 숨겨진 채로 남는다
+        if (CrosshairUI.Instance == null) return;
+
+        if (locked) CrosshairUI.Instance.Hide();
+        else RefreshCursor();
+    }
+
     private WarningPopupUI _warningPopup;
     private NoticePopupUI  _noticePopup;
     private VotePopupUI    _votePopup;
@@ -126,7 +141,12 @@ public class UIManager : Singleton<UIManager>
         _cancelAction.Disable();
     }
 
-    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => RegisterScenePanels();
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        // 연출 도중 씬이 바뀌면(전멸 → 결과 씬) 잠금을 풀 주인이 사라진다. 씬 경계에서 항상 되돌린다.
+        IsInputLocked = false;
+        RegisterScenePanels();
+    }
 
     // Awake 시점 스캔은 매니저 생성 순서에 따라(예: Bootstrapper가 먼저 UIManager를 만드는 경우)
     // 아직 아무것도 못 찾을 수 있고, 에디터에서 씬을 직접 실행하면 첫 씬의 sceneLoaded도 놓칠 수 있다.
@@ -152,6 +172,8 @@ public class UIManager : Singleton<UIManager>
     // 리바인딩과 게임패드 바인딩 추가가 가능하도록 한다.
     private void OnCancelPerformed(InputAction.CallbackContext _)
     {
+        if (IsInputLocked) return;
+
         if (_stack.Count > 0)
             HideTop();
         else
@@ -646,6 +668,7 @@ public class UIManager : Singleton<UIManager>
 
     private void RefreshCursor()
     {
+        if (IsInputLocked) return;   // 연출 중 팝업이 떠도 커서를 되살리지 않는다
         if (CrosshairUI.Instance == null) return;
         CrosshairUI.Instance.SetGameMode(!IsAnyPanelOpen);
     }
