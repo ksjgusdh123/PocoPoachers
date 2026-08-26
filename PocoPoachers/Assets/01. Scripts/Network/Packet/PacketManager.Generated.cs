@@ -82,5 +82,7 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.H_BulletHit         , PacketHandlers.OnH_BulletHit);
         _onRecv.Add(PacketType.G_GrenadeThrow      , PacketHandlers.OnG_GrenadeThrow);
         _onRecv.Add(PacketType.H_GrenadeThrow      , PacketHandlers.OnH_GrenadeThrow);
+        _onRecv.Add(PacketType.H_GrenadeMove       , PacketHandlers.OnH_GrenadeMove);
+        _onRecv.Add(PacketType.H_GrenadeExplode    , PacketHandlers.OnH_GrenadeExplode);
     }
 }

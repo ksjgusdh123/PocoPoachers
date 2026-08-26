@@ -682,31 +682,60 @@ public static class RoomSync
     }
 
     // ── 수류탄 ────────────────────────────────────────────────
-    // 총알과 같은 구조: 호스트는 자기 사본이 이미 권위 있으므로 전체 게스트에 그대로 뿌리고,
-    // 게스트는 호스트에게 요청만 보낸다 — 호스트가 대신 시뮬레이션한 사본이 실제 피해를 넣고,
-    // 그 결과를 (자신을 뺀) 나머지 게스트에게 다시 뿌린다(OnG_GrenadeThrow).
-    public static void GrenadeThrow(int skillId, Vector3 origin, Vector3 target)
+    // EnemyMove와 같은 구조 — 실제 물리 시뮬레이션(GrenadeProjectile Authoritative)은 호스트에서만 돈다.
+    // 게스트는 요청만 보내고, 호스트가 발급한 grenade_id로 위치·폭발을 계속 따라간다.
+
+    // 게스트 → 호스트: 투척 요청 (게스트는 이미 자기 로컬 예측 사본을 띄운 상태)
+    public static void RequestGrenadeThrow(int skillId, Vector3 origin, Vector3 target)
     {
-        if (IsSolo) return;
+        if (RoomManager.IsHost) return;
 
-        var originT = new Vec3T { X = origin.x, Y = origin.y, Z = origin.z };
-        var targetT = new Vec3T { X = target.x, Y = target.y, Z = target.z };
+        PacketBuilder.SendReliableToHost(new G_GrenadeThrowT
+        {
+            SkillId = skillId,
+            Origin  = new Vec3T { X = origin.x, Y = origin.y, Z = origin.z },
+            Target  = new Vec3T { X = target.x, Y = target.y, Z = target.z },
+        }, G_GrenadeThrow.Pack, PacketType.G_GrenadeThrow);
+    }
 
-        if (RoomManager.IsHost)
-            PacketBuilder.BroadcastReliableToGuests(new H_GrenadeThrowT
-            {
-                PlayerId = MyId,
-                SkillId  = skillId,
-                Origin   = originT,
-                Target   = targetT,
-            }, H_GrenadeThrow.Pack, PacketType.H_GrenadeThrow);
-        else
-            PacketBuilder.SendReliableToHost(new G_GrenadeThrowT
-            {
-                SkillId = skillId,
-                Origin  = originT,
-                Target  = targetT,
-            }, G_GrenadeThrow.Pack, PacketType.G_GrenadeThrow);
+    // 호스트 → 게스트: 권위 수류탄이 스폰됐다는 통보. skipGuestId를 던진 게스트로 주면 그 게스트는
+    // 제외한다(이미 로컬 예측 사본이 있으므로) — 호스트 자신이 던졌으면 스킵 없이 전체에 보낸다.
+    public static void GrenadeSpawned(int grenadeId, int skillId, Vector3 origin, Vector3 target, int skipGuestId = -1)
+    {
+        if (!RoomManager.HasGuests) return;
+
+        PacketBuilder.BroadcastReliableToGuests(skipGuestId, new H_GrenadeThrowT
+        {
+            PlayerId  = MyId,
+            SkillId   = skillId,
+            GrenadeId = grenadeId,
+            Origin    = new Vec3T { X = origin.x, Y = origin.y, Z = origin.z },
+            Target    = new Vec3T { X = target.x, Y = target.y, Z = target.z },
+        }, H_GrenadeThrow.Pack, PacketType.H_GrenadeThrow);
+    }
+
+    // 호스트 → 게스트: 권위 수류탄 위치 주기 방송 (H_EnemyMove와 같은 방식)
+    public static void GrenadeMove(int grenadeId, Vector3 pos)
+    {
+        if (!RoomManager.HasGuests) return;
+
+        PacketBuilder.BroadcastToGuests(new H_GrenadeMoveT
+        {
+            GrenadeId = grenadeId,
+            Pos       = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+        }, H_GrenadeMove.Pack, PacketType.H_GrenadeMove);
+    }
+
+    // 호스트 → 게스트: 폭발 위치 통보. 피해는 호스트가 이미 적용했고, 게스트는 연출만 재생한다.
+    public static void GrenadeExplode(int grenadeId, Vector3 pos)
+    {
+        if (!RoomManager.HasGuests) return;
+
+        PacketBuilder.BroadcastReliableToGuests(new H_GrenadeExplodeT
+        {
+            GrenadeId = grenadeId,
+            Pos       = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+        }, H_GrenadeExplode.Pack, PacketType.H_GrenadeExplode);
     }
 
     // ── 추가탄 드론 ────────────────────────────────────────────

@@ -124,6 +124,7 @@ table H_BulletHit
 
 // 수류탄 투척 — origin/target만 신는다. 데미지·반경·퓨즈는 skill_id로 player_skill.csv를 찾아
 // 수신측이 직접 계산한다(총알 데미지를 게스트 패킷값 대신 gun.Stat에서 읽는 것과 같은 이유).
+// 실제 물리 시뮬레이션은 호스트에서만 돈다(EnemyMove와 같은 구조) — 게스트는 요청만 보낸다.
 table G_GrenadeThrow
 {
     skill_id: int;
@@ -131,10 +132,28 @@ table G_GrenadeThrow
     target:   Vec3;
 }
 
+// 호스트가 권위 수류탄을 스폰했다는 통보. grenade_id는 호스트가 발급하며 이후 H_GrenadeMove/
+// H_GrenadeExplode가 이 값으로 어느 수류탄인지 가리킨다. 던진 게스트 본인은 이미 로컬 예측
+// 사본이 있으므로 받지 않는다(스킵 전송).
 table H_GrenadeThrow
 {
-    player_id: int;
-    skill_id:  int;
-    origin:    Vec3;
-    target:    Vec3;
+    player_id:  int;
+    skill_id:   int;
+    grenade_id: int;
+    origin:     Vec3;
+    target:     Vec3;
+}
+
+// 호스트가 물리 시뮬레이션 중인 권위 수류탄의 위치를 주기적으로 전파 (H_EnemyMove와 같은 방식)
+table H_GrenadeMove
+{
+    grenade_id: int;
+    pos:        Vec3;
+}
+
+// 호스트가 판정한 폭발. 피해는 호스트가 이미 적용했으므로 게스트는 이 위치에서 연출만 재생한다.
+table H_GrenadeExplode
+{
+    grenade_id: int;
+    pos:        Vec3;
 }

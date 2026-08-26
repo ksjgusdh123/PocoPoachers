@@ -18,27 +18,31 @@ public struct H_GrenadeThrow : IFlatbufferObject
 
   public int PlayerId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int SkillId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
-  public Vec3? Origin { get { int o = __p.__offset(8); return o != 0 ? (Vec3?)(new Vec3()).__assign(o + __p.bb_pos, __p.bb) : null; } }
-  public Vec3? Target { get { int o = __p.__offset(10); return o != 0 ? (Vec3?)(new Vec3()).__assign(o + __p.bb_pos, __p.bb) : null; } }
+  public int GrenadeId { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public Vec3? Origin { get { int o = __p.__offset(10); return o != 0 ? (Vec3?)(new Vec3()).__assign(o + __p.bb_pos, __p.bb) : null; } }
+  public Vec3? Target { get { int o = __p.__offset(12); return o != 0 ? (Vec3?)(new Vec3()).__assign(o + __p.bb_pos, __p.bb) : null; } }
 
   public static Offset<H_GrenadeThrow> CreateH_GrenadeThrow(FlatBufferBuilder builder,
       int player_id = 0,
       int skill_id = 0,
+      int grenade_id = 0,
       Vec3T origin = null,
       Vec3T target = null) {
-    builder.StartTable(4);
+    builder.StartTable(5);
     H_GrenadeThrow.AddTarget(builder, Vec3.Pack(builder, target));
     H_GrenadeThrow.AddOrigin(builder, Vec3.Pack(builder, origin));
+    H_GrenadeThrow.AddGrenadeId(builder, grenade_id);
     H_GrenadeThrow.AddSkillId(builder, skill_id);
     H_GrenadeThrow.AddPlayerId(builder, player_id);
     return H_GrenadeThrow.EndH_GrenadeThrow(builder);
   }
 
-  public static void StartH_GrenadeThrow(FlatBufferBuilder builder) { builder.StartTable(4); }
+  public static void StartH_GrenadeThrow(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddSkillId(FlatBufferBuilder builder, int skillId) { builder.AddInt(1, skillId, 0); }
-  public static void AddOrigin(FlatBufferBuilder builder, Offset<Vec3> originOffset) { builder.AddStruct(2, originOffset.Value, 0); }
-  public static void AddTarget(FlatBufferBuilder builder, Offset<Vec3> targetOffset) { builder.AddStruct(3, targetOffset.Value, 0); }
+  public static void AddGrenadeId(FlatBufferBuilder builder, int grenadeId) { builder.AddInt(2, grenadeId, 0); }
+  public static void AddOrigin(FlatBufferBuilder builder, Offset<Vec3> originOffset) { builder.AddStruct(3, originOffset.Value, 0); }
+  public static void AddTarget(FlatBufferBuilder builder, Offset<Vec3> targetOffset) { builder.AddStruct(4, targetOffset.Value, 0); }
   public static Offset<H_GrenadeThrow> EndH_GrenadeThrow(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_GrenadeThrow>(o);
@@ -51,6 +55,7 @@ public struct H_GrenadeThrow : IFlatbufferObject
   public void UnPackTo(H_GrenadeThrowT _o) {
     _o.PlayerId = this.PlayerId;
     _o.SkillId = this.SkillId;
+    _o.GrenadeId = this.GrenadeId;
     _o.Origin = this.Origin.HasValue ? this.Origin.Value.UnPack() : null;
     _o.Target = this.Target.HasValue ? this.Target.Value.UnPack() : null;
   }
@@ -60,6 +65,7 @@ public struct H_GrenadeThrow : IFlatbufferObject
       builder,
       _o.PlayerId,
       _o.SkillId,
+      _o.GrenadeId,
       _o.Origin,
       _o.Target);
   }
@@ -69,12 +75,14 @@ public class H_GrenadeThrowT
 {
   public int PlayerId { get; set; }
   public int SkillId { get; set; }
+  public int GrenadeId { get; set; }
   public Vec3T Origin { get; set; }
   public Vec3T Target { get; set; }
 
   public H_GrenadeThrowT() {
     this.PlayerId = 0;
     this.SkillId = 0;
+    this.GrenadeId = 0;
     this.Origin = new Vec3T();
     this.Target = new Vec3T();
   }
@@ -88,8 +96,9 @@ static public class H_GrenadeThrowVerify
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*PlayerId*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*SkillId*/, 4 /*int*/, 4, false)
-      && verifier.VerifyField(tablePos, 8 /*Origin*/, 12 /*Vec3*/, 4, false)
-      && verifier.VerifyField(tablePos, 10 /*Target*/, 12 /*Vec3*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*GrenadeId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*Origin*/, 12 /*Vec3*/, 4, false)
+      && verifier.VerifyField(tablePos, 12 /*Target*/, 12 /*Vec3*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

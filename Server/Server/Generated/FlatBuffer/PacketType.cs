@@ -86,6 +86,8 @@ public enum PacketType : byte
   H_BulletHit = 79,
   G_GrenadeThrow = 80,
   H_GrenadeThrow = 81,
+  H_GrenadeMove = 82,
+  H_GrenadeExplode = 83,
 };
 
 public class PacketTypeUnion {
@@ -260,6 +262,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_GrenadeThrow(G_GrenadeThrowT _g_grenadethrow) { return new PacketTypeUnion{ Type = PacketType.G_GrenadeThrow, Value = _g_grenadethrow }; }
   public H_GrenadeThrowT AsH_GrenadeThrow() { return this.As<H_GrenadeThrowT>(); }
   public static PacketTypeUnion FromH_GrenadeThrow(H_GrenadeThrowT _h_grenadethrow) { return new PacketTypeUnion{ Type = PacketType.H_GrenadeThrow, Value = _h_grenadethrow }; }
+  public H_GrenadeMoveT AsH_GrenadeMove() { return this.As<H_GrenadeMoveT>(); }
+  public static PacketTypeUnion FromH_GrenadeMove(H_GrenadeMoveT _h_grenademove) { return new PacketTypeUnion{ Type = PacketType.H_GrenadeMove, Value = _h_grenademove }; }
+  public H_GrenadeExplodeT AsH_GrenadeExplode() { return this.As<H_GrenadeExplodeT>(); }
+  public static PacketTypeUnion FromH_GrenadeExplode(H_GrenadeExplodeT _h_grenadeexplode) { return new PacketTypeUnion{ Type = PacketType.H_GrenadeExplode, Value = _h_grenadeexplode }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -345,6 +351,8 @@ public class PacketTypeUnion {
       case PacketType.H_BulletHit: return H_BulletHit.Pack(builder, _o.AsH_BulletHit()).Value;
       case PacketType.G_GrenadeThrow: return G_GrenadeThrow.Pack(builder, _o.AsG_GrenadeThrow()).Value;
       case PacketType.H_GrenadeThrow: return H_GrenadeThrow.Pack(builder, _o.AsH_GrenadeThrow()).Value;
+      case PacketType.H_GrenadeMove: return H_GrenadeMove.Pack(builder, _o.AsH_GrenadeMove()).Value;
+      case PacketType.H_GrenadeExplode: return H_GrenadeExplode.Pack(builder, _o.AsH_GrenadeExplode()).Value;
     }
   }
 }
@@ -600,6 +608,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_GrenadeThrow:
         result = H_GrenadeThrowVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_GrenadeMove:
+        result = H_GrenadeMoveVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_GrenadeExplode:
+        result = H_GrenadeExplodeVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

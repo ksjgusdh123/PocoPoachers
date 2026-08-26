@@ -103,27 +103,39 @@ public static partial class PacketHandlers
         });
     }
 
-    // 다른 플레이어(또는 내 던지기를 대신 시뮬레이션한 호스트)가 던진 수류탄의 연출 사본.
-    // 피해는 호스트가 이미 적용했으므로(OnG_GrenadeThrow) 여기서는 넣지 않는다.
+    // 호스트가 권위 수류탄을 스폰했다는 통보 — 던진 게스트 본인은 스킵 전송으로 받지 않으므로
+    // (이미 로컬 예측 사본이 있다) 여기 도달하는 건 항상 "남이 던진" 수류탄이다.
+    // 물리 없는 보간 사본을 만들고, 이후 위치/폭발은 grenade_id로 OnH_GrenadeMove/Explode가 갱신한다.
     public static void OnH_GrenadeThrow(FlatPacket root)
     {
         var packet = root.TypeAsH_GrenadeThrow();
-
-        var nm = NetworkManager.Instance;
-        if (nm != null && packet.PlayerId == nm.MyPlayerId) return; // 내가 던진 건 이미 로컬 사본이 있다
 
         PlayerSkillData data = PlayerSkillTable.Instance.Get(packet.SkillId);
         if (data == null) return;
 
         Vec3? originRaw = packet.Origin;
-        Vec3? targetRaw = packet.Target;
         Vector3 origin = originRaw.HasValue ? new Vector3(originRaw.Value.X, originRaw.Value.Y, originRaw.Value.Z) : Vector3.zero;
-        Vector3 target = targetRaw.HasValue ? new Vector3(targetRaw.Value.X, targetRaw.Value.Y, targetRaw.Value.Z) : origin;
 
-        GameObject attacker = null;
-        if (ObjectManager.Instance != null && ObjectManager.Instance.TryGet(ObjectKind.Player, packet.PlayerId, out var throwerObj))
-            attacker = throwerObj.gameObject;
+        GrenadeProjectile.SpawnRemote(packet.GrenadeId, origin, data);
+    }
 
-        GrenadeProjectile.Launch(origin, target, attacker, data, applyDamage: false);
+    // 호스트가 물리로 시뮬레이션 중인 권위 수류탄의 위치 — 보간 사본을 그쪽으로 계속 당긴다.
+    public static void OnH_GrenadeMove(FlatPacket root)
+    {
+        var packet = root.TypeAsH_GrenadeMove();
+        Vec3? posRaw = packet.Pos;
+        if (!posRaw.HasValue) return;
+
+        GrenadeProjectile.OnNetMove(packet.GrenadeId, new Vector3(posRaw.Value.X, posRaw.Value.Y, posRaw.Value.Z));
+    }
+
+    // 호스트가 판정한 폭발 위치 — 피해는 이미 적용됐으므로 여기서는 연출만 재생한다.
+    public static void OnH_GrenadeExplode(FlatPacket root)
+    {
+        var packet = root.TypeAsH_GrenadeExplode();
+        Vec3? posRaw = packet.Pos;
+        Vector3 pos = posRaw.HasValue ? new Vector3(posRaw.Value.X, posRaw.Value.Y, posRaw.Value.Z) : Vector3.zero;
+
+        GrenadeProjectile.OnNetExplode(packet.GrenadeId, pos);
     }
 }

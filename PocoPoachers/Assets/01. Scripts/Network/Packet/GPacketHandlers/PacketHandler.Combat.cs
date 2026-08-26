@@ -165,14 +165,7 @@ public static partial class PacketHandlers
         if (ObjectManager.Instance != null && ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var throwerObj))
             attacker = throwerObj.gameObject;
 
-        GrenadeProjectile.Launch(origin, target, attacker, data, applyDamage: true);
-
-        PacketBuilder.BroadcastReliableToGuests(guestId, new H_GrenadeThrowT
-        {
-            PlayerId = guestId,
-            SkillId  = packet.SkillId,
-            Origin   = originRaw.HasValue ? originRaw.Value.UnPack() : new Vec3T(),
-            Target   = targetRaw.HasValue ? targetRaw.Value.UnPack() : new Vec3T(),
-        }, H_GrenadeThrow.Pack, PacketType.H_GrenadeThrow);
+        int grenadeId = GrenadeProjectile.LaunchAuthoritative(origin, target, attacker, data);
+        RoomSync.GrenadeSpawned(grenadeId, packet.SkillId, origin, target, skipGuestId: guestId);
     }
 }
