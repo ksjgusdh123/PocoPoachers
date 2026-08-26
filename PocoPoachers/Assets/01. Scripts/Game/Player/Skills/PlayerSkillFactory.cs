@@ -32,6 +32,8 @@ public static class PlayerSkillFactory
                 return new RangeBoostSkill(data);
             case PlayerSkillId.Grenade:
                 return new GrenadeSkill(data);
+            case PlayerSkillId.Stealth:
+                return new StealthSkill(data);
             default:
                 Debug.LogWarning($"[PlayerSkillFactory] 미구현 skill: {id} (id={data.id})");
                 return null;

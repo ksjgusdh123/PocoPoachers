@@ -102,6 +102,8 @@ public struct FlatPacket : IFlatbufferObject
   public H_GrenadeThrow TypeAsH_GrenadeThrow() { return Type<H_GrenadeThrow>().Value; }
   public H_GrenadeMove TypeAsH_GrenadeMove() { return Type<H_GrenadeMove>().Value; }
   public H_GrenadeExplode TypeAsH_GrenadeExplode() { return Type<H_GrenadeExplode>().Value; }
+  public G_Stealth TypeAsG_Stealth() { return Type<G_Stealth>().Value; }
+  public H_Stealth TypeAsH_Stealth() { return Type<H_Stealth>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -379,6 +381,12 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.H_GrenadeExplode:
         _o.Type.Value = this.Type<H_GrenadeExplode>().HasValue ? this.Type<H_GrenadeExplode>().Value.UnPack() : null;
+        break;
+      case PacketType.G_Stealth:
+        _o.Type.Value = this.Type<G_Stealth>().HasValue ? this.Type<G_Stealth>().Value.UnPack() : null;
+        break;
+      case PacketType.H_Stealth:
+        _o.Type.Value = this.Type<H_Stealth>().HasValue ? this.Type<H_Stealth>().Value.UnPack() : null;
         break;
     }
   }

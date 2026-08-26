@@ -88,6 +88,8 @@ public enum PacketType : byte
   H_GrenadeThrow = 81,
   H_GrenadeMove = 82,
   H_GrenadeExplode = 83,
+  G_Stealth = 84,
+  H_Stealth = 85,
 };
 
 public class PacketTypeUnion {
@@ -266,6 +268,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_GrenadeMove(H_GrenadeMoveT _h_grenademove) { return new PacketTypeUnion{ Type = PacketType.H_GrenadeMove, Value = _h_grenademove }; }
   public H_GrenadeExplodeT AsH_GrenadeExplode() { return this.As<H_GrenadeExplodeT>(); }
   public static PacketTypeUnion FromH_GrenadeExplode(H_GrenadeExplodeT _h_grenadeexplode) { return new PacketTypeUnion{ Type = PacketType.H_GrenadeExplode, Value = _h_grenadeexplode }; }
+  public G_StealthT AsG_Stealth() { return this.As<G_StealthT>(); }
+  public static PacketTypeUnion FromG_Stealth(G_StealthT _g_stealth) { return new PacketTypeUnion{ Type = PacketType.G_Stealth, Value = _g_stealth }; }
+  public H_StealthT AsH_Stealth() { return this.As<H_StealthT>(); }
+  public static PacketTypeUnion FromH_Stealth(H_StealthT _h_stealth) { return new PacketTypeUnion{ Type = PacketType.H_Stealth, Value = _h_stealth }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -353,6 +359,8 @@ public class PacketTypeUnion {
       case PacketType.H_GrenadeThrow: return H_GrenadeThrow.Pack(builder, _o.AsH_GrenadeThrow()).Value;
       case PacketType.H_GrenadeMove: return H_GrenadeMove.Pack(builder, _o.AsH_GrenadeMove()).Value;
       case PacketType.H_GrenadeExplode: return H_GrenadeExplode.Pack(builder, _o.AsH_GrenadeExplode()).Value;
+      case PacketType.G_Stealth: return G_Stealth.Pack(builder, _o.AsG_Stealth()).Value;
+      case PacketType.H_Stealth: return H_Stealth.Pack(builder, _o.AsH_Stealth()).Value;
     }
   }
 }
@@ -614,6 +622,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_GrenadeExplode:
         result = H_GrenadeExplodeVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_Stealth:
+        result = G_StealthVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_Stealth:
+        result = H_StealthVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

@@ -8,5 +8,6 @@
     ForceHeadshot,
     CritDamage,
     RangeBoost,
-    Grenade
+    Grenade,
+    Stealth
 }

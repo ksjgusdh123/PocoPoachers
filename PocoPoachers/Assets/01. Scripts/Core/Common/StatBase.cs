@@ -22,6 +22,17 @@ public abstract class StatBase : MonoBehaviour, IDamageable
     public const float DefaultRangeMultiplier = 1f;
     public float RangeMultiplier { get; set; } = DefaultRangeMultiplier;
 
+    // 은신 상태 — 켜져 있으면 적 AI 탐지 후보에서 제외된다(TargetDetector 참고).
+    // 원인이 스킬 하나뿐이라 무적처럼 자동 전파하지 않고, 호출부(StealthSkill)가 RoomSync.Stealth로 명시 전파한다.
+    public bool IsStealthed { get; set; }
+
+    // 게스트의 은신 여부 — 탐지는 호스트만 판정하므로(TargetDetector가 호스트 전용) 이 값으로만 안다.
+    private bool _networkStealthed;
+    public void ApplyStealthFromNetwork(bool value) => _networkStealthed = value;
+
+    // 탐지 회피 여부의 정본 — TargetDetector는 이것만 보면 된다(로컬/원격 어느 쪽 원인이든)
+    public bool IsUndetectable => IsStealthed || _networkStealthed;
+
     // 무적 상태 (구르기 등에서 켜고 끔) — 켜져 있으면 데미지를 받지 않음
     public bool IsInvincible { get; private set; }
 

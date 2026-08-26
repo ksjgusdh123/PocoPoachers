@@ -157,3 +157,18 @@ table H_GrenadeExplode
     grenade_id: int;
     pos:        Vec3;
 }
+
+// 은신 — 탐지 회피는 호스트만 판정하므로(TargetDetector가 호스트 전용) 반드시 호스트에 알려야 한다.
+// 반투명 연출은 전원이 봐야 하므로 alpha까지 실어 DroneState와 같은 방식으로 전체에 전파한다.
+table G_Stealth
+{
+    active: bool;
+    alpha:  float;
+}
+
+table H_Stealth
+{
+    player_id: int;
+    active:    bool;
+    alpha:     float;
+}

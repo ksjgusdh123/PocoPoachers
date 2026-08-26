@@ -738,6 +738,30 @@ public static class RoomSync
         }, H_GrenadeExplode.Pack, PacketType.H_GrenadeExplode);
     }
 
+    // ── 은신 ──────────────────────────────────────────────────
+    // 탐지 회피는 호스트만 판정하므로(TargetDetector가 호스트 전용) 반드시 호스트까지 가야 하고,
+    // 반투명 연출은 전원이 봐야 하므로 DroneState와 같은 방식으로 전체에 전파한다.
+    // 호출부(StealthSkill)가 이미 자기 로컬에는 적용해둔 상태에서 부른다.
+
+    public static void Stealth(bool active, float alpha)
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastReliableToGuests(new H_StealthT { PlayerId = MyId, Active = active, Alpha = alpha },
+                H_Stealth.Pack, PacketType.H_Stealth);
+        else
+            PacketBuilder.SendReliableToHost(new G_StealthT { Active = active, Alpha = alpha },
+                G_Stealth.Pack, PacketType.G_Stealth);
+    }
+
+    // 호스트가 게스트의 은신 요청을 나머지 게스트에게 중계 (요청자 본인은 이미 로컬에 적용해둠)
+    public static void StealthRelay(int ownerPlayerId, bool active, float alpha)
+    {
+        PacketBuilder.BroadcastReliableToGuests(ownerPlayerId, new H_StealthT { PlayerId = ownerPlayerId, Active = active, Alpha = alpha },
+            H_Stealth.Pack, PacketType.H_Stealth);
+    }
+
     // ── 추가탄 드론 ────────────────────────────────────────────
     // 드론은 플레이어를 따라다니는 장식이라 위치 동기화가 필요 없다.
     // 켜짐/꺼짐만 알리면 각 클라이언트가 그 플레이어 옆에 로컬로 띄운다.

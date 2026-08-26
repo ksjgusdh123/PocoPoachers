@@ -101,6 +101,9 @@ public class TargetDetector : MonoBehaviour
             if (!IsAlive(col.gameObject))
                 continue;
 
+            if (IsUndetectable(col.gameObject))
+                continue;
+
             SetTarget(col.gameObject);
             return true;
         }
@@ -127,12 +130,18 @@ public class TargetDetector : MonoBehaviour
             return false;
 
         float dist = Vector3.Distance(transform.position, _currentTarget.transform.position);
-        if (dist > _forgetRange || !IsAlive(_currentTarget))
+        if (dist > _forgetRange || !IsAlive(_currentTarget) || IsUndetectable(_currentTarget))
         {
             ClearTarget();
             return false;
         }
         return true;
+    }
+
+    // 은신 등으로 탐지에서 제외되는 대상인지 — 스탯이 없으면(HP 개념이 없는 대상) 항상 탐지 가능
+    private static bool IsUndetectable(GameObject go)
+    {
+        return go.TryGetComponent<StatBase>(out var stat) && stat.IsUndetectable;
     }
 
     private void OnDrawGizmosSelected()
