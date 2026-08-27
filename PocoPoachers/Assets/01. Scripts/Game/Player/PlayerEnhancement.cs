@@ -42,6 +42,10 @@ public class PlayerEnhancement : MonoBehaviour
     // 스탯별 현재 레벨 — 딕셔너리라 _growthConfigs에 없는 스탯이 들어와도, 새 스탯이 추가돼도 코드 변경 없이 동작한다.
     private readonly Dictionary<EnhancementStatType, int> _statLevels = new();
 
+    // 장착한 패시브 스킬이 얹는 보너스. 스킬 id별로 들고 있어야 해제할 때 그 스킬 몫만 걷어낼 수 있다.
+    // 세이브에 넣지 않는다 — 장착 스킬 목록에서 매번 다시 계산되는 파생값이다.
+    private readonly Dictionary<int, (EnhancementStatType statType, float value)> _passiveBonuses = new();
+
     private PlayerStat _playerStat;
     private PlayerVision _playerVision;
     private WeaponMount _weaponMount;
@@ -121,8 +125,37 @@ public class PlayerEnhancement : MonoBehaviour
         return true;
     }
 
-    // 가산형이면 레벨*증가량, 배율형이면 1 + 레벨*성장률을 반환한다.
-    public float GetBonus(EnhancementStatType statType) => GetBonusAtLevel(statType, GetStatLevel(statType));
+    // 패시브 스킬 하나의 보너스를 등록/해제한다. 같은 스킬 id로 다시 부르면 덮어쓴다.
+    public void SetPassiveBonus(int skillId, EnhancementStatType statType, float value)
+    {
+        _passiveBonuses[skillId] = (statType, value);
+        ApplyAll();
+        OnChanged?.Invoke();
+    }
+
+    public void ClearPassiveBonus(int skillId)
+    {
+        if (!_passiveBonuses.Remove(skillId)) return;
+
+        ApplyAll();
+        OnChanged?.Invoke();
+    }
+
+    // 해당 스탯에 걸린 패시브 보너스 합계. 강화 레벨과 같은 단위라 그대로 더하면 된다.
+    public float GetPassiveBonus(EnhancementStatType statType)
+    {
+        float sum = 0f;
+        foreach (var entry in _passiveBonuses.Values)
+        {
+            if (entry.statType == statType) sum += entry.value;
+        }
+        return sum;
+    }
+
+    // 가산형이면 레벨*증가량, 배율형이면 1 + 레벨*성장률. 여기에 패시브 스킬 보너스를 더한 값이
+    // 실제로 적용되는 최종 보너스다 — 강화 UI의 미리보기(GetBonusAtLevel)와 달리 패시브를 포함한다.
+    public float GetBonus(EnhancementStatType statType) =>
+        GetBonusAtLevel(statType, GetStatLevel(statType)) + GetPassiveBonus(statType);
 
     public float GetBonusAtLevel(EnhancementStatType statType, int level)
     {

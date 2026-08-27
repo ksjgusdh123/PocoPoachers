@@ -179,8 +179,13 @@ public class SkillEquipPanel : MonoBehaviour
             else
                 _detailDescriptionText.text = localization.GetString(_selected.description);
         }
+        // 패시브는 발동이 없어 쿨다운 자리에 종류를 대신 보여준다.
         if (_detailCooldownText != null)
-            _detailCooldownText.text = $"{_selected.cooldown:0.#}s";
+        {
+            _detailCooldownText.text = _selected.TryGetPassive(out _, out _)
+                ? localization.GetString("skill.passive")
+                : $"{_selected.cooldown:0.#}s";
+        }
 
         bool equipped = _manager != null && _manager.IsEquipped(_selected.id);
 

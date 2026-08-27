@@ -20,6 +20,8 @@ public partial class PlayerSkillData
     public int unlock_level;
     public int need_item_id;
     public int need_item_count;
+    public string passive_stat = "";
+    public float passive_value;
 
     public int Id { get => id; set => id = value; }
 
@@ -53,5 +55,9 @@ public partial class PlayerSkillData
     public int NeedItemId { get => need_item_id; set => need_item_id = value; }
 
     public int NeedItemCount { get => need_item_count; set => need_item_count = value; }
+
+    public string PassiveStat { get => passive_stat; set => passive_stat = value; }
+
+    public float PassiveValue { get => passive_value; set => passive_value = value; }
 
 }

@@ -13,5 +13,6 @@
     InfiniteStamina,
     Invincible,
     Reflect,
-    Taunt
+    Taunt,
+    PassiveStat
 }

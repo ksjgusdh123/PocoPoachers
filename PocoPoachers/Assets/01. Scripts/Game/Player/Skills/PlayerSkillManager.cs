@@ -186,6 +186,7 @@ public class PlayerSkillManager : MonoBehaviour
 
         ClearSlot(slotIndex);   // 교체 — 여기서 저장하면 아래 저장과 겹쳐 디스크에 두 번 쓴다
         _slots[slotIndex] = skill;
+        skill.OnEquip(_context);
         OnSlotChanged?.Invoke(slotIndex, skill);
         SaveEquippedSkills();
         return true;
@@ -247,6 +248,7 @@ public class PlayerSkillManager : MonoBehaviour
         if (!IsValidSlot(slotIndex) || _slots[slotIndex] == null) return false;
 
         EndSkill(slotIndex);
+        _slots[slotIndex].OnUnequip(_context);
         _slots[slotIndex] = null;
         OnSlotChanged?.Invoke(slotIndex, null);
         return true;
@@ -280,7 +282,7 @@ public class PlayerSkillManager : MonoBehaviour
     public bool CanUse(int slotIndex)
     {
         IPlayerSkill skill = GetSkill(slotIndex);
-        if (skill == null) return false;
+        if (skill == null || skill.IsPassive) return false;
         if (_activeSlots.Contains(slotIndex)) return false;
         if (GetCooldownRemaining(slotIndex) > 0f) return false;
 
