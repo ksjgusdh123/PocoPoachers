@@ -27,6 +27,10 @@ public class ThemedTextUI : MonoBehaviour
 
     private TMP_Text _text;
 
+    // 잠긴 스킬 이름처럼 코드가 상태에 따라 색을 직접 칠하는 동안에는 테마 색 적용을 양보한다.
+    // 색만 비켜줄 뿐 크기 관리는 그대로 둔다.
+    private bool _colorOverridden;
+
     public UITheme.TypographyRole Role => _role;
 
     public UITheme.TextColorRole ColorRole => _colorRole;
@@ -46,6 +50,14 @@ public class ThemedTextUI : MonoBehaviour
         _role = role;
         _manageAutoSizeRange = manageAutoSizeRange;
         Apply();
+    }
+
+    public void SetColorOverride(bool overridden)
+    {
+        if (_colorOverridden == overridden) return;
+
+        _colorOverridden = overridden;
+        if (!_colorOverridden) Apply();
     }
 
     public void ConfigureColor(UITheme.TextColorRole colorRole)
@@ -75,6 +87,7 @@ public class ThemedTextUI : MonoBehaviour
 
     private void ApplyColor(UITheme theme)
     {
+        if (_colorOverridden) return;
         if (_colorRole == UITheme.TextColorRole.None) return;
 
         Color color = theme.GetTextColor(_colorRole);

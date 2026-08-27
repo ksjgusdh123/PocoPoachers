@@ -17,16 +17,31 @@ public class PlayerSkillManager : MonoBehaviour
 
     public event Action<int, IPlayerSkill> OnSlotChanged;
     public event Action<int> OnSkillUsed;
+    // 스탯 강화로 해금됐거나 재료로 획득해서 사용 가능한 스킬 목록이 바뀌었을 때
+    public event Action OnUnlockChanged;
 
     // 대시처럼 스킬이 직접 이동을 처리하는 동안 PlayerMovement의 수평 이동을 막는다
     public bool IsMovementLocked { get; private set; }
 
     private PlayerInputHandler _inputHandler;
+    private PlayerEnhancement _enhancement;
+    private Inventory _inventory;
+
+    // 재료를 소모해 획득한 스킬. 재료가 필요 없는 스킬은 여기에 없어도 보유한 것으로 친다.
+    private readonly HashSet<int> _ownedSkills = new();
 
     private void Awake()
     {
         _context = new PlayerSkillContext(gameObject);
         _inputHandler = GetComponent<PlayerInputHandler>();
+        _enhancement = GetComponent<PlayerEnhancement>();
+        _inventory = GetComponent<Inventory>();
+
+        if (SaveManager.Instance != null && SaveManager.Instance.TryLoadOwnedSkills(out var owned))
+            _ownedSkills.UnionWith(owned);
+
+        if (_enhancement != null)
+            _enhancement.OnChanged += HandleEnhancementChanged;
 
         for (int i = 0; i < SlotCount; i++)
             _lastUsedTime[i] = float.NegativeInfinity;
@@ -48,9 +63,72 @@ public class PlayerSkillManager : MonoBehaviour
     {
         if (_inputHandler != null)
             _inputHandler.SkillUse -= HandleSkillInput;
+
+        if (_enhancement != null)
+            _enhancement.OnChanged -= HandleEnhancementChanged;
     }
 
     private void HandleSkillInput(int slotIndex) => TryUse(slotIndex);
+
+    private void HandleEnhancementChanged() => OnUnlockChanged?.Invoke();
+
+    // 해금 조건이 없는 스킬은 항상 true. PlayerEnhancement가 없는 오브젝트(원격 플레이어 등)는
+    // 강화 레벨을 알 수 없으므로 조건이 걸린 스킬을 잠긴 것으로 본다.
+    public bool IsUnlocked(PlayerSkillData data)
+    {
+        if (data == null) return false;
+        if (!data.TryGetUnlockCondition(out EnhancementStatType statType, out int requiredLevel)) return true;
+
+        return _enhancement != null && _enhancement.GetStatLevel(statType) >= requiredLevel;
+    }
+
+    public bool IsUnlocked(int skillId) => IsUnlocked(PlayerSkillTable.Instance.Get(skillId));
+
+    // 재료가 필요 없는 스킬은 해금만 되면 바로 보유 상태다.
+    public bool IsOwned(PlayerSkillData data)
+    {
+        if (data == null) return false;
+        if (!data.TryGetCost(out _, out _)) return true;
+
+        return _ownedSkills.Contains(data.id);
+    }
+
+    public bool IsOwned(int skillId) => IsOwned(PlayerSkillTable.Instance.Get(skillId));
+
+    // 장착까지 가능한 상태인지 — 해금 조건과 획득을 모두 통과해야 한다.
+    public bool IsUsable(PlayerSkillData data) => IsUnlocked(data) && IsOwned(data);
+
+    public bool IsUsable(int skillId) => IsUsable(PlayerSkillTable.Instance.Get(skillId));
+
+    public int GetOwnedItemCount(PlayerSkillData data)
+    {
+        if (_inventory == null || data == null) return 0;
+        if (!data.TryGetCost(out ItemData item, out _)) return 0;
+
+        return _inventory.GetItemCount(item);
+    }
+
+    public bool CanAcquire(PlayerSkillData data)
+    {
+        if (data == null || !IsUnlocked(data) || IsOwned(data)) return false;
+        if (!data.TryGetCost(out ItemData item, out int count)) return false;
+
+        return _inventory != null && _inventory.HasItem(item, count);
+    }
+
+    // 재료를 소모해 스킬을 획득한다. 장착은 별도로 해야 한다.
+    public bool TryAcquire(PlayerSkillData data)
+    {
+        if (!CanAcquire(data)) return false;
+        if (!data.TryGetCost(out ItemData item, out int count)) return false;
+
+        _inventory.RemoveItem(item, count);
+        _ownedSkills.Add(data.id);
+
+        SaveManager.Instance?.SaveOwnedSkills(_ownedSkills);
+        OnUnlockChanged?.Invoke();
+        return true;
+    }
 
     // 플레이어는 씬마다 프리팹에서 새로 생성되므로, 장착 스킬은 세이브에서 되돌린다.
     // 저장된 게 없으면(새 게임) 프리팹의 _startSkillIds로 시작한다.
@@ -100,6 +178,8 @@ public class PlayerSkillManager : MonoBehaviour
             Debug.LogWarning($"[PlayerSkillManager] player_skill.csv에 없는 id: {skillId}");
             return false;
         }
+
+        if (!IsUsable(data)) return false;
 
         IPlayerSkill skill = PlayerSkillFactory.Create(data);
         if (skill == null) return false;

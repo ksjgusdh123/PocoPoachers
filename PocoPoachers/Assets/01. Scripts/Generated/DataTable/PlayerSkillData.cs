@@ -16,6 +16,10 @@ public partial class PlayerSkillData
     public float radius;
     public string clip_name = "";
     public string icon = "";
+    public string unlock_stat = "";
+    public int unlock_level;
+    public int need_item_id;
+    public int need_item_count;
 
     public int Id { get => id; set => id = value; }
 
@@ -41,5 +45,13 @@ public partial class PlayerSkillData
     public string ClipName { get => clip_name; set => clip_name = value; }
 
     public string IconPath { get => icon; set => icon = value; }
+
+    public string UnlockStat { get => unlock_stat; set => unlock_stat = value; }
+
+    public int UnlockLevel { get => unlock_level; set => unlock_level = value; }
+
+    public int NeedItemId { get => need_item_id; set => need_item_id = value; }
+
+    public int NeedItemCount { get => need_item_count; set => need_item_count = value; }
 
 }

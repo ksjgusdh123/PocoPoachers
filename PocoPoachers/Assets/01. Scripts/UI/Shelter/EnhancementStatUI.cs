@@ -44,7 +44,7 @@ public class EnhancementStatUI : MonoBehaviour
         foreach (EnhancementStatType statType in _playerEnhancement.ConfiguredStatTypes)
         {
             EnhancementStatRowUI row = Instantiate(_rowPrefab, _rowContainer);
-            row.Setup(statType, GetDisplayName(statType), () => OnClickPlus(statType), () => OnClickMinus(statType));
+            row.Setup(statType, statType.GetDisplayName(), () => OnClickPlus(statType), () => OnClickMinus(statType));
             _rows[statType] = row;
         }
 
@@ -129,19 +129,5 @@ public class EnhancementStatUI : MonoBehaviour
 
         if (_saveButton != null)
             _saveButton.interactable = available && TotalPending() > 0;
-    }
-
-    private static string GetDisplayName(EnhancementStatType statType)
-    {
-        return statType switch
-        {
-            EnhancementStatType.AttackPower => "공격력",
-            EnhancementStatType.MoveSpeed => "이동속도",
-            EnhancementStatType.MaxHp => "체력",
-            EnhancementStatType.DefenseRate => "방어력",
-            EnhancementStatType.VisionRange => "시야",
-            EnhancementStatType.AttackSpeed => "공격속도",
-            _ => statType.ToString()
-        };
     }
 }
