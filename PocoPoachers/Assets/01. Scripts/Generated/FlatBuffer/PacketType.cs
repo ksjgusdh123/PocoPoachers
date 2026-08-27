@@ -95,6 +95,7 @@ public enum PacketType : byte
   H_GrenadeExplode = 88,
   G_Stealth = 89,
   H_Stealth = 90,
+  G_Taunt = 91,
 };
 
 public class PacketTypeUnion {
@@ -287,6 +288,8 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromG_Stealth(G_StealthT _g_stealth) { return new PacketTypeUnion{ Type = PacketType.G_Stealth, Value = _g_stealth }; }
   public H_StealthT AsH_Stealth() { return this.As<H_StealthT>(); }
   public static PacketTypeUnion FromH_Stealth(H_StealthT _h_stealth) { return new PacketTypeUnion{ Type = PacketType.H_Stealth, Value = _h_stealth }; }
+  public G_TauntT AsG_Taunt() { return this.As<G_TauntT>(); }
+  public static PacketTypeUnion FromG_Taunt(G_TauntT _g_taunt) { return new PacketTypeUnion{ Type = PacketType.G_Taunt, Value = _g_taunt }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -381,6 +384,7 @@ public class PacketTypeUnion {
       case PacketType.H_GrenadeExplode: return H_GrenadeExplode.Pack(builder, _o.AsH_GrenadeExplode()).Value;
       case PacketType.G_Stealth: return G_Stealth.Pack(builder, _o.AsG_Stealth()).Value;
       case PacketType.H_Stealth: return H_Stealth.Pack(builder, _o.AsH_Stealth()).Value;
+      case PacketType.G_Taunt: return G_Taunt.Pack(builder, _o.AsG_Taunt()).Value;
     }
   }
 }
@@ -663,6 +667,9 @@ static public class PacketTypeVerify
         break;
       case PacketType.H_Stealth:
         result = H_StealthVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_Taunt:
+        result = G_TauntVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

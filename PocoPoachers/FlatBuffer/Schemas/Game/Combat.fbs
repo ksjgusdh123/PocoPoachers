@@ -207,3 +207,13 @@ table H_Stealth
     active:    bool;
     alpha:     float;
 }
+
+// 도발 — 범위 안 적의 타겟을 시전자로 바꾼다. AI 타겟 판정은 호스트 전용이므로(TargetDetector)
+// 게스트는 시전 지점과 반경만 넘기고 실제 타겟 변경은 호스트가 수행한다.
+// 시전자는 패킷을 보낸 게스트 본인이라 따로 싣지 않는다.
+table G_Taunt
+{
+    pos:      Vec3;
+    radius:   float;
+    duration: float;
+}

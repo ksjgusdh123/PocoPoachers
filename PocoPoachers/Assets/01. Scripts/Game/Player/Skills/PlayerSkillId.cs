@@ -12,5 +12,6 @@
     Stealth,
     InfiniteStamina,
     Invincible,
-    Reflect
+    Reflect,
+    Taunt
 }

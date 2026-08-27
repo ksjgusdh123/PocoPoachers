@@ -19,8 +19,16 @@ public class TargetDetector : MonoBehaviour
     // TryDetect가 매 호출 배열을 새로 만들지 않도록 재사용하는 버퍼.
     private Collider[] _overlapBuffer = new Collider[16];
 
+    // 도발로 어그로가 고정된 동안의 시전자와 만료 시각. 이 사이에는 피격·소리로도 타겟이 넘어가지 않는다.
+    private GameObject _tauntSource;
+    private float _tauntExpireTime;
+
     // 현재 타겟 (없으면 null) — 스킬 등 외부에서 조회
     public GameObject CurrentTarget => _currentTarget;
+
+    // 도발이 살아 있는지 — 시간이 지났거나 시전자가 죽었으면 풀린다.
+    public bool IsTaunted =>
+        _tauntSource != null && Time.time < _tauntExpireTime && IsAlive(_tauntSource);
 
 
     private void Awake()
@@ -31,6 +39,11 @@ public class TargetDetector : MonoBehaviour
     // 타겟이 죽으면(HP 0 이하) 즉시 무효화 — 행동 그래프에서 어떤 노드가 도는지와 무관하게 보장한다
     private void Update()
     {
+        // 만료됐거나 시전자가 죽은 도발은 정리한다. 타겟 자체는 그대로 둬서
+        // 도발이 풀린 뒤에도 일반 규칙(잊는 범위, 피격 반격)으로 이어지게 한다.
+        if (_tauntSource != null && !IsTaunted)
+            _tauntSource = null;
+
         if (_currentTarget == null) return;
 
         // 파괴됐거나(fake null 포함) 캐싱된 스탯의 HP가 0 이하면 해제
@@ -40,11 +53,26 @@ public class TargetDetector : MonoBehaviour
 
     public void SetDetectRange(float range) => _detectRange = range;
 
+    // 피격 반격(EnemyStat)과 소리 감지(SoundDetector)가 쓰는 경로 — 도발 중에는 어그로를 넘기지 않는다.
     public void ForceSetTarget(GameObject target)
     {
         if (!IsAlive(target)) return;
+        if (IsTaunted && target != _tauntSource) return;
 
         SetTarget(target);
+    }
+
+    // 도발 — duration 동안 시전자로 타겟을 고정한다. 이미 도발 중이면 더 늦게 끝나는 쪽으로 갱신한다.
+    public void ApplyTaunt(GameObject source, float duration)
+    {
+        if (!IsAlive(source) || duration <= 0f) return;
+
+        float expireTime = Time.time + duration;
+        if (IsTaunted && expireTime < _tauntExpireTime && source == _tauntSource) return;
+
+        _tauntSource = source;
+        _tauntExpireTime = expireTime;
+        SetTarget(source);
     }
 
     // 타겟 지정을 한 곳으로 모아 스탯 캐시와 블랙보드가 어긋나지 않게 한다.
@@ -68,6 +96,7 @@ public class TargetDetector : MonoBehaviour
 
     private void ClearTarget()
     {
+        _tauntSource = null;
         _currentTarget = null;
         _currentTargetStat = null;
         _behaviorAgent.BlackboardReference.SetVariableValue(_blackboardTarget, (GameObject)null);
