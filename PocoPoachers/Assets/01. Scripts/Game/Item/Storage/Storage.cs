@@ -83,6 +83,7 @@ public class Storage : MonoBehaviour, IInteractable
         player.PlayerInventory.InteractionInventory = _inventory;
         _inventory.InteractionInventory = player.PlayerInventory;
 
+        GetComponent<ItemBoxAnimation>()?.SetOpen(true);
         player.SwitchInputMap(PlayerInputMapType.ItemBox);
     }
 
@@ -95,6 +96,8 @@ public class Storage : MonoBehaviour, IInteractable
 
         player.GetStorageUI.SetActive(false);
         player.SetInventoryOpen(false);
+
+        GetComponent<ItemBoxAnimation>()?.SetOpen(false);
 
         player.SwitchToGameplayInputMap();
         UIManager.GetInstance().ChangeMouseCursor(true);

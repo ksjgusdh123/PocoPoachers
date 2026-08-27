@@ -818,7 +818,18 @@ public class PlayerController : MonoBehaviour
     {
         var weapon = GetComponent<WeaponController>();
         if (weapon != null && weapon.IsReloading) return;
-        UIManager.GetInstance().Toggle(UIType.Inventory);
+
+        var ui = UIManager.GetInstance();
+
+        // 소리는 여기서만 낸다 — 상자·창고도 인벤토리를 함께 열기 때문에, UIType 자동 규칙에
+        // 맡기면 상자 여닫음 소리 위에 인벤토리 소리가 겹쳐 울린다.
+        // 반드시 Toggle 뒤에 재생해야 한다: Hide가 발행하는 OnPanelClosed를 받은 UISoundManager가
+        // StopPanelSfx로 패널 소리를 끊기 때문에, 먼저 틀면 닫힘 소리가 그 자리에서 잘린다.
+        bool opening = !ui.IsOpen(UIType.Inventory);
+
+        ui.Toggle(UIType.Inventory);
+
+        SoundManager.GetInstance()?.PlayPanelSfx(opening ? "ui_inventory_open" : "ui_inventory_close");
     }
 
     void ShowMinimap()
