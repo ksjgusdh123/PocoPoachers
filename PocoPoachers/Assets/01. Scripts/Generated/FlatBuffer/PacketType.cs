@@ -83,13 +83,15 @@ public enum PacketType : byte
   H_DroneState = 76,
   H_DroneShoot = 77,
   G_Invincible = 78,
-  H_BulletHit = 79,
-  G_GrenadeThrow = 80,
-  H_GrenadeThrow = 81,
-  H_GrenadeMove = 82,
-  H_GrenadeExplode = 83,
-  G_Stealth = 84,
-  H_Stealth = 85,
+  G_ShieldFx = 79,
+  H_ShieldFx = 80,
+  H_BulletHit = 81,
+  G_GrenadeThrow = 82,
+  H_GrenadeThrow = 83,
+  H_GrenadeMove = 84,
+  H_GrenadeExplode = 85,
+  G_Stealth = 86,
+  H_Stealth = 87,
 };
 
 public class PacketTypeUnion {
@@ -258,6 +260,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_DroneShoot(H_DroneShootT _h_droneshoot) { return new PacketTypeUnion{ Type = PacketType.H_DroneShoot, Value = _h_droneshoot }; }
   public G_InvincibleT AsG_Invincible() { return this.As<G_InvincibleT>(); }
   public static PacketTypeUnion FromG_Invincible(G_InvincibleT _g_invincible) { return new PacketTypeUnion{ Type = PacketType.G_Invincible, Value = _g_invincible }; }
+  public G_ShieldFxT AsG_ShieldFx() { return this.As<G_ShieldFxT>(); }
+  public static PacketTypeUnion FromG_ShieldFx(G_ShieldFxT _g_shieldfx) { return new PacketTypeUnion{ Type = PacketType.G_ShieldFx, Value = _g_shieldfx }; }
+  public H_ShieldFxT AsH_ShieldFx() { return this.As<H_ShieldFxT>(); }
+  public static PacketTypeUnion FromH_ShieldFx(H_ShieldFxT _h_shieldfx) { return new PacketTypeUnion{ Type = PacketType.H_ShieldFx, Value = _h_shieldfx }; }
   public H_BulletHitT AsH_BulletHit() { return this.As<H_BulletHitT>(); }
   public static PacketTypeUnion FromH_BulletHit(H_BulletHitT _h_bullethit) { return new PacketTypeUnion{ Type = PacketType.H_BulletHit, Value = _h_bullethit }; }
   public G_GrenadeThrowT AsG_GrenadeThrow() { return this.As<G_GrenadeThrowT>(); }
@@ -354,6 +360,8 @@ public class PacketTypeUnion {
       case PacketType.H_DroneState: return H_DroneState.Pack(builder, _o.AsH_DroneState()).Value;
       case PacketType.H_DroneShoot: return H_DroneShoot.Pack(builder, _o.AsH_DroneShoot()).Value;
       case PacketType.G_Invincible: return G_Invincible.Pack(builder, _o.AsG_Invincible()).Value;
+      case PacketType.G_ShieldFx: return G_ShieldFx.Pack(builder, _o.AsG_ShieldFx()).Value;
+      case PacketType.H_ShieldFx: return H_ShieldFx.Pack(builder, _o.AsH_ShieldFx()).Value;
       case PacketType.H_BulletHit: return H_BulletHit.Pack(builder, _o.AsH_BulletHit()).Value;
       case PacketType.G_GrenadeThrow: return G_GrenadeThrow.Pack(builder, _o.AsG_GrenadeThrow()).Value;
       case PacketType.H_GrenadeThrow: return H_GrenadeThrow.Pack(builder, _o.AsH_GrenadeThrow()).Value;
@@ -607,6 +615,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.G_Invincible:
         result = G_InvincibleVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_ShieldFx:
+        result = G_ShieldFxVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_ShieldFx:
+        result = H_ShieldFxVerify.Verify(verifier, tablePos);
         break;
       case PacketType.H_BulletHit:
         result = H_BulletHitVerify.Verify(verifier, tablePos);

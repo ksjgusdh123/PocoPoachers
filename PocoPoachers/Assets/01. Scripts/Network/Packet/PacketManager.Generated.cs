@@ -79,6 +79,8 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.H_DroneState        , PacketHandlers.OnH_DroneState);
         _onRecv.Add(PacketType.H_DroneShoot        , PacketHandlers.OnH_DroneShoot);
         _onRecv.Add(PacketType.G_Invincible        , PacketHandlers.OnG_Invincible);
+        _onRecv.Add(PacketType.G_ShieldFx          , PacketHandlers.OnG_ShieldFx);
+        _onRecv.Add(PacketType.H_ShieldFx          , PacketHandlers.OnH_ShieldFx);
         _onRecv.Add(PacketType.H_BulletHit         , PacketHandlers.OnH_BulletHit);
         _onRecv.Add(PacketType.G_GrenadeThrow      , PacketHandlers.OnG_GrenadeThrow);
         _onRecv.Add(PacketType.H_GrenadeThrow      , PacketHandlers.OnH_GrenadeThrow);

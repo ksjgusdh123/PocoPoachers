@@ -109,6 +109,20 @@ table G_Invincible
     value: bool;
 }
 
+// 무적 스킬의 방어막(ShieldFX) 연출 켜짐/꺼짐 — G_Invincible과는 별개 채널이다.
+// G_Invincible은 데미지 판정용 편도 보고라 중계되지 않는다(호스트가 맞았는지만 앎).
+// 이건 Stealth와 같은 방식으로 전원에게 전파해 다른 클라이언트 화면에도 방어막을 띄운다.
+table G_ShieldFx
+{
+    active: bool;
+}
+
+table H_ShieldFx
+{
+    player_id: int;
+    active:    bool;
+}
+
 // 호스트가 판정한 탄환 명중. 게스트 탄환은 적과의 충돌을 스스로 판정하지 않으므로
 // 혈흔·탄환 소멸이 전부 이 통보로만 일어난다 — 무적/회피로 관통한 경우엔 아예 오지 않는다.
 // 빗나간 탄환은 통보 없이 각자 사거리 끝에서 사라지므로, 명중할 때만 오간다.

@@ -97,6 +97,8 @@ public struct FlatPacket : IFlatbufferObject
   public H_DroneState TypeAsH_DroneState() { return Type<H_DroneState>().Value; }
   public H_DroneShoot TypeAsH_DroneShoot() { return Type<H_DroneShoot>().Value; }
   public G_Invincible TypeAsG_Invincible() { return Type<G_Invincible>().Value; }
+  public G_ShieldFx TypeAsG_ShieldFx() { return Type<G_ShieldFx>().Value; }
+  public H_ShieldFx TypeAsH_ShieldFx() { return Type<H_ShieldFx>().Value; }
   public H_BulletHit TypeAsH_BulletHit() { return Type<H_BulletHit>().Value; }
   public G_GrenadeThrow TypeAsG_GrenadeThrow() { return Type<G_GrenadeThrow>().Value; }
   public H_GrenadeThrow TypeAsH_GrenadeThrow() { return Type<H_GrenadeThrow>().Value; }
@@ -366,6 +368,12 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.G_Invincible:
         _o.Type.Value = this.Type<G_Invincible>().HasValue ? this.Type<G_Invincible>().Value.UnPack() : null;
+        break;
+      case PacketType.G_ShieldFx:
+        _o.Type.Value = this.Type<G_ShieldFx>().HasValue ? this.Type<G_ShieldFx>().Value.UnPack() : null;
+        break;
+      case PacketType.H_ShieldFx:
+        _o.Type.Value = this.Type<H_ShieldFx>().HasValue ? this.Type<H_ShieldFx>().Value.UnPack() : null;
         break;
       case PacketType.H_BulletHit:
         _o.Type.Value = this.Type<H_BulletHit>().HasValue ? this.Type<H_BulletHit>().Value.UnPack() : null;

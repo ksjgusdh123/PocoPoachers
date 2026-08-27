@@ -681,6 +681,29 @@ public static class RoomSync
             G_Invincible.Pack, PacketType.G_Invincible);
     }
 
+    // ── 무적 방어막 연출 ──────────────────────────────────────
+    // 위의 Invincible()과는 별개 채널이다 — 그건 데미지 판정용 편도 보고라 중계되지 않는다.
+    // 이건 Stealth와 같은 방식(요청+중계, 호스트 자신도 방송)으로 전원에게 전파해
+    // 다른 클라이언트 화면에도 방어막이 보이게 한다.
+    public static void ShieldFx(bool active)
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastReliableToGuests(new H_ShieldFxT { PlayerId = MyId, Active = active },
+                H_ShieldFx.Pack, PacketType.H_ShieldFx);
+        else
+            PacketBuilder.SendReliableToHost(new G_ShieldFxT { Active = active },
+                G_ShieldFx.Pack, PacketType.G_ShieldFx);
+    }
+
+    // 호스트가 게스트의 방어막 요청을 나머지 게스트에게 중계 (요청자 본인은 이미 로컬에 적용해둠)
+    public static void ShieldFxRelay(int ownerPlayerId, bool active)
+    {
+        PacketBuilder.BroadcastReliableToGuests(ownerPlayerId, new H_ShieldFxT { PlayerId = ownerPlayerId, Active = active },
+            H_ShieldFx.Pack, PacketType.H_ShieldFx);
+    }
+
     // ── 수류탄 ────────────────────────────────────────────────
     // EnemyMove와 같은 구조 — 실제 물리 시뮬레이션(GrenadeProjectile Authoritative)은 호스트에서만 돈다.
     // 게스트는 요청만 보내고, 호스트가 발급한 grenade_id로 위치·폭발을 계속 따라간다.
