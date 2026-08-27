@@ -10,5 +10,6 @@
     RangeBoost,
     Grenade,
     Stealth,
-    InfiniteStamina
+    InfiniteStamina,
+    Invincible
 }
