@@ -158,17 +158,27 @@ public class Bullet : MonoBehaviour
                 if (_applyDamage)
                 {
                     float damage = _isHeadshot ? _damage * _critMultiplier : _damage;
-                    // 무적 등으로 데미지가 무효면 관통 — 충돌을 무시하고 정상 전진
+                    // 무적 등으로 데미지가 무효면 관통(대상이 반사 중이면 역벡터로 반사) — 충돌을 무시하고 계속 진행
                     if (!damageable.TakeDamage(damage, _attacker))
                     {
-                        transform.position = origin + _direction * step;
+                        StatBase blockedStat = ResolveStat(damageable);
+                        if (blockedStat != null && blockedStat.IsBulletReflecting)
+                        {
+                            transform.position = hit.point;
+                            ReflectOff(blockedStat);
+                        }
+                        else
+                        {
+                            transform.position = origin + _direction * step;
+                        }
+
                         _traveledDistance += step;
                         if (_traveledDistance >= _range)
                             Release();
                         return;
                     }
                     // 데미지가 실제로 적용된 이 클라이언트(호스트)에서만 사망 여부를 알 수 있음
-                    isKill = damageable is StatBase stat && stat.IsDead;
+                    isKill = ResolveStat(damageable) is { IsDead: true };
                     _onDamageResult?.Invoke(isKill, hit.collider);
 
                     // 게스트는 이 통보로만 혈흔을 뿌리고 탄환을 지운다
@@ -237,6 +247,27 @@ public class Bullet : MonoBehaviour
         }
 
         return true;
+    }
+
+    // 맞은 대상의 실제 StatBase를 찾는다 — 방어막 콜라이더(ShieldHitboxLink)는 소유자를 대신 들고 있을 뿐이라
+    // 직접 StatBase가 아니므로, 무적/반사/사망 판정을 하려면 이 경로로 한 번 더 풀어야 한다.
+    private static StatBase ResolveStat(IDamageable damageable)
+    {
+        return damageable as StatBase ?? (damageable as ShieldHitboxLink)?.Owner;
+    }
+
+    // 반사 스킬로 막힌 총알을 대상 쪽에서 튕겨낸다 — 방향을 반전하고, 반사시킨 대상을 새 발사자로
+    // 취급한다. TryGetHit이 발사자와 같은 레이어를 건너뛰므로, 이 재할당만으로 반사시킨 플레이어(와
+    // 아군)는 다시 맞지 않고 적은 맞출 수 있게 된다 — 남은 사거리(_range - _traveledDistance)만큼
+    // 그대로 날아간다.
+    private void ReflectOff(StatBase reflector)
+    {
+        _direction = -_direction;
+        transform.rotation = Quaternion.LookRotation(_direction);
+
+        _attacker = reflector.gameObject;
+        _attackerLayer = reflector.gameObject.layer;
+        _isHeadshot = false; // 원래 피격 판정 기준이라 새 대상엔 의미가 없다
     }
 
     private bool TryGetHit(Vector3 origin, float distance, out RaycastHit closestHit)

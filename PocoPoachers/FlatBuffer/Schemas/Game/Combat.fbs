@@ -109,6 +109,14 @@ table G_Invincible
     value: bool;
 }
 
+// 게스트 자신의 반사 상태(반사 스킬)를 호스트에 알린다 — G_Invincible과 같은 이유로 단방향이면 충분하다.
+// 총알 충돌 판정은 항상 호스트의 총알에서만 일어나므로, 호스트가 몰라도 되는 건 없다.
+// 켜져 있으면 Bullet.cs가 무적으로 막힌 총알을 관통시키는 대신 역벡터로 반사시킨다.
+table G_Reflecting
+{
+    value: bool;
+}
+
 // 무적 스킬의 방어막(ShieldFX) 연출 켜짐/꺼짐 — G_Invincible과는 별개 채널이다.
 // G_Invincible은 데미지 판정용 편도 보고라 중계되지 않는다(호스트가 맞았는지만 앎).
 // 이건 Stealth와 같은 방식으로 전원에게 전파해 다른 클라이언트 화면에도 방어막을 띄운다.
@@ -118,6 +126,19 @@ table G_ShieldFx
 }
 
 table H_ShieldFx
+{
+    player_id: int;
+    active:    bool;
+}
+
+// 반사 스킬의 방어막(ShieldFX Reflect) 연출 켜짐/꺼짐 — G_ShieldFx와 같은 이유로 별개 채널이다.
+// (무적+반사가 서로 다른 슬롯에 동시에 장착/사용될 수 있어 프리팹이 다른 별도 브로드캐스트가 필요하다)
+table G_ReflectFx
+{
+    active: bool;
+}
+
+table H_ReflectFx
 {
     player_id: int;
     active:    bool;

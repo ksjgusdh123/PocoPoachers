@@ -38,6 +38,8 @@ public static class PlayerSkillFactory
                 return new InfiniteStaminaSkill(data);
             case PlayerSkillId.Invincible:
                 return new InvincibleSkill(data);
+            case PlayerSkillId.Reflect:
+                return new ReflectSkill(data);
             default:
                 Debug.LogWarning($"[PlayerSkillFactory] 미구현 skill: {id} (id={data.id})");
                 return null;

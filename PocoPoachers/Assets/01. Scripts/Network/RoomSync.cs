@@ -681,6 +681,20 @@ public static class RoomSync
             G_Invincible.Pack, PacketType.G_Invincible);
     }
 
+    // ── 반사 ──────────────────────────────────────────────────
+    // 위의 Invincible()과 같은 이유로 게스트→호스트 단방향이면 충분하다.
+    // 총알 충돌 판정은 항상 호스트의 총알에서만 일어나므로(Bullet.cs), 몰라도 되는 방향은 없다.
+    public static void Reflecting(StatBase stat, bool value)
+    {
+        if (IsSolo || RoomManager.IsHost) return;
+
+        // 내 캐릭터만 보고한다 — 적/남의 반사 상태는 호스트가 정한다
+        if (stat is not PlayerStat) return;
+
+        PacketBuilder.SendReliableToHost(new G_ReflectingT { Value = value },
+            G_Reflecting.Pack, PacketType.G_Reflecting);
+    }
+
     // ── 무적 방어막 연출 ──────────────────────────────────────
     // 위의 Invincible()과는 별개 채널이다 — 그건 데미지 판정용 편도 보고라 중계되지 않는다.
     // 이건 Stealth와 같은 방식(요청+중계, 호스트 자신도 방송)으로 전원에게 전파해
@@ -702,6 +716,28 @@ public static class RoomSync
     {
         PacketBuilder.BroadcastReliableToGuests(ownerPlayerId, new H_ShieldFxT { PlayerId = ownerPlayerId, Active = active },
             H_ShieldFx.Pack, PacketType.H_ShieldFx);
+    }
+
+    // ── 반사 방어막 연출 ──────────────────────────────────────
+    // ShieldFx와 완전히 같은 패턴 — 무적/반사가 서로 다른 슬롯에 동시에 켜질 수 있어
+    // 프리팹이 다른 별도 브로드캐스트가 필요하다.
+    public static void ReflectFx(bool active)
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastReliableToGuests(new H_ReflectFxT { PlayerId = MyId, Active = active },
+                H_ReflectFx.Pack, PacketType.H_ReflectFx);
+        else
+            PacketBuilder.SendReliableToHost(new G_ReflectFxT { Active = active },
+                G_ReflectFx.Pack, PacketType.G_ReflectFx);
+    }
+
+    // 호스트가 게스트의 반사 방어막 요청을 나머지 게스트에게 중계 (요청자 본인은 이미 로컬에 적용해둠)
+    public static void ReflectFxRelay(int ownerPlayerId, bool active)
+    {
+        PacketBuilder.BroadcastReliableToGuests(ownerPlayerId, new H_ReflectFxT { PlayerId = ownerPlayerId, Active = active },
+            H_ReflectFx.Pack, PacketType.H_ReflectFx);
     }
 
     // ── 수류탄 ────────────────────────────────────────────────

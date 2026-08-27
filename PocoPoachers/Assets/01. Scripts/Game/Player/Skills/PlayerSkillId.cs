@@ -11,5 +11,6 @@
     Grenade,
     Stealth,
     InfiniteStamina,
-    Invincible
+    Invincible,
+    Reflect
 }

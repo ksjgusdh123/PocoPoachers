@@ -5,6 +5,8 @@ using UnityEngine;
 // 데미지 면역 판정용 패킷과 섞으면 안 되므로(그건 호스트 판정용 편도 보고라 중계되지 않음) 나눴다.
 public class InvincibleSkill : PlayerSkillBase
 {
+    private const string ShieldFxPrefabPath = "Skill/ShieldFX";
+
     public override PlayerSkillId Id => PlayerSkillId.Invincible;
 
     private float _elapsed;
@@ -17,7 +19,7 @@ public class InvincibleSkill : PlayerSkillBase
         _elapsed = 0f;
         ctx.Stat.SetInvincible(true);
 
-        _shieldFx = ShieldFxVisual.SpawnSelf(ctx.Transform);
+        _shieldFx = ShieldFxVisual.SpawnSelf(ctx.Transform, ctx.Stat, ShieldFxPrefabPath);
         RoomSync.ShieldFx(true);
     }
 

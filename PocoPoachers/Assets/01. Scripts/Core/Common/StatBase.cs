@@ -77,6 +77,29 @@ public abstract class StatBase : MonoBehaviour, IDamageable
         RoomSync.Invincible(this, immune);
     }
 
+    // 반사 상태 (반사 스킬에서 켜고 끔) — 켜져 있으면 무적으로 막힌 총알이 Bullet.cs에서
+    // 관통 대신 역벡터로 반사된다. 반사 스킬은 항상 SetInvincible(true)도 함께 걸므로
+    // 데미지 면역 자체는 IsDamageImmune 경로를 그대로 탄다 — 이건 "막힌 총알을 어떻게 처리할지"만 결정한다.
+    public bool IsReflecting { get; private set; }
+
+    // 다른 클라이언트가 "이 대상은 지금 반사 중"이라고 알려준 값 — 반사를 건 스킬은 로컬에서만 돌아서
+    // 원격 대상(호스트가 보는 게스트 등)은 이 값으로만 안다.
+    private bool _networkReflecting;
+
+    // 반사 여부의 정본 — Bullet.cs가 무적으로 막힌 순간 이것만 보면 된다.
+    public bool IsBulletReflecting => IsReflecting || _networkReflecting;
+
+    public void SetReflecting(bool value)
+    {
+        if (IsReflecting == value) return;
+
+        IsReflecting = value;
+        RoomSync.Reflecting(this, value);
+    }
+
+    // 네트워크로 받은 반사 상태를 반영 (되돌려 보내지 않는다)
+    public void ApplyReflectingFromNetwork(bool value) => _networkReflecting = value;
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     // 치트 무적 — 구르기 무적과 별개로 유지되어 구르기 종료에 꺼지지 않음
     public bool IsGodMode { get; private set; }
