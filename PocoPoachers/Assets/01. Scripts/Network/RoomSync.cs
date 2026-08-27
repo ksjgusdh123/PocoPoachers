@@ -821,6 +821,22 @@ public static class RoomSync
             H_Stealth.Pack, PacketType.H_Stealth);
     }
 
+    // ── 도발 ──────────────────────────────────────────────────
+    // AI 타겟은 호스트만 판정하므로(TargetDetector가 호스트 전용) 게스트는 시전 지점과 반경을
+    // 호스트에 넘겨 대신 처리하게 한다. 호스트 자신이 쓸 때는 로컬에서 바로 끝나 패킷이 없다.
+
+    public static void RequestTaunt(Vector3 pos, float radius, float duration)
+    {
+        if (IsSolo || RoomManager.IsHost) return;
+
+        PacketBuilder.SendReliableToHost(new G_TauntT
+        {
+            Pos      = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
+            Radius   = radius,
+            Duration = duration,
+        }, G_Taunt.Pack, PacketType.G_Taunt);
+    }
+
     // ── 추가탄 드론 ────────────────────────────────────────────
     // 드론은 플레이어를 따라다니는 장식이라 위치 동기화가 필요 없다.
     // 켜짐/꺼짐만 알리면 각 클라이언트가 그 플레이어 옆에 로컬로 띄운다.

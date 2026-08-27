@@ -11,6 +11,7 @@ public class PlayerSkillContext
     public PlayerInputHandler Input { get; }
     public WeaponController Weapon { get; }
     public PlayerDodge Dodge { get; }
+    public PlayerEnhancement Enhancement { get; }
 
     public PlayerSkillContext(GameObject self)
     {
@@ -22,6 +23,7 @@ public class PlayerSkillContext
         Input = self.GetComponent<PlayerInputHandler>();
         Weapon = self.GetComponent<WeaponController>();
         Dodge = self.GetComponent<PlayerDodge>();
+        Enhancement = self.GetComponent<PlayerEnhancement>();
     }
 
     // 이동 입력 방향(월드 기준), 입력이 없으면 바라보는 방향

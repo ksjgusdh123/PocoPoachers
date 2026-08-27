@@ -201,6 +201,24 @@ public class SaveManager : Singleton<SaveManager>
         return data.hasSkillSlots;
     }
 
+    // 재료를 소모해 획득한 스킬 목록 — 장착 슬롯과 마찬가지로 클라이언트 로컬 값이다
+    public void SaveOwnedSkills(IEnumerable<int> skillIds)
+    {
+        var data = GetOrLoad(_activeSlot);
+        data.hasOwnedSkills = true;
+        data.ownedSkills = skillIds != null ? skillIds.ToList() : new List<int>();
+        data.lastSavedAt = NowTimestamp();
+        SaveSlotToDisk(_activeSlot);
+    }
+
+    // 저장된 획득 스킬이 있으면 true. 없으면(새 게임) 재료가 필요 없는 스킬만 보유한 상태로 시작한다.
+    public bool TryLoadOwnedSkills(out List<int> skillIds)
+    {
+        var data = GetOrLoad(_activeSlot);
+        skillIds = data.ownedSkills;
+        return data.hasOwnedSkills;
+    }
+
     // 기체(플레이어 캐릭터) 레벨/스탯 포인트/스탯별 레벨 저장 — 활력치와 동일하게 게스트도 로컬 저장
     public void SaveCharacterEnhancement(int level, int points, IReadOnlyDictionary<EnhancementStatType, int> statLevels)
     {
@@ -409,6 +427,10 @@ public class SaveManager : Singleton<SaveManager>
         // 빈 슬롯을 0으로 채운 고정 길이 배열이라 "전부 해제" 상태와 미저장을 구분하려면 플래그가 필요하다.
         public bool hasSkillSlots;
         public List<int> skillSlots = new List<int>();
+
+        // 재료를 소모해 획득한 스킬 — hasOwnedSkills가 false면 미저장(새 게임)이라 무료 스킬만 보유한 상태로 시작
+        public bool hasOwnedSkills;
+        public List<int> ownedSkills = new List<int>();
 
         // 기체 레벨/스탯 포인트 — hasCharacterEnhancement가 false면 미저장(새 게임)이라 레벨 0/포인트 0으로 시작
         public bool hasCharacterEnhancement;

@@ -18,6 +18,7 @@ public class SoundManager : Singleton<SoundManager>
     private AudioSource _bgmSource;
     private AudioSource _sfxSource;
     private AudioSource _cancelableSource;
+    private AudioSource _panelSource;
     private AudioSource _pitchedSource;
     private readonly List<AudioSource> _sfx3DSources = new List<AudioSource>();
     private int _next3DSourceIndex;
@@ -40,6 +41,9 @@ public class SoundManager : Singleton<SoundManager>
 
         _cancelableSource = gameObject.AddComponent<AudioSource>();
         _cancelableSource.playOnAwake = false;
+
+        _panelSource = gameObject.AddComponent<AudioSource>();
+        _panelSource.playOnAwake = false;
 
         _pitchedSource = gameObject.AddComponent<AudioSource>();
         _pitchedSource.playOnAwake = false;
@@ -127,6 +131,28 @@ public class SoundManager : Singleton<SoundManager>
     }
 
     public void StopCancelableSfx() => _cancelableSource.Stop();
+
+    // 패널 여닫음 소리. 열림 소리가 다 울리기 전에 창을 닫으면 끊어야 해서 전용 소스를 쓴다.
+    // 아이템 사용음(_cancelableSource)과 나눠 둔 건, 한 소스를 공유하면 창을 여닫을 때마다
+    // 사용 중인 아이템 소리가 끊기기 때문이다.
+    // 실제로 재생했으면 true — 호출측이 지금 울리는 소리의 주인을 추적하는 데 쓴다.
+    public bool PlayPanelSfx(string key)
+    {
+        if (string.IsNullOrEmpty(key)) return false;
+
+        var data = SoundTable.Instance.Get(key);
+        if (data == null || string.IsNullOrEmpty(data.Path)) return false;
+
+        var clip = ResourceManager.GetInstance().Load<AudioClip>(data.Path);
+        if (clip == null) return false;
+
+        _panelSource.clip = clip;
+        _panelSource.volume = MasterVolume * SfxVolume * data.Volume;
+        _panelSource.Play();
+        return true;
+    }
+
+    public void StopPanelSfx() => _panelSource.Stop();
 
     // 대사 blip처럼 짧은 소리를 연달아 낼 때 쓴다. 매번 같은 피치로 반복하면 말소리가 아니라
     // 기계음으로 들리므로 재생마다 피치를 조금씩 흔든다. 공용 _sfxSource의 피치를 건드리면

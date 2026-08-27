@@ -48,6 +48,7 @@ public class SkillEquipPanel : MonoBehaviour
         if (_manager == null) return;
 
         _manager.OnSlotChanged += OnSlotChanged;
+        _manager.OnUnlockChanged += OnUnlockChanged;
         RefreshList();
         RefreshDetail();
     }
@@ -59,6 +60,7 @@ public class SkillEquipPanel : MonoBehaviour
         if (_manager == null) return;
 
         _manager.OnSlotChanged -= OnSlotChanged;
+        _manager.OnUnlockChanged -= OnUnlockChanged;
         _manager = null;
     }
 
@@ -76,6 +78,13 @@ public class SkillEquipPanel : MonoBehaviour
 
     // 슬롯이 바뀌면 목록의 장착 표시와 상세의 버튼 문구가 함께 따라가야 한다.
     private void OnSlotChanged(int slotIndex, IPlayerSkill skill)
+    {
+        RefreshEquippedState();
+        RefreshDetail();
+    }
+
+    // 강화대에서 스탯을 찍어 스킬이 해금되면 창을 다시 열지 않아도 잠금 표시가 풀려야 한다.
+    private void OnUnlockChanged()
     {
         RefreshEquippedState();
         RefreshDetail();
@@ -101,6 +110,7 @@ public class SkillEquipPanel : MonoBehaviour
             row.transform.SetSiblingIndex(used - 1);
             row.Setup(data, OnSelectSkill);
             row.SetEquipped(_manager.IsEquipped(data.id));
+            row.SetLocked(!_manager.IsUsable(data));
             row.SetSelected(_selected != null && _selected.id == data.id);
         }
 
@@ -122,6 +132,7 @@ public class SkillEquipPanel : MonoBehaviour
             if (_rows[i] == null || !_rows[i].gameObject.activeSelf) continue;
 
             _rows[i].SetEquipped(_manager.IsEquipped(sorted[i].id));
+            _rows[i].SetLocked(!_manager.IsUsable(sorted[i]));
             _rows[i].SetSelected(_selected != null && _selected.id == sorted[i].id);
         }
     }
@@ -154,24 +165,70 @@ public class SkillEquipPanel : MonoBehaviour
         }
         if (_detailNameText != null)
             _detailNameText.text = localization.GetString(_selected.name);
+
+        bool locked = _manager != null && !_manager.IsUnlocked(_selected);
+        bool owned = _manager != null && _manager.IsOwned(_selected);
+
+        // 잠긴 스킬은 효과 설명 대신 해금 조건을, 해금됐지만 아직 획득 전이면 설명과 함께 필요한 재료를 보여준다.
         if (_detailDescriptionText != null)
-            _detailDescriptionText.text = localization.GetString(_selected.description);
+        {
+            if (locked)
+                _detailDescriptionText.text = _selected.GetUnlockHint();
+            else if (!owned)
+                _detailDescriptionText.text = localization.GetString(_selected.description) + "\n\n" + BuildCostText(localization);
+            else
+                _detailDescriptionText.text = localization.GetString(_selected.description);
+        }
+        // 패시브는 발동이 없어 쿨다운 자리에 종류를 대신 보여준다.
         if (_detailCooldownText != null)
-            _detailCooldownText.text = $"{_selected.cooldown:0.#}s";
+        {
+            _detailCooldownText.text = _selected.TryGetPassive(out _, out _)
+                ? localization.GetString("skill.passive")
+                : $"{_selected.cooldown:0.#}s";
+        }
 
         bool equipped = _manager != null && _manager.IsEquipped(_selected.id);
 
-        if (_equipButton != null) _equipButton.interactable = _manager != null;
+        // 버튼 하나가 상태에 따라 잠김 / 획득 / 장착 / 해제를 맡는다.
+        if (_equipButton != null)
+            _equipButton.interactable = _manager != null && !locked && (owned || _manager.CanAcquire(_selected));
+
         if (_equipButtonText != null)
-            _equipButtonText.text = localization.GetString(equipped ? "skill.unequip" : "skill.equip");
+        {
+            if (locked) _equipButtonText.text = localization.GetString("skill.locked");
+            else if (!owned) _equipButtonText.text = localization.GetString("skill.acquire");
+            else _equipButtonText.text = localization.GetString(equipped ? "skill.unequip" : "skill.equip");
+        }
     }
 
-    // 장착돼 있으면 해제, 아니면 어느 슬롯에 넣을지 키 입력을 기다린다.
+    // "획득 재료: 철 주괴 3/8" — 보유량과 필요량을 함께 보여준다.
+    private string BuildCostText(LocalizationManager localization)
+    {
+        if (!_selected.TryGetCost(out ItemData item, out int count)) return "";
+
+        int owned = _manager != null ? _manager.GetOwnedItemCount(_selected) : 0;
+        return string.Format(
+            localization.GetString("skill.acquire_cost"),
+            localization.GetString(item.ItemName),
+            owned,
+            count);
+    }
+
+    // 아직 획득 전이면 재료를 소모해 획득하고, 장착돼 있으면 해제,
+    // 그 외에는 어느 슬롯에 넣을지 키 입력을 기다린다.
     private void OnClickEquip()
     {
         if (_manager == null || _selected == null) return;
+        if (!_manager.IsUnlocked(_selected)) return;
 
         CancelSlotSelection();
+
+        // 획득에 성공하면 OnUnlockChanged가 상세를 "장착" 상태로 새로 그린다.
+        if (!_manager.IsOwned(_selected))
+        {
+            _manager.TryAcquire(_selected);
+            return;
+        }
 
         if (_manager.UnequipSkill(_selected.id)) return;
 

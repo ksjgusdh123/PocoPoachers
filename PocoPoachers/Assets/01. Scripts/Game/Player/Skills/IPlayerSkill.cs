@@ -8,6 +8,13 @@ public interface IPlayerSkill
     // 진행 중 PlayerMovement의 수평 이동을 막고 스킬이 직접 이동시킨다 (대시 등)
     bool LocksMovement { get; }
 
+    // 패시브는 발동시킬 수 없고 장착돼 있는 동안 효과가 유지된다 — 입력과 쿨다운의 대상이 아니다.
+    bool IsPassive { get; }
+
+    // 슬롯에 넣고 뺄 때 호출된다. 패시브가 효과를 켜고 끄는 지점.
+    void OnEquip(PlayerSkillContext ctx);
+    void OnUnequip(PlayerSkillContext ctx);
+
     bool CanUse(PlayerSkillContext ctx);
     void Begin(PlayerSkillContext ctx);
     bool Tick(PlayerSkillContext ctx); // true=진행중, false=종료

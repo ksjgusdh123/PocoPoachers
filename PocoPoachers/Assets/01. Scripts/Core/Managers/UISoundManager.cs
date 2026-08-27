@@ -58,14 +58,47 @@ public class UISoundManager : Singleton<UISoundManager>
 
     private void OnItemRegistered() => SoundManager.GetInstance().PlaySfx("ui_item_register");
 
+    // 패널 여닫음 소리는 sound.csv가 정한다 — UIType 이름으로 "ui_open_<uitype>" / "ui_close_<uitype>"
+    // 키를 만들어 재생하고, 그 키가 테이블에 없으면 SoundManager가 조용히 넘어간다.
+    // 덕분에 소리를 넣고 빼는 데 코드를 고칠 필요가 없다. 상자·창고처럼 자기 소리를 직접 내는
+    // 오브젝트는 그냥 행을 만들지 않으면 된다(겹쳐 울리는 걸 막으려 인벤토리는 비워둔 상태).
+    private static readonly Dictionary<UIType, string> OpenKeys = new();
+    private static readonly Dictionary<UIType, string> CloseKeys = new();
+
+    // 패널 소스는 하나뿐이라, 지금 울리는 소리가 어느 패널 것인지 기억해 둔다.
+    // 발전기처럼 닫을 때 인벤토리까지 함께 닫는 도구가 있어서, 주인을 모르면 뒤이어 닫힌 패널이
+    // 방금 튼 남의 닫힘 소리를 끊어버린다.
+    private UIType? _panelSfxOwner;
+
     private void OnPanelOpened(UIType type)
     {
-        if (type == UIType.Inventory) SoundManager.GetInstance().PlaySfx("ui_inventory_open");
+        if (SoundManager.GetInstance().PlayPanelSfx(KeyOf(OpenKeys, type, "ui_open_")))
+            _panelSfxOwner = type;
     }
 
     private void OnPanelClosed(UIType type)
     {
-        if (type == UIType.Inventory) SoundManager.GetInstance().PlaySfx("ui_inventory_close");
+        SoundManager sound = SoundManager.GetInstance();
+
+        // 아직 울리는 게 이 패널의 소리일 때만 끊는다 — 닫힘 소리가 없어도 열림 소리는 여기서 멎는다.
+        if (_panelSfxOwner == type)
+        {
+            sound.StopPanelSfx();
+            _panelSfxOwner = null;
+        }
+
+        if (sound.PlayPanelSfx(KeyOf(CloseKeys, type, "ui_close_")))
+            _panelSfxOwner = type;
+    }
+
+    // 조합한 키를 캐시한다 — UIType.ToString()은 호출마다 문자열을 새로 만든다.
+    private static string KeyOf(Dictionary<UIType, string> cache, UIType type, string prefix)
+    {
+        if (cache.TryGetValue(type, out string key)) return key;
+
+        key = prefix + type.ToString().ToLowerInvariant();
+        cache[type] = key;
+        return key;
     }
 
     // 호버 사운드를 위해 UI 레이캐스트가 필요하지만, 매 프레임 전체 레이캐스트 + PointerEventData

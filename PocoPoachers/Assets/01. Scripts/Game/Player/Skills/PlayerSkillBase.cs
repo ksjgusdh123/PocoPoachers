@@ -10,6 +10,10 @@ public abstract class PlayerSkillBase : IPlayerSkill
     public abstract PlayerSkillId Id { get; }
     public float Cooldown => Data.cooldown;
     public virtual bool LocksMovement => false;
+    public virtual bool IsPassive => false;
+
+    public virtual void OnEquip(PlayerSkillContext ctx) { }
+    public virtual void OnUnequip(PlayerSkillContext ctx) { }
 
     public virtual bool CanUse(PlayerSkillContext ctx)
     {
