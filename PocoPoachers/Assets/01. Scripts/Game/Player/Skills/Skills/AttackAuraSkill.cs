@@ -1,9 +1,10 @@
 using UnityEngine;
 
 // duration 동안 시전자 주변 Data.radius 안에 있는 아군(본인 포함)의 공격력을 (1 + Data.power)배로 올린다.
-// 시전자는 켜짐/꺼짐만 전체에 중계(RoomSync.PartyBuff)하고, "누가 범위 안에 있는지" 판정과 배율 적용은
-// 각 플레이어의 PartyBuffReceiver가 로컬에서 한다 — ReflectSkill/InvincibleSkill과 달리 이 스킬 자체는
-// 시전자 본인의 스탯을 직접 건드리지 않는다(본인도 같은 판정 경로로 자기 오라 안에 들어와 버프를 받는다).
+// 시전자는 켜짐/꺼짐만 전체에 중계(RoomSync.PartyBuff)하고, "누가 범위 안에 있는지" 판정·배율 적용·
+// 오라 비주얼까지 전부 각 플레이어의 PartyBuffReceiver가 매 틱 로컬에서 한다(나 자신 포함, 다른
+// 플레이어까지) — ReflectSkill/InvincibleSkill과 달리 이 스킬 자체는 시전자 본인의 스탯이나
+// AuraMeshEffect를 직접 건드리지 않는다.
 public class AttackAuraSkill : PlayerSkillBase
 {
     public override PlayerSkillId Id => PlayerSkillId.AttackAura;
@@ -18,7 +19,6 @@ public class AttackAuraSkill : PlayerSkillBase
     {
         _elapsed = 0f;
         PartyBuffRegistry.SetActive(RoomSync.MyPlayerId, Data.id, true);
-        AuraMeshEffect.SetActiveFor(ctx.Self, PartyBuffRegistry.MaterialResourcePath(Data), true);
         RoomSync.PartyBuff(Data.id, true);
     }
 
@@ -31,7 +31,6 @@ public class AttackAuraSkill : PlayerSkillBase
     public override void End(PlayerSkillContext ctx)
     {
         PartyBuffRegistry.SetActive(RoomSync.MyPlayerId, Data.id, false);
-        AuraMeshEffect.SetActiveFor(ctx.Self, PartyBuffRegistry.MaterialResourcePath(Data), false);
         RoomSync.PartyBuff(Data.id, false);
     }
 }
