@@ -1,40 +1,81 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-// 팀원 버프 오라 연출 — 캐릭터 본체 SkinnedMeshRenderer의 머터리얼 슬롯에 오라 머터리얼을 추가/제거한다
-// (별도 오브젝트를 덧씌우는 ShieldFxVisual과 달리, 캐릭터 메쉬 자체에 얹는 방식). 오라 셰이더가 Transparent로
-// 설정돼 있어야 기존 스킨 위에 자연스럽게 겹쳐 보인다(HitRimEffect와 같은 "머터리얼 슬롯 추가" 기법).
-// 여러 버프(공격력/방어력/이동속도)가 동시에 걸릴 수 있어 머터리얼별로 독립적으로 추가/제거한다.
+// 팀원 버프 오라 연출 — 캐릭터 본체 SkinnedMeshRenderer에 오라 머터리얼 슬롯을 항상 1개만 유지하고,
+// 동시에 걸린 버프들의 색을 합쳐서(채널별 최댓값) 그 슬롯 하나에 반영한다.
+//
+// 원래는 버프마다 별개 머터리얼(Attack/Defense/Speed)을 각각 슬롯에 추가하는 방식이었는데, 캐릭터
+// 파츠마다 실제 서브메쉬 개수가 달라서(팔다리·몸통은 2개, 머리는 M_AtlasEmissive가 하나 더 있어 3개)
+// 문제가 생겼다 — 슬롯 개수가 서브메쉬 개수를 넘어가면 Unity가 "넘치는 만큼 마지막 서브메쉬를 반복해서
+// 그리는" 방식으로 처리하는데, 그 마지막 서브메쉬가 파츠마다 다른 지오메트리를 가리키다 보니(팔다리는
+// 일반 스킨 영역, 머리는 이미시브 전용 영역) 같은 코드가 파츠마다 다르게 보였다. 슬롯을 항상 최대 1개만
+// 쓰면(HitRimEffect와 같은 방식) 서브메쉬 개수 차이와 무관하게 항상 똑같이 동작한다.
 public class AuraMeshEffect : MonoBehaviour
 {
+    private static readonly int GlowColorID = Shader.PropertyToID("_glow_color");
     private static readonly Dictionary<string, Material> MaterialCache = new();
 
     private SkinnedMeshRenderer[] _smrs;
-    private readonly HashSet<Material> _activeMaterials = new();
+    private Material _instance; // 이 플레이어 전용 복제본 — 슬롯 자체는 이것 하나만 붙였다 뗐다 한다
+    private readonly Dictionary<string, Color> _activeColors = new();
+    private bool _slotAttached;
 
     private void Awake()
     {
-        _smrs = GetComponentsInChildren<SkinnedMeshRenderer>();
+        _smrs = GetComponentsInChildren<SkinnedMeshRenderer>(true);
+    }
+
+    private void OnDestroy()
+    {
+        if (_instance != null) Destroy(_instance);
     }
 
     public void SetActive(string materialResourcePath, bool active)
     {
-        Material mat = GetOrLoadMaterial(materialResourcePath);
-        if (mat == null) return;
+        Material source = GetOrLoadMaterial(materialResourcePath);
+        if (source == null) return;
 
-        bool alreadyActive = _activeMaterials.Contains(mat);
-        if (alreadyActive == active) return;
+        if (active)
+        {
+            _activeColors[materialResourcePath] = source.HasColor(GlowColorID) ? source.GetColor(GlowColorID) : Color.white;
+            _instance ??= new Material(source) { name = "AuraMeshEffect Instance" };
+        }
+        else
+        {
+            _activeColors.Remove(materialResourcePath);
+        }
 
-        if (active) _activeMaterials.Add(mat);
-        else _activeMaterials.Remove(mat);
+        Apply();
+    }
+
+    private void Apply()
+    {
+        bool shouldShow = _activeColors.Count > 0;
+
+        if (shouldShow)
+        {
+            Color combined = new Color(0f, 0f, 0f, 0f);
+            foreach (var c in _activeColors.Values)
+            {
+                combined.r = Mathf.Max(combined.r, c.r);
+                combined.g = Mathf.Max(combined.g, c.g);
+                combined.b = Mathf.Max(combined.b, c.b);
+                combined.a = Mathf.Max(combined.a, c.a);
+            }
+            _instance.SetColor(GlowColorID, combined);
+        }
+
+        if (shouldShow == _slotAttached) return; // 켜짐/꺼짐 상태 자체는 안 바뀜 — 색만 갱신하면 끝
 
         foreach (var smr in _smrs)
         {
             var mats = new List<Material>(smr.sharedMaterials);
-            mats.RemoveAll(m => m == mat); // 항상 지운 뒤
-            if (active) mats.Add(mat);      // 켜는 거면 다시 붙인다 (중복 슬롯 방지)
+            mats.RemoveAll(m => m == _instance);
+            if (shouldShow) mats.Add(_instance);
             smr.materials = mats.ToArray();
         }
+
+        _slotAttached = shouldShow;
     }
 
     private static Material GetOrLoadMaterial(string resourcePath)
