@@ -164,8 +164,7 @@ public class Bullet : MonoBehaviour
                         StatBase blockedStat = ResolveStat(damageable);
                         if (blockedStat != null && blockedStat.IsBulletReflecting)
                         {
-                            transform.position = hit.point;
-                            ReflectOff(blockedStat);
+                            ReflectOff(blockedStat, hit.point);
                         }
                         else
                         {
@@ -260,10 +259,15 @@ public class Bullet : MonoBehaviour
     // 취급한다. TryGetHit이 발사자와 같은 레이어를 건너뛰므로, 이 재할당만으로 반사시킨 플레이어(와
     // 아군)는 다시 맞지 않고 적은 맞출 수 있게 된다 — 남은 사거리(_range - _traveledDistance)만큼
     // 그대로 날아간다.
-    private void ReflectOff(StatBase reflector)
+    private void ReflectOff(StatBase reflector, Vector3 hitPoint)
     {
         _direction = -_direction;
         transform.rotation = Quaternion.LookRotation(_direction);
+
+        // hitPoint에 그대로 두면 다음 프레임 스윕(SphereCast)의 시작점이 여전히 쉴드 콜라이더 표면과
+        // 겹쳐서, 반전된 방향인데도 같은 콜라이더를 거리 0에 가깝게 즉시 재충돌로 잡는다(반사가 안 보이는 원인).
+        // 콜리전 반경만큼 반전된 방향으로 밀어내 표면에서 확실히 벗어난 지점에서 다음 스윕을 시작하게 한다.
+        transform.position = hitPoint + _direction * (_collisionRadius + 0.01f);
 
         _attacker = reflector.gameObject;
         _attackerLayer = reflector.gameObject.layer;
