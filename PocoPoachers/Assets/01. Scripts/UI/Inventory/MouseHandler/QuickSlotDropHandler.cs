@@ -29,12 +29,17 @@ public class QuickSlotDropHandler : ItemHolderDropHandler
     {
         var dragged = manager.DraggedSlot;
         if (dragged == null || !dragged.IsSettedItem) return false;
+        if (!IsMyInventorySlot(dragged)) return false;
         if (dragged.SlotItemData.ItemType != _itemType) return false;
-        if (_inventoryUI == null) return false;
 
         return _quickSlotInventory.TakeFrom(_quickSlotCount, dragged.SlotIndex, _inventoryUI.Inventory);
         // TakeFrom 내부에서 인벤토리 slot.Clear()가 호출되어 UI가 자동 갱신된다
     }
+
+    // 퀵슬롯은 내 인벤토리에서만 아이템을 가져온다. TakeFrom에 넘기는 건 슬롯 번호뿐이라,
+    // 상자 슬롯을 대상으로 삼으면 번호만 같은 내 인벤토리 아이템이 엉뚱하게 등록된다.
+    private bool IsMyInventorySlot(ItemSlotUI slotUI) =>
+        _inventoryUI != null && slotUI.InventoryUI == _inventoryUI;
 
     // 드래그로 넣을 때도 단축키 등록과 같은 소리를 낸다
     protected override void InvokeDropSucceeded(SlotInteractionManager manager) => manager.InvokeItemRegistered();
@@ -47,8 +52,8 @@ public class QuickSlotDropHandler : ItemHolderDropHandler
         // 아무것도 가리키지 않은 채 단축키만 누른 건 시도로 보지 않는다 — 소리 없이 무시
         if (slotUI == null || !slotUI.IsSettedItem) return false;
 
-        bool registered = slotUI.SlotItemData.ItemType == _itemType
-            && _inventoryUI != null
+        bool registered = IsMyInventorySlot(slotUI)
+            && slotUI.SlotItemData.ItemType == _itemType
             && _quickSlotInventory.TakeFrom(_quickSlotCount, slotUI.SlotIndex, _inventoryUI.Inventory);
 
         // 등록 성공은 전용 사운드, 실패는 일반 이동과 동일

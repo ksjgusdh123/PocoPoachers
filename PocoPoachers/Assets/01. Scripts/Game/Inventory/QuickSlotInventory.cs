@@ -26,6 +26,7 @@ public class QuickSlotInventory : MonoBehaviour
     public bool TakeFrom(int quickSlotIndex, int inventorySlotIndex, Inventory inventory)
     {
         if (!IsValidIndex(quickSlotIndex)) return false;
+        if (inventory == null || inventorySlotIndex < 0 || inventorySlotIndex >= inventory.Slots.Count) return false;
 
         var invSlot = inventory.Slots[inventorySlotIndex];
         if (invSlot.IsEmpty) return false;

@@ -1,8 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SoundManager : Singleton<SoundManager>
 {
+    private const string BGM_TITLE = "bgm_main";
+    private const string BGM_SHELTER = "bgm_shelter";
+
     private const string PREF_MASTER_VOLUME = "Settings.MasterVolume";
     private const string PREF_BGM_VOLUME    = "Settings.BgmVolume";
     private const string PREF_SFX_VOLUME    = "Settings.SfxVolume";
@@ -52,7 +56,43 @@ public class SoundManager : Singleton<SoundManager>
         BgmVolume    = PlayerPrefs.GetFloat(PREF_BGM_VOLUME, 1f);
         SfxVolume    = PlayerPrefs.GetFloat(PREF_SFX_VOLUME, 1f);
         ApplyBgmVolume();
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        ApplySceneBgm(SceneManager.GetActiveScene().name); // 쉘터 씬에서 바로 플레이할 때도 깔리도록
     }
+
+    protected override void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        base.OnDestroy();
+    }
+
+    // 씬 진입 시 BGM을 자동으로 갈아끼운다. 같은 곡이면 PlayBgmClip이 막아주므로 다시 시작되지 않는다.
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => ApplySceneBgm(scene.name);
+
+    private void ApplySceneBgm(string sceneName)
+    {
+        // 로딩·캐릭터 생성처럼 스쳐 지나가는 씬은 건드리지 않는다 — 곡이 잠깐 끊겼다 이어지면 더 거슬린다
+        if (sceneName == SceneName.Loading || sceneName == SceneName.CharacterCreate) return;
+
+        string key = GetSceneBgmKey(sceneName);
+        if (string.IsNullOrEmpty(key))
+            StopBgm();
+        else
+            PlayBgm(key);
+    }
+
+    // 전용 BGM이 없는 씬(레이드·튜토리얼·결과)은 null — 쉘터 곡이 따라 들어가지 않게 무음으로 둔다
+    private static string GetSceneBgmKey(string sceneName)
+    {
+        if (sceneName == SceneName.Title) return BGM_TITLE;
+        if (SceneName.IsShelter(sceneName)) return BGM_SHELTER;
+        return null;
+    }
+
+    // 싱글톤이 지연 생성이라, 아무도 소리를 내지 않으면 씬 BGM도 깔리지 않는다. 시작 시 한 번 깨워둔다.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void EnsureExists() => GetInstance();
 
     public void PlayBgm(string key)
     {
