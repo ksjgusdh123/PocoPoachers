@@ -158,6 +158,16 @@ public class Bullet : MonoBehaviour
                 if (_applyDamage)
                 {
                     float damage = _isHeadshot ? _damage * _critMultiplier : _damage;
+
+                    // 행운의 사격 — 데미지를 넣는 이 클라(호스트)가 발사자 스탯을 보고 직접 확률을 굴린다.
+                    // 굴림 결과를 게스트가 보내는 게 아니라 확률/배율 "값"만 StatSync로 신뢰하는 구조라
+                    // (크리 배율과 동일한 신뢰 모델) 여기서 매번 새로 굴려야 한다.
+                    if (_attacker != null && _attacker.TryGetComponent<StatBase>(out var attackerStat) &&
+                        attackerStat.LuckyShotChance > 0f && UnityEngine.Random.value < attackerStat.LuckyShotChance)
+                    {
+                        damage *= attackerStat.LuckyShotMultiplier;
+                    }
+
                     // 무적 등으로 데미지가 무효면 관통(대상이 반사 중이면 역벡터로 반사) — 충돌을 무시하고 계속 진행
                     if (!damageable.TakeDamage(damage, _attacker))
                     {

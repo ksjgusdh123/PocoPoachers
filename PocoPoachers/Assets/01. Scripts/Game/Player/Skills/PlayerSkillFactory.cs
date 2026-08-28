@@ -44,6 +44,8 @@ public static class PlayerSkillFactory
                 return new TauntSkill(data);
             case PlayerSkillId.PassiveStat:
                 return new PassiveStatSkill(data);
+            case PlayerSkillId.LuckyShot:
+                return new LuckyShotSkill(data);
             default:
                 Debug.LogWarning($"[PlayerSkillFactory] 미구현 skill: {id} (id={data.id})");
                 return null;

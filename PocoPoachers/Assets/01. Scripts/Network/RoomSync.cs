@@ -262,7 +262,7 @@ public static class RoomSync
         }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
     }
 
-    public static void StatSync(float hp, float maxHp, float stamina = 0f, float battery = 0f, float defense = 0f, float critMultiplier = StatBase.DefaultCritMultiplier, float rangeMultiplier = StatBase.DefaultRangeMultiplier)
+    public static void StatSync(float hp, float maxHp, float stamina = 0f, float battery = 0f, float defense = 0f, float critMultiplier = StatBase.DefaultCritMultiplier, float rangeMultiplier = StatBase.DefaultRangeMultiplier, float luckyChance = StatBase.DefaultLuckyShotChance, float luckyMultiplier = StatBase.DefaultLuckyShotMultiplier)
     {
         if (IsSolo) return;
 
@@ -277,6 +277,8 @@ public static class RoomSync
                 Defense  = defense,
                 CritMultiplier = critMultiplier,
                 RangeMultiplier = rangeMultiplier,
+                LuckyChance = luckyChance,
+                LuckyMultiplier = luckyMultiplier,
             }, H_StatSync.Pack, PacketType.H_StatSync);
         else
             PacketBuilder.SendToHost(new G_StatSyncT
@@ -288,6 +290,8 @@ public static class RoomSync
                 Defense = defense,
                 CritMultiplier = critMultiplier,
                 RangeMultiplier = rangeMultiplier,
+                LuckyChance = luckyChance,
+                LuckyMultiplier = luckyMultiplier,
             }, G_StatSync.Pack, PacketType.G_StatSync);
     }
 

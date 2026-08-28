@@ -23,6 +23,8 @@ public struct G_StatSync : IFlatbufferObject
   public float Defense { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float CritMultiplier { get { int o = __p.__offset(14); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)2.0f; } }
   public float RangeMultiplier { get { int o = __p.__offset(16); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)1.0f; } }
+  public float LuckyChance { get { int o = __p.__offset(18); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
+  public float LuckyMultiplier { get { int o = __p.__offset(20); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)1.0f; } }
 
   public static Offset<G_StatSync> CreateG_StatSync(FlatBufferBuilder builder,
       float hp = 0.0f,
@@ -31,8 +33,12 @@ public struct G_StatSync : IFlatbufferObject
       float battery = 0.0f,
       float defense = 0.0f,
       float crit_multiplier = 2.0f,
-      float range_multiplier = 1.0f) {
-    builder.StartTable(7);
+      float range_multiplier = 1.0f,
+      float lucky_chance = 0.0f,
+      float lucky_multiplier = 1.0f) {
+    builder.StartTable(9);
+    G_StatSync.AddLuckyMultiplier(builder, lucky_multiplier);
+    G_StatSync.AddLuckyChance(builder, lucky_chance);
     G_StatSync.AddRangeMultiplier(builder, range_multiplier);
     G_StatSync.AddCritMultiplier(builder, crit_multiplier);
     G_StatSync.AddDefense(builder, defense);
@@ -43,7 +49,7 @@ public struct G_StatSync : IFlatbufferObject
     return G_StatSync.EndG_StatSync(builder);
   }
 
-  public static void StartG_StatSync(FlatBufferBuilder builder) { builder.StartTable(7); }
+  public static void StartG_StatSync(FlatBufferBuilder builder) { builder.StartTable(9); }
   public static void AddHp(FlatBufferBuilder builder, float hp) { builder.AddFloat(0, hp, 0.0f); }
   public static void AddMaxHp(FlatBufferBuilder builder, float maxHp) { builder.AddFloat(1, maxHp, 0.0f); }
   public static void AddStamina(FlatBufferBuilder builder, float stamina) { builder.AddFloat(2, stamina, 0.0f); }
@@ -51,6 +57,8 @@ public struct G_StatSync : IFlatbufferObject
   public static void AddDefense(FlatBufferBuilder builder, float defense) { builder.AddFloat(4, defense, 0.0f); }
   public static void AddCritMultiplier(FlatBufferBuilder builder, float critMultiplier) { builder.AddFloat(5, critMultiplier, 2.0f); }
   public static void AddRangeMultiplier(FlatBufferBuilder builder, float rangeMultiplier) { builder.AddFloat(6, rangeMultiplier, 1.0f); }
+  public static void AddLuckyChance(FlatBufferBuilder builder, float luckyChance) { builder.AddFloat(7, luckyChance, 0.0f); }
+  public static void AddLuckyMultiplier(FlatBufferBuilder builder, float luckyMultiplier) { builder.AddFloat(8, luckyMultiplier, 1.0f); }
   public static Offset<G_StatSync> EndG_StatSync(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<G_StatSync>(o);
@@ -68,6 +76,8 @@ public struct G_StatSync : IFlatbufferObject
     _o.Defense = this.Defense;
     _o.CritMultiplier = this.CritMultiplier;
     _o.RangeMultiplier = this.RangeMultiplier;
+    _o.LuckyChance = this.LuckyChance;
+    _o.LuckyMultiplier = this.LuckyMultiplier;
   }
   public static Offset<G_StatSync> Pack(FlatBufferBuilder builder, G_StatSyncT _o) {
     if (_o == null) return default(Offset<G_StatSync>);
@@ -79,7 +89,9 @@ public struct G_StatSync : IFlatbufferObject
       _o.Battery,
       _o.Defense,
       _o.CritMultiplier,
-      _o.RangeMultiplier);
+      _o.RangeMultiplier,
+      _o.LuckyChance,
+      _o.LuckyMultiplier);
   }
 }
 
@@ -92,6 +104,8 @@ public class G_StatSyncT
   public float Defense { get; set; }
   public float CritMultiplier { get; set; }
   public float RangeMultiplier { get; set; }
+  public float LuckyChance { get; set; }
+  public float LuckyMultiplier { get; set; }
 
   public G_StatSyncT() {
     this.Hp = 0.0f;
@@ -101,6 +115,8 @@ public class G_StatSyncT
     this.Defense = 0.0f;
     this.CritMultiplier = 2.0f;
     this.RangeMultiplier = 1.0f;
+    this.LuckyChance = 0.0f;
+    this.LuckyMultiplier = 1.0f;
   }
 }
 
@@ -117,6 +133,8 @@ static public class G_StatSyncVerify
       && verifier.VerifyField(tablePos, 12 /*Defense*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 14 /*CritMultiplier*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 16 /*RangeMultiplier*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 18 /*LuckyChance*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 20 /*LuckyMultiplier*/, 4 /*float*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

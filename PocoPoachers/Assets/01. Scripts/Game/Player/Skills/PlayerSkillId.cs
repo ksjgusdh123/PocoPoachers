@@ -14,5 +14,6 @@
     Invincible,
     Reflect,
     Taunt,
-    PassiveStat
+    PassiveStat,
+    LuckyShot
 }

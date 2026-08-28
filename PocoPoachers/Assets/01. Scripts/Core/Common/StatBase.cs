@@ -100,6 +100,15 @@ public abstract class StatBase : MonoBehaviour, IDamageable
     // 네트워크로 받은 반사 상태를 반영 (되돌려 보내지 않는다)
     public void ApplyReflectingFromNetwork(bool value) => _networkReflecting = value;
 
+    // 행운의 사격 확률/배율 (행운의 사격 스킬에서 켜고 끔) — 켜져 있는 동안 명중할 때마다 이 확률로
+    // 이번 탄환의 데미지가 배율만큼 오른다. 크리/사거리 배율과 같은 경로로 StatSync를 타고 호스트까지
+    // 가지만, 실제 굴림(Random)은 데미지를 넣는 호스트가 Bullet.cs에서 공격자 스탯을 보고 직접 한다 —
+    // 게스트가 굴린 결과를 신뢰하는 게 아니라 확률/배율이라는 "값"만 신뢰한다(크리 배율과 동일한 신뢰 모델).
+    public const float DefaultLuckyShotChance = 0f;
+    public const float DefaultLuckyShotMultiplier = 1f;
+    public float LuckyShotChance { get; set; } = DefaultLuckyShotChance;
+    public float LuckyShotMultiplier { get; set; } = DefaultLuckyShotMultiplier;
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     // 치트 무적 — 구르기 무적과 별개로 유지되어 구르기 종료에 꺼지지 않음
     public bool IsGodMode { get; private set; }

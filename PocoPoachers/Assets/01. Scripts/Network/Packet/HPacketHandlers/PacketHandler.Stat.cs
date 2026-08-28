@@ -31,7 +31,7 @@ public static partial class PacketHandlers
 
         if (stat is RemotePlayerStat remote)
         {
-            remote.ApplyNetworkStats(packet.Hp, packet.MaxHp, packet.Stamina, packet.Battery, packet.Defense, packet.CritMultiplier, packet.RangeMultiplier);
+            remote.ApplyNetworkStats(packet.Hp, packet.MaxHp, packet.Stamina, packet.Battery, packet.Defense, packet.CritMultiplier, packet.RangeMultiplier, packet.LuckyChance, packet.LuckyMultiplier);
             return;
         }
 

@@ -51,10 +51,12 @@ public class RemotePlayerStat : StatBase
         OnRevive += HandleRemoteRevive;
     }
 
-    public void ApplyNetworkStats(float hp, float maxHp, float stamina, float battery, float defense, float critMultiplier, float rangeMultiplier)
+    public void ApplyNetworkStats(float hp, float maxHp, float stamina, float battery, float defense, float critMultiplier, float rangeMultiplier, float luckyChance = StatBase.DefaultLuckyShotChance, float luckyMultiplier = StatBase.DefaultLuckyShotMultiplier)
     {
         CritMultiplier = critMultiplier;
         RangeMultiplier = rangeMultiplier;
+        LuckyShotChance = luckyChance;
+        LuckyShotMultiplier = luckyMultiplier;
         _armorMaxHpBonus = 0f;
         _armorMoveSpeedMultiplier = 1f;
         SetHpFromNetwork(hp, maxHp, 0);
