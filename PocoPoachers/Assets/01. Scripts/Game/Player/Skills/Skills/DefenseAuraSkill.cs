@@ -1,16 +1,15 @@
 using UnityEngine;
 
-// duration 동안 시전자 주변 Data.radius 안에 있는 아군(본인 포함)의 공격력을 (1 + Data.power)배로 올린다.
-// 시전자는 켜짐/꺼짐만 전체에 중계(RoomSync.PartyBuff)하고, "누가 범위 안에 있는지" 판정과 배율 적용은
-// 각 플레이어의 PartyBuffReceiver가 로컬에서 한다 — ReflectSkill/InvincibleSkill과 달리 이 스킬 자체는
-// 시전자 본인의 스탯을 직접 건드리지 않는다(본인도 같은 판정 경로로 자기 오라 안에 들어와 버프를 받는다).
-public class AttackAuraSkill : PlayerSkillBase
+// duration 동안 시전자 주변 Data.radius 안에 있는 아군(본인 포함)에게 Data.power만큼의 부가 방어율을 준다.
+// AttackAuraSkill과 완전히 같은 구조 — 시전자는 켜짐/꺼짐만 전체에 중계하고(RoomSync.PartyBuff),
+// "누가 범위 안에 있는지" 판정과 배율 적용은 각 플레이어의 PartyBuffReceiver가 로컬에서 한다.
+public class DefenseAuraSkill : PlayerSkillBase
 {
-    public override PlayerSkillId Id => PlayerSkillId.AttackAura;
+    public override PlayerSkillId Id => PlayerSkillId.DefenseAura;
 
     private float _elapsed;
 
-    public AttackAuraSkill(PlayerSkillData data) : base(data) { }
+    public DefenseAuraSkill(PlayerSkillData data) : base(data) { }
 
     public override bool CanUse(PlayerSkillContext ctx) => base.CanUse(ctx) && ctx.Stat != null;
 

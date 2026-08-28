@@ -35,24 +35,43 @@ public class PartyBuffReceiver
         int myId = RoomSync.MyPlayerId;
         Vector3 myPos = _transform.position;
         float attackMultiplier = StatBase.DefaultAttackPowerMultiplier;
+        float defenseBuffRate = StatBase.DefaultDefenseBuffRate;
 
         foreach (var (playerId, skillId) in PartyBuffRegistry.ActiveSources)
         {
             PlayerSkillData data = PlayerSkillTable.Instance.Get(skillId);
             if (data == null) continue;
-            if (!Enum.TryParse(data.skill, true, out PlayerSkillId id) || id != PlayerSkillId.AttackAura)
-                continue; // 지금은 공격력 버프만 처리 — 방어력/이동속도 오라는 추가되면 여기 분기만 늘리면 된다
+            if (!Enum.TryParse(data.skill, true, out PlayerSkillId id)) continue;
+            if (id != PlayerSkillId.AttackAura && id != PlayerSkillId.DefenseAura)
+                continue; // 이동속도 오라 등이 추가되면 여기 분기와 아래 switch만 늘리면 된다
 
             if (!TryGetSourcePosition(playerId, myId, myPos, out Vector3 sourcePos)) continue;
+            if (Vector3.Distance(myPos, sourcePos) > data.radius) continue;
 
-            if (Vector3.Distance(myPos, sourcePos) <= data.radius)
-                attackMultiplier = Mathf.Max(attackMultiplier, 1f + data.power);
+            switch (id)
+            {
+                case PlayerSkillId.AttackAura:
+                    attackMultiplier = Mathf.Max(attackMultiplier, 1f + data.power);
+                    break;
+                case PlayerSkillId.DefenseAura:
+                    defenseBuffRate = Mathf.Max(defenseBuffRate, data.power);
+                    break;
+            }
         }
 
-        if (Mathf.Approximately(attackMultiplier, _stat.AttackPowerMultiplier)) return;
+        bool changed = false;
+        if (!Mathf.Approximately(attackMultiplier, _stat.AttackPowerMultiplier))
+        {
+            _stat.AttackPowerMultiplier = attackMultiplier;
+            changed = true;
+        }
+        if (!Mathf.Approximately(defenseBuffRate, _stat.DefenseBuffRate))
+        {
+            _stat.DefenseBuffRate = defenseBuffRate;
+            changed = true;
+        }
 
-        _stat.AttackPowerMultiplier = attackMultiplier;
-        _stat.SyncStatsNow();
+        if (changed) _stat.SyncStatsNow();
     }
 
     private static bool TryGetSourcePosition(int playerId, int myId, Vector3 myPos, out Vector3 sourcePos)

@@ -16,4 +16,8 @@ public static class PartyBuffRegistry
     }
 
     public static IEnumerable<(int playerId, int skillId)> ActiveSources => _active;
+
+    // 팀원 버프 오라 연출 머터리얼 경로 컨벤션 — "Skill/{skill 컬럼}Material". 버프를 추가할 때마다
+    // CSV에 같은 규칙으로 머터리얼만 새로 두면 되고, 시전 스킬/G·H_PartyBuff 핸들러는 건드릴 필요가 없다.
+    public static string MaterialResourcePath(PlayerSkillData data) => $"Skill/{data.skill}Material";
 }

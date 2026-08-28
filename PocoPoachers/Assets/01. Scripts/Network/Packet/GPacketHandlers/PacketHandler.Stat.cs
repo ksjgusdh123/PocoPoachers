@@ -7,6 +7,7 @@ public static partial class PacketHandlers
     private const float MaxLuckyShotChance = 1f;
     private const float MaxLuckyShotMultiplier = 5f;
     private const float MaxAttackPowerMultiplier = 5f;
+    private const float MaxDefenseBuffRate = 1f;
 
     public static void OnG_StatSync(FlatPacket root)
     {
@@ -38,15 +39,17 @@ public static partial class PacketHandlers
         float luckyChance = Mathf.Clamp(packet.LuckyChance, 0f, MaxLuckyShotChance);
         float luckyMultiplier = Mathf.Clamp(packet.LuckyMultiplier, 1f, MaxLuckyShotMultiplier);
         float attackPowerMultiplier = Mathf.Clamp(packet.AttackPowerMultiplier, 1f, MaxAttackPowerMultiplier);
+        float defenseBuffRate = Mathf.Clamp(packet.DefenseBuffRate, 0f, MaxDefenseBuffRate);
 
         if (stat != null)
         {
             // 방어율은 장착 아이템 기준으로 호스트가 직접 계산한 값만 신뢰한다(ApplyRemoteArmorStats).
             // 게스트가 보낸 packet.Defense를 그대로 적용하면 임의의 값(예: 1.0)으로 무적이 될 수 있음.
+            // (방어력 버프 오라는 별개 필드(defenseBuffRate)라 여기 영향 없이 그대로 신뢰한다)
             if (stat is RemotePlayerStat remote)
             {
                 defense = remote.ArmorDefenseRate;
-                remote.ApplyNetworkStats(hp, maxHp, stamina, battery, defense, critMultiplier, rangeMultiplier, luckyChance, luckyMultiplier, attackPowerMultiplier);
+                remote.ApplyNetworkStats(hp, maxHp, stamina, battery, defense, critMultiplier, rangeMultiplier, luckyChance, luckyMultiplier, attackPowerMultiplier, defenseBuffRate);
             }
             else
                 stat.SetHpFromNetwork(hp, maxHp, 0);
@@ -65,6 +68,7 @@ public static partial class PacketHandlers
             LuckyChance = luckyChance,
             LuckyMultiplier = luckyMultiplier,
             AttackPowerMultiplier = attackPowerMultiplier,
+            DefenseBuffRate = defenseBuffRate,
         }, H_StatSync.Pack, PacketType.H_StatSync);
     }
 }

@@ -25,7 +25,7 @@ public class RemotePlayerStat : StatBase
     float _armorMaxHpBonus;
     float _armorMoveSpeedMultiplier = 1f;
 
-    protected override float DefenseRate => _armorDefenseRate;
+    protected override float DefenseRate => _armorDefenseRate + DefenseBuffRate;
 
     public float ArmorMoveSpeedMultiplier => _armorMoveSpeedMultiplier;
     public float ArmorDefenseRate => _armorDefenseRate;
@@ -51,13 +51,14 @@ public class RemotePlayerStat : StatBase
         OnRevive += HandleRemoteRevive;
     }
 
-    public void ApplyNetworkStats(float hp, float maxHp, float stamina, float battery, float defense, float critMultiplier, float rangeMultiplier, float luckyChance = StatBase.DefaultLuckyShotChance, float luckyMultiplier = StatBase.DefaultLuckyShotMultiplier, float attackPowerMultiplier = StatBase.DefaultAttackPowerMultiplier)
+    public void ApplyNetworkStats(float hp, float maxHp, float stamina, float battery, float defense, float critMultiplier, float rangeMultiplier, float luckyChance = StatBase.DefaultLuckyShotChance, float luckyMultiplier = StatBase.DefaultLuckyShotMultiplier, float attackPowerMultiplier = StatBase.DefaultAttackPowerMultiplier, float defenseBuffRate = StatBase.DefaultDefenseBuffRate)
     {
         CritMultiplier = critMultiplier;
         RangeMultiplier = rangeMultiplier;
         LuckyShotChance = luckyChance;
         LuckyShotMultiplier = luckyMultiplier;
         AttackPowerMultiplier = attackPowerMultiplier;
+        DefenseBuffRate = defenseBuffRate;
         _armorMaxHpBonus = 0f;
         _armorMoveSpeedMultiplier = 1f;
         SetHpFromNetwork(hp, maxHp, 0);

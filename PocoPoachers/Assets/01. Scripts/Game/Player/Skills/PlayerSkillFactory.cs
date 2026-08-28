@@ -48,6 +48,8 @@ public static class PlayerSkillFactory
                 return new LuckyShotSkill(data);
             case PlayerSkillId.AttackAura:
                 return new AttackAuraSkill(data);
+            case PlayerSkillId.DefenseAura:
+                return new DefenseAuraSkill(data);
             default:
                 Debug.LogWarning($"[PlayerSkillFactory] 미구현 skill: {id} (id={data.id})");
                 return null;

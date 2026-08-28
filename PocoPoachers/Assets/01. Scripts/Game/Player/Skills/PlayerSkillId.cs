@@ -16,5 +16,6 @@
     Taunt,
     PassiveStat,
     LuckyShot,
-    AttackAura
+    AttackAura,
+    DefenseAura
 }

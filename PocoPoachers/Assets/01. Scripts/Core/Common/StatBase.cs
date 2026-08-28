@@ -115,6 +115,13 @@ public abstract class StatBase : MonoBehaviour, IDamageable
     public const float DefaultAttackPowerMultiplier = 1f;
     public float AttackPowerMultiplier { get; set; } = DefaultAttackPowerMultiplier;
 
+    // 팀원 방어력 버프 오라로 인한 부가 방어율(0~1) — 장비 방어율(_totalDefenseRate)과는 별개로 더해진다.
+    // 장비 방어율은 게스트 쪽 값을 신뢰하지 않고 호스트가 장착 아이템 기준으로 직접 계산하지만
+    // (RemotePlayerStat.ArmorDefenseRate), 이 버프는 크리/행운/공격력 배율과 같은 신뢰 모델이라
+    // StatSync로 받은 값을 그대로 믿는다 — 그래서 DefenseRate 계산에 항상 별도로 더해야 한다.
+    public const float DefaultDefenseBuffRate = 0f;
+    public float DefenseBuffRate { get; set; } = DefaultDefenseBuffRate;
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     // 치트 무적 — 구르기 무적과 별개로 유지되어 구르기 종료에 꺼지지 않음
     public bool IsGodMode { get; private set; }
@@ -137,7 +144,7 @@ public abstract class StatBase : MonoBehaviour, IDamageable
         OnDamaged += (_, __, ___) => HpWorldUI.Show(this);
     }
 
-    protected virtual float DefenseRate => _totalDefenseRate + _enhancementDefenseRateBonus;
+    protected virtual float DefenseRate => _totalDefenseRate + _enhancementDefenseRateBonus + DefenseBuffRate;
 
     public virtual void ApplyArmorStat(ArmorStatData data)
     {

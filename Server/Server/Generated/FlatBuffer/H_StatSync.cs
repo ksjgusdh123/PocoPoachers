@@ -27,6 +27,7 @@ public struct H_StatSync : IFlatbufferObject
   public float LuckyChance { get { int o = __p.__offset(20); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
   public float LuckyMultiplier { get { int o = __p.__offset(22); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)1.0f; } }
   public float AttackPowerMultiplier { get { int o = __p.__offset(24); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)1.0f; } }
+  public float DefenseBuffRate { get { int o = __p.__offset(26); return o != 0 ? __p.bb.GetFloat(o + __p.bb_pos) : (float)0.0f; } }
 
   public static Offset<H_StatSync> CreateH_StatSync(FlatBufferBuilder builder,
       int player_id = 0,
@@ -39,8 +40,10 @@ public struct H_StatSync : IFlatbufferObject
       float range_multiplier = 1.0f,
       float lucky_chance = 0.0f,
       float lucky_multiplier = 1.0f,
-      float attack_power_multiplier = 1.0f) {
-    builder.StartTable(11);
+      float attack_power_multiplier = 1.0f,
+      float defense_buff_rate = 0.0f) {
+    builder.StartTable(12);
+    H_StatSync.AddDefenseBuffRate(builder, defense_buff_rate);
     H_StatSync.AddAttackPowerMultiplier(builder, attack_power_multiplier);
     H_StatSync.AddLuckyMultiplier(builder, lucky_multiplier);
     H_StatSync.AddLuckyChance(builder, lucky_chance);
@@ -55,7 +58,7 @@ public struct H_StatSync : IFlatbufferObject
     return H_StatSync.EndH_StatSync(builder);
   }
 
-  public static void StartH_StatSync(FlatBufferBuilder builder) { builder.StartTable(11); }
+  public static void StartH_StatSync(FlatBufferBuilder builder) { builder.StartTable(12); }
   public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(0, playerId, 0); }
   public static void AddHp(FlatBufferBuilder builder, float hp) { builder.AddFloat(1, hp, 0.0f); }
   public static void AddMaxHp(FlatBufferBuilder builder, float maxHp) { builder.AddFloat(2, maxHp, 0.0f); }
@@ -67,6 +70,7 @@ public struct H_StatSync : IFlatbufferObject
   public static void AddLuckyChance(FlatBufferBuilder builder, float luckyChance) { builder.AddFloat(8, luckyChance, 0.0f); }
   public static void AddLuckyMultiplier(FlatBufferBuilder builder, float luckyMultiplier) { builder.AddFloat(9, luckyMultiplier, 1.0f); }
   public static void AddAttackPowerMultiplier(FlatBufferBuilder builder, float attackPowerMultiplier) { builder.AddFloat(10, attackPowerMultiplier, 1.0f); }
+  public static void AddDefenseBuffRate(FlatBufferBuilder builder, float defenseBuffRate) { builder.AddFloat(11, defenseBuffRate, 0.0f); }
   public static Offset<H_StatSync> EndH_StatSync(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_StatSync>(o);
@@ -88,6 +92,7 @@ public struct H_StatSync : IFlatbufferObject
     _o.LuckyChance = this.LuckyChance;
     _o.LuckyMultiplier = this.LuckyMultiplier;
     _o.AttackPowerMultiplier = this.AttackPowerMultiplier;
+    _o.DefenseBuffRate = this.DefenseBuffRate;
   }
   public static Offset<H_StatSync> Pack(FlatBufferBuilder builder, H_StatSyncT _o) {
     if (_o == null) return default(Offset<H_StatSync>);
@@ -103,7 +108,8 @@ public struct H_StatSync : IFlatbufferObject
       _o.RangeMultiplier,
       _o.LuckyChance,
       _o.LuckyMultiplier,
-      _o.AttackPowerMultiplier);
+      _o.AttackPowerMultiplier,
+      _o.DefenseBuffRate);
   }
 }
 
@@ -120,6 +126,7 @@ public class H_StatSyncT
   public float LuckyChance { get; set; }
   public float LuckyMultiplier { get; set; }
   public float AttackPowerMultiplier { get; set; }
+  public float DefenseBuffRate { get; set; }
 
   public H_StatSyncT() {
     this.PlayerId = 0;
@@ -133,6 +140,7 @@ public class H_StatSyncT
     this.LuckyChance = 0.0f;
     this.LuckyMultiplier = 1.0f;
     this.AttackPowerMultiplier = 1.0f;
+    this.DefenseBuffRate = 0.0f;
   }
 }
 
@@ -153,6 +161,7 @@ static public class H_StatSyncVerify
       && verifier.VerifyField(tablePos, 20 /*LuckyChance*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 22 /*LuckyMultiplier*/, 4 /*float*/, 4, false)
       && verifier.VerifyField(tablePos, 24 /*AttackPowerMultiplier*/, 4 /*float*/, 4, false)
+      && verifier.VerifyField(tablePos, 26 /*DefenseBuffRate*/, 4 /*float*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

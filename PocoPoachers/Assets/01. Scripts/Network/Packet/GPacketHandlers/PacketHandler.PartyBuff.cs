@@ -17,7 +17,7 @@ public static partial class PacketHandlers
         if (data != null && ObjectManager.Instance != null &&
             ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var guestObj))
         {
-            AuraMeshEffect.SetActiveFor(guestObj.gameObject, AttackAuraSkill.MaterialResourcePath(data), packet.Active);
+            AuraMeshEffect.SetActiveFor(guestObj.gameObject, PartyBuffRegistry.MaterialResourcePath(data), packet.Active);
         }
 
         RoomSync.PartyBuffRelay(guestId, packet.SkillId, packet.Active);
