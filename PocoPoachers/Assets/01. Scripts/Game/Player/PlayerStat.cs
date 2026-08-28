@@ -30,6 +30,11 @@ public class PlayerStat : StatBase
     // 방어구 등으로 인한 이동속도 배율 (내부에서만 관리)
     private float _armorMoveSpeedMultiplier = 1f;
 
+    // 팀원 이동속도 버프 오라로 인한 배율 — 이동은 각 클라가 자기 자신만 시뮬레이션하므로(호스트 판정 불필요)
+    // 크리/공격력 배율과 달리 네트워크로 전파할 필요가 없다. PartyBuffReceiver가 로컬에서 직접 설정한다.
+    public const float DefaultMoveSpeedBuffMultiplier = 1f;
+    public float MoveSpeedBuffMultiplier { get; set; } = DefaultMoveSpeedBuffMultiplier;
+
     private Inventory _inventory;
     private const float OverweightMoveSpeedMultiplier = 0.2f; // 무게 초과 시 이동속도 80% 감소
     private const float DownedMoveSpeedMultiplier = 0.1f;     // 구조대기(사망) 상태 시 이동속도 90% 감소
@@ -44,8 +49,8 @@ public class PlayerStat : StatBase
     public float BaseMoveSpeed => _moveSpeed + _enhancementMoveSpeedBonus;
 
     // 배율이 모두 적용된 최종 이동/달리기 속도
-    public float MoveSpeed => (_moveSpeed + _enhancementMoveSpeedBonus) * _armorMoveSpeedMultiplier * (IsOverweight ? OverweightMoveSpeedMultiplier : 1f) * DownedMultiplier;
-    public float SprintSpeed => (_sprintSpeed + _enhancementMoveSpeedBonus) * _armorMoveSpeedMultiplier * (IsOverweight ? OverweightMoveSpeedMultiplier : 1f) * DownedMultiplier;
+    public float MoveSpeed => (_moveSpeed + _enhancementMoveSpeedBonus) * _armorMoveSpeedMultiplier * MoveSpeedBuffMultiplier * (IsOverweight ? OverweightMoveSpeedMultiplier : 1f) * DownedMultiplier;
+    public float SprintSpeed => (_sprintSpeed + _enhancementMoveSpeedBonus) * _armorMoveSpeedMultiplier * MoveSpeedBuffMultiplier * (IsOverweight ? OverweightMoveSpeedMultiplier : 1f) * DownedMultiplier;
 
     protected override float DefenseRate => base.DefenseRate;
 

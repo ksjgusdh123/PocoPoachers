@@ -17,5 +17,6 @@
     PassiveStat,
     LuckyShot,
     AttackAura,
-    DefenseAura
+    DefenseAura,
+    SpeedAura
 }

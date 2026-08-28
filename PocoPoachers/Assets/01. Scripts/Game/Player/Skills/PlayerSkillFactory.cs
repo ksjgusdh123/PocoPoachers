@@ -50,6 +50,8 @@ public static class PlayerSkillFactory
                 return new AttackAuraSkill(data);
             case PlayerSkillId.DefenseAura:
                 return new DefenseAuraSkill(data);
+            case PlayerSkillId.SpeedAura:
+                return new SpeedAuraSkill(data);
             default:
                 Debug.LogWarning($"[PlayerSkillFactory] 미구현 skill: {id} (id={data.id})");
                 return null;

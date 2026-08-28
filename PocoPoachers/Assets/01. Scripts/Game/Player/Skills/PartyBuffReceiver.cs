@@ -36,14 +36,15 @@ public class PartyBuffReceiver
         Vector3 myPos = _transform.position;
         float attackMultiplier = StatBase.DefaultAttackPowerMultiplier;
         float defenseBuffRate = StatBase.DefaultDefenseBuffRate;
+        float speedMultiplier = PlayerStat.DefaultMoveSpeedBuffMultiplier;
 
         foreach (var (playerId, skillId) in PartyBuffRegistry.ActiveSources)
         {
             PlayerSkillData data = PlayerSkillTable.Instance.Get(skillId);
             if (data == null) continue;
             if (!Enum.TryParse(data.skill, true, out PlayerSkillId id)) continue;
-            if (id != PlayerSkillId.AttackAura && id != PlayerSkillId.DefenseAura)
-                continue; // 이동속도 오라 등이 추가되면 여기 분기와 아래 switch만 늘리면 된다
+            if (id != PlayerSkillId.AttackAura && id != PlayerSkillId.DefenseAura && id != PlayerSkillId.SpeedAura)
+                continue; // 새 버프가 추가되면 여기 분기와 아래 switch만 늘리면 된다
 
             if (!TryGetSourcePosition(playerId, myId, myPos, out Vector3 sourcePos)) continue;
             if (Vector3.Distance(myPos, sourcePos) > data.radius) continue;
@@ -55,6 +56,9 @@ public class PartyBuffReceiver
                     break;
                 case PlayerSkillId.DefenseAura:
                     defenseBuffRate = Mathf.Max(defenseBuffRate, data.power);
+                    break;
+                case PlayerSkillId.SpeedAura:
+                    speedMultiplier = Mathf.Max(speedMultiplier, 1f + data.power);
                     break;
             }
         }
@@ -68,6 +72,13 @@ public class PartyBuffReceiver
         if (!Mathf.Approximately(defenseBuffRate, _stat.DefenseBuffRate))
         {
             _stat.DefenseBuffRate = defenseBuffRate;
+            changed = true;
+        }
+        if (!Mathf.Approximately(speedMultiplier, _stat.MoveSpeedBuffMultiplier))
+        {
+            // 이동속도는 네트워크 판정 대상이 아니라 SyncStatsNow가 필요 없지만, 나머지와 같이 한 번에
+            // 처리해도 무해하다(StatSync는 솔로에선 아예 아무것도 보내지 않는다).
+            _stat.MoveSpeedBuffMultiplier = speedMultiplier;
             changed = true;
         }
 
