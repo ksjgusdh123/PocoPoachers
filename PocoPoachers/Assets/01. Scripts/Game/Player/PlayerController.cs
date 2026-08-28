@@ -414,6 +414,9 @@ public class PlayerController : MonoBehaviour
 
     private void HandleDeath()
     {
+        // 아래 분기(튜토리얼 체크포인트)로 빠지든 호송으로 가든 사망음은 공통이라 맨 앞에서 낸다
+        PlayerLifeSfx.PlayDie();
+
         // 부활 지점이 등록된 씬(튜토리얼)에서는 기절/호송/관전 대신 마지막 체크포인트에서 다시 시작한다.
         // 상자 드롭과 장비 해제는 FinalizeDeath에 있으므로 이 경로로 빠지면 소지품을 잃지 않는다.
         if (_respawnPoint != null && _respawnPoint.HasPoint)
@@ -534,6 +537,8 @@ public class PlayerController : MonoBehaviour
     // 구조되어 부활하면 기절 게이지를 중단하고 상태를 초기화한다 (다음 사망을 다시 처리할 수 있도록)
     private void HandleRevive()
     {
+        PlayerLifeSfx.PlayRevive();
+
         _isFainting = false;
         _finalized = false;
         _faintingUI?.StopFainting();
