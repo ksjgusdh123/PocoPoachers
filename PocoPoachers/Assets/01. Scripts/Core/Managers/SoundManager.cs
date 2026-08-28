@@ -72,8 +72,9 @@ public class SoundManager : Singleton<SoundManager>
 
     private void ApplySceneBgm(string sceneName)
     {
-        // 로딩·캐릭터 생성처럼 스쳐 지나가는 씬은 건드리지 않는다 — 곡이 잠깐 끊겼다 이어지면 더 거슬린다
-        if (sceneName == SceneName.Loading || sceneName == SceneName.CharacterCreate) return;
+        // 캐릭터 생성은 타이틀 곡을 그대로 이어 둔다 — 타이틀에서 곧장 넘어가는 화면이라 곡이 끊기면 거슬린다.
+        // 로딩 화면은 예외로 두지 않는다. 쉘터 곡이 레이드 로딩까지 따라 들어간다.
+        if (sceneName == SceneName.CharacterCreate) return;
 
         string key = GetSceneBgmKey(sceneName);
         if (string.IsNullOrEmpty(key))
