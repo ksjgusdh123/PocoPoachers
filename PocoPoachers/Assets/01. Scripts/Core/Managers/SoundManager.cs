@@ -113,6 +113,35 @@ public class SoundManager : Singleton<SoundManager>
         source.PlayOneShot(clip);
     }
 
+    // 호송 포드처럼 소리를 내며 움직이는 대상. PlaySfxAt은 재생 시점 위치에 소리를 묶어두므로 이동을 못 따라간다.
+    // 대상 밑에 붙인 임시 소스로 재생하고 클립이 끝나면 스스로 사라진다 — 대상이 먼저 파괴되면 소리도 함께 끊긴다.
+    public void PlaySfxOn(string key, Transform parent, float maxDistance = 0f)
+    {
+        if (string.IsNullOrEmpty(key) || parent == null) return;
+
+        var data = SoundTable.Instance.Get(key);
+        if (data == null || string.IsNullOrEmpty(data.Path)) return;
+
+        var clip = ResourceManager.GetInstance().Load<AudioClip>(data.Path);
+        if (clip == null) return;
+
+        var go = new GameObject($"Sfx3D_{key}");
+        go.transform.SetParent(parent, false);
+
+        var source = go.AddComponent<AudioSource>();
+        source.playOnAwake = false;
+        source.spatialBlend = 1f;
+        source.rolloffMode = AudioRolloffMode.Linear;
+        source.minDistance = SFX_3D_MIN_DISTANCE;
+        source.maxDistance = maxDistance > 0f ? maxDistance : SFX_3D_DEFAULT_MAX_DISTANCE;
+        source.dopplerLevel = 0f;
+        source.clip = clip;
+        source.volume = MasterVolume * SfxVolume * data.Volume;
+        source.Play();
+
+        Destroy(go, clip.length);
+    }
+
     // 도중에 멈춰야 하는 2D 효과음(아이템 사용 등). PlayOneShot은 정지할 수 없어 전용 소스를 쓴다.
     // 동시에 하나만 재생되며, 새로 재생하면 이전 것은 끊긴다.
     public void PlayCancelableSfx(string key)
