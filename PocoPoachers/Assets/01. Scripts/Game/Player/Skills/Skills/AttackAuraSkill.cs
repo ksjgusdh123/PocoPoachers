@@ -6,6 +6,10 @@ using UnityEngine;
 // 시전자 본인의 스탯을 직접 건드리지 않는다(본인도 같은 판정 경로로 자기 오라 안에 들어와 버프를 받는다).
 public class AttackAuraSkill : PlayerSkillBase
 {
+    // 팀원 버프 오라 연출 머터리얼 경로 컨벤션 — "Skill/{skill 컬럼}Material". 방어력/이동속도 오라를
+    // 추가할 때도 CSV에 같은 규칙으로 머터리얼만 새로 두면 되고, G/H_PartyBuff 핸들러는 건드릴 필요가 없다.
+    public static string MaterialResourcePath(PlayerSkillData data) => $"Skill/{data.skill}Material";
+
     public override PlayerSkillId Id => PlayerSkillId.AttackAura;
 
     private float _elapsed;
@@ -18,6 +22,7 @@ public class AttackAuraSkill : PlayerSkillBase
     {
         _elapsed = 0f;
         PartyBuffRegistry.SetActive(RoomSync.MyPlayerId, Data.id, true);
+        AuraMeshEffect.SetActiveFor(ctx.Self, MaterialResourcePath(Data), true);
         RoomSync.PartyBuff(Data.id, true);
     }
 
@@ -30,6 +35,7 @@ public class AttackAuraSkill : PlayerSkillBase
     public override void End(PlayerSkillContext ctx)
     {
         PartyBuffRegistry.SetActive(RoomSync.MyPlayerId, Data.id, false);
+        AuraMeshEffect.SetActiveFor(ctx.Self, MaterialResourcePath(Data), false);
         RoomSync.PartyBuff(Data.id, false);
     }
 }

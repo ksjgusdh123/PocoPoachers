@@ -11,6 +11,15 @@ public static partial class PacketHandlers
         var packet = root.TypeAsG_PartyBuff();
 
         PartyBuffRegistry.SetActive(guestId, packet.SkillId, packet.Active);
+
+        // 오라 연출 — 호스트 자기 화면의 그 게스트 캐릭터 메쉬에도 입힌 뒤, 나머지 게스트에게 중계한다(보낸 게스트는 스킵).
+        PlayerSkillData data = PlayerSkillTable.Instance.Get(packet.SkillId);
+        if (data != null && ObjectManager.Instance != null &&
+            ObjectManager.Instance.TryGet(ObjectKind.Player, guestId, out var guestObj))
+        {
+            AuraMeshEffect.SetActiveFor(guestObj.gameObject, AttackAuraSkill.MaterialResourcePath(data), packet.Active);
+        }
+
         RoomSync.PartyBuffRelay(guestId, packet.SkillId, packet.Active);
     }
 }
