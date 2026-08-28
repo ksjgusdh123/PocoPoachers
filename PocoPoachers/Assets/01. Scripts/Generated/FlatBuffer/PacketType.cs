@@ -96,6 +96,8 @@ public enum PacketType : byte
   G_Stealth = 89,
   H_Stealth = 90,
   G_Taunt = 91,
+  G_PartyBuff = 92,
+  H_PartyBuff = 93,
 };
 
 public class PacketTypeUnion {
@@ -290,6 +292,10 @@ public class PacketTypeUnion {
   public static PacketTypeUnion FromH_Stealth(H_StealthT _h_stealth) { return new PacketTypeUnion{ Type = PacketType.H_Stealth, Value = _h_stealth }; }
   public G_TauntT AsG_Taunt() { return this.As<G_TauntT>(); }
   public static PacketTypeUnion FromG_Taunt(G_TauntT _g_taunt) { return new PacketTypeUnion{ Type = PacketType.G_Taunt, Value = _g_taunt }; }
+  public G_PartyBuffT AsG_PartyBuff() { return this.As<G_PartyBuffT>(); }
+  public static PacketTypeUnion FromG_PartyBuff(G_PartyBuffT _g_partybuff) { return new PacketTypeUnion{ Type = PacketType.G_PartyBuff, Value = _g_partybuff }; }
+  public H_PartyBuffT AsH_PartyBuff() { return this.As<H_PartyBuffT>(); }
+  public static PacketTypeUnion FromH_PartyBuff(H_PartyBuffT _h_partybuff) { return new PacketTypeUnion{ Type = PacketType.H_PartyBuff, Value = _h_partybuff }; }
 
   public static int Pack(Google.FlatBuffers.FlatBufferBuilder builder, PacketTypeUnion _o) {
     switch (_o.Type) {
@@ -385,6 +391,8 @@ public class PacketTypeUnion {
       case PacketType.G_Stealth: return G_Stealth.Pack(builder, _o.AsG_Stealth()).Value;
       case PacketType.H_Stealth: return H_Stealth.Pack(builder, _o.AsH_Stealth()).Value;
       case PacketType.G_Taunt: return G_Taunt.Pack(builder, _o.AsG_Taunt()).Value;
+      case PacketType.G_PartyBuff: return G_PartyBuff.Pack(builder, _o.AsG_PartyBuff()).Value;
+      case PacketType.H_PartyBuff: return H_PartyBuff.Pack(builder, _o.AsH_PartyBuff()).Value;
     }
   }
 }
@@ -670,6 +678,12 @@ static public class PacketTypeVerify
         break;
       case PacketType.G_Taunt:
         result = G_TauntVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.G_PartyBuff:
+        result = G_PartyBuffVerify.Verify(verifier, tablePos);
+        break;
+      case PacketType.H_PartyBuff:
+        result = H_PartyBuffVerify.Verify(verifier, tablePos);
         break;
       default: result = true;
         break;

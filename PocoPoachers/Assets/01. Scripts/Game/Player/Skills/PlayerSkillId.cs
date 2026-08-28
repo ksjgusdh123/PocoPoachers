@@ -15,5 +15,6 @@
     Reflect,
     Taunt,
     PassiveStat,
-    LuckyShot
+    LuckyShot,
+    AttackAura
 }

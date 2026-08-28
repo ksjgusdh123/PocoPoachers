@@ -262,7 +262,7 @@ public static class RoomSync
         }, H_ItemBoxUpdate.Pack, PacketType.H_ItemBoxUpdate);
     }
 
-    public static void StatSync(float hp, float maxHp, float stamina = 0f, float battery = 0f, float defense = 0f, float critMultiplier = StatBase.DefaultCritMultiplier, float rangeMultiplier = StatBase.DefaultRangeMultiplier, float luckyChance = StatBase.DefaultLuckyShotChance, float luckyMultiplier = StatBase.DefaultLuckyShotMultiplier)
+    public static void StatSync(float hp, float maxHp, float stamina = 0f, float battery = 0f, float defense = 0f, float critMultiplier = StatBase.DefaultCritMultiplier, float rangeMultiplier = StatBase.DefaultRangeMultiplier, float luckyChance = StatBase.DefaultLuckyShotChance, float luckyMultiplier = StatBase.DefaultLuckyShotMultiplier, float attackPowerMultiplier = StatBase.DefaultAttackPowerMultiplier)
     {
         if (IsSolo) return;
 
@@ -279,6 +279,7 @@ public static class RoomSync
                 RangeMultiplier = rangeMultiplier,
                 LuckyChance = luckyChance,
                 LuckyMultiplier = luckyMultiplier,
+                AttackPowerMultiplier = attackPowerMultiplier,
             }, H_StatSync.Pack, PacketType.H_StatSync);
         else
             PacketBuilder.SendToHost(new G_StatSyncT
@@ -292,7 +293,30 @@ public static class RoomSync
                 RangeMultiplier = rangeMultiplier,
                 LuckyChance = luckyChance,
                 LuckyMultiplier = luckyMultiplier,
+                AttackPowerMultiplier = attackPowerMultiplier,
             }, G_StatSync.Pack, PacketType.G_StatSync);
+    }
+
+    // ── 팀원 버프 오라 ────────────────────────────────────────
+    // Stealth/ShieldFx와 같은 패턴 — 시전자는 켜짐/꺼짐만 전체에 알리고, "누가 범위 안에 있는지"
+    // 판정은 각 플레이어가 로컬에서 스스로 한다(PartyBuffReceiver).
+    public static void PartyBuff(int skillId, bool active)
+    {
+        if (IsSolo) return;
+
+        if (RoomManager.IsHost)
+            PacketBuilder.BroadcastReliableToGuests(new H_PartyBuffT { PlayerId = MyId, SkillId = skillId, Active = active },
+                H_PartyBuff.Pack, PacketType.H_PartyBuff);
+        else
+            PacketBuilder.SendReliableToHost(new G_PartyBuffT { SkillId = skillId, Active = active },
+                G_PartyBuff.Pack, PacketType.G_PartyBuff);
+    }
+
+    // 호스트가 게스트의 팀원 버프 오라 요청을 나머지 게스트에게 중계 (요청자 본인은 이미 로컬에 등록해둠)
+    public static void PartyBuffRelay(int ownerPlayerId, int skillId, bool active)
+    {
+        PacketBuilder.BroadcastReliableToGuests(ownerPlayerId, new H_PartyBuffT { PlayerId = ownerPlayerId, SkillId = skillId, Active = active },
+            H_PartyBuff.Pack, PacketType.H_PartyBuff);
     }
 
     public static void Leave()

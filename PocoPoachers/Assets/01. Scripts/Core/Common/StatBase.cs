@@ -109,6 +109,12 @@ public abstract class StatBase : MonoBehaviour, IDamageable
     public float LuckyShotChance { get; set; } = DefaultLuckyShotChance;
     public float LuckyShotMultiplier { get; set; } = DefaultLuckyShotMultiplier;
 
+    // 팀원 공격력 버프 오라로 인한 데미지 배율 — 오라 반경 안에 있는 동안만 유지된다.
+    // 판정 주체는 버프를 받는 이 플레이어 자신(PartyBuffReceiver)이고, 크리/행운 배율과 같은 경로로
+    // StatSync를 타고 호스트까지 가서 Bullet.cs의 데미지 계산에 그대로 곱해진다.
+    public const float DefaultAttackPowerMultiplier = 1f;
+    public float AttackPowerMultiplier { get; set; } = DefaultAttackPowerMultiplier;
+
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
     // 치트 무적 — 구르기 무적과 별개로 유지되어 구르기 종료에 꺼지지 않음
     public bool IsGodMode { get; private set; }

@@ -110,6 +110,8 @@ public struct FlatPacket : IFlatbufferObject
   public G_Stealth TypeAsG_Stealth() { return Type<G_Stealth>().Value; }
   public H_Stealth TypeAsH_Stealth() { return Type<H_Stealth>().Value; }
   public G_Taunt TypeAsG_Taunt() { return Type<G_Taunt>().Value; }
+  public G_PartyBuff TypeAsG_PartyBuff() { return Type<G_PartyBuff>().Value; }
+  public H_PartyBuff TypeAsH_PartyBuff() { return Type<H_PartyBuff>().Value; }
 
   public static Offset<FlatPacket> CreateFlatPacket(FlatBufferBuilder builder,
       PacketType type_type = PacketType.NONE,
@@ -411,6 +413,12 @@ public struct FlatPacket : IFlatbufferObject
         break;
       case PacketType.G_Taunt:
         _o.Type.Value = this.Type<G_Taunt>().HasValue ? this.Type<G_Taunt>().Value.UnPack() : null;
+        break;
+      case PacketType.G_PartyBuff:
+        _o.Type.Value = this.Type<G_PartyBuff>().HasValue ? this.Type<G_PartyBuff>().Value.UnPack() : null;
+        break;
+      case PacketType.H_PartyBuff:
+        _o.Type.Value = this.Type<H_PartyBuff>().HasValue ? this.Type<H_PartyBuff>().Value.UnPack() : null;
         break;
     }
   }

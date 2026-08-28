@@ -54,6 +54,7 @@ table G_StatSync
     range_multiplier: float = 1.0; // 탄환 사거리 배율. 기본값이라 평상시엔 기록되지 않는다
     lucky_chance: float = 0.0; // 행운의 사격 발동 확률. 기본값(꺼짐)이라 평상시엔 기록되지 않는다
     lucky_multiplier: float = 1.0; // 행운의 사격 발동 시 데미지 배율. 기본값이라 평상시엔 기록되지 않는다
+    attack_power_multiplier: float = 1.0; // 팀원 공격력 버프 오라로 인한 배율. 기본값이라 평상시엔 기록되지 않는다
 }
 
 table H_StatSync
@@ -68,6 +69,7 @@ table H_StatSync
     range_multiplier: float = 1.0; // 탄환 사거리 배율. 기본값이라 평상시엔 기록되지 않는다
     lucky_chance: float = 0.0; // 행운의 사격 발동 확률. 기본값(꺼짐)이라 평상시엔 기록되지 않는다
     lucky_multiplier: float = 1.0; // 행운의 사격 발동 시 데미지 배율. 기본값이라 평상시엔 기록되지 않는다
+    attack_power_multiplier: float = 1.0; // 팀원 공격력 버프 오라로 인한 배율. 기본값이라 평상시엔 기록되지 않는다
 }
 
 table H_SandbagDestroy
@@ -220,4 +222,22 @@ table G_Taunt
     pos:      Vec3;
     radius:   float;
     duration: float;
+}
+
+// 팀원 버프 오라(공격력/방어력/이동속도 등) 켜짐/꺼짐 — 시전자는 이 신호만 전체에 알린다.
+// "누가 범위 안에 있는지" 판정과 배율 적용은 각 플레이어가 로컬에서 스스로 한다(PartyBuffReceiver) —
+// 플레이어 위치는 이미 서로 동기화돼 보이므로 좌표를 실을 필요가 없고, skill_id로 어떤 버프인지와
+// 반경·배율은 수신측이 player_skill.csv에서 직접 읽는다(수류탄 데미지를 게스트 패킷값 대신
+// 테이블에서 읽는 것과 같은 이유). Stealth/ShieldFx와 같은 구조다.
+table G_PartyBuff
+{
+    skill_id: int;
+    active:   bool;
+}
+
+table H_PartyBuff
+{
+    player_id: int;
+    skill_id:  int;
+    active:    bool;
 }

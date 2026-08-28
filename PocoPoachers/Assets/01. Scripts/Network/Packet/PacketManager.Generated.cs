@@ -92,5 +92,7 @@ public static partial class PacketManager
         _onRecv.Add(PacketType.G_Stealth           , PacketHandlers.OnG_Stealth);
         _onRecv.Add(PacketType.H_Stealth           , PacketHandlers.OnH_Stealth);
         _onRecv.Add(PacketType.G_Taunt             , PacketHandlers.OnG_Taunt);
+        _onRecv.Add(PacketType.G_PartyBuff         , PacketHandlers.OnG_PartyBuff);
+        _onRecv.Add(PacketType.H_PartyBuff         , PacketHandlers.OnH_PartyBuff);
     }
 }

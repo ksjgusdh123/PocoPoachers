@@ -46,6 +46,8 @@ public static class PlayerSkillFactory
                 return new PassiveStatSkill(data);
             case PlayerSkillId.LuckyShot:
                 return new LuckyShotSkill(data);
+            case PlayerSkillId.AttackAura:
+                return new AttackAuraSkill(data);
             default:
                 Debug.LogWarning($"[PlayerSkillFactory] 미구현 skill: {id} (id={data.id})");
                 return null;

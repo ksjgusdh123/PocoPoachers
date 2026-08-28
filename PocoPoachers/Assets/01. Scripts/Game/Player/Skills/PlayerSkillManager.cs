@@ -11,6 +11,7 @@ public class PlayerSkillManager : MonoBehaviour
     [SerializeField] private int[] _startSkillIds = new int[SlotCount]; // 장착 시스템 연결 전 임시 세팅
 
     private PlayerSkillContext _context;
+    private PartyBuffReceiver _buffReceiver;
     private readonly IPlayerSkill[] _slots = new IPlayerSkill[SlotCount];
     private readonly float[] _lastUsedTime = new float[SlotCount];
     private readonly List<int> _activeSlots = new();
@@ -33,6 +34,7 @@ public class PlayerSkillManager : MonoBehaviour
     private void Awake()
     {
         _context = new PlayerSkillContext(gameObject);
+        _buffReceiver = new PartyBuffReceiver(transform, _context.Stat);
         _inputHandler = GetComponent<PlayerInputHandler>();
         _enhancement = GetComponent<PlayerEnhancement>();
         _inventory = GetComponent<Inventory>();
@@ -304,6 +306,8 @@ public class PlayerSkillManager : MonoBehaviour
 
     private void Update()
     {
+        _buffReceiver.Tick();
+
         for (int i = _activeSlots.Count - 1; i >= 0; i--)
         {
             int slotIndex = _activeSlots[i];

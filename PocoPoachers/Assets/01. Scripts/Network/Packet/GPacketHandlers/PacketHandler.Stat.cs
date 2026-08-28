@@ -6,6 +6,7 @@ public static partial class PacketHandlers
     private const float MaxRangeMultiplier = 5f;
     private const float MaxLuckyShotChance = 1f;
     private const float MaxLuckyShotMultiplier = 5f;
+    private const float MaxAttackPowerMultiplier = 5f;
 
     public static void OnG_StatSync(FlatPacket root)
     {
@@ -36,6 +37,7 @@ public static partial class PacketHandlers
         float rangeMultiplier = Mathf.Clamp(packet.RangeMultiplier, 1f, MaxRangeMultiplier);
         float luckyChance = Mathf.Clamp(packet.LuckyChance, 0f, MaxLuckyShotChance);
         float luckyMultiplier = Mathf.Clamp(packet.LuckyMultiplier, 1f, MaxLuckyShotMultiplier);
+        float attackPowerMultiplier = Mathf.Clamp(packet.AttackPowerMultiplier, 1f, MaxAttackPowerMultiplier);
 
         if (stat != null)
         {
@@ -44,7 +46,7 @@ public static partial class PacketHandlers
             if (stat is RemotePlayerStat remote)
             {
                 defense = remote.ArmorDefenseRate;
-                remote.ApplyNetworkStats(hp, maxHp, stamina, battery, defense, critMultiplier, rangeMultiplier, luckyChance, luckyMultiplier);
+                remote.ApplyNetworkStats(hp, maxHp, stamina, battery, defense, critMultiplier, rangeMultiplier, luckyChance, luckyMultiplier, attackPowerMultiplier);
             }
             else
                 stat.SetHpFromNetwork(hp, maxHp, 0);
@@ -62,6 +64,7 @@ public static partial class PacketHandlers
             RangeMultiplier = rangeMultiplier,
             LuckyChance = luckyChance,
             LuckyMultiplier = luckyMultiplier,
+            AttackPowerMultiplier = attackPowerMultiplier,
         }, H_StatSync.Pack, PacketType.H_StatSync);
     }
 }
