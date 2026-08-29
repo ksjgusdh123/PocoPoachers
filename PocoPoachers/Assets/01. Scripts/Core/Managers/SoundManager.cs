@@ -1,8 +1,12 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SoundManager : Singleton<SoundManager>
 {
+    private const string BGM_TITLE = "bgm_main";
+    private const string BGM_SHELTER = "bgm_shelter";
+
     private const string PREF_MASTER_VOLUME = "Settings.MasterVolume";
     private const string PREF_BGM_VOLUME    = "Settings.BgmVolume";
     private const string PREF_SFX_VOLUME    = "Settings.SfxVolume";
@@ -52,7 +56,44 @@ public class SoundManager : Singleton<SoundManager>
         BgmVolume    = PlayerPrefs.GetFloat(PREF_BGM_VOLUME, 1f);
         SfxVolume    = PlayerPrefs.GetFloat(PREF_SFX_VOLUME, 1f);
         ApplyBgmVolume();
+
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        ApplySceneBgm(SceneManager.GetActiveScene().name); // 쉘터 씬에서 바로 플레이할 때도 깔리도록
     }
+
+    protected override void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        base.OnDestroy();
+    }
+
+    // 씬 진입 시 BGM을 자동으로 갈아끼운다. 같은 곡이면 PlayBgmClip이 막아주므로 다시 시작되지 않는다.
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode) => ApplySceneBgm(scene.name);
+
+    private void ApplySceneBgm(string sceneName)
+    {
+        // 캐릭터 생성은 타이틀 곡을 그대로 이어 둔다 — 타이틀에서 곧장 넘어가는 화면이라 곡이 끊기면 거슬린다.
+        // 로딩 화면은 예외로 두지 않는다. 쉘터 곡이 레이드 로딩까지 따라 들어간다.
+        if (sceneName == SceneName.CharacterCreate) return;
+
+        string key = GetSceneBgmKey(sceneName);
+        if (string.IsNullOrEmpty(key))
+            StopBgm();
+        else
+            PlayBgm(key);
+    }
+
+    // 전용 BGM이 없는 씬(레이드·튜토리얼·결과)은 null — 쉘터 곡이 따라 들어가지 않게 무음으로 둔다
+    private static string GetSceneBgmKey(string sceneName)
+    {
+        if (sceneName == SceneName.Title) return BGM_TITLE;
+        if (SceneName.IsShelter(sceneName)) return BGM_SHELTER;
+        return null;
+    }
+
+    // 싱글톤이 지연 생성이라, 아무도 소리를 내지 않으면 씬 BGM도 깔리지 않는다. 시작 시 한 번 깨워둔다.
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void EnsureExists() => GetInstance();
 
     public void PlayBgm(string key)
     {
@@ -111,6 +152,35 @@ public class SoundManager : Singleton<SoundManager>
         source.maxDistance = maxDistance > 0f ? maxDistance : SFX_3D_DEFAULT_MAX_DISTANCE;
         source.volume = MasterVolume * SfxVolume * data.Volume;
         source.PlayOneShot(clip);
+    }
+
+    // 호송 포드처럼 소리를 내며 움직이는 대상. PlaySfxAt은 재생 시점 위치에 소리를 묶어두므로 이동을 못 따라간다.
+    // 대상 밑에 붙인 임시 소스로 재생하고 클립이 끝나면 스스로 사라진다 — 대상이 먼저 파괴되면 소리도 함께 끊긴다.
+    public void PlaySfxOn(string key, Transform parent, float maxDistance = 0f)
+    {
+        if (string.IsNullOrEmpty(key) || parent == null) return;
+
+        var data = SoundTable.Instance.Get(key);
+        if (data == null || string.IsNullOrEmpty(data.Path)) return;
+
+        var clip = ResourceManager.GetInstance().Load<AudioClip>(data.Path);
+        if (clip == null) return;
+
+        var go = new GameObject($"Sfx3D_{key}");
+        go.transform.SetParent(parent, false);
+
+        var source = go.AddComponent<AudioSource>();
+        source.playOnAwake = false;
+        source.spatialBlend = 1f;
+        source.rolloffMode = AudioRolloffMode.Linear;
+        source.minDistance = SFX_3D_MIN_DISTANCE;
+        source.maxDistance = maxDistance > 0f ? maxDistance : SFX_3D_DEFAULT_MAX_DISTANCE;
+        source.dopplerLevel = 0f;
+        source.clip = clip;
+        source.volume = MasterVolume * SfxVolume * data.Volume;
+        source.Play();
+
+        Destroy(go, clip.length);
     }
 
     // 도중에 멈춰야 하는 2D 효과음(아이템 사용 등). PlayOneShot은 정지할 수 없어 전용 소스를 쓴다.

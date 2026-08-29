@@ -12,9 +12,29 @@ public class LoadingSceneController : MonoBehaviour
     [SerializeField] private PassingMeteorSpawner _meteorSpawner; // 비워두면 방향 반전 안 함
     [SerializeField] private ImageScrollUI _scrollingBackground;  // 비워두면 방향 반전 안 함
 
+    [Header("로켓 사운드")]
+    [SerializeField, Tooltip("sound.csv의 키. 비워두면 소리를 내지 않는다.")]
+    private string _rocketSoundKey = "sfx_loading_rocket";
+    [SerializeField] private float _rocketSoundInterval = 5f;
+
     private void Start()
     {
         StartCoroutine(LoadTargetScene());
+        StartCoroutine(PlayRocketSoundLoop());
+    }
+
+    // 로딩 화면은 BGM이 없어 무음이라, 화면의 로켓에 맞춰 엔진음을 일정 간격으로 깔아둔다.
+    // 씬이 전환되면 이 오브젝트와 함께 코루틴도 끝난다.
+    private IEnumerator PlayRocketSoundLoop()
+    {
+        if (string.IsNullOrEmpty(_rocketSoundKey) || _rocketSoundInterval <= 0f) yield break;
+
+        while (true)
+        {
+            SoundManager.GetInstance()?.PlaySfx(_rocketSoundKey);
+            // 로딩 중에는 timeScale이 0일 수 있어(일시정지 중 씬 이동) 실시간 대기를 쓴다
+            yield return new WaitForSecondsRealtime(_rocketSoundInterval);
+        }
     }
 
     private IEnumerator LoadTargetScene()

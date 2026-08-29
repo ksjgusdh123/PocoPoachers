@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using UnityEngine;
 
@@ -8,9 +8,12 @@ public class RescueBeamEffect : MonoBehaviour
 {
     [Header("Pod")]
     [SerializeField] private float _podHoverHeight = 6f;   // 대상 위 이 높이에서 정지
-    [SerializeField] private float _podApproachDistance = 20f; // 대상 뒤 이 거리(수평)에서부터 날아옴 (화면 밖)
-    [SerializeField] private float _podMoveDuration = 0.3f;
-    [SerializeField] private float _podRotateDuration = 1f; // 이동 시작 전 진행 방향으로 회전하는 데 걸리는 시간
+    // 접근/이탈 거리와 시간은 원래 속도(약 67m/s)를 유지하도록 같은 비율로 맞춰져 있다.
+    // 한쪽만 바꾸면 포드가 느려지거나 빨라진다.
+    [SerializeField] private float _podApproachDistance = 200f; // 대상 뒤 이 거리(수평)에서부터 날아옴 (화면 밖)
+    [SerializeField] private float _podApproachDuration = 3f;   // 로켓 사운드 길이에 맞춰 잡은 값
+    [SerializeField] private float _podDepartDuration = 3f;
+    [SerializeField] private float _podRotateDuration = 1f; // 이탈 전 온 방향으로 되도는 데 걸리는 시간
     [SerializeField] private Vector3 _podModelScale = Vector3.one;
     [SerializeField] private Vector3 _podModelEulerAngles = Vector3.zero;
 
@@ -26,6 +29,11 @@ public class RescueBeamEffect : MonoBehaviour
     [SerializeField] private float _trailStartWidth = 0.6f;
     [SerializeField] private float _trailEndWidth = 0.05f;
     [SerializeField] private Color _trailColor = new Color(0.5f, 0.9f, 1f, 0.8f);
+
+    [Header("Sound")]
+    [SerializeField, Tooltip("sound.csv의 키. 비워두거나 테이블에 없으면 소리를 내지 않는다.")]
+    private string _podSoundKey = "sfx_rescue_pod";
+    [SerializeField] private float _podSoundMaxDistance = 220f; // 접근 거리보다 넉넉히 — 출발 지점부터 희미하게 들리도록
 
     [Header("Ghost")]
     [SerializeField] private float _ghostInterval = 0.08f;    // 잔상 생성 간격
@@ -107,14 +115,15 @@ public class RescueBeamEffect : MonoBehaviour
         Vector3 hoverPos = basePos + Vector3.up * _podHoverHeight;
         Vector3 startPos = hoverPos + behindDir * _podApproachDistance;
 
-        _pod.position = startPos;
-
-        // 1. 진행 방향으로 회전을 마친 뒤, 포드가 뒤에서 날아와 대상 위로 이동
+        // 1. 스폰 순간부터 대상 쪽을 보게 두고, 곧장 뒤에서 날아와 대상 위로 이동
         Quaternion approachRotation = Quaternion.LookRotation(-behindDir, Vector3.up) * Quaternion.Euler(_podModelEulerAngles);
-        yield return RotateOverTime(_pod.rotation, approachRotation, _podRotateDuration);
+        _pod.SetPositionAndRotation(startPos, approachRotation);
+        _trail.Clear(); // 배치 직후 바로 켜므로, 생성 위치(월드 원점)에서 끌려온 궤적이 남지 않게 비운다
+
+        PlayPodSfx();
         _trail.emitting = true;
         _ghostRoutine = StartCoroutine(GhostSpawnLoop());
-        yield return MoveOverTime(p => _pod.position = p, startPos, hoverPos, _podMoveDuration);
+        yield return MoveOverTime(p => _pod.position = p, startPos, hoverPos, _podApproachDuration);
         StopCoroutine(_ghostRoutine);
         _trail.emitting = false;
 
@@ -136,12 +145,22 @@ public class RescueBeamEffect : MonoBehaviour
 
         Quaternion departRotation = Quaternion.LookRotation(behindDir, Vector3.up) * Quaternion.Euler(_podModelEulerAngles);
         yield return RotateOverTime(_pod.rotation, departRotation, _podRotateDuration);
+        PlayPodSfx();
         _trail.emitting = true;
         _ghostRoutine = StartCoroutine(GhostSpawnLoop());
-        yield return MoveOverTime(p => _pod.position = p, hoverPos, startPos, _podMoveDuration, EaseInQuad);
+        yield return MoveOverTime(p => _pod.position = p, hoverPos, startPos, _podDepartDuration);
 
         onComplete?.Invoke();
         Destroy(gameObject);
+    }
+
+    // 소리는 포드에 붙여서 낸다 — 멀리서 날아와 멀어지는 게 거리감으로 들리도록.
+    // 포드가 파괴되면 소리도 끊기지만, 그 시점엔 이미 멀어져 거의 안 들린다.
+    private void PlayPodSfx()
+    {
+        if (string.IsNullOrEmpty(_podSoundKey)) return;
+
+        SoundManager.GetInstance()?.PlaySfxOn(_podSoundKey, _pod, _podSoundMaxDistance);
     }
 
     // 이동 중 일정 간격으로 포드 모델의 반투명 잔상을 남긴다
@@ -206,21 +225,17 @@ public class RescueBeamEffect : MonoBehaviour
         target.localScale = Vector3.zero;
     }
 
-    private IEnumerator MoveOverTime(Action<Vector3> apply, Vector3 from, Vector3 to, float duration, Func<float, float> ease = null)
+    private IEnumerator MoveOverTime(Action<Vector3> apply, Vector3 from, Vector3 to, float duration)
     {
         float t = 0f;
         while (t < duration)
         {
             t += Time.deltaTime;
-            float p = t / duration;
-            apply(Vector3.Lerp(from, to, ease != null ? ease(p) : p));
+            apply(Vector3.Lerp(from, to, t / duration));
             yield return null;
         }
         apply(to);
     }
-
-    // 이륙하듯 천천히 출발해서 점점 빨라지는 가속 곡선
-    private static float EaseInQuad(float t) => t * t;
 
     private IEnumerator RotateOverTime(Quaternion from, Quaternion to, float duration)
     {
