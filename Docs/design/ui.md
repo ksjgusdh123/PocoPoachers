@@ -67,6 +67,8 @@
 | RepairWorkbench | 수리 | ✅ |
 | CraftingTable | 제작 | ✅ |
 | Generator | 발전기(연료 투입·전력) | ✅ |
+| Furnace | 화로(광석→주괴 제련) | ✅ (전력 미소비) |
+| Skill | 스킬 장착(`SkillEquipPanel`) | ✅ (해금 조건 데이터는 미기재) |
 | ItemBoxReveal | 아이템 박스 공개 | ✅ |
 | EquipContextMenu | 장비 슬롯 우클릭 메뉴 | ✅ |
 | InventoryContextMenu | 인벤 슬롯 우클릭 메뉴 | ✅ |
@@ -116,6 +118,7 @@
 | `CraftingTableUI` | 제작 — 카테고리 탭 + 레시피 목록(엔트리는 파괴하지 않고 재사용, `SetSiblingIndex`로 순서 유지) |
 | `GeneratorUI` | 전력 바(임계값별 색상), 연료 드롭 슬롯, 투입 전 미리보기(투입 후 % 예상치 표시) |
 | `CrankGaugeUI` | 수동 크랭크(F) 시 발전기를 열지 않고도 잠깐 떴다 사라지는 전력 게이지 피드백 |
+| `FurnaceUI` / `FurnaceOutputSlotUI` | 광석 투입 진행바 + 결과물 슬롯(더블클릭/드래그로 인벤 이동) — [progression.md](progression.md#화로-제련) |
 | `JoinCodeUI` / `TeamPanelUI` | 코옵 참가/초대 코드, 팀 로스터 |
 
 ### InGame HUD (`UI/InGame/`)
@@ -135,7 +138,19 @@
 >
 > 설계상 필요한 건 전체 미니맵이 아니라 **착지 포드 복귀 방향만 가리키는 최소 화살표**(다른 POI 길찾기는 의도적으로 미지원) — [map-composition.md#5-길찾기--비대칭-설계](map-composition.md#5-길찾기--비대칭-설계) 참고. 아직 미구현.
 
-`RaidResultUI`는 씬 전환 없이 레이드 씬 위에 페이드인되는 결과 오버레이 — [shelter-raid.md](shelter-raid.md#레이드-종료).
+`RaidResultUI`는 레이드 씬이 아니라 `SC_Result` 씬 안에 배치된 페이드인/아웃 오버레이 — 탈출 성공·팀 전멸 모두 이 씬으로 전환된 뒤 표시된다. [shelter-raid.md](shelter-raid.md#레이드-종료).
+
+### Skill (`UI/InGame/Skill/`, `UI/InGame/HUD/Skill*`)
+
+| 클래스 | 역할 |
+|--------|------|
+| `SkillHudUI` / `SkillSlotUI` | 상시 HUD — 3슬롯 아이콘·쿨다운 게이지·`Shift+1~3` 라벨 |
+| `SkillBuffIndicatorUI` / `SkillBuffEntryUI` | 지속시간이 일정 이상인 활성 스킬만 표시하는 버프 목록줄 |
+| `SkillDescriptionUI` | 슬롯 호버 툴팁, 설명 텍스트에 수치 자리표시자 삽입 |
+| `SkillEquipPanel` | 스킬 목록(잠김/보유 상태) + 상세 + 장착 — 강화대 스킬 탭과 패널을 공유 |
+| `SkillEquipUI` | `SkillEquipPanel`을 여닫는 단독 창(`UIType.Skill`) |
+
+상세: [player-combat.md](player-combat.md#플레이어-스킬-playerskillmanager)
 
 ### Inventory (`UI/Inventory/`)
 

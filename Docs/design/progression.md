@@ -82,6 +82,19 @@
 
 ---
 
+## 화로 제련 ✅
+
+`Furnace`(싱글턴) + `FurnaceUI`. 다른 워크벤치와 달리 **상호작용 오브젝트가 아니라 항상 진행되는 시설**이며, UI를 닫아도 제련은 계속된다.
+
+- 투입/결과 슬롯 각 1개. `FurnaceRecipeTable.Get(투입 아이템 id)`로 결과 아이템(`result_item_id`)·시간(`smelt_seconds`) 조회 — 레시피가 없는 광석(돌 801)은 투입 불가
+- 서로 다른 광석은 섞이지 않음(투입 중인 것과 다른 아이템이면 거부, 먼저 회수해야 함), 결과 칸이 꽉 차면 제련을 멈추고 대기
+- 호스트 권위 + 게스트 네트 동기화(`G/H_FurnaceInsert`·`G_FurnaceTake`·`H_FurnaceState`·`H_FurnaceGive`) — [network-packets.md](../development/network-packets.md#쉘터-화로-furnace)
+- **전력을 소비하지 않는다** — `Generator`를 전혀 참조하지 않아 다른 워크벤치(아래 표)와 동작이 다름. 의도된 설계인지 미완성인지 확인 필요
+
+데이터: `furnace_recipe.csv` — id = **투입** 광석의 Item ID(1:1, 결과가 아니라 투입 기준이라 `CraftingRecipe`와 방향이 반대) — [datatable/id-ranges.md](../datatable/id-ranges.md).
+
+---
+
 ## 워크벤치 전력 비용 요약
 
 | 워크벤치 | 전력 비용 (고정) |
@@ -89,6 +102,7 @@
 | 수리대 | 30 |
 | 무기/방어구 강화대 | 50 |
 | 제작대 | 20 |
+| 화로 | 없음 (전력 미소비) |
 
 전력원: `Generator.Instance.TryConsume(cost)` — 부족하면 UI에 실패 안내.
 
@@ -98,18 +112,21 @@
 
 ```mermaid
 flowchart LR
-    Ore[레이드 채광] --> Ingredient[재료 801~803]
-    Ingredient --> ShelterUp[쉘터 업그레이드]
-    Ingredient --> Enhance[플레이어 강화]
-    Ingredient --> GunEnhance[장비 강화]
-    Ingredient --> Repair[수리]
-    Ingredient --> Craft[제작]
+    Ore[레이드 채광 원석 801~806] --> ShelterUp[쉘터 업그레이드]
+    Ore --> Enhance[플레이어 강화]
+    Ore --> GunEnhance[장비 강화]
+    Ore --> Repair[수리]
+    Ore --> Craft[제작]
+    Ore --> Fuel[발전기 연료]
+    Ore -->|화로 제련| Ingot[주괴 851~855]
+    Ingot --> Craft
 ```
 
 | 아이템 ID | 이름 (대략) | 획득 |
 |-----------|-------------|------|
-| 801 | 돌 | Mineral 1 채광 |
-| 802 | 철 | Mineral 2 채광 |
-| 803 | 금 | Mineral 3 채광 |
+| 801 | 돌 | Mineral 1 채광 (화로 레시피 없음) |
+| 802 | 철광석 | Mineral 2 채광 → 화로로 851(철 주괴) 제련 |
+| 803 | 금광석 | Mineral 3 채광 → 화로로 852(금 주괴) 제련 |
+| 804~806 | 석탄/우라늄/레드 플라즈마 원석 | `item.csv`·`generator_fuel.csv`·`furnace_recipe.csv`엔 정의돼 있으나 `mineral.csv`엔 대응 채광 오브젝트가 없음 — **레이드에서 획득할 방법이 아직 없는 죽은 데이터**(치트로만 획득 가능) |
 
-ItemType: `Ingredient` (800~899 범위)
+ItemType: `Ingredient` (800~899 범위) — 801~806 원석, 851~855 화로 제련 결과물(주괴)

@@ -46,7 +46,10 @@
 | 공통 | `MainGameUI`, `WarningUI`, `NoticeUI`, `DescriptionUI` |
 | 인벤 | `TotalBagUI` (자식 `PlayerBagUI`, `PlayerQuickInventoryUI`, `GunPartUI`는 프리팹 내부) |
 | HUD·메뉴 | `StaminaUI`, `IngameMenuUI`, `EquipContextMenuUI`, `InventoryContextMenuUI`, `ItemBoxUI` |
-| 쉘터 기능 | `StorageUI`, `ShelterUpgradeUI`, `CraftingTableUI`, `EnhancementUI`, `GunEnhancementUI`, `RepairWorkbenchUI`, `GeneratorUI`, `CrankGaugeUI`, `PlanetSelectUI` |
+| 쉘터 기능 | `StorageUI`, `ShelterUpgradeUI`, `CraftingTableUI`, `EnhancementUI`, `GunEnhancementUI`, `RepairWorkbenchUI`, `GeneratorUI`, `CrankGaugeUI`, `PlanetSelectUI`, `FurnaceUI`* |
+| 스킬 | `SkillHudUI`, `SkillEquipUI`* |
+
+\* `FurnaceUI`/`SkillHudUI`/`SkillEquipUI`는 신규 시스템([player-combat.md](player-combat.md#플레이어-스킬-playerskillmanager), [progression.md](progression.md#화로-제련))의 프리팹으로 존재가 확인됐으나, 씬 배치 개수 재검증(카운트 갱신)은 아직 하지 않았다 — 위 "21개" 총계에는 반영 안 됨.
 
 **없음:** `TeamPanel`, `JoinPanel`, `OptionsUI`, `FaintingUI`, `ResultUI`. 코옵 패널(`JoinCodeUI`/`TeamPanelUI`)과 옵션은 이 씬에 배치돼 있지 않으므로, 쉘터에서 쓰려면 배치가 필요하다.
 
@@ -58,8 +61,9 @@
 | 인벤 | `TotalBagUI` (자식 `PlayerBagUI`, `PlayerQuickInventoryUI`, `GunPartUI`는 프리팹 내부) |
 | HUD·메뉴 | `StaminaUI`, `IngameMenuUI`, `EquipContextMenuUI`, `InventoryContextMenuUI`, `ItemBoxUI`, `FaintingUI`, `ResultUI` |
 | 쉘터 기능 (레이드에도 배치됨) | `StorageUI`, `CraftingTableUI`, `EnhancementUI`, `GunEnhancementUI`, `RepairWorkbenchUI` |
+| 스킬 (신규, 카운트 미검증) | `SkillHudUI`, `SkillDescriptionUI` — 전투 중 사용이라 레이드 씬에 배치되는 것이 자연스러우나 씬 파일 재확인 필요 |
 
-마지막 행은 의도 미확인이다. 레이드 중 창고·제작·강화·수리를 쓸 수 있어야 하는지는 기획 확인이 필요하고, 아니라면 배치를 걷어낼 후보다.
+마지막에서 두 번째 행은 의도 미확인이다. 레이드 중 창고·제작·강화·수리를 쓸 수 있어야 하는지는 기획 확인이 필요하고, 아니라면 배치를 걷어낼 후보다.
 
 ### SC_Raid_Desert
 

@@ -68,6 +68,57 @@
 | `AmmoUI` | `Game/Weapon/AmmoUI.cs` | 탄약 표시 — UI 트리가 아니라 무기 스크립트 옆에 위치 |
 | `ProgressUI` | — | 재장전·채광·아이템 사용 공용 게이지 |
 
+## 플레이어 스킬 (`PlayerSkillManager`)
+
+적 AI 스킬([enemy-ai.md](enemy-ai.md#ai-스킬-skillmanager))과 이름·구조는 닮았지만 **완전히 분리된 시스템**(코드 공유 없음). `IPlayerSkill`/`PlayerSkillBase`/`PlayerSkillContext`/`PlayerSkillFactory`/`PlayerSkillId` 패턴.
+
+- `PlayerSkillManager`가 플레이어당 1개, **3슬롯** 장착, 쿨다운·지속시간·활성 슬롯을 중앙 관리(`IPlayerSkill.CanUse`는 그 외 조건만 판단)
+- 입력: `PlayerInputHandler.SkillUse` 이벤트(슬롯 인덱스), HUD 표기는 `Shift+1/2/3`
+- 장착 슬롯은 `SaveManager.SaveSkillSlots`로 로컬 저장(씬 재생성 대비), 저장 없으면 프리팹의 시작 스킬로 폴백
+
+### 해금(Unlock) — 2단계 게이트
+
+`PlayerSkillData.Unlock.cs`가 `player_skill.csv`의 조건 컬럼을 해석:
+
+1. **해금**: `unlock_stat`(강화 스탯 이름) + `unlock_level` — `PlayerEnhancement.GetStatLevel(stat) >= unlock_level`이면 해금. 조건이 비어있으면 항상 해금.
+2. **획득**: `need_item_id` + `need_item_count` — 해금된 스킬을 재료 소모로 실제 보유(`_ownedSkills`)해야 장착 가능. 조건이 없으면 해금 즉시 보유.
+3. 장착 가능 여부 = 해금 **AND** 보유. 장착 UI: `SkillEquipPanel`(전체 목록 + 잠김/보유 상태 + 상세) — `SkillEquipUI`(단축키로 여닫는 창)와 강화대 스킬 탭이 같은 패널을 공유.
+
+> ⚠️ **데이터 미기재:** 현재 `player_skill.csv` 18개 행 전부 `unlock_stat`/`need_item_id`가 비어 있어(0), 해금·재료 소모 로직은 완성돼 있지만 실제로는 모든 스킬이 조건 없이 해금+보유 상태다.
+
+### 스킬 목록 (`player_skill.csv`, id 10001~)
+
+| id | 이름 | 유형 | 요약 |
+|----|------|------|------|
+| 10001 | 대시 | 액티브(`LocksMovement`) | 이동 방향으로 짧게 슬라이드, 무적 없음 |
+| 10002 | 즉시 장전 | 액티브(버프) | 지속시간 동안 재장전 즉시 완료 |
+| 10003 | 무한 탄약 | 액티브(버프) | 지속시간 동안 탄약 미소모 (호스트 총알 판정용 탄약 사본 고갈 방지를 위해 0.5초 간격 재보고) |
+| 10004 | 추가탄 드론 | 액티브(버프) | `CombatDrone` 프리팹을 실제 스폰(연출 아님) — 명중마다 유도탄 추가 발사, 판정은 호스트만 |
+| 10005 | 확정 헤드샷 | 액티브(버프) | 지속시간 동안 모든 사격이 헤드샷 판정 |
+| 10006 | 크리 데미지 증가 | 액티브(버프) | 크리티컬 배율 상승, `StatBase.CritMultiplier`→즉시 `StatSync` |
+| 10007 | 사거리 증가 | 액티브(버프) | 사거리 배율 상승, `StatSync` 경로 공유 |
+| 10008 | 수류탄 | 액티브(즉발) | 크로스헤어 지면 좌표에 투척 — 호스트는 직접 실행, 게스트는 로컬 예측+요청 |
+| 10009 | 은신 | 액티브(버프) | 반투명 + AI 탐지 제외, 발사 시 즉시 해제 |
+| 10010 | 무한 스태미나 | 액티브(버프) | 스태미나 미소모, 네트워크 동기화 불필요 |
+| 10011 | 무적 | 액티브(버프) | `StatBase.SetInvincible` — 구르기와 같은 `H_Invincible` 채널 공유 |
+| 10012 | 반사 | 액티브(버프) | 무적 + 피탄 반사(`Bullet`이 관통 대신 반사) |
+| 10013 | 도발 | 액티브(즉발, 범위) | 반경 내 적 전체를 시전자로 강제 타겟팅. AI 판정은 호스트 전용이라 게스트는 요청만 |
+| 10014 | 강철 피부 | **패시브** | 장착만으로 스탯 보너스(`passive_stat`/`passive_value`) — `PlayerEnhancement`에 등록돼 강화와 같은 경로로 반영 |
+| 10015 | 행운의 사격 | 액티브(버프) | 명중 시 확률로 배수 데미지, 굴림은 호스트 `Bullet`이 수행 |
+| 10016 | 공격 강화 오라 | 액티브(버프) | **파티 오라** — 아래 참고 |
+| 10017 | 방어 강화 오라 | 액티브(버프) | **파티 오라** |
+| 10018 | 가속 오라 | 액티브(버프) | **파티 오라** |
+
+### 파티 버프 오라 (`PartyBuffRegistry` / `PartyBuffReceiver`)
+
+공격/방어/속도 오라 3종은 시전자 반경(현재 CSV 기준 8.0, 지속 10초, 쿨다운 30초) 안의 아군(본인 포함)에게 배율/가산 보너스를 준다.
+
+- **켜짐/꺼짐만 네트워크로 알린다.** "누가 지금 범위 안인가"는 전송하지 않고, 위치는 이미 서로 동기화돼 보이므로 **각 클라이언트가 매 0.25초(`PartyBuffReceiver.CheckInterval`)마다 스스로 거리 계산**한다
+- 전파는 호스트 완전 권위가 아니라 **중계**: `G_PartyBuff`(게스트→호스트, 등록 후 나머지에 재중계) / `H_PartyBuff`(호스트→각 클라)
+- 같은 종류 버프가 중첩되면 최댓값만 적용(합산 아님)
+- 공격력·방어 보너스는 데미지 판정 주체(호스트)에 반영하기 위해 `StatSync`로 전파, 이동속도는 로컬 전용이라 전파 불필요
+- 오라 시각 효과(`AuraMeshEffect`)는 화면에 보이는 모두가 각자 로컬로 계산 — 별도 통신 없음
+
 ## 관련 DataTable
 
 | 테이블 | 용도 |
@@ -76,3 +127,4 @@
 | `gun_stat.csv` | 무기 스탯 (Item ID와 1:1 공유) |
 | `armor_stat.csv` | 방어구 스탯 (Item ID와 1:1 공유) |
 | `gun_part.csv` | 파츠 스탯 (Item ID와 1:1 공유) |
+| `player_skill.csv` | 플레이어 스킬 정의·수치·해금 조건 (id 10001~) |

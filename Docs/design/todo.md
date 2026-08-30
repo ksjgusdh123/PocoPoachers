@@ -1,6 +1,6 @@
 # TODO (향후 기획·구현)
 
-미구현·부분 구현·코드 내 발견된 이상 동작을 한곳에 모은 목록. 코드 전수 분석(2026-07) 기준으로 재작성됨 — **수리·무기 강화·제작은 이미 구현되어 있어 과거 목록에서 제외됨.**
+미구현·부분 구현·코드 내 발견된 이상 동작을 한곳에 모은 목록. 코드 전수 분석(2026-07) 기준으로 재작성됨 — **수리·무기 강화·제작은 이미 구현되어 있어 과거 목록에서 제외됨.** 2026-08 후속 조사로 플레이어 스킬·파티 버프·화로 항목 추가([player-combat.md](player-combat.md), [progression.md](progression.md) 참고), 레이드 결과 화면(SC_Result) 관련 오래된 문서 오기는 수정 완료.
 
 구현 현황 요약: [../README.md#구현-현황](../README.md#구현-현황)
 
@@ -68,6 +68,28 @@ ID 범위 규칙과 실제 데이터 불일치. 상세: [datatable/id-ranges.md]
 - [ ] `BaseOre` 채광 완료 후 오브젝트가 파괴/비활성화되지 않아 반복 채광이 가능해 보임 — 의도 확인 후 (a) 1회성이면 소멸/비활성 처리, (b) 다회성이 목표면 `MineralTable.max_hp` 기반 HP 차감 로직 구현
 
 관련: [shelter-raid.md](shelter-raid.md#채광-baseore)
+
+---
+
+## P1 — 스킬·화로
+
+### player_skill.csv 해금·재료 조건 데이터 미기재
+
+- [ ] 해금(`unlock_stat`/`unlock_level`)·획득(`need_item_id`/`need_item_count`) 로직은 완성됐으나 18개 스킬 전부 값이 비어있어(0) 실제로는 조건 없이 전부 해금+보유 상태 — 밸런스 데이터 채우기
+
+관련: [player-combat.md](player-combat.md#해금unlock--2단계-게이트)
+
+### 화로가 발전기 전력을 소비하지 않음
+
+- [ ] 다른 워크벤치(수리대/강화대/제작대)는 모두 `Generator` 전력을 소비하는데 `Furnace`만 참조하지 않음 — 의도 확인 후 (a) 의도적 예외면 문서에만 명시, (b) 아니면 전력 소비 로직 추가
+
+관련: [progression.md](progression.md#화로-제련)
+
+### 원석(804~806) 채광원 없음
+
+- [ ] 석탄/우라늄/레드 플라즈마 원석이 `item.csv`·`generator_fuel.csv`·`furnace_recipe.csv`엔 정의돼 있으나 `mineral.csv`에 대응 채광 오브젝트가 없어 레이드에서 획득 불가(치트로만 획득 가능) — 채광 오브젝트 추가 또는 다른 획득 경로 설계
+
+관련: [progression.md](progression.md#재료-아이템-흐름)
 
 ---
 
