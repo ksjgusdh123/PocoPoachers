@@ -19,8 +19,8 @@ flowchart TB
     end
 
     subgraph UDP["UDP P2P Star (게임, 게스트는 호스트하고만 통신)"]
-        G["G_* 게스트→호스트 (18종)"]
-        H["H_* 호스트→게스트 (31종)"]
+        G["G_* 게스트→호스트 (35종)"]
+        H["H_* 호스트→게스트 (48종)"]
     end
 
     Client --> TCP
@@ -40,8 +40,8 @@ flowchart TB
 |--------|------|------------|-----|
 | `C_` | Client → Master (TCP) | 5 | `C_Login`, `C_CreateRoom` |
 | `S_` | Master → Client (TCP) | 5 | `S_LoginResult`, `S_GuestJoined` |
-| `G_` | Guest → Host (UDP) | 18 | `G_Move`, `G_ItemGain` |
-| `H_` | Host → Guest(s) (UDP) | 31 | `H_Move`, `H_ItemBoxUpdate` |
+| `G_` | Guest → Host (UDP) | 35 | `G_Move`, `G_ItemGain` |
+| `H_` | Host → Guest(s) (UDP) | 48 | `H_Move`, `H_ItemBoxUpdate` |
 
 `Main.fbs`의 `union PacketType` 안에 `FlatPacket{ type }`으로 전체 목록 정의(약 50종). 핸들러는 패킷 1개당 파일 1개가 아니라 **도메인별 partial class**로 묶여 있다: `GPacketHandlers/`·`HPacketHandlers/` 각 10개 파일(Combat/Durability/Equip/GunAmmo/GunPart/GunState/Item/Movement/Rescue/Room/Stat/Enemy 등), `SPacketHandlers/` 3개 파일(Auth/Heartbeat/Room).
 
@@ -147,6 +147,13 @@ UDP 수신 핸들러는 **반드시 메인 스레드**에서 실행돼야 한다
 | `H_EscapeState` | H→G (신뢰) | 탈출 구역 충전 시작/리셋/완료 — 게이지·결과창 동기화 |
 | `G_Nickname` | G→H (신뢰) | 접속 직후 자기 닉네임 보고. 호스트는 payload의 id가 아니라 송신자 id로 키를 잡는다 |
 | `H_Roster` | H→G (신뢰) | 방 전체 닉네임 명부 — 델타가 아닌 전체 스냅샷이라 몇 번 도착하든 결과가 같다. 클라는 `PlayerNameRegistry`에 보관 |
+| `G/H_PartyBuff` | 게스트→호스트 요청, 호스트→전원 중계 | 파티 버프 오라 켜짐/꺼짐만 전파(범위 판정은 각 클라 로컬) — [multiplayer.md](../design/multiplayer.md#권위-모델-기능별로-다름) |
+| `G/H_Stealth` | 양방향 | 은신 스킬 on/off |
+| `G_Taunt` | G→H (요청만, `H_Taunt` 없음) | 도발 범위 내 적 강제 타겟팅 — AI 판정이 호스트 전용이라 응답 브로드캐스트 자체가 불필요 |
+| `G/H_Reflecting` | 양방향 | 반사 스킬 on/off — 무적과 별개 채널(`H_Invincible`은 데미지 면역, 이건 총알 반사 여부) |
+| `G/H_ReflectFx` / `G/H_ShieldFx` | 양방향 | 반사/무적 스킬의 연출(FX)만 별도 채널로 중계 — 판정과 분리 |
+| `G_GrenadeThrow` | G→H | 수류탄 스킬 투척 요청(게스트는 로컬 예측 연출 먼저 재생) |
+| `H_GrenadeThrow` / `H_GrenadeMove` / `H_GrenadeExplode` | H→G | 호스트 권위 수류탄 스폰/이동/폭발 |
 
 ### 아이템
 

@@ -24,7 +24,7 @@ XxxTable.Instance.Get(id) / .All
 
 **의도적 ID 공유:** `ItemData.id` == `GunStatData.id` == `ArmorStatData.id` == `GunPartData.id`(1:1). `CraftingRecipeData.id`/`GeneratorFuelData.id`도 결과/연료 아이템의 Item ID와 공유.
 
-## CSV 전체 목록 (17개, `PocoPoachers/DataTable/`)
+## CSV 전체 목록 (21개, `PocoPoachers/DataTable/`)
 
 | CSV | 생성 클래스 | 주요 필드 | 사용처 |
 |-----|-------------|-----------|--------|
@@ -36,7 +36,11 @@ XxxTable.Instance.Get(id) / .All
 | `mineral.csv` | `MineralTable`, `MineralData` | max_hp(미사용), drop_item_id, drop_amount | `BaseOre` |
 | `planet.csv` | `PlanetTable`, `PlanetData` | tier(미사용), need_shelter_level(사용), need_power/use_time_limit/max_session_time/fog_density/draw_distance(전부 미사용) | 행성 선택 — [planet-sectors.md](planet-sectors.md) |
 | `shelter.csv` | `ShelterTable`, `ShelterData` | need_item_ids, need_item_counts, unlocked_planet_tier | `ShelterManager` — need_item은 `\|` 구분 목록, `ShelterData.Parsed.cs`의 `NeedItems`가 파싱 |
-| `skill.csv` | `SkillTable`, `SkillData` | skill, cooldown, speed, distance, duration, power, clip_name (범용 컬럼, 스킬마다 재해석) | `SkillManager`, `DodgeRollSkill`, `RetreatSkill`, `HealSkill` |
+| `skill.csv` | `SkillTable`, `SkillData` | skill, cooldown, speed, distance, duration, power, clip_name (범용 컬럼, 스킬마다 재해석) | AI 스킬 — `SkillManager`, `DodgeRollSkill`, `RetreatSkill`, `HealSkill` ([enemy-ai.md](enemy-ai.md#ai-스킬-skillmanager)) |
+| `player_skill.csv` | `PlayerSkillTable`, `PlayerSkillData` | skill, cooldown, duration, speed, distance, power, radius, unlock_stat/level, need_item_id/count, passive_stat/value | 플레이어 스킬(3슬롯) — `PlayerSkillManager` ([player-combat.md](player-combat.md#플레이어-스킬-playerskillmanager)). 해금·재료 컬럼은 현재 전부 비어있음(미기재) |
+| `furnace_recipe.csv` | `FurnaceRecipeTable`, `FurnaceRecipeData` | id(=투입 광석 item_id), result_item_id, result_count, smelt_seconds | `Furnace` (화로) — [progression.md](progression.md#화로-제련) |
+| `dialogue.csv` | `DialogueTable`, `DialogueData` | npc_id, speaker, text, next_id | `DialogueUI` — 대사 순차 진행 |
+| `dialogue_choice.csv` | `DialogueChoiceTable`, `DialogueChoiceData` | dialogue_id, order, text, next_id, accept_quest_id | `DialogueUI` 선택지 — `accept_quest_id`(0=없음)로 `QuestManager.Accept` 트리거 |
 | `character_level_cost.csv` | `CharacterLevelCostTable` | level, need_item1/2, stat_points | `PlayerEnhancement` (기체 레벨업 비용 + 레벨당 지급 스탯 포인트) |
 | `item_enhancement_cost.csv` | `ItemEnhancementCostTable` | item_id, level, need_item1/2 | `GunEnhancementTableUI` |
 | `repair_cost.csv` | `RepairCostTable` | item_id, need_item1/2 | `RepairWorkbenchUI` |

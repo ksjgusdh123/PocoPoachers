@@ -16,6 +16,7 @@
 | 무기/방어구 강화대 | `GunEnhancementTable` | 장비 강화 UI — **구현 완료** ([progression.md](progression.md)) |
 | 수리대 | `RepairWorkbench` | 수리 UI — **구현 완료** ([progression.md](progression.md#수리)) |
 | 제작대 | `CraftingTable` | 제작 UI — **구현 완료** ([progression.md](progression.md#제작-crafting)) |
+| 화로 | `Furnace` (싱글턴) | 광석→주괴 제련 UI — **구현 완료**, 단 발전기 전력을 소비하지 않는 유일한 워크벤치([progression.md](progression.md#화로-제련)) |
 | 우주선 | `Spaceship` | `PlanetSelectUI` → 레이드 출발 |
 | 발전기 | `Generator` | 전력 저장/방전, 연료 투입(`GeneratorFuelTable`). 강화대·수리대·제작대가 모두 이 전력을 소비 |
 | 수동 충전기 | `ManualCrank` | F 연타 시 `Generator`에 소량(+2.0, 최대 100.0) 강제 충전 |
@@ -93,16 +94,15 @@
 
 ### 레이드 종료
 
-탈출이 확정되면 사망 때와 같은 포드 호송 연출을 재생한 뒤 **결과 씬(`SC_Result`)으로 팀 전체가 이동**하고, 거기서 `ResultSceneController`가 결과창을 띄운다. 닫기(호스트만 표시)를 누르면 쉘터로 복귀한다. 팀 전멸(실패)은 아직 레이드 씬 위 오버레이 방식 그대로다.
+**성공·실패 모두 `SC_Result` 씬으로 전환된다** — `RaidResultUI`는 그 씬 안에 배치된 오버레이(페이드 인/아웃) UI이지, 레이드 씬 위에 직접 뜨는 게 아니다. 과거 이 문서와 [README.md](../README.md#구현-현황)에 남아있던 "레이드 씬 위 오버레이, `SC_Result` 미사용" 기재는 오래된 정보였다.
 
-레이드 탈출 지점은 `EscapeZone`(`SceneExitBase` 파생) — **살아있는 팀원 전원이 구역 안에 5초** 있어야 발동한다. 다운(구조 대기)된 팀원이 있으면 살려야 하고, 한 명이라도 벗어나면 게이지가 0으로 리셋된다. 판정은 호스트만 하고(위치·생존 상태를 이미 받고 있음), 게스트는 `H_EscapeState`로 게이지와 결과창만 맞춘다. 상호작용으로 즉시 이동하는 포털은 같은 베이스의 `ScenePortal`이다.
+**성공(EscapeZone):** 살아있는 팀원 전원이 **`EscapeZone`(`SceneExitBase` 파생) 구역 안에 5초** 머물면 `Complete()`가 호출된다. 다운(구조 대기)된 팀원이 있으면 살려야 하고, 한 명이라도 벗어나면 게이지가 0으로 리셋된다. 판정은 호스트만(위치·생존 상태를 이미 받고 있음), 게스트는 `H_EscapeState`로 게이지만 맞춘다. 확정되면 사망 때와 같은 포드 호송 연출 재생 → `RaidResultCarry.Set(success: true, ...)` → `SceneTransition.Go(SceneName.Result)`로 팀 전체가 `SC_Result`로 전환.
 
+**실패(팀 전멸):** `PlayerController.CheckRaidWipe()`가 매 프레임 생존자 확인(모든 클라 로컬 판정) → 전원 사망 시 포드 호송 연출 재생 → `RaidResultCarry.Set(success: false, ...)` → 호스트만 `SceneTransition.Go(SceneName.Result)` 트리거(게스트는 `H_LoadSceneT`로 따라옴).
 
-**성공(포털 탈출):** `ScenePortal`의 `_showResultUI` 플래그가 true면 `RaidResultUI.ShowSuccess(confirm)` 오버레이 표시 후 전환, false면 즉시 전환. 별도 아이템 회수 임계치 등 추가 조건 없음 — 포털에 진입하면 끝.
+`SC_Result` 씬의 `ResultSceneController`가 `RaidResultUI`를 열어 `RaidStats`(경과시간·킬수)와 성공/실패를 표시한다. 닫기 버튼은 성공 시 로컬 플레이어 각자, 실패 시 호스트에게만 노출되며 `RaidResultCarry`에 저장된 목적지(대개 쉘터)로 전환한다.
 
-**실패(팀 전멸):** `PlayerController.CheckRaidWipe()`가 매 프레임 생존자 확인 → 전원 사망 시 `RaidResultUI.ShowFailure()`. 확인 버튼은 호스트에게만 노출되며 확인 시 쉘터로 전환.
-
-`RaidResultUI`는 씬 전환 없이 현재 레이드 씬 위에 페이드인되는 **오버레이 UI**다 — `RaidStats`(경과시간·킬수)를 표시한다. 저장소에 별도로 존재하는 `SC_Result` 씬 에셋은 이 흐름에서 사용되지 않는 것으로 보인다.
+> **테스트/튜토리얼 전용 대체 경로:** `ScenePortal`(같은 `SceneExitBase` 파생)은 상호작용 즉시 `_showResultUI` 플래그에 따라 현재 씬 위에 바로 오버레이를 띄우거나(true) 즉시 전환(false)할 수 있다. 이 경로를 쓰는 `RaidRocket` 프리팹은 `SC_Raid_Temp`/`SC_Tutorial`에만 배치돼 있고, 프로덕션 레이드 씬(`SC_Raid_1001` 등)은 `EscapeZone`만 사용한다.
 
 레이드 탈출 후 최종 보스 콘텐츠는 없다 — 보스 전투/클리어 조건 자체가 설계·구현 모두 미확정([todo.md](todo.md)).
 

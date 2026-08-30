@@ -23,6 +23,8 @@ P2P 아키텍처 개요, 입장 흐름, 인원 제한, 동기화 현황. 패킷 
 | 이동 | **게스트 자기보고 + 호스트 중계** — 호스트는 `G_Move`를 검증 없이 그대로 적용하고 `H_Move`로 재전파(사실상 클라이언트 권위) |
 | 적 AI | **100% 호스트 시뮬레이션** — 게스트→호스트 방향의 `G_Enemy*` 패킷이 없어 게스트 측 예측/보정이 전혀 없음 |
 | 스탯(`StatSync`) | 게스트 자기보고, 호스트가 가볍게 클램프만 수행 (완전 재계산은 아님) |
+| 파티 버프 오라 (`PartyBuffRegistry`) | **호스트 중계, 완전 권위 아님** — 켜짐/꺼짐만 `G/H_PartyBuff`로 전파, "누가 범위 안인지"는 각 클라가 위치로 로컬 계산(재전송 없음) — [player-combat.md](player-combat.md#파티-버프-오라-partybuffregistry--partybuffreceiver) |
+| 화로(`Furnace`) | **호스트 권위** — 투입/제련/지급 전부 호스트, 게스트는 진행 게이지만 로컬로 이어 셈 — [network-packets.md](../development/network-packets.md#쉘터-화로-furnace) |
 
 ## 핵심 클래스
 
