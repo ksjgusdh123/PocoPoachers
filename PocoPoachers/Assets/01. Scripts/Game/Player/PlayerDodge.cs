@@ -52,7 +52,7 @@ public class PlayerDodge : MonoBehaviour
 
         Vector2 input = _inputHandler.MoveInput;
         Vector3 dodgeDir = input.sqrMagnitude > 0.01f
-            ? new Vector3(input.x, 0f, input.y).normalized
+            ? CameraSpace.InputToWorld(input).normalized
             : transform.forward;
 
         StartCoroutine(DodgeRoutine(dodgeDir));

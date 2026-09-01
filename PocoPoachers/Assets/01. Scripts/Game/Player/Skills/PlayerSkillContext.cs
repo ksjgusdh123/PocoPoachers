@@ -26,14 +26,14 @@ public class PlayerSkillContext
         Enhancement = self.GetComponent<PlayerEnhancement>();
     }
 
-    // 이동 입력 방향(월드 기준), 입력이 없으면 바라보는 방향
+    // 이동 입력 방향(화면 기준), 입력이 없으면 바라보는 방향
     public Vector3 MoveDirectionOrForward()
     {
         Vector2 input = Input != null ? Input.MoveInput : Vector2.zero;
         if (input.sqrMagnitude < 0.01f)
             return Transform.forward;
 
-        return new Vector3(input.x, 0f, input.y).normalized;
+        return CameraSpace.InputToWorld(input).normalized;
     }
 
     // 크로스헤어가 가리키는 지면 지점(PlayerRotation.RotateTowardMouse와 같은 방식) — maxDistance를 넘으면 그 방향으로 clamp.

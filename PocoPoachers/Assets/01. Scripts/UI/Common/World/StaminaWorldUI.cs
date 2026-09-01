@@ -31,8 +31,10 @@ public class StaminaWorldUI : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (_playerTransform != null)
-            transform.position = _playerTransform.position + _offset;
+        if (_playerTransform == null) return;
+
+        transform.position = _playerTransform.position + _offset;
+        transform.rotation = CameraSpace.Rotation;
     }
 
     private void Refresh(float current, float max)

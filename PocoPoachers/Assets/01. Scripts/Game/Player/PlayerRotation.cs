@@ -63,7 +63,7 @@ public class PlayerRotation : MonoBehaviour
     private void RotateTowardMovement()
     {
         Vector2 input = _inputHandler.MoveInput;
-        Vector3 moveDir = new Vector3(input.x, 0f, input.y);
+        Vector3 moveDir = CameraSpace.InputToWorld(input);
 
         Quaternion target = Quaternion.LookRotation(moveDir);
         transform.rotation = Quaternion.Slerp(transform.rotation, target, _runRotationSpeed * Time.deltaTime);

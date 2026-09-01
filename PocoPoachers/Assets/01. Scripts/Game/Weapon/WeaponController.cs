@@ -223,7 +223,7 @@ public class WeaponController : EquipableController
         {
             _wasAimPressed = false;
             if (_currentGun != null) _currentGun.IsAiming = false;
-            CameraZoom.Instance?.SetAiming(false, 45f, 0.2f);
+            CameraZoom.Instance?.SetAiming(false, GetAimFov(), GetAimTime());
         }
 
         _animator?.SetTrigger(WeaponSwitchHash);
@@ -425,8 +425,12 @@ public class WeaponController : EquipableController
         CameraZoom.Instance?.SetAiming(isAimPressed, GetAimFov(), GetAimTime());
     }
 
-    private float GetAimFov() =>
-        _currentGun != null ? _currentGun.Stat.AimFovMultiplier * CameraZoom.Instance.DefaultFOV : 45f;
+    // 조준 FOV는 기본 FOV의 배율로 잡는다 — 기본 FOV를 바꿔도 조준 배율이 그대로 따라온다.
+    private float GetAimFov()
+    {
+        float defaultFov = CameraZoom.Instance != null ? CameraZoom.Instance.DefaultFOV : 60f;
+        return defaultFov * (_currentGun != null ? _currentGun.Stat.AimFovMultiplier : 0.75f);
+    }
 
     private float GetAimTime() =>
         _currentGun != null ? _currentGun.Stat.AimTime : 0.2f;

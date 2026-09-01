@@ -16,7 +16,14 @@ public class NpcDialogueInteractable : MonoBehaviour, IInteractable
 
     public void OnInteract(PlayerController player)
     {
-        if (_dialogueUI == null) return;
+        // 대화를 못 열더라도 상호작용은 반드시 끝내야 한다 —
+        // 안 그러면 PlayerController가 이 NPC를 계속 붙들고 있어 F가 한 번 걸러 먹힌다.
+        if (_dialogueUI == null)
+        {
+            Debug.LogWarning($"[NpcDialogueInteractable] 씬에 DialogueUI가 없어 대사를 열지 못했습니다. ({name})", this);
+            player.EndInteraction(this);
+            return;
+        }
 
         _dialogueUI.OpenById(_startDialogueId, player);
         player.EndInteraction(this);

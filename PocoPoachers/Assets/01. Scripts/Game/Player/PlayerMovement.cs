@@ -137,7 +137,7 @@ public class PlayerMovement : MonoBehaviour
       }
 
       Vector2 input = _inputHandler.MoveInput;
-      Vector3 moveDir = new Vector3(input.x, 0f, input.y).normalized;
+      Vector3 moveDir = CameraSpace.InputToWorld(input).normalized;
 
       bool isSprinting = _inputHandler.IsSprintPressed && moveDir != Vector3.zero && CanSprint();
 
