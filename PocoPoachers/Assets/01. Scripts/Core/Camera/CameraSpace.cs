@@ -17,6 +17,16 @@ public static class CameraSpace
         }
     }
 
+    // 월드 UI를 화면과 나란히 세우는 회전(빌보드). 카메라 각도를 바꿔도 UI가 따라온다.
+    public static Quaternion Rotation
+    {
+        get
+        {
+            if (_camera == null) _camera = Camera.main;
+            return _camera != null ? _camera.transform.rotation : Quaternion.identity;
+        }
+    }
+
     public static Vector3 InputToWorld(Vector2 input) =>
         Quaternion.Euler(0f, Yaw, 0f) * new Vector3(input.x, 0f, input.y);
 }

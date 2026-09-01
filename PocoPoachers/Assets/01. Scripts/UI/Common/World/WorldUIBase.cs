@@ -9,8 +9,11 @@ public abstract class WorldUIBase : MonoBehaviour
 
     protected virtual void LateUpdate()
     {
-        if (_target != null)
-            transform.position = _target.position + _offset;
+        transform.rotation = CameraSpace.Rotation;
+
+        if (_target == null) return;
+
+        transform.position = _target.position + _offset;
     }
 
     public void Init(Transform target, Vector3 offset, WorldUIType type)
