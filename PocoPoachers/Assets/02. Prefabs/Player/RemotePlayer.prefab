@@ -182,8 +182,8 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1.5}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 4362334977041910769}
   - {fileID: 6024644145072312857}
@@ -475,6 +475,27 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 1852576806548013000, guid: 1bdc295f55155924699e3d8bf166a236, type: 3}
   m_PrefabInstance: {fileID: 4251567312754519066}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &4017756363146400075 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1bdc295f55155924699e3d8bf166a236, type: 3}
+  m_PrefabInstance: {fileID: 4251567312754519066}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5820137446903215882
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4017756363146400075}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7a3c91f2d84e40c6b25917e0af63cd18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CharacterAudio
+  _footstepAudibleRange: 25
+  _footstepVariationCount: 5
+  _minFootstepInterval: 0.12
+  _localFootstepVolume: 0.5
 --- !u!4 &4362334977041910769 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 1bdc295f55155924699e3d8bf166a236, type: 3}
@@ -490,23 +511,3 @@ Transform:
   m_CorrespondingSourceObject: {fileID: -3480699329000672020, guid: 1bdc295f55155924699e3d8bf166a236, type: 3}
   m_PrefabInstance: {fileID: 4251567312754519066}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &5820137446903215881 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 1bdc295f55155924699e3d8bf166a236, type: 3}
-  m_PrefabInstance: {fileID: 4251567312754519066}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &5820137446903215882
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5820137446903215881}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7a3c91f2d84e40c6b25917e0af63cd18, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CharacterAudio
-  _footstepAudibleRange: 25
-  _footstepVariationCount: 5
-  _minFootstepInterval: 0.12
