@@ -35,6 +35,7 @@ public enum UIType
     VotePopup,
     Skill,
     Furnace,
+    KeyExplain,
 }
 
 public class UIManager : Singleton<UIManager>

@@ -3,8 +3,9 @@ using UnityEngine;
 // 튜토리얼에서 가야 할 지점을 야광 박스로 표시하고, 플레이어가 들어오면 다음 대사를 연다.
 // 도착하면 스스로 꺼지고 _next를 켜서 다음 지점으로 이어진다 — 체인 중간 지점들은 씬에서 꺼둔다.
 //
-// 도착 판정은 트리거가 아니라 거리 비교로 한다. 플레이어가 CharacterController라
+// 도착 판정은 트리거가 아니라 위치 비교로 한다. 플레이어가 CharacterController라
 // 트리거 이벤트가 콜라이더/레이어 설정에 따라 안 들어올 수 있어서다.
+// 판정 영역은 표식으로 그린 박스(_size) 그대로다 — 보이는 판을 밟으면 바로 발동한다.
 // 표식은 런타임에 스스로 만든다. 에디터에서는 기즈모로 위치를 확인한다.
 public class TutorialWaypoint : MonoBehaviour
 {
@@ -13,10 +14,8 @@ public class TutorialWaypoint : MonoBehaviour
     [Tooltip("도착 후 켜질 다음 지점 (비어 있으면 여기서 끝)")]
     [SerializeField] private TutorialWaypoint _next;
 
-    [Tooltip("도착으로 판정할 거리(수평 기준, m)")]
-    [SerializeField] private float _reachRadius = 1.5f;
-
-    [Header("표식")]
+    [Header("표식 겸 판정 영역")]
+    [Tooltip("표식 상자의 크기이자 도착 판정 영역. 가로(X)·세로(Z)만 판정에 쓰고 높이(Y)는 무시한다")]
     [SerializeField] private Vector3 _size = new Vector3(2f, 2f, 2f);
 
     [Tooltip("상자 모서리 막대의 두께(m)")]
@@ -52,11 +51,18 @@ public class TutorialWaypoint : MonoBehaviour
             if (_player == null) return;
         }
 
-        Vector3 delta = _player.transform.position - transform.position;
-        delta.y = 0f;
-        if (delta.sqrMagnitude > _reachRadius * _reachRadius) return;
+        if (!IsInside(_player.transform.position)) return;
 
         Reach();
+    }
+
+    // 표식 박스 안에 들어왔는지. 회전한 웨이포인트도 맞도록 로컬 좌표로 검사한다.
+    // 높이는 보지 않는다 — _size.y는 표식 두께라(기본 0.5) 경사면이나 계단에서 판정이 새어나간다.
+    private bool IsInside(Vector3 worldPosition)
+    {
+        Vector3 local = transform.InverseTransformPoint(worldPosition);
+        return Mathf.Abs(local.x) <= _size.x * 0.5f
+            && Mathf.Abs(local.z) <= _size.z * 0.5f;
     }
 
     private void Reach()
@@ -161,7 +167,10 @@ public class TutorialWaypoint : MonoBehaviour
     private void OnDrawGizmos()
     {
         Gizmos.color = new Color(_color.r, _color.g, _color.b, 1f);
-        Gizmos.DrawWireCube(transform.position + new Vector3(0f, _size.y * 0.5f, 0f), _size);
-        Gizmos.DrawWireSphere(transform.position, _reachRadius);
+        Gizmos.matrix = transform.localToWorldMatrix;
+        Gizmos.DrawWireCube(new Vector3(0f, _size.y * 0.5f, 0f), _size);
+
+        // 실제 판정면(높이 무시)을 바닥에 겹쳐 그린다
+        Gizmos.DrawWireCube(Vector3.zero, new Vector3(_size.x, 0f, _size.z));
     }
 }

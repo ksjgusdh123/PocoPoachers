@@ -67,13 +67,13 @@ public class PlayerStat : StatBase
     private float _enhancementMaxHpBonus;
     private float _enhancementMoveSpeedBonus;
 
-    // 쉘터(전투 없는 씬)에서는 배터리가 닳지 않는다 — 이동해 온 씬으로 판별해 스폰 시 1회 캐싱.
-    private bool _isShelter;
+    // 쉘터·튜토리얼에서는 배터리가 닳지 않는다 — 이동해 온 씬으로 판별해 스폰 시 1회 캐싱.
+    private bool _batterySafeScene;
 
     protected override void Awake()
     {
         base.Awake();
-        _isShelter = SceneName.IsShelter(SceneManager.GetActiveScene().name);
+        _batterySafeScene = SceneName.IsBatterySafe(SceneManager.GetActiveScene().name);
         _inventory = GetComponent<Inventory>();
         MaxHp = GetCalculatedMaxHp();
         CurrentHp = MaxHp;
@@ -129,7 +129,7 @@ public class PlayerStat : StatBase
 
     private void DrainBattery()
     {
-        if (_isShelter) return;
+        if (_batterySafeScene) return;
 #if UNITY_EDITOR || DEVELOPMENT_BUILD
         if (IsGodMode) return;  // 치트 무적 중에는 방전 사망도 막아야 하므로 배터리가 닳지 않는다
 #endif
