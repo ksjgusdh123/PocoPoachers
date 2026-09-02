@@ -13,6 +13,8 @@ public partial class EnemyData
     public int forget_range;
     public int fov_angle;
     public int attack_range;
+    public float attack_power_multiplier;
+    public float fire_delay_multiplier;
 
     public int Id { get => id; set => id = value; }
 
@@ -32,5 +34,9 @@ public partial class EnemyData
     public int FovAngle { get => fov_angle; set => fov_angle = value; }
 
     public int AttackRange { get => attack_range; set => attack_range = value; }
+
+    public float AttackPowerMultiplier { get => attack_power_multiplier; set => attack_power_multiplier = value; }
+
+    public float FireDelayMultiplier { get => fire_delay_multiplier; set => fire_delay_multiplier = value; }
 
 }

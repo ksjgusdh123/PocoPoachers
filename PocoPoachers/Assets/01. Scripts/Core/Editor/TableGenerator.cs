@@ -107,14 +107,48 @@ public class TableGeneratorTool
         for (int i = 1; i < lines.Length; i++)
         {
             var cols = SplitCsvLine(lines[i]);
-            if (cols.Length > 0) rows.Add(cols);
+            if (cols.Length == 0) continue;
+
+            if (cols.Length != headers.Length)
+                Debug.LogWarning($"[{ToolName}] {Path.GetFileName(path)} {i + 1}번째 줄의 컬럼이 {headers.Length}개가 아니라 {cols.Length}개입니다. " +
+                                 "값에 쉼표가 들어갔다면 그 칸을 큰따옴표로 감싸세요.");
+
+            rows.Add(cols);
         }
         return (headers, rows);
     }
 
+    // 따옴표로 감싼 필드 안의 쉼표는 구분자가 아니다. 대사·설명문에는 쉼표가 흔한데
+    // 그냥 Split(',')으로 자르면 그 행만 컬럼이 늘어나 뒤쪽 값이 통째로 밀리고,
+    // 숫자 컬럼에 문장이 들어가 InferTypes가 int를 string으로 판정해버린다.
+    // 필드 안에 따옴표를 쓰려면 ""로 두 번 적는다(RFC 4180 — 엑셀이 저장할 때 쓰는 규칙과 같다).
     private static string[] SplitCsvLine(string line)
     {
-        return line.Split(',').Select(s => s.Trim()).ToArray();
+        var fields = new List<string>();
+        var field = new StringBuilder();
+        bool inQuotes = false;
+
+        for (int i = 0; i < line.Length; i++)
+        {
+            char c = line[i];
+
+            if (inQuotes)
+            {
+                if (c != '"') { field.Append(c); continue; }
+
+                // ""는 따옴표 한 글자, 홀로 선 "는 인용 종료
+                if (i + 1 < line.Length && line[i + 1] == '"') { field.Append('"'); i++; }
+                else inQuotes = false;
+                continue;
+            }
+
+            if (c == '"') inQuotes = true;
+            else if (c == ',') { fields.Add(field.ToString().Trim()); field.Clear(); }
+            else field.Append(c);
+        }
+
+        fields.Add(field.ToString().Trim());
+        return fields.ToArray();
     }
 
     private static string[] InferTypes(string[] headers, List<string[]> rows)

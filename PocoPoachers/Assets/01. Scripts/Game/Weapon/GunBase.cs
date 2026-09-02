@@ -241,9 +241,17 @@ public abstract class GunBase : EquippableItemBase
     // RecalculateStat()이 매번 _baseStat.Clone()부터 다시 시작하므로 중복 적용될 걱정은 없다.
     private void ApplyOwnerCombatMultipliers()
     {
-        if (_ownerEnhancement == null || _stat == null) return;
-        _stat.damage *= _ownerEnhancement.GetBonus(EnhancementStatType.AttackPower);
-        _stat.rpm    *= _ownerEnhancement.GetBonus(EnhancementStatType.AttackSpeed);
+        if (_stat == null) return;
+
+        if (_ownerEnhancement != null)
+        {
+            _stat.damage *= _ownerEnhancement.GetBonus(EnhancementStatType.AttackPower);
+            _stat.rpm    *= _ownerEnhancement.GetBonus(EnhancementStatType.AttackSpeed);
+        }
+
+        // 발사 간격 배율은 rpm의 역수라 나눈다. 적은 enemy.csv에서 오고, 플레이어는 기본값 1이라 무영향.
+        if (_ownerStat != null && _ownerStat.FireDelayMultiplier > 0f)
+            _stat.rpm /= _ownerStat.FireDelayMultiplier;
     }
 
     // 스탯 포인트를 새로 소비해 강화 배율이 바뀌었을 때, 이미 장착된 총에 즉시 반영하기 위해 외부(PlayerEnhancement)에서 호출

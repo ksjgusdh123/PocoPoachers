@@ -115,6 +115,12 @@ public abstract class StatBase : MonoBehaviour, IDamageable
     public const float DefaultAttackPowerMultiplier = 1f;
     public float AttackPowerMultiplier { get; set; } = DefaultAttackPowerMultiplier;
 
+    // 발사 간격 배율 — 1보다 크면 그만큼 느리게 쏜다(0.5면 두 배 빠름).
+    // GunBase가 소유자 스탯에서 읽어 rpm에 나눠 넣으므로, 총의 연사 가드와 AI의 사격 노드가
+    // 같은 값을 보게 된다. 적은 enemy.csv의 fire_delay_multiplier로 지정한다.
+    public const float DefaultFireDelayMultiplier = 1f;
+    public float FireDelayMultiplier { get; set; } = DefaultFireDelayMultiplier;
+
     // 팀원 방어력 버프 오라로 인한 부가 방어율(0~1) — 장비 방어율(_totalDefenseRate)과는 별개로 더해진다.
     // 장비 방어율은 게스트 쪽 값을 신뢰하지 않고 호스트가 장착 아이템 기준으로 직접 계산하지만
     // (RemotePlayerStat.ArmorDefenseRate), 이 버프는 크리/행운/공격력 배율과 같은 신뢰 모델이라

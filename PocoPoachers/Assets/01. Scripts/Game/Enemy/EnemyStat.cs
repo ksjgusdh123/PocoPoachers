@@ -24,6 +24,14 @@ public class EnemyStat : StatBase
         CurrentHp = MaxHp;
         _totalDefenseRate = data?.DefenseRate ?? 0f;
 
+        // 적의 공격력/발사 간격 배율. 공격력은 Bullet이 공격자 스탯에서 읽어 곱하고,
+        // 발사 간격은 GunBase가 총의 rpm에 반영한다 — 둘 다 플레이어와 같은 경로다.
+        // 0 이하가 들어오면 데미지가 사라지거나 0으로 나누게 되므로 기본값으로 되돌린다.
+        AttackPowerMultiplier = data != null && data.AttackPowerMultiplier > 0f
+            ? data.AttackPowerMultiplier : DefaultAttackPowerMultiplier;
+        FireDelayMultiplier = data != null && data.FireDelayMultiplier > 0f
+            ? data.FireDelayMultiplier : DefaultFireDelayMultiplier;
+
         // 데이터테이블의 이동속도를 NavMeshAgent에 적용 (값이 없으면 프리팹 기본값 유지)
         if (data != null && data.MoveSpeed > 0f)
         {
