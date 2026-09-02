@@ -677,15 +677,27 @@ public class PlayerController : MonoBehaviour
         if (PlayerMainGameUI != null) PlayerMainGameUI.SetActive(active);
     }
 
+    // 화면을 통째로 차지하는 패널 — 열려 있는 동안 HUD(MainGameUI)를 숨긴다.
+    // 카메라 잠금·입력맵 전환과는 별개다: 대화창은 자기 입력맵(Dialogue)을 스스로 전환한다.
+    private static bool HidesMainGameUI(UIType type) =>
+        type == UIType.Inventory || type == UIType.Minimap || type == UIType.Dialogue ||
+        type == UIType.Quest;
+
     private void OnPanelOpened(UIType type)
     {
-        if (type == UIType.Inventory || type == UIType.Minimap)
+        if (HidesMainGameUI(type))
             SetMainGameUIActive(false);
-        else if (type != UIType.IngameMenu && type != UIType.EnhancementTable && type != UIType.VotePopup &&
-                 type != UIType.Skill)
+
+        // 패널 종류를 가리지 않고 잠근다 — UI 위에서 마우스를 움직이는 동안 카메라가 따라 흔들리면
+        // 조작감이 어긋난다. 푸는 쪽(OnPanelClosed)도 "열린 패널이 하나도 없을 때"로 대칭을 맞춘다.
+        LockCamera(true);
+
+        // 입력맵 전환은 별개다 — 대화창은 자기 맵(Dialogue)을 스스로 잡고, 퀘스트창처럼
+        // 게임플레이 입력을 그대로 두는 패널도 있다.
+        if (type != UIType.Inventory && type != UIType.Minimap && type != UIType.IngameMenu &&
+            type != UIType.EnhancementTable && type != UIType.VotePopup && type != UIType.Skill)
             return;
 
-        LockCamera(true);
         _inputHandler.SwitchInputActionMap(type switch
         {
             UIType.EnhancementTable => PlayerInputMapType.ItemBox,
@@ -697,27 +709,28 @@ public class PlayerController : MonoBehaviour
     private void OnPanelClosed(UIType type)
     {
         // ESC로 UI가 닫혔을 때 _currentInteractable 정리
-        if (type == UIType.PlanetSelect || type == UIType.ShelterUpgrade)
+        if ((type == UIType.PlanetSelect || type == UIType.ShelterUpgrade) && _currentInteractable != null)
         {
-            if (_currentInteractable != null)
-            {
-                _currentInteractable.OnInteractExit(this);
-                _currentInteractable = null;
-            }
-            return;
+            _currentInteractable.OnInteractExit(this);
+            _currentInteractable = null;
         }
 
         if (type == UIType.Inventory)
             _gunPartPanel?.Close();
 
-        if (type != UIType.Inventory && type != UIType.IngameMenu && type != UIType.EnhancementTable &&
-            type != UIType.Minimap && type != UIType.VotePopup && type != UIType.Skill) return;
-        if (UIManager.GetInstance().IsAnyPanelOpen) return;
+        // 아래 복구는 전부 "마지막 패널이 닫혔는가"로 판단한다. 닫힌 패널 위에 다른 패널이
+        // 아직 떠 있으면(대화창을 닫았는데 인벤이 남은 경우 등) 아무것도 되돌리지 않는다.
+        bool anyOpen = UIManager.GetInstance().IsAnyPanelOpen;
+        if (anyOpen) return;
 
-        if (type == UIType.Inventory || type == UIType.Minimap)
+        if (HidesMainGameUI(type))
             SetMainGameUIActive(true);
 
         LockCamera(false);
+
+        if (type != UIType.Inventory && type != UIType.IngameMenu && type != UIType.EnhancementTable &&
+            type != UIType.Minimap && type != UIType.VotePopup && type != UIType.Skill) return;
+
         _inputHandler.SwitchToGameplayMap();
     }
 
@@ -793,7 +806,7 @@ public class PlayerController : MonoBehaviour
 
     public void LockCamera(bool locked)
     {
-        _cameraController.SetLocked(locked);
+        if (_cameraController != null) _cameraController.SetLocked(locked);
     }
 
     private GameObject GetNearestInteractable()
@@ -853,12 +866,7 @@ public class PlayerController : MonoBehaviour
 
     void ToggleSkill() => UIManager.GetInstance().Toggle(UIType.Skill);
 
-    void ShowQuest()
-    {
-        bool wasOpen = UIManager.GetInstance().GetPanel(UIType.Quest)?.activeSelf ?? false;
-        UIManager.GetInstance().Toggle(UIType.Quest);
-        LockCamera(!wasOpen); // 열리는 거면 잠그고(마우스 오프셋 정지), 닫히는 거면 원복
-    }
+    void ShowQuest() => UIManager.GetInstance().Toggle(UIType.Quest);
 
     void RegisterItem(int index)
     {
