@@ -52,6 +52,14 @@ public struct H_ItemSpawn : IFlatbufferObject
   public ArraySegment<byte>? GetItemSlotsBytes() { return __p.__vector_as_arraysegment(18); }
 #endif
   public int[] GetItemSlotsArray() { return __p.__vector_as_array<int>(18); }
+  public int NoRevealIndices(int j) { int o = __p.__offset(20); return o != 0 ? __p.bb.GetInt(__p.__vector(o) + j * 4) : (int)0; }
+  public int NoRevealIndicesLength { get { int o = __p.__offset(20); return o != 0 ? __p.__vector_len(o) : 0; } }
+#if ENABLE_SPAN_T
+  public Span<int> GetNoRevealIndicesBytes() { return __p.__vector_as_span<int>(20, 4); }
+#else
+  public ArraySegment<byte>? GetNoRevealIndicesBytes() { return __p.__vector_as_arraysegment(20); }
+#endif
+  public int[] GetNoRevealIndicesArray() { return __p.__vector_as_array<int>(20); }
 
   public static Offset<H_ItemSpawn> CreateH_ItemSpawn(FlatBufferBuilder builder,
       int uid = 0,
@@ -61,8 +69,10 @@ public struct H_ItemSpawn : IFlatbufferObject
       VectorOffset item_idsOffset = default(VectorOffset),
       VectorOffset item_countOffset = default(VectorOffset),
       VectorOffset item_uidsOffset = default(VectorOffset),
-      VectorOffset item_slotsOffset = default(VectorOffset)) {
-    builder.StartTable(8);
+      VectorOffset item_slotsOffset = default(VectorOffset),
+      VectorOffset no_reveal_indicesOffset = default(VectorOffset)) {
+    builder.StartTable(9);
+    H_ItemSpawn.AddNoRevealIndices(builder, no_reveal_indicesOffset);
     H_ItemSpawn.AddItemSlots(builder, item_slotsOffset);
     H_ItemSpawn.AddItemUids(builder, item_uidsOffset);
     H_ItemSpawn.AddItemCount(builder, item_countOffset);
@@ -74,7 +84,7 @@ public struct H_ItemSpawn : IFlatbufferObject
     return H_ItemSpawn.EndH_ItemSpawn(builder);
   }
 
-  public static void StartH_ItemSpawn(FlatBufferBuilder builder) { builder.StartTable(8); }
+  public static void StartH_ItemSpawn(FlatBufferBuilder builder) { builder.StartTable(9); }
   public static void AddUid(FlatBufferBuilder builder, int uid) { builder.AddInt(0, uid, 0); }
   public static void AddTypeId(FlatBufferBuilder builder, int typeId) { builder.AddInt(1, typeId, 0); }
   public static void AddPos(FlatBufferBuilder builder, Offset<Vec3> posOffset) { builder.AddStruct(2, posOffset.Value, 0); }
@@ -103,6 +113,12 @@ public struct H_ItemSpawn : IFlatbufferObject
   public static VectorOffset CreateItemSlotsVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
   public static VectorOffset CreateItemSlotsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
   public static void StartItemSlotsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddNoRevealIndices(FlatBufferBuilder builder, VectorOffset noRevealIndicesOffset) { builder.AddOffset(8, noRevealIndicesOffset.Value, 0); }
+  public static VectorOffset CreateNoRevealIndicesVector(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddInt(data[i]); return builder.EndVector(); }
+  public static VectorOffset CreateNoRevealIndicesVectorBlock(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateNoRevealIndicesVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateNoRevealIndicesVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartNoRevealIndicesVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<H_ItemSpawn> EndH_ItemSpawn(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_ItemSpawn>(o);
@@ -125,6 +141,8 @@ public struct H_ItemSpawn : IFlatbufferObject
     for (var _j = 0; _j < this.ItemUidsLength; ++_j) {_o.ItemUids.Add(this.ItemUids(_j));}
     _o.ItemSlots = new List<int>();
     for (var _j = 0; _j < this.ItemSlotsLength; ++_j) {_o.ItemSlots.Add(this.ItemSlots(_j));}
+    _o.NoRevealIndices = new List<int>();
+    for (var _j = 0; _j < this.NoRevealIndicesLength; ++_j) {_o.NoRevealIndices.Add(this.NoRevealIndices(_j));}
   }
   public static Offset<H_ItemSpawn> Pack(FlatBufferBuilder builder, H_ItemSpawnT _o) {
     if (_o == null) return default(Offset<H_ItemSpawn>);
@@ -148,6 +166,11 @@ public struct H_ItemSpawn : IFlatbufferObject
       var __item_slots = _o.ItemSlots.ToArray();
       _item_slots = CreateItemSlotsVector(builder, __item_slots);
     }
+    var _no_reveal_indices = default(VectorOffset);
+    if (_o.NoRevealIndices != null) {
+      var __no_reveal_indices = _o.NoRevealIndices.ToArray();
+      _no_reveal_indices = CreateNoRevealIndicesVector(builder, __no_reveal_indices);
+    }
     return CreateH_ItemSpawn(
       builder,
       _o.Uid,
@@ -157,7 +180,8 @@ public struct H_ItemSpawn : IFlatbufferObject
       _item_ids,
       _item_count,
       _item_uids,
-      _item_slots);
+      _item_slots,
+      _no_reveal_indices);
   }
 }
 
@@ -171,6 +195,7 @@ public class H_ItemSpawnT
   public List<int> ItemCount { get; set; }
   public List<int> ItemUids { get; set; }
   public List<int> ItemSlots { get; set; }
+  public List<int> NoRevealIndices { get; set; }
 
   public H_ItemSpawnT() {
     this.Uid = 0;
@@ -181,6 +206,7 @@ public class H_ItemSpawnT
     this.ItemCount = null;
     this.ItemUids = null;
     this.ItemSlots = null;
+    this.NoRevealIndices = null;
   }
 }
 
@@ -198,6 +224,7 @@ static public class H_ItemSpawnVerify
       && verifier.VerifyVectorOfData(tablePos, 14 /*ItemCount*/, 4 /*int*/, false)
       && verifier.VerifyVectorOfData(tablePos, 16 /*ItemUids*/, 4 /*int*/, false)
       && verifier.VerifyVectorOfData(tablePos, 18 /*ItemSlots*/, 4 /*int*/, false)
+      && verifier.VerifyVectorOfData(tablePos, 20 /*NoRevealIndices*/, 4 /*int*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

@@ -52,7 +52,9 @@ public class ItemBox : MonoBehaviour, IInteractable
 
     // capacity를 지정하면 상자 슬롯 수를 그 값으로 강제 설정 (미지정 시 프리팹에 설정된 기본 용량 사용)
     // skipReveal=true면 담긴 아이템 전부를 카드 뒤집기 연출 없이 처음부터 공개된 상태로 채움 (예: 플레이어 사망 드롭)
-    public void Initialize(int[] itemIds, int[] itemCounts = null, int[] itemUids = null, HashSet<int> noRevealIds = null, int? capacity = null, bool skipReveal = false)
+    // noRevealIndices는 itemIds 상의 인덱스 집합 — 아이템 id로 판별하면 같은 id가 우연히 또 들어왔을 때
+    // 그 슬롯까지 공개돼버리므로(적 장착 권총 + 랜덤 권총) 반드시 인덱스 기준이어야 한다
+    public void Initialize(int[] itemIds, int[] itemCounts = null, int[] itemUids = null, HashSet<int> noRevealIndices = null, int? capacity = null, bool skipReveal = false)
     {
         ItemIds = itemIds;
 
@@ -70,7 +72,7 @@ public class ItemBox : MonoBehaviour, IInteractable
             int slotIndex = inven.CanAddItem(data, count);
             if (slotIndex < 0) continue;
             inven.AddItemAtSlot(slotIndex, data, count, uid);
-            bool noReveal = skipReveal || (noRevealIds != null && noRevealIds.Contains(itemIds[i]));
+            bool noReveal = skipReveal || (noRevealIndices != null && noRevealIndices.Contains(i));
             if (noReveal && inven.Slots[slotIndex] is BoxItemSlot boxSlot)
                 boxSlot.skipReveal = true;
         }

@@ -597,7 +597,9 @@ public static class RoomSync
         }, H_EnemyShoot.Pack, PacketType.H_EnemyShoot);
     }
 
-    public static void ItemSpawn(int uid, int typeId, Vector3 pos, float rotation, List<int> itemIds, List<int> itemCounts = null, List<int> itemUids = null)
+    // noRevealIndices: itemIds 상의 인덱스 — 적이 장착 중이라 이미 보였던 아이템은 게스트에서도
+    // 카드 뒤집기 없이 공개돼야 해서 함께 보낸다(안 보내면 호스트만 공개 상태가 된다).
+    public static void ItemSpawn(int uid, int typeId, Vector3 pos, float rotation, List<int> itemIds, List<int> itemCounts = null, List<int> itemUids = null, List<int> noRevealIndices = null)
     {
         if (!RoomManager.HasGuests) return;
         PacketBuilder.BroadcastToGuests(new H_ItemSpawnT
@@ -609,6 +611,7 @@ public static class RoomSync
             ItemIds = itemIds,
             ItemCount = itemCounts,
             ItemUids = itemUids,
+            NoRevealIndices = noRevealIndices,
         }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
     }
 

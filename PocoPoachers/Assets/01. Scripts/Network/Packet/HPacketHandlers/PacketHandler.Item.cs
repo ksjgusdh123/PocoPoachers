@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public static partial class PacketHandlers
@@ -16,6 +17,7 @@ public static partial class PacketHandlers
         int[] item_counts = packet.GetItemCountArray();
         int[] item_uids = packet.GetItemUidsArray();
         int[] item_slots = packet.GetItemSlotsArray();
+        int[] no_reveal_indices = packet.GetNoRevealIndicesArray();
 
         MainThreadDispatcher.Enqueue(() =>
         {
@@ -30,7 +32,8 @@ public static partial class PacketHandlers
             }
 
             var box = objectManager.SpawnItemBox(uid, typeId, pos, rotation);
-            box?.Initialize(item_ids, item_counts, item_uids);
+            box?.Initialize(item_ids, item_counts, item_uids,
+                no_reveal_indices != null && no_reveal_indices.Length > 0 ? new HashSet<int>(no_reveal_indices) : null);
         });
     }
 

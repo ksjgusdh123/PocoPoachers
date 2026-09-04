@@ -19,7 +19,12 @@ public class LootBox : ItemBox
         _uid = GetComponent<WorldObject>()?.Id ?? 0;
 
         foreach (var slot in _inventory.Slots)
+        {
+            // 사망/버리기 드롭은 내용을 이미 아는 상자다. 게스트는 스폰 패킷에 skipReveal이 없어
+            // 호스트와 달리 카드 뒤집기가 돌아버리므로, 프리팹 종류로 판단해 양쪽 다 공개 상태로 둔다.
+            if (slot is BoxItemSlot boxSlot) boxSlot.skipReveal = true;
             slot.OnChanged += OnSlotChanged;
+        }
     }
 
     public override void OnInteract(PlayerController player)
