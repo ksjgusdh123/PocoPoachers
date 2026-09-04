@@ -5,6 +5,7 @@ using UnityEngine;
 public class Bullet : MonoBehaviour
 {
     private const string WallLayerName = "Wall";
+    private const string TerrainLayerName = "Terrain";
     private const int MaxHitCount = 8;
     private static readonly RaycastHit[] HitBuffer = new RaycastHit[MaxHitCount];
 
@@ -320,13 +321,22 @@ public class Bullet : MonoBehaviour
         return hitCollider != null && ((_wallMask.value & (1 << hitCollider.gameObject.layer)) != 0);
     }
 
+    // Wall/Terrain 레이어를 wallMask(데칼 판정)와 hitMask(실제 충돌 판정) 양쪽에 보장한다.
+    // hitMask는 프리팹마다 개별 설정돼 있어(Player/Wall/Enemy/Sandbag/Shield 등) 여기서 통째로
+    // 덮어쓰지 않고 Terrain 비트만 OR로 추가 — 안 그러면 SphereCast가 지형 콜라이더를 아예 못 잡는다.
     private void EnsureWallMask()
     {
-        if (_wallMask.value != 0) return;
-
         int wallLayer = LayerMask.NameToLayer(WallLayerName);
+        int terrainLayer = LayerMask.NameToLayer(TerrainLayerName);
+
         if (wallLayer >= 0)
-            _wallMask = 1 << wallLayer;
+            _wallMask |= 1 << wallLayer;
+
+        if (terrainLayer >= 0)
+        {
+            _wallMask |= 1 << terrainLayer;
+            _hitMask |= 1 << terrainLayer;
+        }
     }
 
     private void OnValidate()
