@@ -646,6 +646,7 @@ public class RoomManager : Singleton<RoomManager>
             var currentItemCounts = new List<int>();
             var currentItemUids  = new List<int>();
             var currentItemSlots = new List<int>();
+            var currentNoReveal  = new List<int>();
             if (objectManager.TryGet(ObjectKind.ItemBox, original.Uid, out var boxObj))
             {
                 var inv = boxObj.GetComponent<Inventory>();
@@ -658,6 +659,9 @@ public class RoomManager : Singleton<RoomManager>
                         currentItemCounts.Add(slot.Amount);
                         currentItemUids.Add(slot.Uid);
                         currentItemSlots.Add(i);
+                        // 리빌 제외는 슬롯이 아니라 방금 담은 위치(item_ids 인덱스) 기준으로 보낸다
+                        if (slot is BoxItemSlot boxSlot && boxSlot.skipReveal)
+                            currentNoReveal.Add(currentItemIds.Count - 1);
                     }
             }
             PacketBuilder.SendReliableToGuest(guestId, new H_ItemSpawnT
@@ -670,6 +674,7 @@ public class RoomManager : Singleton<RoomManager>
                 ItemCount = currentItemCounts,
                 ItemUids  = currentItemUids,
                 ItemSlots = currentItemSlots,
+                NoRevealIndices = currentNoReveal,
             }, H_ItemSpawn.Pack, PacketType.H_ItemSpawn);
         }
     }

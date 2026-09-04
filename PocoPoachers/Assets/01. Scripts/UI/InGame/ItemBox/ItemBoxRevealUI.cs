@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class ItemBoxRevealUI : MonoBehaviour
 {
@@ -11,30 +10,32 @@ public class ItemBoxRevealUI : MonoBehaviour
 
     public void Open(Inventory inven)
     {
+        // 이전 상자의 리빌이 끝나기 전에 다시 열렸다면 남은 순번을 버린다(_cards가 갈아끼워지므로).
+        StopAllCoroutines();
+
         _cards = GetComponentsInChildren<ItemRevealCard>(true).ToList();
 
-        BoxItemSlot[] slots = inven.Slots.Cast<BoxItemSlot>().ToArray();
-
-        // 슬롯 수가 미리 배치된 카드 수보다 많을 수 있음 (예: 상자 용량이 동적으로 늘어난 경우) — 넘치는 슬롯은 리빌 연출 없이 넘어감
-        int count = Mathf.Min(slots.Length, _cards.Count);
+        // 현재 용량 밖 슬롯의 카드는 InventoryUI가 비활성으로 두어 아이콘이 이전 상자 것 그대로 남아 있다.
+        // 그대로 판정하면 아이템이 있는 줄 알고 보이지도 않는 카드가 리빌 순번을 차지하므로 보이는 칸까지만 본다.
+        // (미리 배치된 카드보다 용량이 클 수도 있어 카드 수로도 한 번 더 자른다)
+        int count = Mathf.Min(inven.CurrentCapacity, _cards.Count);
         for (int i = 0; i < count; ++i)
-        {
-            _cards[i].CheckSlotState(slots[i]);
-        }
+            _cards[i].CheckSlotState(inven.Slots[i] as BoxItemSlot);
+        for (int i = count; i < _cards.Count; ++i)
+            _cards[i].ResetCard();
 
         UIManager.GetInstance().Show(UIType.ItemBoxReveal);
-        StartCoroutine(RevealSequence());
+        StartCoroutine(RevealSequence(count));
     }
 
-    IEnumerator RevealSequence()
+    IEnumerator RevealSequence(int count)
     {
-        foreach (var card in _cards)
+        for (int i = 0; i < count; ++i)
         {
-            if (card.isFlip)
-            {
-                card.Reveal();
-                yield return new WaitForSeconds(_revealInterval);
-            }
+            if (!_cards[i].isFlip) continue;
+
+            _cards[i].Reveal();
+            yield return new WaitForSeconds(_revealInterval);
         }
     }
 }
