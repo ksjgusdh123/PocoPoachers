@@ -188,8 +188,28 @@ public class WeaponController : EquipableController
         // 해제 시점의 탄약을 저장해둬야 나중에 재장착할 때 복원할 수 있음 (파츠 장착 시 저장 로직과 동일 목적)
         RoomSync.GunAmmoSave(gun.Uid, gun.CurrentAmmo, gun.Stat.MaxMagazine);
 
+        // 지금 들고 있던 총을 해제하는 경우, SwitchWeaponRoutine의 prev 정리와 동일하게
+        // 이벤트 구독과 _currentGun 참조를 끊어줘야 한다 — 안 그러면 _currentGun이 파괴된
+        // 총을 계속 참조해 크로스헤어가 마지막 무기 상태(스프레드 등)로 멈춰 보인다.
+        bool wasActiveGun = _currentGunIndex == slotIndex;
+        if (wasActiveGun)
+        {
+            if (_crosshairUI != null) gun.OnShoot -= _crosshairUI.OnShoot;
+            if (_cameraShakeHandler != null) gun.OnShoot -= _cameraShakeHandler;
+            if (_reloadRequestedHandler != null) gun.OnReloadRequested -= _reloadRequestedHandler;
+            if (_reloadCompleteHandler != null) gun.OnReloadComplete -= _reloadCompleteHandler;
+            if (_ammoChangedHandler != null) gun.OnAmmoChanged -= _ammoChangedHandler;
+        }
+
         _mount.ApplyUnequip(slotIndex);
-        if (_currentGunIndex == slotIndex) _currentGunIndex = -1;
+
+        if (wasActiveGun)
+        {
+            _currentGunIndex = -1;
+            _currentGun = null;
+            _crosshairUI?.SetWeaponEquipped(false);
+        }
+
         OnWeaponChanged?.Invoke(slotIndex, null);
         RaiseUnequipped(slotIndex);
         RoomSync.Equip(0, slotIndex, 0);
@@ -284,6 +304,7 @@ public class WeaponController : EquipableController
             if (_crosshairUI != null)
             {
                 _currentGun.OnShoot += _crosshairUI.OnShoot;
+                _crosshairUI.SetWeaponEquipped(true);
                 _crosshairUI.UpdateBaseSpread(_currentGun.Stat, false);
                 _crosshairUI.ResetSpread();
             }

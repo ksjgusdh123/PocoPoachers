@@ -113,6 +113,7 @@ public class CrosshairUI : MonoBehaviour
     private RectTransform[] _hitMarkerLines;
     private bool _hasLastMousePosition;
     private bool _ignoreWarpDelta;
+    private bool _isWeaponEquipped;
 
     private void Awake()
     {
@@ -139,6 +140,9 @@ public class CrosshairUI : MonoBehaviour
         if (_reloadGaugeGroup != null) _reloadGaugeGroup.alpha = 0f;
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Confined;
+
+        // 무기 장착 전(스폰 직후 등)에는 십자선 없이 점만 보이게 시작한다
+        SetWeaponEquipped(false);
     }
 
     private void OnDestroy()
@@ -214,11 +218,32 @@ public class CrosshairUI : MonoBehaviour
     private void UpdateDot()
     {
         if (_dot == null) return;
+        // 무기 미장착 상태에서는 줌 여부와 무관하게 점을 항상 표시한다 (다른 십자선 요소는 숨김)
         float zoom = CameraZoom.Instance?.ZoomProgress ?? 0f;
-        float targetAlpha = zoom >= _dotThreshold ? 1f : 0f;
+        float targetAlpha = !_isWeaponEquipped || zoom >= _dotThreshold ? 1f : 0f;
         Color c = _dot.color;
         c.a = Mathf.Lerp(c.a, targetAlpha, _dotFadeSpeed * Time.deltaTime);
         _dot.color = c;
+    }
+
+    // 무기 장착 여부에 따라 십자선(4방향 라인)을 켜고 끈다. 미장착 시에는 점만 남긴다 —
+    // 두 무기 슬롯을 모두 해제했을 때 이전 무기의 스프레드/회전 상태가 그대로 남아
+    // 라인이 겹쳐 보이는 문제를 막기 위함.
+    public void SetWeaponEquipped(bool isEquipped)
+    {
+        _isWeaponEquipped = isEquipped;
+
+        if (_top != null) _top.gameObject.SetActive(isEquipped);
+        if (_bottom != null) _bottom.gameObject.SetActive(isEquipped);
+        if (_left != null) _left.gameObject.SetActive(isEquipped);
+        if (_right != null) _right.gameObject.SetActive(isEquipped);
+
+        if (!isEquipped)
+        {
+            if (_hitMarkerGroup != null) _hitMarkerGroup.alpha = 0f;
+            if (_reloadGaugeGroup != null) _reloadGaugeGroup.alpha = 0f;
+            if (_reloadGaugeRoot != null) _reloadGaugeRoot.SetActive(false);
+        }
     }
 
     public void UpdateBaseSpread(GunStatData stat, bool isAiming)
