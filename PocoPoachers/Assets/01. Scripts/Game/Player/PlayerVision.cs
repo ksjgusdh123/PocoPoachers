@@ -36,8 +36,16 @@ public class PlayerVision : MonoBehaviour
     // new Material(...)로 만든 인스턴스는 Unity 오브젝트라 GC 대상이 아니다 — 직접 Destroy해야 한다.
     private Material _lineMaterial;
 
+    private Camera _mainCam;
+
+    // 캐릭터 몸통 회전(transform.forward) 대신 크로스헤어 방향을 시야 기준으로 쓴다.
+    // FogOfWarRenderer.GetCrosshairForward와 같은 방식 — 구르기 등으로 몸이 홱 틀어져도 시야는 영향받지 않는다.
+    private Vector3 _visionForward = Vector3.forward;
+
     private void Awake()
     {
+        _mainCam = Camera.main;
+
         if (_showVision)
             InitLineRenderer();
     }
@@ -55,6 +63,9 @@ public class PlayerVision : MonoBehaviour
 
     private void Update()
     {
+        // Scan()도 이 값을 쓰므로 시야 시각화 여부와 무관하게 매 프레임 갱신한다.
+        _visionForward = GetCrosshairForward(transform.position + Vector3.up * _eyeHeight);
+
         if (_showVision && _lineRenderer.enabled)
             UpdateVisionLine();
     }
@@ -97,7 +108,7 @@ public class PlayerVision : MonoBehaviour
         for (int i = 0; i <= segments; i++)
         {
             float angle = -half + _visionConfig.fovAngle / segments * i;
-            Vector3 dir = Quaternion.Euler(0, angle, 0) * transform.forward;
+            Vector3 dir = Quaternion.Euler(0, angle, 0) * _visionForward;
 
             Vector3 endpoint = Physics.Raycast(eyePos, dir, out RaycastHit hit, EffectiveRange, _wallLayer)
                 ? hit.point
@@ -183,7 +194,23 @@ public class PlayerVision : MonoBehaviour
     private bool IsInFovAngle(Transform target)
     {
         Vector3 dir = (target.position - transform.position).normalized;
-        return Vector3.Angle(transform.forward, dir) <= _visionConfig.fovAngle * 0.5f;
+        return Vector3.Angle(_visionForward, dir) <= _visionConfig.fovAngle * 0.5f;
+    }
+
+    // 크로스헤어 화면 위치를 눈높이 평면에 투영해 시야 기준 방향을 구한다.
+    // FogOfWarRenderer.GetCrosshairForward와 같은 방식.
+    private Vector3 GetCrosshairForward(Vector3 origin)
+    {
+        if (_mainCam == null || CrosshairUI.Instance == null) return _visionForward;
+
+        Ray ray = _mainCam.ScreenPointToRay(CrosshairUI.Instance.ScreenPosition);
+        Plane plane = new Plane(Vector3.up, new Vector3(0f, origin.y, 0f));
+        if (!plane.Raycast(ray, out float distance)) return _visionForward;
+
+        Vector3 dir = ray.GetPoint(distance) - origin;
+        dir.y = 0f;
+
+        return dir.sqrMagnitude < 0.0001f ? _visionForward : dir.normalized;
     }
 
     private bool HasLineOfSight(GameObject target)
@@ -224,8 +251,8 @@ public class PlayerVision : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, range);
 
         Gizmos.color = Color.cyan;
-        Vector3 leftDir  = Quaternion.Euler(0, -half, 0) * transform.forward;
-        Vector3 rightDir = Quaternion.Euler(0,  half, 0) * transform.forward;
+        Vector3 leftDir  = Quaternion.Euler(0, -half, 0) * _visionForward;
+        Vector3 rightDir = Quaternion.Euler(0,  half, 0) * _visionForward;
         Gizmos.DrawRay(eyePos, leftDir  * range);
         Gizmos.DrawRay(eyePos, rightDir * range);
 
@@ -233,7 +260,7 @@ public class PlayerVision : MonoBehaviour
         for (int i = 1; i <= 20; i++)
         {
             float angle = -half + _visionConfig.fovAngle / 20 * i;
-            Vector3 next = eyePos + Quaternion.Euler(0, angle, 0) * transform.forward * range;
+            Vector3 next = eyePos + Quaternion.Euler(0, angle, 0) * _visionForward * range;
             Gizmos.DrawLine(prev, next);
             prev = next;
         }
