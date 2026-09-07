@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -13,15 +13,15 @@ public class TerrainSplatPainterWindow : EditorWindow
     [SerializeField] TerrainLayer rock;
 
     // 모래 A/B 블렌드 — 값이 작을수록 얼룩이 커진다(월드 미터 기준 주파수)
-    [SerializeField] float blendNoiseScale = 0.004f;
-    [SerializeField] float blendContrast = 1.6f;
-    [SerializeField] float sandBAmount = 0.3f;
+    [SerializeField] float blendNoiseScale = 0.005f;
+    [SerializeField] float blendContrast = 1.3f;
+    [SerializeField] float sandBAmount = 0.35f;
 
-    [SerializeField] float gravelNoiseScale = 0.011f;
-    [SerializeField] float gravelAmount = 0.3f;
+    [SerializeField] float gravelNoiseScale = 0.007f;
+    [SerializeField] float gravelAmount = 0.2f;
 
-    [SerializeField] float rockSlopeStart = 22f;
-    [SerializeField] float rockSlopeFull = 42f;
+    [SerializeField] float rockSlopeStart = 46f;
+    [SerializeField] float rockSlopeFull = 58f;
 
     [SerializeField] int seed = 1234;
     [SerializeField] bool onlySelected;
@@ -80,6 +80,10 @@ public class TerrainSplatPainterWindow : EditorWindow
         }
 
         EditorGUILayout.Space();
+        if (GUILayout.Button("사구 지형 프리셋"))
+            ApplyDunePreset();
+
+        EditorGUILayout.Space();
         seed = EditorGUILayout.IntField("시드", seed);
         onlySelected = EditorGUILayout.Toggle("선택한 Terrain만", onlySelected);
 
@@ -96,6 +100,19 @@ public class TerrainSplatPainterWindow : EditorWindow
             MessageType.Warning);
 
         EditorGUILayout.EndScrollView();
+    }
+
+    // 사구지대용 값. 풍하면이 안식각 33도라 암반 시작 각도를 그보다 충분히 높게 잡지 않으면
+    // 모래 미끄럼면이 전부 바위로 칠해진다.
+    void ApplyDunePreset()
+    {
+        blendNoiseScale = 0.005f;
+        blendContrast = 1.3f;
+        sandBAmount = 0.35f;
+        gravelNoiseScale = 0.007f;
+        gravelAmount = 0.2f;
+        rockSlopeStart = 46f;
+        rockSlopeFull = 58f;
     }
 
     // 슬라이더 값이 작을수록 얼룩이 커지는 역방향이라 실제 크기를 같이 보여준다
