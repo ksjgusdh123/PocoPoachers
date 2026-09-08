@@ -9,6 +9,8 @@ using UnityEngine;
 public class MinimapCaptureWindow : EditorWindow
 {
     const string GeneratedAssetDir = "Assets/_Generated/Minimap";
+    const string ResourcesDir = "Assets/Resources";
+    const string CatalogAssetPath = ResourcesDir + "/" + MinimapCatalog.ResourcePath + ".asset";
 
     Terrain targetTerrain;
     int resolution = 1024;
@@ -133,6 +135,7 @@ public class MinimapCaptureWindow : EditorWindow
         DestroyImmediate(tex);
 
         AssetDatabase.Refresh();
+        EnsureSpriteImport(path);
 
         // 런타임에서 월드 좌표 → 미니맵 좌표 변환에 쓸 촬영 범위 정보를 텍스처와 함께 저장한다
         string dataPath = $"{GeneratedAssetDir}/{sceneName}_Minimap.asset";
@@ -142,13 +145,46 @@ public class MinimapCaptureWindow : EditorWindow
             data = ScriptableObject.CreateInstance<MinimapCaptureData>();
             AssetDatabase.CreateAsset(data, dataPath);
         }
+        data.SceneName = sceneName;
         data.MinimapTexture = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+        data.MinimapSprite = AssetDatabase.LoadAssetAtPath<Sprite>(path);
         data.WorldCenter = center;
         data.WorldSize = orthoSize * 2f;
         EditorUtility.SetDirty(data);
+
+        RegisterToCatalog(data);
         AssetDatabase.SaveAssets();
 
         Debug.Log($"[MinimapCapture] 저장됨: {path}, {dataPath}");
         Selection.activeObject = data;
+    }
+
+    // Image에 물리려면 Sprite가 필요한데, 기본 Texture로 임포트되면 Sprite 서브에셋이 생기지 않는다.
+    static void EnsureSpriteImport(string path)
+    {
+        if (AssetImporter.GetAtPath(path) is not TextureImporter importer) return;
+        if (importer.textureType == TextureImporterType.Sprite) return;
+
+        importer.textureType = TextureImporterType.Sprite;
+        importer.SaveAndReimport();
+    }
+
+    // 런타임에 MinimapCatalog가 씬 이름으로 찾을 수 있도록 Resources의 목록에 등록한다.
+    static void RegisterToCatalog(MinimapCaptureData data)
+    {
+        if (!Directory.Exists(ResourcesDir))
+        {
+            Directory.CreateDirectory(ResourcesDir);
+            AssetDatabase.Refresh();
+        }
+
+        var catalog = AssetDatabase.LoadAssetAtPath<MinimapCatalog>(CatalogAssetPath);
+        if (catalog == null)
+        {
+            catalog = ScriptableObject.CreateInstance<MinimapCatalog>();
+            AssetDatabase.CreateAsset(catalog, CatalogAssetPath);
+        }
+
+        if (catalog.Register(data)) EditorUtility.SetDirty(catalog);
     }
 }

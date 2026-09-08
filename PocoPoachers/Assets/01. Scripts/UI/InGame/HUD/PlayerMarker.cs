@@ -23,6 +23,8 @@ public class PlayerMarker : MonoBehaviour
         RefreshName();
     }
 
+    public void SetMapData(MinimapCaptureData mapData) => _mapData = mapData;
+
     // 명부는 마커보다 늦게 도착할 수 있다 (팀원 캐릭터가 이동 패킷으로 먼저 생김)
     private void OnEnable() => PlayerNameRegistry.OnChanged += RefreshName;
     private void OnDisable() => PlayerNameRegistry.OnChanged -= RefreshName;
