@@ -1,10 +1,8 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyItemBoxDropper : MonoBehaviour
 {
-    [SerializeField, Range(1, 8)] private int _minItemCount = 1;
-    [SerializeField, Range(1, 8)] private int _maxItemCount = 4;
     [SerializeField, Range(1, 30)] private int _minAmmoCount = 20;
     [SerializeField, Range(1, 30)] private int _maxAmmoCount = 30;
     [SerializeField] private LayerMask _groundLayer;
@@ -94,13 +92,37 @@ public class EnemyItemBoxDropper : MonoBehaviour
 
     private void CollectRandomItems(List<int> itemIds, List<int> itemCounts, List<int> itemUids)
     {
-        int itemCount = Random.Range(_minItemCount, _maxItemCount + 1);
-        var rolledIds = ItemSpawner.Roll(itemCount);
-        foreach (var id in rolledIds)
+        var enemy = _stat as EnemyStat;
+        var data = enemy != null ? EnemyDropTable.Instance.Get(enemy.EnemyId) : null;
+        if (data == null) return;
+        try
         {
-            itemIds.Add(id);
-            itemCounts.Add(1);
-            itemUids.Add(ItemSpawner.AssignItemUid(id));
+            var rules = EnemyDropRules.Parse(data.ItemIds, data.DropChances, data.MinCounts, data.MaxCounts);
+            for (int i = 0; i < rules.ids.Length; i++)
+            {
+                var item = ItemTable.Instance.Get(rules.ids[i]);
+                if (item == null)
+                {
+                    Debug.LogWarning($"[EnemyItemBoxDropper] 없는 아이템 ID: {rules.ids[i]}");
+                    continue;
+                }
+                float chance = rules.chances[i];
+                if (chance <= 0f || (chance < 1f && Random.value >= chance)) continue;
+                int remaining = Random.Range(rules.mins[i], rules.maxs[i] + 1);
+                // 장비는 개별 UID로, 스택 아이템은 최대 스택 크기로 나누어 담는다.
+                while (remaining > 0)
+                {
+                    int count = Mathf.Min(remaining, Mathf.Max(1, item.MaxStack));
+                    itemIds.Add(item.Id);
+                    itemCounts.Add(count);
+                    itemUids.Add(ItemSpawner.AssignItemUid(item.Id));
+                    remaining -= count;
+                }
+            }
+        }
+        catch (System.FormatException ex)
+        {
+            Debug.LogError($"[EnemyItemBoxDropper] 적 {enemy.EnemyId} 드롭 설정 오류: {ex.Message}");
         }
     }
 

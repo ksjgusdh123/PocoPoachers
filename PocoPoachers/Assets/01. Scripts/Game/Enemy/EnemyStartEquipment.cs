@@ -1,59 +1,51 @@
+using System.Collections.Generic;
 using UnityEngine;
 
-// 씬에 직접 배치한 적에게 시작 장비를 입힌다.
-// 적의 장비는 프리팹이 아니라 EnemySpawner가 스폰 직후 코드로 입혀주는 구조라,
-// 스포너를 거치지 않고 씬에 놓인 적은 맨손으로 남는다. 그 몫을 대신하는 컴포넌트.
-//
-// EnemySpawner.SpawnAll과 동일하게 호스트에서만 장착한다(솔로 플레이도 호스트다).
+// 스포너와 씬에 직접 배치한 적 모두 CSV의 장비 규칙을 사용한다.
 public class EnemyStartEquipment : MonoBehaviour
 {
-    [Tooltip("장착할 무기의 Item ID (200번대). 0이면 안 들림")]
-    [SerializeField] private int _gunItemId;
+    private bool _equipped;
 
-    [Tooltip("장착할 헬멧의 Item ID (400번대). 0이면 안 씌움")]
-    [SerializeField] private int _helmetItemId;
+    private void Start() => EquipFromTable();
 
-    private void Start()
+    public void EquipFromTable()
     {
-        if (!RoomManager.IsHost) return;
+        if (!RoomManager.IsHost || _equipped) return;
+        var stat = GetComponent<EnemyStat>();
+        var data = stat != null ? EnemyTable.Instance.Get(stat.EnemyId) : null;
+        if (data == null)
+        {
+            Debug.LogWarning($"[EnemyStartEquipment] 적 CSV 데이터가 없습니다 ({name}).");
+            return;
+        }
+        _equipped = true;
 
-        EquipGun();
-        EquipHelmet();
+        int gunId = PickItem(data.GunItemIds, ItemType.Weapon, data.Id);
+        if (gunId != 0) GetComponent<AIWeaponController>()?.EquipGun(gunId);
+
+        // 확률 0에서는 절대 장착하지 않고, 1에서는 항상 장착한다.
+        float chance = Mathf.Clamp01(data.HelmetSpawnChance);
+        if (chance <= 0f || (chance < 1f && Random.value >= chance)) return;
+        int helmetId = PickItem(data.HelmetItemIds, ItemType.Helmet, data.Id);
+        if (helmetId != 0)
+            GetComponent<ArmorController>()?.Equip(ItemTable.Instance.Get(helmetId), 0,
+                ItemSpawner.AssignItemUid(helmetId));
     }
 
-    private void EquipGun()
+    private static int PickItem(string candidates, ItemType type, int enemyId)
     {
-        if (_gunItemId == 0) return;
-
-        var weaponController = GetComponent<AIWeaponController>();
-        if (weaponController == null)
+        if (string.IsNullOrWhiteSpace(candidates)) return 0;
+        var validIds = new List<int>();
+        foreach (string token in candidates.Split(';'))
         {
-            Debug.LogWarning($"[EnemyStartEquipment] AIWeaponController가 없어 무기를 못 들립니다 ({name}).");
-            return;
+            if (string.IsNullOrWhiteSpace(token)) continue;
+            if (!int.TryParse(token.Trim(), out int id) || ItemTable.Instance.Get(id)?.Type != type)
+            {
+                Debug.LogWarning($"[EnemyStartEquipment] 잘못된 장비 ID: 적={enemyId}, 종류={type}, 값={token}");
+                continue;
+            }
+            if (!validIds.Contains(id)) validIds.Add(id);
         }
-
-        weaponController.EquipGun(_gunItemId);
-    }
-
-    private void EquipHelmet()
-    {
-        if (_helmetItemId == 0) return;
-
-        var armorController = GetComponent<ArmorController>();
-        if (armorController == null)
-        {
-            Debug.LogWarning($"[EnemyStartEquipment] ArmorController가 없어 헬멧을 못 씌웁니다 ({name}).");
-            return;
-        }
-
-        var itemData = ItemTable.Instance.Get(_helmetItemId);
-        if (itemData == null)
-        {
-            Debug.LogWarning($"[EnemyStartEquipment] 아이템 테이블에 없는 헬멧 ID입니다 (id={_helmetItemId}, {name}).");
-            return;
-        }
-
-        // uid는 강화/내구도를 개체별로 추적하는 값이라 0으로 두면 안 된다
-        armorController.Equip(itemData, 0, ItemSpawner.AssignItemUid(itemData.id));
+        return validIds.Count > 0 ? validIds[Random.Range(0, validIds.Count)] : 0;
     }
 }

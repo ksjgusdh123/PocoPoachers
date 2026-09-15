@@ -73,7 +73,11 @@ public class TableGeneratorTool
         (headers, rows) = StripDesignerColumns(headers, rows);
         if (headers.Length == 0) return;
 
+        if (fileName == "enemy_drop") ValidateEnemyDrops(csvPath, headers, rows);
         var types = InferTypes(headers, rows);
+        if (fileName == "enemy_drop")
+            foreach (string column in new[] { "item_ids", "drop_chances", "min_counts", "max_counts" })
+                types[Array.IndexOf(headers, column)] = "string";
         var enumColumns = BuildEnumColumns(className, headers, rows);
         foreach (var pair in enumColumns)
             types[pair.Key] = pair.Value.Name;
@@ -84,6 +88,38 @@ public class TableGeneratorTool
         WriteJson(fileName, headers, types, rows, enumColumns, clientJsonOut);
 
         Debug.Log($"[{ToolName}] 변환 완료: {Path.GetFileName(csvPath)}");
+    }
+
+    private static void ValidateEnemyDrops(string path, string[] headers, List<string[]> rows)
+    {
+        string[] required = { "enemy_id", "item_ids", "drop_chances", "min_counts", "max_counts" };
+        foreach (var column in required)
+            if (Array.IndexOf(headers, column) < 0) throw new FormatException($"enemy_drop.csv: {column} 컬럼이 없습니다.");
+        var directory = Path.GetDirectoryName(path);
+        HashSet<int> ReadIds(string name)
+        {
+            var (sourceHeaders, sourceRows) = ReadCsv(Path.Combine(directory, name + ".csv"));
+            int index = Array.IndexOf(sourceHeaders, "id");
+            return new HashSet<int>(sourceRows.Select(row => int.Parse(row[index])));
+        }
+        var enemyIds = ReadIds("enemy");
+        var itemIds = ReadIds("item");
+        var seen = new HashSet<int>();
+        for (int i = 0; i < rows.Count; i++)
+        {
+            try
+            {
+                var row = rows[i];
+                if (row.Length != headers.Length) throw new FormatException("컬럼 개수가 다릅니다.");
+                string Value(string column) => row[Array.IndexOf(headers, column)];
+                if (!int.TryParse(Value("enemy_id"), out int id) || !enemyIds.Contains(id) || !seen.Add(id))
+                    throw new FormatException("적 ID가 없거나 중복되었습니다.");
+                var rules = EnemyDropRules.Parse(Value("item_ids"), Value("drop_chances"), Value("min_counts"), Value("max_counts"));
+                foreach (int itemId in rules.ids)
+                    if (!itemIds.Contains(itemId)) throw new FormatException($"없는 아이템 ID: {itemId}");
+            }
+            catch (FormatException ex) { throw new FormatException($"enemy_drop.csv {i + 2}행: {ex.Message}"); }
+        }
     }
 
     // 헤더가 '_'로 시작하는 컬럼은 기획용 메모로 간주하고 C#/JSON 생성에서 제외한다.
@@ -156,6 +192,12 @@ public class TableGeneratorTool
         var types = new string[headers.Length];
         for (int col = 0; col < headers.Length; col++)
         {
+            // ID 후보 목록은 값이 하나만 있어도 문자열 타입을 유지한다.
+            if (headers[col].EndsWith("_item_ids", StringComparison.OrdinalIgnoreCase))
+            {
+                types[col] = "string";
+                continue;
+            }
             bool allInt = true, allFloat = true;
             foreach (var row in rows)
             {
@@ -223,6 +265,7 @@ public class TableGeneratorTool
     private static void WriteClientCs(string outDir, string fileName, string className, string[] headers, string[] types)
     {
         int keyIdx = Array.FindIndex(types, t => t == "int");
+        if (fileName == "enemy_drop") keyIdx = Array.IndexOf(headers, "enemy_id");
         string keyType = keyIdx >= 0 ? types[keyIdx] : "string";
         string keyField = keyIdx >= 0 ? headers[keyIdx] : headers[0];
         string resPath = $"JsonData/{fileName}";  // Resources/JsonData/{fileName}

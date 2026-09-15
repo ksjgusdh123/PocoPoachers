@@ -11,7 +11,7 @@ Unity 공식 **Behavior Graph**(`Unity.Behavior`, `BehaviorGraphAgent`) 패키�
 
 | 클래스 | 역할 |
 |--------|------|
-| `EnemyStat`(`StatBase` 상속) | `EnemyTable`에서 HP·방어율·`NavMeshAgent.speed`만 적용 |
+| `EnemyStat`(`StatBase` 상속) | 적 ID의 HP·방어율·이동속도·공격 배율 적용. 프리팹의 EnemyStat ID로 초기화 |
 | `EnemySpawner` | 씬 시작 시 1회, NavMesh 랜덤 위치에 배열 스폰. 웨이브·재스폰 없음 (호스트만) |
 | `EnemyNetSync` | 스폰/이동(0.1초 간격, 게스트 있을 때만)/피격/사망 동기화, 킬 카운트 전송 |
 | `EnemyItemBoxDropper` | 사망 시 필드 아이템 박스 스폰 |
@@ -74,8 +74,28 @@ Unity 공식 **Behavior Graph**(`Unity.Behavior`, `BehaviorGraphAgent`) 패키�
 | 1 | 일반 |
 | 2 | 정예 |
 | 3 | 보스 |
+| 4–9 | 기존 씬의 프리팹·장비 조합을 보존한 일반 적 변형 |
+| 999 | 튜토리얼 |
 
-> **ID 마이그레이션 TODO:** 다른 테이블은 도메인별 1000단위 블록을 쓰는데 `enemy.csv`는 여전히 `1,2,3` — [datatable/id-ranges.md](../datatable/id-ranges.md).
+> **ID 마이그레이션 TODO:** 다른 테이블은 도메인별 1000단위 블록을 쓰는데 `enemy.csv`는 기존 소규모 ID 체계 — [datatable/id-ranges.md](../datatable/id-ranges.md).
+
+## 적 장비 설정
+
+`enemy.csv`의 `gun_item_ids`·`helmet_item_ids`는 세미콜론으로 구분한다(예: `201;203`). 하나면 고정, 여러 개면 균등 랜덤, 빈 칸이면 미장착이다. `helmet_spawn_chance`는 0~1이다. 잘못된 아이템 ID나 종류는 경고 후 후보에서 제외한다. CSV 수정 후 **Tools → Generator → Tables**를 실행한다.
+
+`EnemySpawner`에는 프리팹·수량과 배치/순찰 설정만 지정한다. 적 ID는 프리팹의 `EnemyStat.EnemyId`에서만 설정한다. 같은 ID에는 같은 프리팹을 사용해야 게스트에서도 동일한 외형으로 생성된다. `EnemyStartEquipment`는 스폰 직후 또는 직접 배치한 적의 Start에서 호스트만 한 번 장착한다.
+
+| ID | 기존 배치/프리팹 | 무기 후보 | 헬멧 확률 |
+|---|---|---|---|
+| 4 | 사막 HoneybadgerAI | 201;203 | 0.389 |
+| 5 | 사막 SnakeAI | 202;205 | 0.515 |
+| 6 | HoneybadgerAI | 이전 전체 무기 목록 | 0.5 |
+| 7 | SnakeAI | 이전 전체 무기 목록 | 1 |
+| 8 | TestRetreatAI | 이전 전체 무기 목록 | 1 |
+| 9 | TestRetreatAI | 이전 전체 무기 목록 | 0.5 |
+| 999 | TutorialAI | 201 | 0 |
+
+전체 무기/헬멧 랜덤 설정은 마이그레이션 당시의 아이템 ID 목록으로 고정했다. 새 아이템은 CSV 후보에 추가해야 등장한다.
 
 ## 전투 규칙
 
@@ -90,3 +110,18 @@ Unity 공식 **Behavior Graph**(`Unity.Behavior`, `BehaviorGraphAgent`) 패키�
 `H_EnemySpawn`, `H_EnemyMove`, `H_EnemyHit`, `H_EnemyDie`, `H_EnemySpeak`, `H_EnemyShoot` — [multiplayer.md](multiplayer.md) 참고.
 
 늦게 접속한 게스트는 `EnemyNetSync.SendAllToGuest` → `RoomSync.EnemySpawnToGuest`로 전체 적 스냅샷(타입/좌표/HP/장비)을 받는다.
+
+## 추가 드롭 (`enemy_drop.csv`)
+
+장착 무기·헬멧·탄약은 기존대로 드롭한다. 추가 아이템은 몬스터별 한 행으로 설정하며, 기존 `ItemSpawner.Roll`의 전체 후보 추첨은 사용하지 않는다.
+
+| 컬럼 | 규칙 |
+|---|---|
+| `enemy_id` | 프리팹 EnemyStat의 적 ID, 중복 불가 |
+| `item_ids` | `101;102;201`처럼 아이템 ID 나열 |
+| `drop_chances` | `0.5;0.2;0.01`처럼 독립 확률, 각 값 0~1 |
+| `min_counts` / `max_counts` | `1;1;1` / `3;2;1`처럼 당첨 시 수량 범위 |
+
+같은 위치의 값끼리 연결하며 네 목록의 길이는 같아야 한다. 네 칸 모두 비어 있거나 해당 적 행이 없으면 추가 드롭은 없다. 초기 데이터는 현재 적 ID별 빈 행으로 제공한다. 장비 여러 개는 개별 UID를 발급하고 스택 아이템은 최대 스택 단위로 나눈다.
+
+CSV는 UTF-8 BOM으로 저장하고 **Tools → Generator → Tables**를 실행한다. 생성기는 목록 길이·중복 ID·없는 적/아이템·확률 및 수량 범위를 검증한다. 오류가 있으면 해당 드롭 테이블을 새로 생성하지 않는다.

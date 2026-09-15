@@ -14,7 +14,10 @@ public partial class EnemyData
     public int fov_angle;
     public int attack_range;
     public float attack_power_multiplier;
-    public float fire_delay_multiplier;
+    public int fire_delay_multiplier;
+    public string gun_item_ids = "";
+    public string helmet_item_ids = "";
+    public float helmet_spawn_chance;
 
     public int Id { get => id; set => id = value; }
 
@@ -37,6 +40,12 @@ public partial class EnemyData
 
     public float AttackPowerMultiplier { get => attack_power_multiplier; set => attack_power_multiplier = value; }
 
-    public float FireDelayMultiplier { get => fire_delay_multiplier; set => fire_delay_multiplier = value; }
+    public int FireDelayMultiplier { get => fire_delay_multiplier; set => fire_delay_multiplier = value; }
+
+    public string GunItemIds { get => gun_item_ids; set => gun_item_ids = value; }
+
+    public string HelmetItemIds { get => helmet_item_ids; set => helmet_item_ids = value; }
+
+    public float HelmetSpawnChance { get => helmet_spawn_chance; set => helmet_spawn_chance = value; }
 
 }
