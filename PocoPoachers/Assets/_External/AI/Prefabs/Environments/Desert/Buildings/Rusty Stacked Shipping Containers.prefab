@@ -64,6 +64,10 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 484368c174a4d254385d33221290b432, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: ce40f8a3ef6e8cb4480256ea1b88d51a, type: 2}
     - target: {fileID: 919132149155446097, guid: 484368c174a4d254385d33221290b432, type: 3}
       propertyPath: m_Name
       value: Rusty Stacked Shipping Containers
@@ -74,15 +78,15 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 484368c174a4d254385d33221290b432, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 3286311953178517193}
+      addedObject: {fileID: 640222487799494594}
   m_SourcePrefab: {fileID: 100100000, guid: 484368c174a4d254385d33221290b432, type: 3}
 --- !u!1 &5997186824678764055 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 484368c174a4d254385d33221290b432, type: 3}
   m_PrefabInstance: {fileID: 6916157341329806150}
   m_PrefabAsset: {fileID: 0}
---- !u!64 &3286311953178517193
-MeshCollider:
+--- !u!65 &640222487799494594
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -99,7 +103,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 5461320835613783329, guid: 484368c174a4d254385d33221290b432, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 0.01, y: 0.004589841, z: 0.0064257816}
+  m_Center: {x: 0, y: 0, z: 0.000009770159}

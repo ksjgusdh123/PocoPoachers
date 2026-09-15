@@ -64,6 +64,10 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: e576bc6b89d23164b8289f0e8e77a262, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 8bf3fc52edef59246b5847205807ab15, type: 2}
     - target: {fileID: 919132149155446097, guid: e576bc6b89d23164b8289f0e8e77a262, type: 3}
       propertyPath: m_Name
       value: Rustheap Monument
@@ -74,15 +78,15 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: e576bc6b89d23164b8289f0e8e77a262, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 1396671724552688260}
+      addedObject: {fileID: 1120780643638524300}
   m_SourcePrefab: {fileID: 100100000, guid: e576bc6b89d23164b8289f0e8e77a262, type: 3}
 --- !u!1 &8595951386499333484 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: e576bc6b89d23164b8289f0e8e77a262, type: 3}
   m_PrefabInstance: {fileID: 8902382741587001405}
   m_PrefabAsset: {fileID: 0}
---- !u!64 &1396671724552688260
-MeshCollider:
+--- !u!65 &1120780643638524300
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -99,7 +103,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 5461320835613783329, guid: e576bc6b89d23164b8289f0e8e77a262, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 0.01, y: 0.010000003, z: 0.0071093813}
+  m_Center: {x: 0, y: 0, z: 0}

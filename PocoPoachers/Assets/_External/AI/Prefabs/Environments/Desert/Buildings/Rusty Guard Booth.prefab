@@ -64,6 +64,10 @@ PrefabInstance:
       propertyPath: m_ConstrainProportionsScale
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: 81c8878838d304044a94b311d72880a8, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 9b1e9f777daa12d4f915e881033c5c0a, type: 2}
     - target: {fileID: 919132149155446097, guid: 81c8878838d304044a94b311d72880a8, type: 3}
       propertyPath: m_Name
       value: Rusty Guard Booth
@@ -74,15 +78,18 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 81c8878838d304044a94b311d72880a8, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 4397139035225599238}
+      addedObject: {fileID: 6765472636724063246}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 81c8878838d304044a94b311d72880a8, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3134070344910088726}
   m_SourcePrefab: {fileID: 100100000, guid: 81c8878838d304044a94b311d72880a8, type: 3}
 --- !u!1 &610806267797339023 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 81c8878838d304044a94b311d72880a8, type: 3}
   m_PrefabInstance: {fileID: 340985775642986206}
   m_PrefabAsset: {fileID: 0}
---- !u!64 &4397139035225599238
-MeshCollider:
+--- !u!65 &6765472636724063246
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -99,7 +106,27 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 5461320835613783329, guid: 81c8878838d304044a94b311d72880a8, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 0.0056634727, y: 0.004164529, z: 0.007450209}
+  m_Center: {x: 0.00015683961, y: -0.00084793975, z: -0.0012748583}
+--- !u!65 &3134070344910088726
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 610806267797339023}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.0019600098, y: 0.0019731272, z: 0.009999992}
+  m_Center: {x: -0.0022426706, y: 0.002255635, z: -2.88152e-18}
