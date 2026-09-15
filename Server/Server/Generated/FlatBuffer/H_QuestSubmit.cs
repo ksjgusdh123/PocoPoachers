@@ -19,22 +19,30 @@ public struct H_QuestSubmit : IFlatbufferObject
   public int QuestId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int ItemId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
   public int Amount { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public long RequestId { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetLong(o + __p.bb_pos) : (long)0; } }
+  public int PlayerId { get { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<H_QuestSubmit> CreateH_QuestSubmit(FlatBufferBuilder builder,
       int quest_id = 0,
       int item_id = 0,
-      int amount = 0) {
-    builder.StartTable(3);
+      int amount = 0,
+      long request_id = 0,
+      int player_id = 0) {
+    builder.StartTable(5);
+    H_QuestSubmit.AddRequestId(builder, request_id);
+    H_QuestSubmit.AddPlayerId(builder, player_id);
     H_QuestSubmit.AddAmount(builder, amount);
     H_QuestSubmit.AddItemId(builder, item_id);
     H_QuestSubmit.AddQuestId(builder, quest_id);
     return H_QuestSubmit.EndH_QuestSubmit(builder);
   }
 
-  public static void StartH_QuestSubmit(FlatBufferBuilder builder) { builder.StartTable(3); }
+  public static void StartH_QuestSubmit(FlatBufferBuilder builder) { builder.StartTable(5); }
   public static void AddQuestId(FlatBufferBuilder builder, int questId) { builder.AddInt(0, questId, 0); }
   public static void AddItemId(FlatBufferBuilder builder, int itemId) { builder.AddInt(1, itemId, 0); }
   public static void AddAmount(FlatBufferBuilder builder, int amount) { builder.AddInt(2, amount, 0); }
+  public static void AddRequestId(FlatBufferBuilder builder, long requestId) { builder.AddLong(3, requestId, 0); }
+  public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(4, playerId, 0); }
   public static Offset<H_QuestSubmit> EndH_QuestSubmit(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_QuestSubmit>(o);
@@ -48,6 +56,8 @@ public struct H_QuestSubmit : IFlatbufferObject
     _o.QuestId = this.QuestId;
     _o.ItemId = this.ItemId;
     _o.Amount = this.Amount;
+    _o.RequestId = this.RequestId;
+    _o.PlayerId = this.PlayerId;
   }
   public static Offset<H_QuestSubmit> Pack(FlatBufferBuilder builder, H_QuestSubmitT _o) {
     if (_o == null) return default(Offset<H_QuestSubmit>);
@@ -55,7 +65,9 @@ public struct H_QuestSubmit : IFlatbufferObject
       builder,
       _o.QuestId,
       _o.ItemId,
-      _o.Amount);
+      _o.Amount,
+      _o.RequestId,
+      _o.PlayerId);
   }
 }
 
@@ -64,11 +76,15 @@ public class H_QuestSubmitT
   public int QuestId { get; set; }
   public int ItemId { get; set; }
   public int Amount { get; set; }
+  public long RequestId { get; set; }
+  public int PlayerId { get; set; }
 
   public H_QuestSubmitT() {
     this.QuestId = 0;
     this.ItemId = 0;
     this.Amount = 0;
+    this.RequestId = 0;
+    this.PlayerId = 0;
   }
 }
 
@@ -81,6 +97,8 @@ static public class H_QuestSubmitVerify
       && verifier.VerifyField(tablePos, 4 /*QuestId*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 6 /*ItemId*/, 4 /*int*/, 4, false)
       && verifier.VerifyField(tablePos, 8 /*Amount*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*RequestId*/, 8 /*long*/, 8, false)
+      && verifier.VerifyField(tablePos, 12 /*PlayerId*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

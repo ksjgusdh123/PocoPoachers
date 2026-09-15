@@ -13,6 +13,8 @@ public partial class QuestData
     public string goal_item_counts = "";
     public string reward_item_ids = "";
     public string reward_item_counts = "";
+    public ProgressMode progress_mode;
+    public string prerequisite_quest_ids = "";
 
     public int Id { get => id; set => id = value; }
 
@@ -32,5 +34,9 @@ public partial class QuestData
     public string RewardItemIds { get => reward_item_ids; set => reward_item_ids = value; }
 
     public string RewardItemCounts { get => reward_item_counts; set => reward_item_counts = value; }
+
+    public ProgressMode ProgressMode { get => progress_mode; set => progress_mode = value; }
+
+    public string PrerequisiteQuestIds { get => prerequisite_quest_ids; set => prerequisite_quest_ids = value; }
 
 }

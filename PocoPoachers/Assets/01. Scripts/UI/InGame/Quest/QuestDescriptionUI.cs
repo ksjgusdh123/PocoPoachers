@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -54,13 +54,31 @@ public class QuestDescriptionUI : MonoBehaviour
 
         _currentQuest = data;
 
-        if (_questNameText != null) _questNameText.text = data.QuestName;
+        if (_questNameText != null) _questNameText.text = $"[{QuestManager.GetModeLabel(data.Id)}] {data.QuestName}";
         if (_questNpcNameText != null) _questNpcNameText.text = data.NpcName;
-        if (_questDescriptionText != null) _questDescriptionText.text = data.Description;
+        RefreshDescription();
         if (_questRewardText != null) _questRewardText.text = FormatItemLines(data.RewardItems);
 
         RefreshGoalText();
         RefreshActionButton();
+    }
+
+    private void RefreshDescription()
+    {
+        if (_questDescriptionText == null || _currentQuest == null) return;
+        var text = new StringBuilder(_currentQuest.Description);
+        if (!string.IsNullOrWhiteSpace(_currentQuest.PrerequisiteQuestIds))
+        {
+            text.Append("\n\n선행 퀘스트 (모두 완료 필요)");
+            foreach (string token in _currentQuest.PrerequisiteQuestIds.Split(';'))
+            {
+                if (!int.TryParse(token.Trim(), out int id)) continue;
+                var prerequisite = QuestTable.Instance.Get(id);
+                string status = QuestManager.GetState(id) == QuestState.Completed ? "완료" : "미완료";
+                text.Append($"\n- {prerequisite?.QuestName ?? token} [{status}]");
+            }
+        }
+        _questDescriptionText.text = text.ToString();
     }
 
     public void Clear()
@@ -78,7 +96,8 @@ public class QuestDescriptionUI : MonoBehaviour
 
     private void HandleQuestChanged(int questId, QuestState state)
     {
-        if (_currentQuest == null || _currentQuest.Id != questId) return;
+        if (_currentQuest == null) return;
+        RefreshDescription();
         RefreshActionButton();
     }
 
@@ -173,6 +192,18 @@ public class QuestDescriptionUI : MonoBehaviour
         return sb.Length > 0 ? sb.ToString() : "-";
     }
 
+    // QuestManager가 보유 중인 지급 대기량을 로컬 인벤토리에 넣고 실제 지급된 수량을 돌려준다.
+    public static int TryGiveItem(int itemId, int count)
+    {
+        if (count <= 0) return 0;
+
+        var item = ItemTable.Instance.Get(itemId);
+        if (item == null) return count;
+
+        var inventory = FindLocalInventory();
+        return inventory != null ? inventory.AddItem(item, count) : 0;
+    }
+
     // 완료 버튼을 누른 이 클라이언트의 로컬 인벤토리에 보상 아이템을 지급한다 - "완료버튼 누른 사람만" 받는 정책
     private static void GrantReward(QuestData quest)
     {
@@ -250,7 +281,7 @@ public class QuestDescriptionUI : MonoBehaviour
             int removed = inventory.RemoveItem(item, toSubmit);
             if (removed <= 0) continue;
 
-            if (isHost) QuestManager.AddSubmitted(_currentQuest.Id, itemId, removed);
+            if (isHost || QuestManager.IsPersonal(_currentQuest.Id)) QuestManager.AddSubmitted(_currentQuest.Id, itemId, removed);
             RoomSync.QuestSubmit(_currentQuest.Id, itemId, removed);
         }
     }

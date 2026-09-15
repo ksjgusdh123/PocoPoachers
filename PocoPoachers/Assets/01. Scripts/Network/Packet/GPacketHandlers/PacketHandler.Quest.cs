@@ -1,4 +1,4 @@
-public static partial class PacketHandlers
+﻿public static partial class PacketHandlers
 {
     // 게스트의 퀘스트 수락 요청. 호스트가 권위적으로 적용하고, 확인 겸 전원(요청한 게스트 포함)에게
     // 다시 브로드캐스트해 다른 플레이어들 화면도 같이 갱신한다 - OnG_ShelterLevel과 동일한 패턴.
@@ -7,8 +7,9 @@ public static partial class PacketHandlers
         if (!RoomManager.IsHost) return;
 
         var packet = root.TypeAsG_QuestAccept();
-        QuestManager.Accept(packet.QuestId);
-        RoomSync.QuestAccept(packet.QuestId);
+        if (!QuestManager.IsShared(packet.QuestId)) return;
+        if (QuestManager.Accept(packet.QuestId))
+            RoomSync.QuestAccept(packet.QuestId);
     }
 
     // 게스트의 퀘스트 완료 요청 - Accept와 동일한 패턴(상태 확정형이라 멱등). 요청한 게스트가 이미
@@ -19,6 +20,7 @@ public static partial class PacketHandlers
         if (!RoomManager.IsHost) return;
 
         var packet = root.TypeAsG_QuestComplete();
+        if (!QuestManager.IsShared(packet.QuestId)) return;
         QuestManager.Complete(packet.QuestId);
         RoomSync.QuestComplete(packet.QuestId);
     }
@@ -31,6 +33,7 @@ public static partial class PacketHandlers
         if (!RoomManager.IsHost) return;
 
         var packet = root.TypeAsG_QuestSubmit();
+        if (!QuestManager.IsShared(packet.QuestId)) return;
         QuestManager.AddSubmitted(packet.QuestId, packet.ItemId, packet.Amount);
         RoomSync.QuestSubmit(packet.QuestId, packet.ItemId, packet.Amount);
     }

@@ -17,16 +17,60 @@ public struct H_QuestAccept : IFlatbufferObject
   public H_QuestAccept __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public int QuestId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int PlayerId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int State { get { int o = __p.__offset(8); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public long Revision { get { int o = __p.__offset(10); return o != 0 ? __p.bb.GetLong(o + __p.bb_pos) : (long)0; } }
+  public int ItemIds(int j) { int o = __p.__offset(12); return o != 0 ? __p.bb.GetInt(__p.__vector(o) + j * 4) : (int)0; }
+  public int ItemIdsLength { get { int o = __p.__offset(12); return o != 0 ? __p.__vector_len(o) : 0; } }
+#if ENABLE_SPAN_T
+  public Span<int> GetItemIdsBytes() { return __p.__vector_as_span<int>(12, 4); }
+#else
+  public ArraySegment<byte>? GetItemIdsBytes() { return __p.__vector_as_arraysegment(12); }
+#endif
+  public int[] GetItemIdsArray() { return __p.__vector_as_array<int>(12); }
+  public int ItemCounts(int j) { int o = __p.__offset(14); return o != 0 ? __p.bb.GetInt(__p.__vector(o) + j * 4) : (int)0; }
+  public int ItemCountsLength { get { int o = __p.__offset(14); return o != 0 ? __p.__vector_len(o) : 0; } }
+#if ENABLE_SPAN_T
+  public Span<int> GetItemCountsBytes() { return __p.__vector_as_span<int>(14, 4); }
+#else
+  public ArraySegment<byte>? GetItemCountsBytes() { return __p.__vector_as_arraysegment(14); }
+#endif
+  public int[] GetItemCountsArray() { return __p.__vector_as_array<int>(14); }
 
   public static Offset<H_QuestAccept> CreateH_QuestAccept(FlatBufferBuilder builder,
-      int quest_id = 0) {
-    builder.StartTable(1);
+      int quest_id = 0,
+      int player_id = 0,
+      int state = 0,
+      long revision = 0,
+      VectorOffset item_idsOffset = default(VectorOffset),
+      VectorOffset item_countsOffset = default(VectorOffset)) {
+    builder.StartTable(6);
+    H_QuestAccept.AddRevision(builder, revision);
+    H_QuestAccept.AddItemCounts(builder, item_countsOffset);
+    H_QuestAccept.AddItemIds(builder, item_idsOffset);
+    H_QuestAccept.AddState(builder, state);
+    H_QuestAccept.AddPlayerId(builder, player_id);
     H_QuestAccept.AddQuestId(builder, quest_id);
     return H_QuestAccept.EndH_QuestAccept(builder);
   }
 
-  public static void StartH_QuestAccept(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void StartH_QuestAccept(FlatBufferBuilder builder) { builder.StartTable(6); }
   public static void AddQuestId(FlatBufferBuilder builder, int questId) { builder.AddInt(0, questId, 0); }
+  public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(1, playerId, 0); }
+  public static void AddState(FlatBufferBuilder builder, int state) { builder.AddInt(2, state, 0); }
+  public static void AddRevision(FlatBufferBuilder builder, long revision) { builder.AddLong(3, revision, 0); }
+  public static void AddItemIds(FlatBufferBuilder builder, VectorOffset itemIdsOffset) { builder.AddOffset(4, itemIdsOffset.Value, 0); }
+  public static VectorOffset CreateItemIdsVector(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddInt(data[i]); return builder.EndVector(); }
+  public static VectorOffset CreateItemIdsVectorBlock(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateItemIdsVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateItemIdsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartItemIdsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
+  public static void AddItemCounts(FlatBufferBuilder builder, VectorOffset itemCountsOffset) { builder.AddOffset(5, itemCountsOffset.Value, 0); }
+  public static VectorOffset CreateItemCountsVector(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); for (int i = data.Length - 1; i >= 0; i--) builder.AddInt(data[i]); return builder.EndVector(); }
+  public static VectorOffset CreateItemCountsVectorBlock(FlatBufferBuilder builder, int[] data) { builder.StartVector(4, data.Length, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateItemCountsVectorBlock(FlatBufferBuilder builder, ArraySegment<int> data) { builder.StartVector(4, data.Count, 4); builder.Add(data); return builder.EndVector(); }
+  public static VectorOffset CreateItemCountsVectorBlock(FlatBufferBuilder builder, IntPtr dataPtr, int sizeInBytes) { builder.StartVector(1, sizeInBytes, 1); builder.Add<int>(dataPtr, sizeInBytes); return builder.EndVector(); }
+  public static void StartItemCountsVector(FlatBufferBuilder builder, int numElems) { builder.StartVector(4, numElems, 4); }
   public static Offset<H_QuestAccept> EndH_QuestAccept(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_QuestAccept>(o);
@@ -38,21 +82,53 @@ public struct H_QuestAccept : IFlatbufferObject
   }
   public void UnPackTo(H_QuestAcceptT _o) {
     _o.QuestId = this.QuestId;
+    _o.PlayerId = this.PlayerId;
+    _o.State = this.State;
+    _o.Revision = this.Revision;
+    _o.ItemIds = new List<int>();
+    for (var _j = 0; _j < this.ItemIdsLength; ++_j) {_o.ItemIds.Add(this.ItemIds(_j));}
+    _o.ItemCounts = new List<int>();
+    for (var _j = 0; _j < this.ItemCountsLength; ++_j) {_o.ItemCounts.Add(this.ItemCounts(_j));}
   }
   public static Offset<H_QuestAccept> Pack(FlatBufferBuilder builder, H_QuestAcceptT _o) {
     if (_o == null) return default(Offset<H_QuestAccept>);
+    var _item_ids = default(VectorOffset);
+    if (_o.ItemIds != null) {
+      var __item_ids = _o.ItemIds.ToArray();
+      _item_ids = CreateItemIdsVector(builder, __item_ids);
+    }
+    var _item_counts = default(VectorOffset);
+    if (_o.ItemCounts != null) {
+      var __item_counts = _o.ItemCounts.ToArray();
+      _item_counts = CreateItemCountsVector(builder, __item_counts);
+    }
     return CreateH_QuestAccept(
       builder,
-      _o.QuestId);
+      _o.QuestId,
+      _o.PlayerId,
+      _o.State,
+      _o.Revision,
+      _item_ids,
+      _item_counts);
   }
 }
 
 public class H_QuestAcceptT
 {
   public int QuestId { get; set; }
+  public int PlayerId { get; set; }
+  public int State { get; set; }
+  public long Revision { get; set; }
+  public List<int> ItemIds { get; set; }
+  public List<int> ItemCounts { get; set; }
 
   public H_QuestAcceptT() {
     this.QuestId = 0;
+    this.PlayerId = 0;
+    this.State = 0;
+    this.Revision = 0;
+    this.ItemIds = null;
+    this.ItemCounts = null;
   }
 }
 
@@ -63,6 +139,11 @@ static public class H_QuestAcceptVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*QuestId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*PlayerId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 8 /*State*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 10 /*Revision*/, 8 /*long*/, 8, false)
+      && verifier.VerifyVectorOfData(tablePos, 12 /*ItemIds*/, 4 /*int*/, false)
+      && verifier.VerifyVectorOfData(tablePos, 14 /*ItemCounts*/, 4 /*int*/, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }

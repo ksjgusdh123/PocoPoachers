@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -20,7 +20,8 @@ public class QuestListEntryUI : MonoBehaviour
     public void Setup(QuestData data, Action<QuestData, QuestListEntryUI> onClick)
     {
         _data = data;
-        if (_nameText != null) _nameText.text = data.QuestName;
+        string locked = QuestManager.GetState(data.Id) == QuestState.Available && !QuestManager.CanAccept(data.Id) ? "[잠김] " : "";
+        if (_nameText != null) _nameText.text = $"{locked}[{QuestManager.GetModeLabel(data.Id)}] {data.QuestName}";
 
         _button.onClick.RemoveAllListeners();
         _button.onClick.AddListener(() => onClick?.Invoke(_data, this));

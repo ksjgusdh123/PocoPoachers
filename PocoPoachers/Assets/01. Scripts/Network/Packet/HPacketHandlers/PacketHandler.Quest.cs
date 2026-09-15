@@ -1,11 +1,14 @@
-public static partial class PacketHandlers
+﻿public static partial class PacketHandlers
 {
     // 호스트가 확정한 퀘스트 수락을 그대로 반영한다. 자기가 요청한 경우엔 이미 낙관적으로 적용돼 있어
     // QuestManager.Accept가 조용히 무시한다(이미 InProgress면 재적용 안 함).
     public static void OnH_QuestAccept(FlatPacket root)
     {
         var packet = root.TypeAsH_QuestAccept();
-        QuestManager.Accept(packet.QuestId);
+        if (!QuestManager.IsShared(packet.QuestId)) return;
+        // 선행 완료 패킷의 도착 순서와 무관하게 호스트가 확정한 수락을 반영한다.
+        //if (QuestManager.GetState(packet.QuestId) == QuestState.Available)
+        //    QuestManager.SetState(packet.QuestId, QuestState.InProgress);
     }
 
     // 호스트가 확정한 퀘스트 완료를 그대로 반영 - Accept와 동일하게 멱등이라 낙관적 적용과 안전하게 합쳐진다.
@@ -14,6 +17,7 @@ public static partial class PacketHandlers
     public static void OnH_QuestComplete(FlatPacket root)
     {
         var packet = root.TypeAsH_QuestComplete();
+        if (!QuestManager.IsShared(packet.QuestId)) return;
         QuestManager.Complete(packet.QuestId);
     }
 
@@ -22,6 +26,7 @@ public static partial class PacketHandlers
     public static void OnH_QuestSubmit(FlatPacket root)
     {
         var packet = root.TypeAsH_QuestSubmit();
+        if (!QuestManager.IsShared(packet.QuestId)) return;
         QuestManager.AddSubmitted(packet.QuestId, packet.ItemId, packet.Amount);
     }
 }

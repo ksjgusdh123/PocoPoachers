@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -179,6 +179,7 @@ public class DialogueUI : UIBase
         if (index < 0 || index >= _pendingChoices.Count) return;
 
         DialogueChoiceData choice = _pendingChoices[index];
+        if (choice.AcceptQuestId > 0 && !QuestManager.CanAccept(choice.AcceptQuestId)) return;
         SetChoices(new List<DialogueChoiceData>());
 
         // 선택지에 accept_quest_id가 있으면(dialogue_choice.csv) 그 퀘스트를 수락한다.
@@ -186,8 +187,8 @@ public class DialogueUI : UIBase
         // 호스트면 전원에게 브로드캐스트, 게스트면 호스트에게 보내서 호스트가 확인 후 다시 전원에게 브로드캐스트한다.
         if (choice.AcceptQuestId > 0)
         {
-            QuestManager.Accept(choice.AcceptQuestId);
-            RoomSync.QuestAccept(choice.AcceptQuestId);
+            if (QuestManager.Accept(choice.AcceptQuestId))
+                RoomSync.QuestAccept(choice.AcceptQuestId);
         }
 
         DialogueData next = choice.NextId > 0 ? DialogueTable.Instance.Get(choice.NextId) : null;
@@ -251,7 +252,8 @@ public class DialogueUI : UIBase
 
     private static List<DialogueChoiceData> GetChoices(int dialogueId) =>
         DialogueChoiceTable.Instance.All
-            .Where(c => c.DialogueId == dialogueId)
+            .Where(c => c.DialogueId == dialogueId
+                && (c.AcceptQuestId <= 0 || QuestManager.CanAccept(c.AcceptQuestId)))
             .OrderBy(c => c.Order)
             .ToList();
 

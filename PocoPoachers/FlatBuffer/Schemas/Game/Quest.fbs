@@ -1,38 +1,28 @@
-// 퀘스트 수락 동기화. 파티 공유 상태(QuestManager)라 한 명이 수락하면 전원에게 반영돼야 한다.
-// 트리거 쪽(DialogueUI)이 로컬에 낙관적으로 먼저 적용한 뒤 이 패킷으로 전파한다 - ShelterLevel과 동일한 패턴.
-// Accept/Complete는 "상태를 X로 맞춘다"라 멱등이지만(같은 값 재적용해도 안전), Submit은 "누적값에 더한다"라
-// 게스트가 낙관적으로 먼저 적용하면 호스트 재확인 브로드캐스트가 돌아올 때 이중으로 더해진다.
-// 그래서 Submit만 요청/결과 패턴(게스트는 로컬 미적용, 호스트가 적용 후 브로드캐스트한 걸 받아야 반영)을 쓴다.
-table G_QuestAccept
-{
+// 모든 퀘스트의 진행은 호스트가 확정한다. 개인 상태의 player_id는 소유자, 공유 상태는 0이다.
+table G_QuestAccept { quest_id: int; }
+// 수락뿐 아니라 접속 시/상태 변경 시에도 보내는 절대값 스냅샷이다.
+table H_QuestAccept {
     quest_id: int;
+    player_id: int;
+    state: int;
+    revision: long;
+    item_ids: [int];
+    item_counts: [int];
 }
-
-table H_QuestAccept
-{
-    quest_id: int;
-}
-
-table G_QuestSubmit
-{
+table G_QuestSubmit {
     quest_id: int;
     item_id: int;
     amount: int;
+    request_id: long;
 }
-
-table H_QuestSubmit
-{
+// 요청자에게만 보내는 제출 결과. amount는 승인 수량이며 나머지는 로컬에서 환불한다.
+table H_QuestSubmit {
     quest_id: int;
     item_id: int;
     amount: int;
+    request_id: long;
+    player_id: int;
 }
-
-table G_QuestComplete
-{
-    quest_id: int;
-}
-
-table H_QuestComplete
-{
-    quest_id: int;
-}
+table G_QuestComplete { quest_id: int; }
+// 완료 상태는 스냅샷으로 동기화하고 이 패킷은 보상 수령자에게만 전송한다.
+table H_QuestComplete { quest_id: int; player_id: int; }

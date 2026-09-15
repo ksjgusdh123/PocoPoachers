@@ -74,7 +74,9 @@ public class TableGeneratorTool
         if (headers.Length == 0) return;
 
         if (fileName == "enemy_drop") ValidateEnemyDrops(csvPath, headers, rows);
+        if (fileName == "quest") ValidateQuestPrerequisites(headers, rows);
         var types = InferTypes(headers, rows);
+        if (fileName == "quest") types[Array.IndexOf(headers, "prerequisite_quest_ids")] = "string";
         if (fileName == "enemy_drop")
             foreach (string column in new[] { "item_ids", "drop_chances", "min_counts", "max_counts" })
                 types[Array.IndexOf(headers, column)] = "string";
@@ -88,6 +90,51 @@ public class TableGeneratorTool
         WriteJson(fileName, headers, types, rows, enumColumns, clientJsonOut);
 
         Debug.Log($"[{ToolName}] 변환 완료: {Path.GetFileName(csvPath)}");
+    }
+
+    private static void ValidateQuestPrerequisites(string[] headers, List<string[]> rows)
+    {
+        int idColumn = Array.IndexOf(headers, "id");
+        int modeColumn = Array.IndexOf(headers, "progress_mode");
+        int prerequisiteColumn = Array.IndexOf(headers, "prerequisite_quest_ids");
+        if (idColumn < 0 || modeColumn < 0 || prerequisiteColumn < 0)
+            throw new FormatException("quest.csv: id, progress_mode, prerequisite_quest_ids 컬럼이 필요합니다.");
+        var graph = new Dictionary<int, List<int>>();
+        var modes = new Dictionary<int, string>();
+        foreach (var row in rows)
+        {
+            if (row.Length != headers.Length || !int.TryParse(row[idColumn], out int id) || id <= 0 || graph.ContainsKey(id))
+                throw new FormatException("quest.csv: 컬럼 수 또는 퀘스트 ID가 잘못되었거나 중복입니다.");
+            var prerequisites = new List<int>();
+            if (!string.IsNullOrWhiteSpace(row[prerequisiteColumn]))
+                foreach (string token in row[prerequisiteColumn].Split(';'))
+                {
+                    if (!int.TryParse(token.Trim(), out int prior) || prior == id || prerequisites.Contains(prior))
+                        throw new FormatException($"quest.csv {id}: 선행 ID가 잘못되었거나 자기 자신/중복입니다.");
+                    prerequisites.Add(prior);
+                }
+            graph.Add(id, prerequisites);
+            modes.Add(id, row[modeColumn].Trim());
+        }
+        foreach (var pair in graph)
+            foreach (int prior in pair.Value)
+            {
+                if (!graph.ContainsKey(prior)) throw new FormatException($"quest.csv {pair.Key}: 없는 선행 퀘스트 {prior}");
+                if (string.Equals(modes[pair.Key], "Shared", StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(modes[prior], "Personal", StringComparison.OrdinalIgnoreCase))
+                    throw new FormatException($"quest.csv {pair.Key}: 공유 퀘스트의 선행 조건으로 개인 퀘스트를 지정할 수 없습니다.");
+            }
+        var visiting = new HashSet<int>();
+        var done = new HashSet<int>();
+        void Visit(int id)
+        {
+            if (done.Contains(id)) return;
+            if (!visiting.Add(id)) throw new FormatException($"quest.csv {id}: 선행 퀘스트가 순환합니다.");
+            foreach (int prior in graph[id]) Visit(prior);
+            visiting.Remove(id);
+            done.Add(id);
+        }
+        foreach (int id in graph.Keys) Visit(id);
     }
 
     private static void ValidateEnemyDrops(string path, string[] headers, List<string[]> rows)
@@ -227,6 +274,15 @@ public class TableGeneratorTool
             {
                 string raw = col < row.Length ? row[col].Trim() : "";
                 if (!string.IsNullOrWhiteSpace(raw) && rawSet.Add(raw)) rawValues.Add(raw);
+            }
+            // 퀘스트 모드는 현재 CSV에 한 종류만 있어도 두 값을 고정 순서로 생성한다.
+            if (className == "Quest" && header == "progress_mode")
+            {
+                if (rows.Any(row => col >= row.Length ||
+                    (!string.Equals(row[col].Trim(), "Shared", StringComparison.OrdinalIgnoreCase)
+                     && !string.Equals(row[col].Trim(), "Personal", StringComparison.OrdinalIgnoreCase))))
+                    throw new FormatException("quest.csv progress_mode는 Shared 또는 Personal이어야 합니다.");
+                rawValues = new List<string> { "Shared", "Personal" };
             }
             if (rawValues.Count == 0) continue;
 

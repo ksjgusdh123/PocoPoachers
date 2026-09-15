@@ -27,6 +27,7 @@ Escape From Duckov 스타일 **탈출·파밍·성장** 게임. 쉘터 거점 �
 | 쉘터·레이드·채광 | [design/shelter-raid.md](design/shelter-raid.md) |
 | 행성/섹터 스펙 (안개·가시거리·위험도) | [design/planet-sectors.md](design/planet-sectors.md) |
 | 적 AI | [design/enemy-ai.md](design/enemy-ai.md) |
+| 개인·공유 퀘스트 | [design/quests.md](design/quests.md) |
 | 멀티플레이 (개요) | [design/multiplayer.md](design/multiplayer.md) |
 | 패킷 추가·디버깅 | [development/network-packets.md](development/network-packets.md) |
 | CSV·fbs·제너레이터 | [development/code-generators.md](development/code-generators.md) + [datatable/id-ranges.md](datatable/id-ranges.md) |

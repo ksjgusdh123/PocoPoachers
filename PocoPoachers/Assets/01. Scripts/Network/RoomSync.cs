@@ -352,7 +352,7 @@ public static class RoomSync
     // 게스트면 호스트에게 요청만 보내고 호스트가 확인 후 다시 전원에게 브로드캐스트한다.
     public static void QuestAccept(int questId)
     {
-        if (IsSolo) return;
+        if (IsSolo || !QuestManager.IsShared(questId)) return;
 
         if (RoomManager.IsHost)
             PacketBuilder.BroadcastReliableToGuests(
@@ -367,7 +367,7 @@ public static class RoomSync
     // 퀘스트 완료 동기화 - QuestAccept와 동일한 패턴(상태를 Completed로 맞추는 거라 멱등).
     public static void QuestComplete(int questId)
     {
-        if (IsSolo) return;
+        if (IsSolo || !QuestManager.IsShared(questId)) return;
 
         if (RoomManager.IsHost)
             PacketBuilder.BroadcastReliableToGuests(
@@ -385,7 +385,7 @@ public static class RoomSync
     // 받을 때(OnH_QuestSubmit)까지 미룬다. 안 그러면 호스트의 확인 브로드캐스트가 돌아올 때 이중 집계된다.
     public static void QuestSubmit(int questId, int itemId, int amount)
     {
-        if (IsSolo) return;
+        if (IsSolo || !QuestManager.IsShared(questId)) return;
 
         if (RoomManager.IsHost)
             PacketBuilder.BroadcastReliableToGuests(

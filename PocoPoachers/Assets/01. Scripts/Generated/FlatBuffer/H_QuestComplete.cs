@@ -17,16 +17,20 @@ public struct H_QuestComplete : IFlatbufferObject
   public H_QuestComplete __assign(int _i, ByteBuffer _bb) { __init(_i, _bb); return this; }
 
   public int QuestId { get { int o = __p.__offset(4); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
+  public int PlayerId { get { int o = __p.__offset(6); return o != 0 ? __p.bb.GetInt(o + __p.bb_pos) : (int)0; } }
 
   public static Offset<H_QuestComplete> CreateH_QuestComplete(FlatBufferBuilder builder,
-      int quest_id = 0) {
-    builder.StartTable(1);
+      int quest_id = 0,
+      int player_id = 0) {
+    builder.StartTable(2);
+    H_QuestComplete.AddPlayerId(builder, player_id);
     H_QuestComplete.AddQuestId(builder, quest_id);
     return H_QuestComplete.EndH_QuestComplete(builder);
   }
 
-  public static void StartH_QuestComplete(FlatBufferBuilder builder) { builder.StartTable(1); }
+  public static void StartH_QuestComplete(FlatBufferBuilder builder) { builder.StartTable(2); }
   public static void AddQuestId(FlatBufferBuilder builder, int questId) { builder.AddInt(0, questId, 0); }
+  public static void AddPlayerId(FlatBufferBuilder builder, int playerId) { builder.AddInt(1, playerId, 0); }
   public static Offset<H_QuestComplete> EndH_QuestComplete(FlatBufferBuilder builder) {
     int o = builder.EndTable();
     return new Offset<H_QuestComplete>(o);
@@ -38,21 +42,25 @@ public struct H_QuestComplete : IFlatbufferObject
   }
   public void UnPackTo(H_QuestCompleteT _o) {
     _o.QuestId = this.QuestId;
+    _o.PlayerId = this.PlayerId;
   }
   public static Offset<H_QuestComplete> Pack(FlatBufferBuilder builder, H_QuestCompleteT _o) {
     if (_o == null) return default(Offset<H_QuestComplete>);
     return CreateH_QuestComplete(
       builder,
-      _o.QuestId);
+      _o.QuestId,
+      _o.PlayerId);
   }
 }
 
 public class H_QuestCompleteT
 {
   public int QuestId { get; set; }
+  public int PlayerId { get; set; }
 
   public H_QuestCompleteT() {
     this.QuestId = 0;
+    this.PlayerId = 0;
   }
 }
 
@@ -63,6 +71,7 @@ static public class H_QuestCompleteVerify
   {
     return verifier.VerifyTableStart(tablePos)
       && verifier.VerifyField(tablePos, 4 /*QuestId*/, 4 /*int*/, 4, false)
+      && verifier.VerifyField(tablePos, 6 /*PlayerId*/, 4 /*int*/, 4, false)
       && verifier.VerifyTableEnd(tablePos);
   }
 }
