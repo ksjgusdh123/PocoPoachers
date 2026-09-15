@@ -15,6 +15,9 @@ public partial class QuestData
     public string reward_item_counts = "";
     public ProgressMode progress_mode;
     public string prerequisite_quest_ids = "";
+    public int offer_dialogue_id;
+    public int progress_dialogue_id;
+    public int complete_dialogue_id;
 
     public int Id { get => id; set => id = value; }
 
@@ -38,5 +41,11 @@ public partial class QuestData
     public ProgressMode ProgressMode { get => progress_mode; set => progress_mode = value; }
 
     public string PrerequisiteQuestIds { get => prerequisite_quest_ids; set => prerequisite_quest_ids = value; }
+
+    public int OfferDialogueId { get => offer_dialogue_id; set => offer_dialogue_id = value; }
+
+    public int ProgressDialogueId { get => progress_dialogue_id; set => progress_dialogue_id = value; }
+
+    public int CompleteDialogueId { get => complete_dialogue_id; set => complete_dialogue_id = value; }
 
 }

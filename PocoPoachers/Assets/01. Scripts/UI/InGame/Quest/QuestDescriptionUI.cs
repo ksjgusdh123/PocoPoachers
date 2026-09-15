@@ -204,20 +204,6 @@ public class QuestDescriptionUI : MonoBehaviour
         return inventory != null ? inventory.AddItem(item, count) : 0;
     }
 
-    // 완료 버튼을 누른 이 클라이언트의 로컬 인벤토리에 보상 아이템을 지급한다 - "완료버튼 누른 사람만" 받는 정책
-    private static void GrantReward(QuestData quest)
-    {
-        var inventory = FindLocalInventory();
-        if (inventory == null) return;
-
-        foreach (var (itemId, count) in quest.RewardItems)
-        {
-            var item = ItemTable.Instance.Get(itemId);
-            if (item == null) continue;
-            inventory.AddItem(item, count);
-        }
-    }
-
     // CheatConsole.FindLocalPlayer()와 동일한 방식 - 씬에 여러 PlayerController(원격 포함)가 있을 수 있어
     // 실제 입력이 활성화된 것을 로컬로 판단한다
     private static Inventory FindLocalInventory()
@@ -250,9 +236,10 @@ public class QuestDescriptionUI : MonoBehaviour
             // 이 클라이언트에서 딱 한 번만 실행되고, 다른 클라이언트는 H_QuestComplete를 받아도
             // 상태만 맞출 뿐 보상은 절대 지급하지 않는다(PacketHandler.Quest.cs 참고) - 그래서
             // 버튼을 누른 사람만 보상을 받는다.
-            QuestManager.Complete(_currentQuest.Id);
+            if (!QuestManager.Complete(_currentQuest.Id)) return;
             RoomSync.QuestComplete(_currentQuest.Id);
-            GrantReward(_currentQuest);
+            QuestManager.ReceiveReward(_currentQuest.Id);
+            QuestManager.FlushLocalItems();
             return;
         }
 

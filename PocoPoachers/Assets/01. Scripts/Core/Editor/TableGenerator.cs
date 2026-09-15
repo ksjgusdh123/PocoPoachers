@@ -74,7 +74,7 @@ public class TableGeneratorTool
         if (headers.Length == 0) return;
 
         if (fileName == "enemy_drop") ValidateEnemyDrops(csvPath, headers, rows);
-        if (fileName == "quest") ValidateQuestPrerequisites(headers, rows);
+        if (fileName == "quest") { ValidateQuestPrerequisites(headers, rows); ValidateQuestDialogues(csvPath, headers, rows); }
         var types = InferTypes(headers, rows);
         if (fileName == "quest") types[Array.IndexOf(headers, "prerequisite_quest_ids")] = "string";
         if (fileName == "enemy_drop")
@@ -135,6 +135,47 @@ public class TableGeneratorTool
             done.Add(id);
         }
         foreach (int id in graph.Keys) Visit(id);
+    }
+
+    // 제안/진행/완료 대사는 DialogueUI가 퀘스트 메뉴에서 바로 타고 들어간다 - 없는 id를 가리키면 대화가 조용히 끝난다.
+    private static void ValidateQuestDialogues(string path, string[] headers, List<string[]> rows)
+    {
+        string[] columns = { "offer_dialogue_id", "progress_dialogue_id", "complete_dialogue_id" };
+        foreach (string column in columns)
+            if (Array.IndexOf(headers, column) < 0) throw new FormatException($"quest.csv: {column} 컬럼이 필요합니다.");
+
+        var dialogueIds = new HashSet<int>();
+        var npcByDialogue = new Dictionary<int, int>();
+        string dialoguePath = Path.Combine(Path.GetDirectoryName(path), "dialogue.csv");
+        if (!File.Exists(dialoguePath)) return;
+
+        var (dialogueHeaders, dialogueRows) = ReadCsv(dialoguePath);
+        int dialogueIdColumn = Array.IndexOf(dialogueHeaders, "id");
+        int dialogueNpcColumn = Array.IndexOf(dialogueHeaders, "npc_id");
+        if (dialogueIdColumn < 0) return;
+        foreach (var row in dialogueRows)
+        {
+            if (dialogueIdColumn >= row.Length || !int.TryParse(row[dialogueIdColumn], out int id)) continue;
+            dialogueIds.Add(id);
+            if (dialogueNpcColumn >= 0 && dialogueNpcColumn < row.Length && int.TryParse(row[dialogueNpcColumn], out int npc))
+                npcByDialogue[id] = npc;
+        }
+
+        int npcColumn = Array.IndexOf(headers, "npc_id");
+        foreach (var row in rows)
+        {
+            int questId = int.Parse(row[Array.IndexOf(headers, "id")]);
+            foreach (string column in columns)
+            {
+                string raw = row[Array.IndexOf(headers, column)].Trim();
+                if (string.IsNullOrEmpty(raw) || raw == "0") continue;
+                if (!int.TryParse(raw, out int dialogueId) || !dialogueIds.Contains(dialogueId))
+                    throw new FormatException($"quest.csv {questId}: {column}가 가리키는 대사 {raw}가 dialogue.csv에 없습니다.");
+                if (npcColumn >= 0 && int.TryParse(row[npcColumn], out int questNpc)
+                    && npcByDialogue.TryGetValue(dialogueId, out int dialogueNpc) && questNpc != dialogueNpc)
+                    throw new FormatException($"quest.csv {questId}: {column}의 대사 {dialogueId}는 npc_id가 {dialogueNpc}라 퀘스트 npc_id {questNpc}와 다릅니다.");
+            }
+        }
     }
 
     private static void ValidateEnemyDrops(string path, string[] headers, List<string[]> rows)

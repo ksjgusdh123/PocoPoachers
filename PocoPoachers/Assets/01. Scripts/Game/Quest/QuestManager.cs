@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 public enum QuestState { Available, InProgress, Completed }
@@ -83,13 +83,19 @@ public static class QuestManager
         Notify(questId, Owner(questId, player), progress);
         return accepted;
     }
-    public static bool Complete(int questId, int? player = null)
+    // 제출 누적치가 목표를 다 채웠는지 - 완료 가능 여부를 UI가 직접 물어볼 때 쓴다.
+    public static bool IsGoalMet(int questId, int? player = null)
     {
-        if (!RoomManager.IsHost || GetState(questId, player) != QuestState.InProgress) return false;
         var quest = QuestTable.Instance.Get(questId);
         if (quest == null) return false;
         foreach (var goal in quest.GoalItems)
             if (GetSubmittedCount(questId, goal.itemId, player) < goal.count) return false;
+        return true;
+    }
+    public static bool Complete(int questId, int? player = null)
+    {
+        if (!RoomManager.IsHost || GetState(questId, player) != QuestState.InProgress) return false;
+        if (!IsGoalMet(questId, player)) return false;
         var progress = Ensure(questId, player);
         progress.State = QuestState.Completed;
         progress.Revision++;
