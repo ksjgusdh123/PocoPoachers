@@ -6,12 +6,12 @@ using UnityEngine.UI;
 
 // 퀘스트 상세 표시 패널. QuestListUI가 목록에서 항목을 고르면 SetQuest로 내용을 채운다.
 // 목표/보상은 아이템이 여러 종류일 수 있어(QuestData.GoalItems/RewardItems) 한 줄씩 묶어서 표시한다.
-// 수락은 이 UI가 아니라 NPC 대화(DialogueUI, dialogue_choice.csv의 accept_quest_id)에서만 한다 -
+// 수락은 이 UI가 아니라 NPC 퀘스트 대화(DialogueUI)에서만 한다 -
 // 그래서 Available 상태에서는 액션 버튼이 아예 안 뜬다.
 // 액션 버튼 하나가 상태에 따라 라벨/동작을 바꾼다:
 //   Available              -> 버튼 숨김 (수락은 대화로만)
-//   InProgress + 제출 미달   -> "제출하기" (클릭 시 목표 아이템 전부를 인벤토리에서 꺼내 QuestManager.AddSubmitted)
-//   InProgress + 전부 제출됨 -> "완료하기" (클릭 시 QuestManager.Complete + 보상 지급 - 누른 사람만 받음, GrantReward 참고)
+//   InProgress + 제출 미달   -> "제출하기" (클릭 시 목표 아이템 전부를 인벤토리에서 꺼내 호스트에 제출 요청)
+//   InProgress + 전부 제출됨 -> "제출하기" 비활성화 (완료는 NPC 대화에서 처리)
 //   Completed               -> 버튼 숨김
 public class QuestDescriptionUI : MonoBehaviour
 {
@@ -21,7 +21,7 @@ public class QuestDescriptionUI : MonoBehaviour
     [SerializeField] private TextMeshProUGUI _questGoalText;
     [SerializeField] private TextMeshProUGUI _questRewardText;
 
-    [Header("Action Button (제출하기 / 완료하기 공용 - 수락은 대화로만 하므로 여기 없음)")]
+    [Header("Action Button (제출하기 전용 - 수락과 완료는 NPC 대화)")]
     [SerializeField] private Button _actionButton;
     [SerializeField] private TextMeshProUGUI _actionButtonText;
 
@@ -157,8 +157,8 @@ public class QuestDescriptionUI : MonoBehaviour
             case QuestState.InProgress:
                 bool goalMet = IsGoalFullyMet(_currentQuest);
                 _actionButton.gameObject.SetActive(true);
-                _actionButton.interactable = true;
-                if (_actionButtonText != null) _actionButtonText.text = goalMet ? "완료하기" : "제출하기";
+                _actionButton.interactable = !goalMet;
+                if (_actionButtonText != null) _actionButtonText.text = "제출하기";
                 break;
 
             default:
@@ -209,49 +209,30 @@ public class QuestDescriptionUI : MonoBehaviour
     private static Inventory FindLocalInventory()
     {
         var players = FindObjectsByType<PlayerController>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        PlayerController fallback = null;
 
         foreach (var player in players)
         {
-            fallback ??= player;
             var input = player.GetComponent<PlayerInputHandler>();
             if (input != null && input.isActiveAndEnabled)
                 return player.PlayerInventory;
         }
 
-        return fallback?.PlayerInventory;
+        return null;
     }
 
     private void OnClickAction()
     {
         if (_currentQuest == null) return;
 
-        // 수락은 대화로만 하므로 여기선 InProgress(제출/완료)만 처리한다
+        // 수락은 대화로만 하므로 여기선 InProgress 상태의 제출만 처리한다
         if (QuestManager.GetState(_currentQuest.Id) != QuestState.InProgress) return;
 
-        if (IsGoalFullyMet(_currentQuest))
-        {
-            // Complete는 상태를 Completed로 맞추는 멱등 연산이라 Accept와 동일하게 낙관적 적용 + 전파.
-            // 보상 지급은 상태 동기화와 무관하게 순수 로컬 동작이다 - "완료하기"를 물리적으로 누른
-            // 이 클라이언트에서 딱 한 번만 실행되고, 다른 클라이언트는 H_QuestComplete를 받아도
-            // 상태만 맞출 뿐 보상은 절대 지급하지 않는다(PacketHandler.Quest.cs 참고) - 그래서
-            // 버튼을 누른 사람만 보상을 받는다.
-            if (!QuestManager.Complete(_currentQuest.Id)) return;
-            RoomSync.QuestComplete(_currentQuest.Id);
-            QuestManager.ReceiveReward(_currentQuest.Id);
-            QuestManager.FlushLocalItems();
-            return;
-        }
+        // 목표를 채운 뒤에는 NPC의 완료 대화를 통해서만 완료를 요청한다.
+        if (IsGoalFullyMet(_currentQuest)) return;
 
-        // 아직 다 안 찼으면 "제출하기" - 목표 아이템마다 들고 있는 만큼(최대 남은 필요량까지) 인벤토리에서 꺼낸다.
-        // 인벤토리는 내 것이라 로컬에서 바로 빼도 되지만, 제출 누적치(QuestManager)는 파티 공유 값이라
-        // 호스트/솔로만 바로 반영한다 - 게스트가 낙관적으로 먼저 더해버리면 호스트의 확인 브로드캐스트가
-        // 돌아올 때(OnH_QuestSubmit) 이중으로 더해진다. 그래서 게스트는 요청만 보내고, 실제 반영은
-        // 호스트가 보내주는 H_QuestSubmit을 받을 때 한다.
+        // 제출 아이템을 먼저 차감하고 호스트 승인 후 초과/거절된 수량을 반환받는다.
         var inventory = FindLocalInventory();
         if (inventory == null) return;
-
-        bool isHost = RoomManager.IsHost;
 
         foreach (var (itemId, target) in _currentQuest.GoalItems)
         {
@@ -268,7 +249,6 @@ public class QuestDescriptionUI : MonoBehaviour
             int removed = inventory.RemoveItem(item, toSubmit);
             if (removed <= 0) continue;
 
-            if (isHost || QuestManager.IsPersonal(_currentQuest.Id)) QuestManager.AddSubmitted(_currentQuest.Id, itemId, removed);
             RoomSync.QuestSubmit(_currentQuest.Id, itemId, removed);
         }
     }

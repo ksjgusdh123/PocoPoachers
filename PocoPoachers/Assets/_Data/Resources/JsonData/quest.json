@@ -46,5 +46,53 @@
     "offer_dialogue_id": 9031,
     "progress_dialogue_id": 9032,
     "complete_dialogue_id": 9033
+  },
+  {
+    "id": 9004,
+    "npc_id": 1,
+    "npc_name": "정비공 두 씨",
+    "name": "첫 개인 의뢰: 자재 모으기",
+    "description": "혼자서도 자재를 구할 수 있는지 확인해 봅시다. 돌 3개를 직접 제출해 주세요.",
+    "goal_item_ids": "801",
+    "goal_item_counts": "3",
+    "reward_item_ids": "101",
+    "reward_item_counts": "1",
+    "progress_mode": 2,
+    "prerequisite_quest_ids": "",
+    "offer_dialogue_id": 0,
+    "progress_dialogue_id": 0,
+    "complete_dialogue_id": 0
+  },
+  {
+    "id": 9005,
+    "npc_id": 1,
+    "npc_name": "정비공 두 씨",
+    "name": "두 번째 개인 의뢰: 철광석 확보",
+    "description": "기초 자재는 잘 구해 왔군요. 이번에는 철광석 2개를 직접 제출해 주세요.",
+    "goal_item_ids": "802",
+    "goal_item_counts": "2",
+    "reward_item_ids": "103",
+    "reward_item_counts": "2",
+    "progress_mode": 2,
+    "prerequisite_quest_ids": "9004",
+    "offer_dialogue_id": 0,
+    "progress_dialogue_id": 0,
+    "complete_dialogue_id": 0
+  },
+  {
+    "id": 9006,
+    "npc_id": 1,
+    "npc_name": "정비공 두 씨",
+    "name": "마지막 개인 의뢰: 탄약 준비",
+    "description": "이제 전투 보급품을 준비할 차례입니다. .45 ACP 탄약 10개를 직접 제출해 주세요.",
+    "goal_item_ids": "601",
+    "goal_item_counts": "10",
+    "reward_item_ids": "102",
+    "reward_item_counts": "1",
+    "progress_mode": 2,
+    "prerequisite_quest_ids": "9005",
+    "offer_dialogue_id": 0,
+    "progress_dialogue_id": 0,
+    "complete_dialogue_id": 0
   }
 ]

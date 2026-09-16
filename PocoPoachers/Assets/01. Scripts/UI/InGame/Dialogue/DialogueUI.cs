@@ -15,7 +15,7 @@ using UnityEngine.UI;
 // 대사(quest.csv의 offer/progress/complete_dialogue_id)로 들어가고, 대사가 끝나면 선택지가 자동으로 붙는다:
 //   Available              -> offer 대사    -> [수락한다] [거절한다]
 //   InProgress + 목표 미달  -> progress 대사 -> [돌아가기]
-//   InProgress + 목표 달성  -> complete 대사 -> [완료하기] [나중에]
+//   InProgress + 목표 달성  -> complete 대사를 끝까지 넘기면 완료 요청
 //   Completed              -> 목록에서 숨김
 // 선행 퀘스트가 안 끝난 퀘스트도 목록에서 숨긴다(QuestManager.CanAccept).
 // dialogue_choice.csv에 손으로 쓴 선택지가 있으면 그게 우선이라 기존 분기 방식도 그대로 동작한다.
@@ -293,6 +293,8 @@ public class DialogueUI : UIBase
             return;
         }
 
+        // 완료 대사에 CSV 선택지가 있어도 그 분기의 마지막 줄에서 완료한다.
+        if (_activeStep == QuestStep.Complete && ShowQuestStepChoices()) return;
         ReturnToMenu();
     }
 
@@ -371,10 +373,11 @@ public class DialogueUI : UIBase
         // 대사를 안 걸어둔 퀘스트는 quest.csv의 설명으로 대신한다 — 선택지까지 못 가고 끊기면 안 된다
         _nextId = 0;
         SetContent(quest.NpcName, quest.Description);
-        if (!ShowQuestStepChoices()) ReturnToMenu();
+        // 완료 대사가 미지정이어도 설명을 읽고 넘긴 뒤에 완료하도록 기다린다.
+        if (step != QuestStep.Complete && !ShowQuestStepChoices()) ReturnToMenu();
     }
 
-    // 퀘스트 대사가 끝났을 때 붙는 선택지 — 수락과 완료는 여기서만 일어난다
+    // 퀘스트 대사가 끝나면 수락 선택지를 표시하거나 완료를 요청한다
     private bool ShowQuestStepChoices()
     {
         if (_activeQuestId <= 0 || _activeStep == QuestStep.None) return false;
@@ -389,9 +392,11 @@ public class DialogueUI : UIBase
                 break;
 
             case QuestStep.Complete:
-                choices.Add(new Choice("완료하기", () => { TryComplete(questId); ReturnToMenu(); }));
-                choices.Add(new Choice("나중에", ReturnToMenu));
-                break;
+                // 마지막 대사를 넘긴 시점에 한 번만 요청한다. 게스트는 호스트 응답을 기다린다.
+                _activeStep = QuestStep.None;
+                TryComplete(questId);
+                ReturnToMenu();
+                return true;
 
             default:
                 choices.Add(new Choice("돌아가기", ReturnToMenu));
@@ -403,20 +408,15 @@ public class DialogueUI : UIBase
         return true;
     }
 
-    // 퀘스트 상태는 호스트가 확정한다 — 로컬에 반영됐을 때만 RoomSync로 전파한다
+    // 개인/공유 모두 요청만 보내고 호스트 확정 결과로 상태와 보상을 반영한다.
     private static void TryAccept(int questId)
     {
-        if (QuestManager.Accept(questId)) RoomSync.QuestAccept(questId);
+        if (QuestManager.CanAccept(questId)) RoomSync.QuestAccept(questId);
     }
 
     private static void TryComplete(int questId)
     {
-        if (!QuestManager.Complete(questId)) return;
-
         RoomSync.QuestComplete(questId);
-        // 보상은 완료를 누른 이 클라이언트만 받는다 — 인벤토리가 꽉 차면 지급 대기열에 남는다
-        QuestManager.ReceiveReward(questId);
-        QuestManager.FlushLocalItems();
     }
 
     private void SetChoices(List<Choice> choices)
@@ -481,8 +481,28 @@ public class DialogueUI : UIBase
         _activeStep = QuestStep.None;
     }
 
+    protected override void OnShow()
+    {
+        QuestManager.OnQuestStateChanged -= HandleQuestStateChanged;
+        QuestManager.OnQuestStateChanged += HandleQuestStateChanged;
+    }
+
+    private void HandleQuestStateChanged(int questId, QuestState state)
+    {
+        // 대사를 읽는 중에는 끊지 않고, 퀘스트 목록 화면만 호스트 응답에 맞춰 갱신한다.
+        if (this == null || !gameObject.activeInHierarchy || _questMenuNpcId <= 0
+            || _activeQuestId != 0 || _pendingChoices.Count == 0) return;
+        ReturnToMenu();
+    }
+
+    private void OnDisable()
+    {
+        QuestManager.OnQuestStateChanged -= HandleQuestStateChanged;
+    }
+
     protected override void OnHide()
     {
+        QuestManager.OnQuestStateChanged -= HandleQuestStateChanged;
         StopTyping();
         ResetQuestFlow();
         SetChoices(new List<Choice>());

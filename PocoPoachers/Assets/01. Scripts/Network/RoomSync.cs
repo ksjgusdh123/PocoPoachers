@@ -348,53 +348,73 @@ public static class RoomSync
                 G_ShelterLevel.Pack, PacketType.G_ShelterLevel);
     }
 
-    // 퀘스트 수락 동기화 - ShelterLevel과 동일한 패턴(파티 공유 상태). 호스트면 전원에게 브로드캐스트,
-    // 게스트면 호스트에게 요청만 보내고 호스트가 확인 후 다시 전원에게 브로드캐스트한다.
+    // UI는 개인/공유 모두 이 요청 경로만 사용한다. 솔로도 호스트 검증을 거친다.
     public static void QuestAccept(int questId)
     {
-        if (IsSolo || !QuestManager.IsShared(questId)) return;
-
-        if (RoomManager.IsHost)
-            PacketBuilder.BroadcastReliableToGuests(
-                new H_QuestAcceptT { QuestId = questId },
-                H_QuestAccept.Pack, PacketType.H_QuestAccept);
-        else
-            PacketBuilder.SendReliableToHost(
-                new G_QuestAcceptT { QuestId = questId },
-                G_QuestAccept.Pack, PacketType.G_QuestAccept);
+        if (RoomManager.IsHost) HostQuestAccept(QuestManager.LocalPlayerId, questId);
+        else PacketBuilder.SendReliableToHost(new G_QuestAcceptT { QuestId = questId }, G_QuestAccept.Pack, PacketType.G_QuestAccept);
     }
 
-    // 퀘스트 완료 동기화 - QuestAccept와 동일한 패턴(상태를 Completed로 맞추는 거라 멱등).
     public static void QuestComplete(int questId)
     {
-        if (IsSolo || !QuestManager.IsShared(questId)) return;
-
-        if (RoomManager.IsHost)
-            PacketBuilder.BroadcastReliableToGuests(
-                new H_QuestCompleteT { QuestId = questId },
-                H_QuestComplete.Pack, PacketType.H_QuestComplete);
-        else
-            PacketBuilder.SendReliableToHost(
-                new G_QuestCompleteT { QuestId = questId },
-                G_QuestComplete.Pack, PacketType.G_QuestComplete);
+        if (RoomManager.IsHost) HostQuestComplete(QuestManager.LocalPlayerId, questId);
+        else PacketBuilder.SendReliableToHost(new G_QuestCompleteT { QuestId = questId }, G_QuestComplete.Pack, PacketType.G_QuestComplete);
     }
 
-    // 퀘스트 제출 동기화 - QuestAccept와 달리 "누적값에 더하는" 연산이라 멱등이 아니다.
-    // 그래서 이 메서드는 순수하게 "전송"만 한다 - 호출 쪽(QuestDescriptionUI)이 호스트/솔로일 때만
-    // QuestManager.AddSubmitted를 직접 부르고, 게스트는 이 전송만 하고 로컬 적용은 H_QuestSubmit을
-    // 받을 때(OnH_QuestSubmit)까지 미룬다. 안 그러면 호스트의 확인 브로드캐스트가 돌아올 때 이중 집계된다.
+    // 인벤토리에서 미리 차감한 수량을 제출하고, 승인되지 않은 수량은 응답 시 반환한다.
     public static void QuestSubmit(int questId, int itemId, int amount)
     {
-        if (IsSolo || !QuestManager.IsShared(questId)) return;
+        if (amount <= 0) return;
+        long requestId = QuestManager.BeginSubmission(questId, itemId, amount);
+        if (RoomManager.IsHost) HostQuestSubmit(QuestManager.LocalPlayerId, questId, itemId, amount, requestId);
+        else PacketBuilder.SendReliableToHost(new G_QuestSubmitT
+            { QuestId = questId, ItemId = itemId, Amount = amount, RequestId = requestId }, G_QuestSubmit.Pack, PacketType.G_QuestSubmit);
+    }
 
-        if (RoomManager.IsHost)
-            PacketBuilder.BroadcastReliableToGuests(
-                new H_QuestSubmitT { QuestId = questId, ItemId = itemId, Amount = amount },
-                H_QuestSubmit.Pack, PacketType.H_QuestSubmit);
-        else
-            PacketBuilder.SendReliableToHost(
-                new G_QuestSubmitT { QuestId = questId, ItemId = itemId, Amount = amount },
-                G_QuestSubmit.Pack, PacketType.G_QuestSubmit);
+    public static void HostQuestAccept(int playerId, int questId)
+    {
+        if (!RoomManager.IsHost || QuestTable.Instance.Get(questId) == null) return;
+        QuestManager.Accept(questId, playerId);
+        SendQuestState(questId, playerId);
+    }
+
+    public static void HostQuestComplete(int playerId, int questId)
+    {
+        if (!RoomManager.IsHost || QuestTable.Instance.Get(questId) == null) return;
+        bool completed = QuestManager.Complete(questId, playerId);
+        SendQuestState(questId, playerId);
+        if (!completed) return;
+        if (playerId == QuestManager.LocalPlayerId) QuestManager.ReceiveReward(questId);
+        else PacketBuilder.SendReliableToGuest(playerId,
+            new H_QuestCompleteT { QuestId = questId, PlayerId = playerId }, H_QuestComplete.Pack, PacketType.H_QuestComplete);
+    }
+
+    public static void HostQuestSubmit(int playerId, int questId, int itemId, int amount, long requestId)
+    {
+        if (!RoomManager.IsHost) return;
+        var result = QuestManager.ProcessSubmission(playerId, questId, itemId, amount, requestId);
+        if (result == null) return;
+        SendQuestState(result.QuestId, playerId);
+        if (playerId == QuestManager.LocalPlayerId) QuestManager.ApplySubmissionResult(result);
+        else PacketBuilder.SendReliableToGuest(playerId, result, H_QuestSubmit.Pack, PacketType.H_QuestSubmit);
+    }
+
+    private static void SendQuestState(int questId, int playerId)
+    {
+        if (QuestTable.Instance.Get(questId) == null) return;
+        var snapshot = QuestManager.Snapshot(questId, playerId);
+        if (QuestManager.IsShared(questId))
+            PacketBuilder.BroadcastReliableToGuests(snapshot, H_QuestAccept.Pack, PacketType.H_QuestAccept);
+        else if (playerId != QuestManager.LocalPlayerId)
+            PacketBuilder.SendReliableToGuest(playerId, snapshot, H_QuestAccept.Pack, PacketType.H_QuestAccept);
+    }
+
+    // 디스크 복원과 별개로, 접속 시 호스트 메모리의 공유 상태와 본인 개인 상태를 전송한다.
+    public static void SendQuestStatesToGuest(int playerId)
+    {
+        if (!RoomManager.IsHost) return;
+        foreach (var quest in QuestTable.Instance.All)
+            PacketBuilder.SendReliableToGuest(playerId, QuestManager.Snapshot(quest.Id, playerId), H_QuestAccept.Pack, PacketType.H_QuestAccept);
     }
 
     // 게스트가 씬 전환 직전에 자기 상태를 호스트 세이브에 올린다(오토세이브 + 인벤 미러 동기화).

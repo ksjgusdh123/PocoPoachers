@@ -578,6 +578,7 @@ public class RoomManager : Singleton<RoomManager>
                 H_ShelterLevel.Pack, PacketType.H_ShelterLevel);
 
         SendAllPlayerStatsToGuest(newGuestId);
+        RoomSync.SendQuestStatesToGuest(newGuestId);
     }
 
     static bool IsGameplayScene(string sceneName) =>
@@ -801,6 +802,7 @@ public class RoomManager : Singleton<RoomManager>
 
     void Update()
     {
+        QuestManager.FlushLocalItems();
         if (_udpSession == null) return;
         long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 

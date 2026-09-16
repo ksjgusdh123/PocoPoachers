@@ -100,7 +100,6 @@ public class TableGeneratorTool
         if (idColumn < 0 || modeColumn < 0 || prerequisiteColumn < 0)
             throw new FormatException("quest.csv: id, progress_mode, prerequisite_quest_ids 컬럼이 필요합니다.");
         var graph = new Dictionary<int, List<int>>();
-        var modes = new Dictionary<int, string>();
         foreach (var row in rows)
         {
             if (row.Length != headers.Length || !int.TryParse(row[idColumn], out int id) || id <= 0 || graph.ContainsKey(id))
@@ -114,15 +113,12 @@ public class TableGeneratorTool
                     prerequisites.Add(prior);
                 }
             graph.Add(id, prerequisites);
-            modes.Add(id, row[modeColumn].Trim());
         }
         foreach (var pair in graph)
             foreach (int prior in pair.Value)
             {
                 if (!graph.ContainsKey(prior)) throw new FormatException($"quest.csv {pair.Key}: 없는 선행 퀘스트 {prior}");
-                if (string.Equals(modes[pair.Key], "Shared", StringComparison.OrdinalIgnoreCase)
-                    && string.Equals(modes[prior], "Personal", StringComparison.OrdinalIgnoreCase))
-                    throw new FormatException($"quest.csv {pair.Key}: 공유 퀘스트의 선행 조건으로 개인 퀘스트를 지정할 수 없습니다.");
+
             }
         var visiting = new HashSet<int>();
         var done = new HashSet<int>();

@@ -19,7 +19,8 @@ public static class QuestManager
     private static readonly Dictionary<(int player, long request), H_QuestSubmitT> _submissionResults = new();
     private static readonly HashSet<int> _receivedRewards = new();
     private static readonly List<(int item, int count)> _pendingItems = new();
-    private static long _nextRequest;
+    // 재접속 후에도 이전 제출 요청 번호와 충돌하지 않도록 세션 초기화 시 되돌리지 않는다.
+    private static long _nextRequest = DateTime.UtcNow.Ticks;
 
     public static int LocalPlayerId => RoomSync.MyPlayerId != 0 ? RoomSync.MyPlayerId : -1;
     public static event Action<int, QuestState> OnQuestStateChanged;
@@ -37,10 +38,10 @@ public static class QuestManager
         if (!_progress.TryGetValue(key, out var progress)) _progress[key] = progress = new Progress();
         return progress;
     }
-    private static void Notify(int questId, int owner, Progress progress)
+    private static void Notify(int questId, int owner, Progress progress, bool stateChanged = true)
     {
         if (owner != 0 && owner != LocalPlayerId) return;
-        OnQuestStateChanged?.Invoke(questId, progress.State);
+        if (stateChanged) OnQuestStateChanged?.Invoke(questId, progress.State);
         foreach (var item in progress.Submitted) OnSubmittedChanged?.Invoke(questId, item.Key, item.Value);
     }
     public static QuestState GetState(int questId, int? player = null) => Find(questId, player)?.State ?? QuestState.Available;
@@ -80,7 +81,7 @@ public static class QuestManager
         var progress = Ensure(questId, player);
         progress.Submitted[itemId] = current + accepted;
         progress.Revision++;
-        Notify(questId, Owner(questId, player), progress);
+        Notify(questId, Owner(questId, player), progress, stateChanged: false);
         return accepted;
     }
     // 제출 누적치가 목표를 다 채웠는지 - 완료 가능 여부를 UI가 직접 물어볼 때 쓴다.
@@ -119,12 +120,13 @@ public static class QuestManager
             || snapshot.State < 0 || snapshot.State > (int)QuestState.Completed) return;
         var progress = Ensure(snapshot.QuestId, LocalPlayerId);
         if (snapshot.Revision < progress.Revision) return;
+        bool stateChanged = progress.State != (QuestState)snapshot.State;
         progress.State = (QuestState)snapshot.State;
         progress.Revision = snapshot.Revision;
         progress.Submitted.Clear();
         for (int i = 0; i < snapshot.ItemIds.Count && i < snapshot.ItemCounts.Count; i++)
             progress.Submitted[snapshot.ItemIds[i]] = snapshot.ItemCounts[i];
-        Notify(snapshot.QuestId, snapshot.PlayerId, progress);
+        Notify(snapshot.QuestId, snapshot.PlayerId, progress, stateChanged);
     }
 
     public static long BeginSubmission(int questId, int itemId, int count)
@@ -170,7 +172,7 @@ public static class QuestManager
     public static void Clear()
     {
         _progress.Clear(); _pendingSubmissions.Clear(); _submissionResults.Clear();
-        _receivedRewards.Clear(); _pendingItems.Clear(); _nextRequest = 0;
+        _receivedRewards.Clear(); _pendingItems.Clear();
     }
 
     // 기존 공유 저장 형식만 유지한다. 개인 진행의 디스크 저장은 이번 범위에서 제외한다.
