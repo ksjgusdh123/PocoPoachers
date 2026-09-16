@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 public static class ExteriorRockMixer
 {
-    private const string ScenePath = "Assets/Scenes/02_Raid/SC_Desert_750_Reference.unity";
+    private const string ScenePath = "Assets/Scenes/02_Raid/SC_Raid_1001.unity";
     private const string SourceFolder = "Assets/_External/AI/Prefabs/Environments/Desert/Rocks/";
     private const string OriginalFolder = "Assets/_External/AI/Models/Environments/Desert/DesertReference750/";
     private const string OutputFolder = "Assets/GeneratedExteriorRocks";
@@ -35,7 +35,7 @@ public static class ExteriorRockMixer
         var scene = SceneManager.GetActiveScene();
         if (EditorApplication.isPlayingOrWillChangePlaymode || scene.path != ScenePath)
         {
-            Debug.LogWarning("편집 모드에서 SC_Desert_750_Reference 씬을 열어주세요.");
+            Debug.LogWarning("편집 모드에서 SC_Raid_1001 씬을 열어주세요.");
             return false;
         }
         var targets = new List<MeshFilter>();

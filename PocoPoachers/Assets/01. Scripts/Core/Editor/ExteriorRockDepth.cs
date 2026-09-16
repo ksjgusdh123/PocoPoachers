@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 
 public static class ExteriorRockDepth
 {
-    private const string ScenePath = "Assets/Scenes/02_Raid/SC_Desert_750_Reference.unity";
+    private const string ScenePath = "Assets/Scenes/02_Raid/SC_Raid_1001.unity";
     private const string Folder = "Assets/GeneratedExteriorRocks";
     private static string RequestKey => "PocoPoachers.ExteriorRockDepth.3." + Application.dataPath;
 

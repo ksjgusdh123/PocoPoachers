@@ -56,7 +56,7 @@ public static class TerrainHoleRimBuilder
         string trialKey = TrialKey + Application.dataPath;
         if (EditorPrefs.GetBool(trialKey, false) || EditorApplication.isPlayingOrWillChangePlaymode) return;
         var scene = SceneManager.GetActiveScene();
-        if (scene.path != "Assets/Scenes/02_Raid/SC_Desert_750_Reference.unity") return;
+        if (scene.path != "Assets/Scenes/02_Raid/SC_Raid_1001.unity") return;
         foreach (var root in scene.GetRootGameObjects())
         foreach (var terrain in root.GetComponentsInChildren<Terrain>())
         {
