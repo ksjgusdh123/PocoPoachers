@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -80,6 +81,8 @@ public class DialogueUI : UIBase
     private int _menuLineId;     // 목록으로 돌아올 때 다시 띄울 기본 대사 줄
     private int _activeQuestId;  // 지금 대사를 띄우고 있는 퀘스트 (0이면 기본 대사 중)
     private QuestStep _activeStep;
+    private int _completeRequestedQuestId; // 이 대화창에서 마지막으로 완료를 요청한 퀘스트
+    private bool _inCutscene;
 
     protected override UIType UiType => UIType.Dialogue;
 
@@ -106,7 +109,7 @@ public class DialogueUI : UIBase
 
     private void Update()
     {
-        if (_pendingChoices.Count == 0 || Keyboard.current == null) return;
+        if (_inCutscene || _pendingChoices.Count == 0 || Keyboard.current == null) return;
 
         int count = Mathf.Min(_pendingChoices.Count, HotkeyLimit);
         for (int i = 0; i < count; i++)
@@ -221,7 +224,7 @@ public class DialogueUI : UIBase
     // 외부 선택지 UI가 버튼 클릭 등으로 호출 — index는 현재 선택지 목록(OnChoicesChanged로 받은 것) 기준
     public void SelectChoice(int index)
     {
-        if (index < 0 || index >= _pendingChoices.Count) return;
+        if (_inCutscene || index < 0 || index >= _pendingChoices.Count) return;
 
         // 고른 동작이 또 선택지를 띄울 수 있으니 목록을 먼저 비운다 — 안 그러면 같은 선택지를 두 번 누를 수 있다
         Action select = _pendingChoices[index].Select;
@@ -231,7 +234,7 @@ public class DialogueUI : UIBase
 
     private void Advance()
     {
-        if (_pendingChoices.Count > 0) return; // 선택지 표시 중엔 F 무시
+        if (_inCutscene || _pendingChoices.Count > 0) return; // 연출 중이거나 선택지 표시 중엔 F 무시
 
         // 타이핑 중이면 먼저 전체를 띄운다 — 다음 줄로 넘어가려면 한 번 더 눌러야 한다
         if (IsTyping)
@@ -339,7 +342,8 @@ public class DialogueUI : UIBase
 
     private void ReturnToMenu()
     {
-        if (!ShowQuestMenu()) Hide();
+        // 마지막 퀘스트를 완료해 목록이 비어도 연출 뒤에 대사를 이어가야 하므로 연출 중에는 닫지 않는다
+        if (!ShowQuestMenu() && !_inCutscene) Hide();
     }
 
     // 목록에서 퀘스트를 고르면 그 단계의 대사부터 시작한다 — 대사가 끝나면 ShowQuestStepChoices가 이어받는다
@@ -414,9 +418,50 @@ public class DialogueUI : UIBase
         if (QuestManager.CanAccept(questId)) RoomSync.QuestAccept(questId);
     }
 
-    private static void TryComplete(int questId)
+    private void TryComplete(int questId)
     {
+        _completeRequestedQuestId = questId;
         RoomSync.QuestComplete(questId);
+    }
+
+    // 이 대화창에서 완료를 요청한 퀘스트인지 — 완료 연출에서 카메라를 돌릴 사람(직접 깬 사람)을 가린다
+    public bool IsCompletingQuest(int questId) =>
+        gameObject.activeInHierarchy && !_inCutscene && _completeRequestedQuestId == questId;
+
+    // 연출 동안 대화창을 숨기고 진행 입력을 막는다. 대화 입력맵은 그대로라 플레이어도 움직이지 않는다.
+    public void BeginCutscene()
+    {
+        _inCutscene = true;
+        StopTyping();
+        FadeCanvas(0f);
+    }
+
+    // 연출이 끝나면 대화창을 다시 띄워 이어질 대사를 보여준다. 대사가 끝나면 퀘스트 목록으로 돌아간다.
+    public void EndCutscene(int dialogueId)
+    {
+        if (!_inCutscene) return;
+        _inCutscene = false;
+        FadeCanvas(1f);
+
+        DialogueData line = dialogueId > 0 ? DialogueTable.Instance.Get(dialogueId) : null;
+        if (line == null)
+        {
+            ReturnToMenu();
+            return;
+        }
+
+        // 기본 대사로 취급되면 목록 화면에 다시 띄우는 줄(_menuLineId)이 이 대사로 바뀐다
+        _activeQuestId = _completeRequestedQuestId;
+        _activeStep = QuestStep.None;
+        ShowLine(line);
+    }
+
+    private void FadeCanvas(float alpha)
+    {
+        if (!TryGetComponent<CanvasGroup>(out var group)) group = gameObject.AddComponent<CanvasGroup>();
+        DOTween.Kill(group);
+        group.blocksRaycasts = alpha > 0f;
+        group.DOFade(alpha, 0.25f).SetUpdate(true);
     }
 
     private void SetChoices(List<Choice> choices)
@@ -479,6 +524,8 @@ public class DialogueUI : UIBase
         _menuLineId = 0;
         _activeQuestId = 0;
         _activeStep = QuestStep.None;
+        _completeRequestedQuestId = 0;
+        _inCutscene = false;
     }
 
     protected override void OnShow()
@@ -490,7 +537,7 @@ public class DialogueUI : UIBase
     private void HandleQuestStateChanged(int questId, QuestState state)
     {
         // 대사를 읽는 중에는 끊지 않고, 퀘스트 목록 화면만 호스트 응답에 맞춰 갱신한다.
-        if (this == null || !gameObject.activeInHierarchy || _questMenuNpcId <= 0
+        if (this == null || !gameObject.activeInHierarchy || _inCutscene || _questMenuNpcId <= 0
             || _activeQuestId != 0 || _pendingChoices.Count == 0) return;
         ReturnToMenu();
     }
