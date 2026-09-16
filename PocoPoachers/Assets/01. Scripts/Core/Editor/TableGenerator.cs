@@ -226,6 +226,8 @@ public class TableGeneratorTool
         var rows = new List<string[]>();
         for (int i = 1; i < lines.Length; i++)
         {
+            // 엑셀 저장 시 줄 끝에 \r이 중복되면 빈 줄이 생기고, 이게 행으로 잡히면 모든 컬럼이 string으로 추론된다.
+            if (string.IsNullOrWhiteSpace(lines[i])) continue;
             var cols = SplitCsvLine(lines[i]);
             if (cols.Length == 0) continue;
 

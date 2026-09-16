@@ -26,6 +26,8 @@
 | `7001 ~ 7999` | Skill (AI 스킬) | `skill` 컬럼(Dodge/Retreat/Heal)이 동작 종류, `SkillManager._skillIds`로 AI별 할당 |
 | `8001 ~ 8999` | ItemEnhancementCost (장비/파츠 강화 재료) | item_id + level 조합당 1행, 최대 레벨 3 |
 | `9001 ~ 9999` | Quest | `npc_id`는 Dialogue처럼 참조용 정수(전용 NPC 테이블 없음). `goal_item_ids`/`reward_item_ids`는 `\|`로 구분한 Item ID 목록(콤마는 CSV 파서가 컬럼 구분자로 먹어서 못 씀), 대응하는 `*_counts`와 인덱스로 짝짓는다 — `QuestData.GoalItems`/`RewardItems`(손으로 쓴 partial, `QuestData.Parsed.cs`)가 파싱해서 `(itemId, count)` 목록으로 돌려줌. 완료 시 보상 지급 로직은 아직 연결 안 됨. `dialogue_choice.csv`의 `accept_quest_id`(0=없음)로 대화 선택지에서 `QuestManager.Accept` 호출 가능(`DialogueUI.SelectChoice`) |
+| `10001 ~ 10999` | Dialogue — 튜토리얼 대사 | PlayerSkill과 테이블이 달라 충돌 없음 |
+| `{퀘스트ID}00 ~ {퀘스트ID}99` | Dialogue — 퀘스트 대사 | 퀘스트 9101 → 910100~910199. 제안 `+00~49`, 진행 `+50~79`, 완료 `+80~99`. `9X0000~9X0099`(퀘스트 ID `9X00`은 비워둠)은 X장 공용 대사(예: 910001 쉘터 도착 안내). 기존 9001~9002의 9011~9023은 이전 규칙 |
 | `10001 ~ 10999` | PlayerSkill (플레이어 스킬) | `skill` 컬럼이 `PlayerSkillId` enum 문자열(Dash/InstantReload/... 18종). `unlock_stat`+`unlock_level`(해금 조건)·`need_item_id`+`need_item_count`(획득 재료) 컬럼이 있으나 현재 전부 미기재(0/빈값) — 모든 스킬이 조건 없이 해금+보유 상태. AI용 `skill.csv`(7001~)와는 별개 테이블 |
 | Item ID 공유 | CraftingRecipe (제작 레시피) | id = result_item_id (1:1), `CraftingRecipeTable.Get(itemId)`로 조회 |
 | Item ID 공유 | FurnaceRecipe (화로 제련) | id = **투입** 광석의 Item ID (1:1), `FurnaceRecipeTable.Get(itemId)`로 결과 아이템(result_item_id)과 소요 시간(smelt_seconds) 조회. 레시피가 없는 아이템은 화로에 넣을 수 없다 — 돌(801)이 여기 해당 |

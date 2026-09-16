@@ -19,6 +19,12 @@ public abstract class SceneExitBase : MonoBehaviour
     [SerializeField, Tooltip("눈을 뜨는 연출 길이(초)")]
     protected float _wakeUpDuration = 2f;
 
+    [SerializeField, Tooltip("도착한 씬에서 자동으로 열 대사 ID (0이면 없음). 눈을 뜨는 연출을 켰다면 연출이 끝난 뒤에 열린다.")]
+    protected int _arrivalDialogueId = 0;
+
+    [SerializeField, Tooltip("도착 후(눈을 뜨는 연출이 있으면 그 뒤) 대사가 뜨기까지 기다리는 시간(초)")]
+    protected float _arrivalDialogueDelay = 0.5f;
+
     [SerializeField, Tooltip("나가기 전에 플레이어의 인벤토리와 장착 장비를 전부 비운다. 튜토리얼에서 주운 것을 본편으로 가져가지 않게 하는 용도.")]
     protected bool _clearInventoryOnExit = false;
 
@@ -44,6 +50,10 @@ public abstract class SceneExitBase : MonoBehaviour
         // 목적지 씬이 로드되는 시점에 재생되도록 미리 예약해둔다
         if (_wakeUpOnArrive)
             ScreenWakeUp.PlayOnSceneLoaded(TargetSceneName, _wakeUpDuration);
+
+        if (_arrivalDialogueId > 0)
+            ArrivalDialogue.OpenOnSceneLoaded(TargetSceneName, _arrivalDialogueId,
+                _arrivalDialogueDelay + (_wakeUpOnArrive ? ScreenWakeUp.GetTotalTime(_wakeUpDuration) : 0f));
 
         if (!_useLoadingScreen)
         {

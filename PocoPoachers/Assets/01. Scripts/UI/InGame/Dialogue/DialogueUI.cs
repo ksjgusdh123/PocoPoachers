@@ -156,7 +156,7 @@ public class DialogueUI : UIBase
     }
 
     // 이미 열려있는 상태에서 내용만 갱신할 때
-    public void SetContent(string speakerName, string dialogue)
+    public void SetContent(string speakerName, string dialogue, bool animate = true)
     {
         if (_nameText != null) _nameText.text = speakerName;
         if (_dialogueText == null) return;
@@ -164,7 +164,7 @@ public class DialogueUI : UIBase
         StopTyping();
         _dialogueText.text = dialogue;
 
-        if (_charInterval <= 0f || !gameObject.activeInHierarchy)
+        if (!animate || _charInterval <= 0f || !gameObject.activeInHierarchy)
         {
             _dialogueText.maxVisibleCharacters = int.MaxValue;
             return;
@@ -325,12 +325,12 @@ public class DialogueUI : UIBase
         if (choices.Count == 0) return false;
         choices.Add(new Choice("돌아가기", Hide));
 
-        // 퀘스트 대사가 화면에 남아 있으면 목록과 문맥이 어긋난다 — 기본 대사의 마지막 줄로 되돌린다
+        // 목록에서는 기본 대사의 마지막 줄을 완성된 상태로 표시해 타이핑이 반복되지 않게 한다.
         DialogueData line = _menuLineId > 0 ? DialogueTable.Instance.Get(_menuLineId) : null;
         if (line != null)
         {
             _nextId = 0;
-            SetContent(line.Speaker, line.Text);
+            SetContent(line.Speaker, line.Text, animate: false);
         }
 
         SetChoices(choices);

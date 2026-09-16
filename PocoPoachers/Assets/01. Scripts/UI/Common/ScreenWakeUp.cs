@@ -60,6 +60,18 @@ public class ScreenWakeUp : MonoBehaviour
         Play(_pendingDuration);
     }
 
+    // 껌뻑임까지 포함한 연출 전체 길이 — 도착 후 다른 연출을 이 뒤로 미룰 때 쓴다
+    public static float GetTotalTime(float duration)
+    {
+        float total = BlackHold + duration;
+        for (int i = 0; i < Blinks.Length; i++)
+        {
+            total += Blinks[i].openTime;
+            if (i < Blinks.Length - 1) total += OpenHold + Blinks[i].closeTime;
+        }
+        return total;
+    }
+
     public static void Play(float duration)
     {
         var runner = new GameObject(nameof(ScreenWakeUp)).AddComponent<ScreenWakeUp>();
