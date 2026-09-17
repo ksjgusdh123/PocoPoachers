@@ -34,6 +34,7 @@ public class GrenadeProjectile : MonoBehaviour
     // Resources/Skill/ 아래에 두면 자동으로 쓰인다. 없으면 기본 도형(구)으로 대체한다.
     private const string BodyPrefabPath = "Skill/Grenade";
     private const string ExplosionPrefabPath = "Skill/GrenadeExplosion";
+    private const string ScorchDecalPrefabPath = "Skill/GrenadeScorch";
     private const float PrefabFlashLifetime = 2f; // 폭발 프리팹이 스스로 안 지워질 때의 안전망
 
     // Cosmetic 전용 예측 파라미터 (물리 없는 결정론적 포물선+구르기)
@@ -357,6 +358,7 @@ public class GrenadeProjectile : MonoBehaviour
         _state = State.Exploded;
 
         SpawnFlash();
+        SpawnScorchDecal();
         HideVisual(); // 본체 파괴(DestroyDelay)를 기다리지 않고 폭발 이펙트와 동시에 즉시 안 보이게 한다
         if (applyDamage) ApplyExplosionDamage();
 
@@ -400,5 +402,17 @@ public class GrenadeProjectile : MonoBehaviour
         flash.transform.localScale = Vector3.one * (_radius * 2f);
         Destroy(flash.GetComponent<Collider>());
         Destroy(flash, FlashDuration);
+    }
+
+    // 폭발 지점 바로 아래 지면(터레인 포함)에 Decal Projector 프리팹을 투영한다. 없으면 조용히 건너뛴다.
+    private void SpawnScorchDecal()
+    {
+        GameObject prefab = Resources.Load<GameObject>(ScorchDecalPrefabPath);
+        if (prefab == null) return;
+
+        if (!Physics.Raycast(transform.position, Vector3.down, out RaycastHit hit, _radius * 2f))
+            return;
+
+        Instantiate(prefab, hit.point, Quaternion.LookRotation(Vector3.down, Vector3.forward));
     }
 }
