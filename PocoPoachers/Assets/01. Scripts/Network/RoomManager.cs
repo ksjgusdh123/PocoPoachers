@@ -582,7 +582,7 @@ public class RoomManager : Singleton<RoomManager>
     }
 
     static bool IsGameplayScene(string sceneName) =>
-        sceneName == SceneName.Shelter || sceneName.StartsWith("SC_Raid_");
+        sceneName == SceneName.Shelter || sceneName == SceneName.Tutorial || sceneName.StartsWith("SC_Raid_");
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
@@ -598,16 +598,21 @@ public class RoomManager : Singleton<RoomManager>
             return;
         }
 
-        if (_isHost)
-            StartCoroutine(MarkWorldObjectsReady());
-        else if (_hostEp != null)
-            RoomSync.SceneReady();
+        _worldObjectsReady = false;
+        StartCoroutine(MarkWorldObjectsReady(scene));
     }
 
     // 스포너(ItemSpawner/EnemySpawner)의 Start가 실행된 다음 프레임에 스냅샷 전송 가능 상태로 전환
-    IEnumerator MarkWorldObjectsReady()
+    IEnumerator MarkWorldObjectsReady(Scene scene)
     {
         yield return null;
+        if (!scene.IsValid() || !scene.isLoaded) yield break;
+        ItemSpawner.InitializeSceneBoxes(scene);
+        if (!_isHost)
+        {
+            if (_hostEp != null) RoomSync.SceneReady();
+            yield break;
+        }
         _worldObjectsReady = true;
         foreach (var guestId in _sceneReadyGuests)
             SendWorldObjectsToGuest(guestId);

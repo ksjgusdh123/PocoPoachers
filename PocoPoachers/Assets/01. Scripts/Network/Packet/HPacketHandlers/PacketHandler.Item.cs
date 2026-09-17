@@ -27,7 +27,14 @@ public static partial class PacketHandlers
             // 씬에 미리 배치되어 이미 등록된 오브젝트(쉘터 창고 등)는 스폰 없이 내용물만 갱신
             if (objectManager.TryGet(ObjectKind.ItemBox, uid, out var existing) && existing != null)
             {
-                FillInventory(existing.GetComponent<Inventory>(), item_ids, item_counts, item_uids, item_slots);
+                FillInventory(existing.GetComponent<Inventory>(), item_ids, item_counts, item_uids, item_slots, no_reveal_indices);
+                return;
+            }
+
+            // 고정 ID를 가진 씬 박스가 없으면 맵/ID 불일치다. 임의의 새 박스로 대체하지 않는다.
+            if (uid < 0)
+            {
+                Debug.LogError($"[ItemSpawn] 씬 박스를 찾지 못했습니다. 맵의 고정 ID를 확인해 주세요: {uid}");
                 return;
             }
 
@@ -38,11 +45,13 @@ public static partial class PacketHandlers
     }
 
     // 스냅샷 내용으로 인벤토리를 통째로 교체. item_slots가 있으면 호스트와 동일한 슬롯에 배치
-    private static void FillInventory(Inventory inventory, int[] itemIds, int[] itemCounts, int[] itemUids, int[] itemSlots)
+    private static void FillInventory(Inventory inventory, int[] itemIds, int[] itemCounts, int[] itemUids, int[] itemSlots, int[] noRevealIndices)
     {
         if (inventory == null || itemIds == null) return;
 
+        inventory.EnsureInitialized();
         inventory.Clear();
+        var noReveal = noRevealIndices != null ? new HashSet<int>(noRevealIndices) : new HashSet<int>();
         for (int i = 0; i < itemIds.Length; i++)
         {
             var data = ItemTable.Instance.Get(itemIds[i]);
@@ -51,8 +60,8 @@ public static partial class PacketHandlers
             int count = (itemCounts != null && i < itemCounts.Length) ? itemCounts[i] : 1;
             int uid   = (itemUids  != null && i < itemUids.Length)  ? itemUids[i]  : 0;
             int slot  = (itemSlots != null && i < itemSlots.Length) ? itemSlots[i] : inventory.CanAddItem(data, count);
-            if (slot >= 0)
-                inventory.AddItemAtSlot(slot, data, count, uid);
+            if (slot >= 0 && inventory.AddItemAtSlot(slot, data, count, uid) && inventory.Slots[slot] is BoxItemSlot boxSlot)
+                boxSlot.skipReveal = noReveal.Contains(i);
         }
     }
 

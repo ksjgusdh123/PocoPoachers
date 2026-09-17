@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public static class RoomSync
@@ -534,6 +534,10 @@ public static class RoomSync
     public static void SceneReady()
     {
         if (RoomManager.IsHost) return;
+
+        // 중도 입장도 호스트에 준비 완료를 알리기 전에 씬 박스를 등록한다.
+        for (int i = 0; i < UnityEngine.SceneManagement.SceneManager.sceneCount; i++)
+            ItemSpawner.InitializeSceneBoxes(UnityEngine.SceneManagement.SceneManager.GetSceneAt(i));
 
         PacketBuilder.SendReliableToHost(
             new G_SceneReadyT { PlayerId = MyId },

@@ -5,6 +5,24 @@ public class ItemBox : MonoBehaviour, IInteractable
 {
     [SerializeField] private ProximityDetector _proximityDetector;
 
+    // 씬 배치 박스 전용. 에디터가 음수 ID를 저장하며 런타임 생성 박스는 사용하지 않는다.
+    [SerializeField, HideInInspector] private int _sceneBoxId;
+    [SerializeField, HideInInspector] private string _sceneBoxEditorOwner;
+
+    public int SceneBoxId => _sceneBoxId;
+    public bool HasValidSceneBoxId => _sceneBoxId < 0;
+    internal bool SceneContentsInitialized { get; set; }
+
+#if UNITY_EDITOR
+    public string SceneBoxEditorOwner => _sceneBoxEditorOwner;
+
+    public void SetEditorSceneIdentity(int id, string owner)
+    {
+        _sceneBoxId = id;
+        _sceneBoxEditorOwner = owner;
+    }
+#endif
+
     public int[] ItemIds { get; private set; }
     public bool HasBeenOpened { get; private set; }
 
@@ -22,6 +40,11 @@ public class ItemBox : MonoBehaviour, IInteractable
 
     private void OnDestroy()
     {
+        var manager = ObjectManager.Instance;
+        if (HasValidSceneBoxId && manager != null &&
+            manager.TryGet(ObjectKind.ItemBox, SceneBoxId, out var registered) &&
+            registered != null && registered.gameObject == gameObject)
+            manager.UnregisterSceneObject(ObjectKind.ItemBox, SceneBoxId);
         GunBase.OnReloadStarted -= OnReloadStarted;
         GunBase.OnReloadEnded -= OnReloadEnded;
     }
@@ -60,6 +83,7 @@ public class ItemBox : MonoBehaviour, IInteractable
 
         if (!gameObject.TryGetComponent<Inventory>(out var inven))
             inven = gameObject.AddComponent<Inventory>();
+        inven.EnsureInitialized();
         if (capacity.HasValue)
             inven.SetCapacity(capacity.Value);
 

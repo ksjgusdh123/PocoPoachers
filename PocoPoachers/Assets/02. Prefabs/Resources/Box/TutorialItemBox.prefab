@@ -48,7 +48,6 @@ GameObject:
   - component: {fileID: -7576339236958506304}
   - component: {fileID: -3589332245713787919}
   - component: {fileID: -8329978363327193838}
-  - component: {fileID: -8641320332527215733}
   - component: {fileID: 3131031084185021531}
   m_Layer: 0
   m_Name: TutorialItemBox
@@ -230,27 +229,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e8fa3dbf1965b74889eaf832703b055, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ItemBoxAnimation
---- !u!114 &-8641320332527215733
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1460218856480299298}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 600745424f5239d4d91ed764b48bb9d3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BoxLootTable
-  _weaponChance: 1
-  _armorChance: 0
-  _minItemCount: 1
-  _maxItemCount: 1
-  _quantityRanges: []
-  _defaultMinQuantity: 1
-  _defaultMaxQuantity: 1
-  _minAmmoCount: 20
-  _maxAmmoCount: 30
 --- !u!114 &3131031084185021531
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -262,7 +240,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f24b8e5107a34c6db95e13a70cf82e94, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ItemBoxStartContents
+  m_EditorClassIdentifier: Assembly-CSharp::ItemBoxFixedContents
   _items:
   - itemId: 201
     count: 1

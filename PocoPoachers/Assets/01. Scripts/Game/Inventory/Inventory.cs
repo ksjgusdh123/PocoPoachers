@@ -11,6 +11,7 @@ public class Inventory : MonoBehaviour
 
     private List<ItemSlot> _slots = new List<ItemSlot>();
     private int _currentCapacity;
+    private bool _initialized;
 
     public event Action ChangeInventory;
     public event Action<ItemData> OnItemAdded;
@@ -29,8 +30,13 @@ public class Inventory : MonoBehaviour
     // 현재 사용 중인 슬롯 수 (갭 포함)
     public int ItemCount => CountItems();
 
-    private void Awake()
+    private void Awake() => EnsureInitialized();
+
+    // 비활성 씬 박스도 네트워크 스냅샷을 받을 수 있도록 Awake 이전 초기화를 허용한다.
+    public void EnsureInitialized()
     {
+        if (_initialized) return;
+        _initialized = true;
         _currentCapacity = _initialCapacity;
 
         for (int i = 0; i < _maxCapacity; i++)
@@ -44,6 +50,7 @@ public class Inventory : MonoBehaviour
     // 예: 플레이어 사망 시 인벤토리 크기에 맞춰 상자 용량을 동적으로 정할 때
     public void SetCapacity(int maxCapacity, int? initialCapacity = null)
     {
+        _initialized = true;
         _maxCapacity = maxCapacity;
         _initialCapacity = initialCapacity ?? maxCapacity;
         _currentCapacity = _initialCapacity;

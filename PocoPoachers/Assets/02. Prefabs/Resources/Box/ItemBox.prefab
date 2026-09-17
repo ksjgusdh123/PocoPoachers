@@ -240,14 +240,17 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 600745424f5239d4d91ed764b48bb9d3, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BoxLootTable
-  _weaponChance: 1
-  _armorChance: 0
+  m_EditorClassIdentifier: Assembly-CSharp::ItemBoxRandomContents
   _minItemCount: 1
   _maxItemCount: 1
-  _quantityRanges: []
-  _defaultMinQuantity: 1
-  _defaultMaxQuantity: 1
+  _entries:
+  - type: 2
+    minItemId: 0
+    maxItemId: 0
+    weight: 1
+    minQuantity: 1
+    maxQuantity: 1
+  _includeWeaponAmmo: 1
   _minAmmoCount: 20
   _maxAmmoCount: 30
 --- !u!1 &2550851052499235056

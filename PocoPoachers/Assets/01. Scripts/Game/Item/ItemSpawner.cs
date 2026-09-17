@@ -9,28 +9,11 @@ public class ItemQuantityRange
     public int Max = 1;
 }
 
-[System.Serializable]
-public class BoxSpawnPoint
-{
-    public Transform point;
-    public GameObject boxPrefab; // ItemBox + BoxLootTable가 붙은 프리팹. 인스턴스화하지 않고 BoxLootTable 설정값만 읽어온다.
-}
-
-// 호스트에서 호출하기
-
+// 씬 배치 박스를 검색해 등록한다. 아이템 선정은 호스트에서만 수행한다.
 public class ItemSpawner : MonoBehaviour
 {
-    [Header("Box Spawn Points")]
-    [SerializeField] private BoxSpawnPoint[] _boxSpawnPoints;
-
-    [Header("Ground Placement")]
-    [SerializeField] private LayerMask _groundLayer;
-
     static Dictionary<ItemType, List<int>> _itemIdsByType;
-
-    int _nextUid = 1000;
     static int _nextItemUid = 1;
-    const int BOX_TYPE_ID = 301;
 
     // 새로 발급되는 무기/방어구의 초기 내구도를 최대치의 이 비율 범위 안에서 랜덤으로 정한다
     private const float MinInitialDurabilityRatio = 0.5f;
@@ -83,54 +66,72 @@ public class ItemSpawner : MonoBehaviour
     // 하위 호환: EnemySpawner 등에서 인스턴스로 접근하던 코드가 그대로 동작하도록 유지
     public List<int> GetIds(ItemType type) => GetItemIds(type);
 
-    void Start()
+    void Start() => SpawnInitBoxes();
+
+    // 기존 호출부 호환용. 이제 새 박스를 만들지 않고 현재 씬의 박스를 등록한다.
+    public void SpawnInitBoxes() => InitializeSceneBoxes(gameObject.scene);
+
+    public static void InitializeSceneBoxes(UnityEngine.SceneManagement.Scene scene)
     {
-        if (RoomManager.IsHost)
-            SpawnInitBoxes();
-    }
+        var manager = ObjectManager.Instance;
+        if (manager == null || !scene.IsValid() || !scene.isLoaded) return;
 
-    public void SpawnInitBoxes()
-    {
-        if (!RoomManager.IsHost) return;
-        if (_boxSpawnPoints == null) return;
-
-        var omgr = ObjectManager.Instance;
-
-        foreach (var sp in _boxSpawnPoints)
+        foreach (var root in scene.GetRootGameObjects())
+        foreach (var box in root.GetComponentsInChildren<ItemBox>(true))
         {
-            if (sp.point == null || sp.boxPrefab == null) continue;
-
-            var lootTable = sp.boxPrefab.GetComponent<BoxLootTable>();
-            if (lootTable == null) continue;
-
-            int uid = _nextUid++;
-            lootTable.Roll(out var itemIds, out var itemCounts, out var itemUids);
-
-            Vector3 pos = GetGroundPosition(sp.point.position, _groundLayer);
-            float rot = sp.point.eulerAngles.y;
-
-            var data = new H_ItemSpawnT
+            if (box is LootBox) continue;
+            // 중도 입장 준비 중 재검색할 때 런타임 적 드롭 등은 건드리지 않는다.
+            var worldObject = box.GetComponent<WorldObject>();
+            if (worldObject != null && worldObject.Kind == ObjectKind.ItemBox && worldObject.Id > 0) continue;
+            if (!box.HasValidSceneBoxId)
             {
-                Uid = uid,
-                TypeId = BOX_TYPE_ID,
-                Pos = new Vec3T { X = pos.x, Y = pos.y, Z = pos.z },
-                Rotation = rot,
-                ItemIds = itemIds,
-                ItemCount = itemCounts,
-                ItemUids = itemUids,
-            };
+                Debug.LogError($"[ItemSpawner] 박스 고정 ID가 없습니다. 에디터에서 씬을 저장해 주세요: {box.name}", box);
+                continue;
+            }
+            int id = box.SceneBoxId;
+            if (manager.TryGet(ObjectKind.ItemBox, id, out var existing) && existing != null)
+            {
+                if (existing.gameObject != box.gameObject)
+                {
+                    Debug.LogError($"[ItemSpawner] 박스 ID가 중복됩니다: {id}, {box.name}", box);
+                    continue;
+                }
+            }
+            else
+            {
+                manager.RegisterSceneObject(ObjectKind.ItemBox, id, box.gameObject);
+            }
 
-            omgr?.RegisterSpawnedBox(data);
-            omgr?.SpawnItemBox(uid, BOX_TYPE_ID, pos, rot)
-                ?.Initialize(itemIds.ToArray(), itemCounts.ToArray(), itemUids.ToArray());
+            var inventory = box.GetComponent<Inventory>();
+            if (inventory == null) inventory = box.gameObject.AddComponent<Inventory>();
+            inventory.EnsureInitialized();
+            if (!RoomManager.IsHost || box.SceneContentsInitialized) continue;
+
+            // 고정 내용을 먼저 담아 슬롯이 부족할 때 고정 지급을 우선한다.
+            var ids = new List<int>();
+            var counts = new List<int>();
+            var uids = new List<int>();
+            var noReveal = new HashSet<int>();
+            var fixedContents = box.GetComponent<ItemBoxFixedContents>();
+            if (fixedContents != null && fixedContents.enabled)
+                fixedContents.AppendContents(ids, counts, uids, noReveal);
+            var loot = box.GetComponent<ItemBoxRandomContents>();
+            if (loot != null && loot.enabled)
+                loot.AppendContents(ids, counts, uids);
+            box.Initialize(ids.ToArray(), counts.ToArray(), uids.ToArray(), noReveal);
+            box.SceneContentsInitialized = true;
+            var position = box.transform.position;
+            manager.RegisterSpawnedBox(new H_ItemSpawnT
+            {
+                Uid = id,
+                TypeId = 0, // 게스트 씬에 이미 존재하므로 프리팹 생성은 하지 않는다.
+                Pos = new Vec3T { X = position.x, Y = position.y, Z = position.z },
+                Rotation = box.transform.eulerAngles.y,
+            });
         }
     }
 
-    public void ResetSpawnState()
-    {
-        _nextUid = 1000;
-        _nextItemUid = 1;
-    }
+    public void ResetSpawnState() => _nextItemUid = 1;
 
     // 저장에서 복원한 아이템 uid와 겹치지 않도록 카운터를 최댓값 다음으로 밀어둔다 (게임 로드 시 호출)
     public static void SeedItemUid(int maxUsedUid)
@@ -179,18 +180,4 @@ public class ItemSpawner : MonoBehaviour
         return GetGroundPosition(randomPos, groundLayer);
     }
 
-    // --- 에디터 시각화 (Gizmos) ---
-    private void OnDrawGizmosSelected()
-    {
-        if (_boxSpawnPoints == null) return;
-
-        foreach (var sp in _boxSpawnPoints)
-        {
-            if (sp.point == null) continue;
-
-            Gizmos.color = new Color(1f, 1f, 0f, 0.6f);
-            Gizmos.DrawSphere(sp.point.position, 0.3f);
-            Gizmos.DrawWireCube(sp.point.position, Vector3.one);
-        }
-    }
 }
