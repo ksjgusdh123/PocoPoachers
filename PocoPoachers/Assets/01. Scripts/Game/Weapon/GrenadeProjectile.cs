@@ -34,7 +34,7 @@ public class GrenadeProjectile : MonoBehaviour
     // Resources/Skill/ 아래에 두면 자동으로 쓰인다. 없으면 기본 도형(구)으로 대체한다.
     private const string BodyPrefabPath = "Skill/Grenade";
     private const string ExplosionPrefabPath = "Skill/GrenadeExplosion";
-    private const float PrefabFlashLifetime = 3f; // 폭발 프리팹이 스스로 안 지워질 때의 안전망
+    private const float PrefabFlashLifetime = 2f; // 폭발 프리팹이 스스로 안 지워질 때의 안전망
 
     // Cosmetic 전용 예측 파라미터 (물리 없는 결정론적 포물선+구르기)
     private const float ArcHeight = 2f;
@@ -42,6 +42,11 @@ public class GrenadeProjectile : MonoBehaviour
     private const float RollDeceleration = 8f;
     private const float RollStopSpeed = 0.3f;
     private const string WallLayerName = "Wall";
+
+    // 비행 중 회전(연출용) — Cosmetic/Remote는 순수 시각 연출로 직접 돌리고,
+    // Authoritative는 실제 물리 각속도를 부여해 회전과 충돌 반응이 일치하게 한다.
+    private const float FlightSpinDegreesPerSecond = 480f;
+    private const float AuthoritativeSpinRadiansPerSecond = 6f;
 
     // Authoritative/Remote 공통 — 호스트 위치 방송 주기, 게스트 보간 속도(EnemyNetSync와 동일)
     private const float SyncInterval = 0.05f;
@@ -62,6 +67,7 @@ public class GrenadeProjectile : MonoBehaviour
     private float _flightTime;
     private float _elapsed;
     private Vector3 _rollDirection;
+    private Vector3 _spinAxis;
     private float _rollSpeed;
     private LayerMask _wallMask;
 
@@ -193,7 +199,12 @@ public class GrenadeProjectile : MonoBehaviour
         _rb.linearDamping = 0f;
         _rb.collisionDetectionMode = CollisionDetectionMode.ContinuousDynamic;
         _rb.interpolation = RigidbodyInterpolation.Interpolate;
-        _rb.linearVelocity = ComputeLaunchVelocity(origin, target, data);
+        Vector3 launchVelocity = ComputeLaunchVelocity(origin, target, data);
+        _rb.linearVelocity = launchVelocity;
+
+        // 진행 방향에 수직인 축으로 초기 각속도를 부여 — 이후는 실제 물리(충돌·마찰)가 회전을 이어받는다.
+        Vector3 spinAxis = Vector3.Cross(Vector3.up, launchVelocity.normalized);
+        _rb.angularVelocity = spinAxis * AuthoritativeSpinRadiansPerSecond;
     }
 
     // 원하는 목표 지점·비행 시간을 만족하는 초기 속도를 역산 — 이후는 실제 중력/충돌로 날아간다.
@@ -232,6 +243,14 @@ public class GrenadeProjectile : MonoBehaviour
     {
         float t = 1f - Mathf.Exp(-SmoothRate * Time.deltaTime);
         transform.position = Vector3.Lerp(transform.position, _netTargetPos, t);
+
+        // 회전은 동기화하지 않고, 보간 목표 방향으로 로컬에서만 연출용으로 돌린다.
+        Vector3 dir = _netTargetPos - transform.position;
+        if (dir.sqrMagnitude > 0.0001f)
+        {
+            Vector3 spinAxis = Vector3.Cross(Vector3.up, dir.normalized);
+            transform.Rotate(spinAxis, FlightSpinDegreesPerSecond * Time.deltaTime, Space.World);
+        }
     }
 
     // ── Cosmetic: 결정론적 포물선 + 구르기 예측 ───────────────
@@ -249,6 +268,7 @@ public class GrenadeProjectile : MonoBehaviour
         _rollDirection.y = 0f;
         _rollDirection = _rollDirection.sqrMagnitude > 0.0001f ? _rollDirection.normalized : Vector3.forward;
         _rollSpeed = speed * RollSpeedFactor;
+        _spinAxis = Vector3.Cross(Vector3.up, _rollDirection);
 
         int wallLayer = LayerMask.NameToLayer(WallLayerName);
         _wallMask = wallLayer >= 0 ? 1 << wallLayer : 0;
@@ -275,6 +295,8 @@ public class GrenadeProjectile : MonoBehaviour
         Vector3 pos = Vector3.Lerp(_origin, _target, t);
         pos.y += ArcHeight * Mathf.Sin(t * Mathf.PI);
         transform.position = pos;
+
+        transform.Rotate(_spinAxis, FlightSpinDegreesPerSecond * Time.deltaTime, Space.World);
 
         if (t >= 1f)
             _state = _rollSpeed > RollStopSpeed ? State.Rolling : State.Landed;
@@ -335,12 +357,19 @@ public class GrenadeProjectile : MonoBehaviour
         _state = State.Exploded;
 
         SpawnFlash();
+        HideVisual(); // 본체 파괴(DestroyDelay)를 기다리지 않고 폭발 이펙트와 동시에 즉시 안 보이게 한다
         if (applyDamage) ApplyExplosionDamage();
 
         if (_role == Role.Authoritative && RoomManager.HasGuests)
             RoomSync.GrenadeExplode(_id, transform.position);
 
         Destroy(gameObject, DestroyDelay);
+    }
+
+    private void HideVisual()
+    {
+        foreach (var r in GetComponentsInChildren<Renderer>())
+            r.enabled = false;
     }
 
     private void ApplyExplosionDamage()
