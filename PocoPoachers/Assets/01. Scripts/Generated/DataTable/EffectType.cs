@@ -2,8 +2,8 @@
 public enum EffectType : int
 {
     None = 0,
-    HP = 1,
-    Thirst = 2,
+    Thirst = 1,
+    HP = 2,
     Damage = 3,
     Guard = 4,
 }
