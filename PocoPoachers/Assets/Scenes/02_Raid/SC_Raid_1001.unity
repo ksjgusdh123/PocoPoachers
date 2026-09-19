@@ -20,9 +20,9 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.78, g: 0.77, b: 0.73, a: 1}
-  m_AmbientEquatorColor: {r: 0.66, g: 0.53, b: 0.41, a: 1}
-  m_AmbientGroundColor: {r: 0.32, g: 0.24, b: 0.21, a: 1}
+  m_AmbientSkyColor: {r: 0.78, g: 0.8, b: 0.82, a: 1}
+  m_AmbientEquatorColor: {r: 0.7, g: 0.67, b: 0.6, a: 1}
+  m_AmbientGroundColor: {r: 0.4, g: 0.36, b: 0.3, a: 1}
   m_AmbientIntensity: 1
   m_AmbientMode: 1
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
@@ -76635,7 +76635,7 @@ Light:
   serializedVersion: 13
   m_Type: 1
   m_Color: {r: 1, g: 0.94, b: 0.84, a: 1}
-  m_Intensity: 1.15
+  m_Intensity: 1.05
   m_Range: 10
   m_SpotAngle: 30
   m_InnerSpotAngle: 21.80208
@@ -76644,7 +76644,7 @@ Light:
     m_Type: 2
     m_Resolution: -1
     m_CustomResolution: -1
-    m_Strength: 1
+    m_Strength: 0.9
     m_Bias: 0.05
     m_NormalBias: 0.4
     m_NearPlane: 0.2
@@ -220203,6 +220203,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 880090101}
   - {fileID: 109533919}
   - {fileID: 447867671}
   - {fileID: 991984637}
@@ -272043,7 +272044,7 @@ MonoBehaviour:
   priority: 0
   blendDistance: 0
   weight: 1
-  sharedProfile: {fileID: 11400000, guid: 7f5b5cb16e6f42b6a80f678ea1fd4db8, type: 2}
+  sharedProfile: {fileID: 11400000, guid: d6989819433d4fe89a4b4dbaeac8ee7b, type: 2}
 --- !u!4 &2116495550
 Transform:
   m_ObjectHideFlags: 0
@@ -279249,6 +279250,67 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 8510855570632623716, guid: fb6bde2817115ea45af7660f2c0e2d43, type: 3}
   m_PrefabInstance: {fileID: 9061841184134315966}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &880090100
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 880090101}
+  - component: {fileID: 880090102}
+  m_Layer: 0
+  m_Name: WatchtowerGroundDetail_Sample
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!4 &880090101
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 880090100}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.656943452, y: 0.261582302, z: -0.261582302, w: 0.656943452}
+  m_LocalPosition: {x: 11.439987, y: 3, z: 46.77002}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1694589501}
+  m_LocalEulerAnglesHint: {x: 90, y: 43.423, z: 0}
+--- !u!114 &880090102
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 880090100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0777d029ed3dffa4692f417d4aba19ca, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.DecalProjector
+  m_Material: {fileID: 2100000, guid: 0427f2b8cd0f448182e7d989dcab37df, type: 2}
+  m_DrawDistance: 180
+  m_FadeScale: 0.8
+  m_StartAngleFade: 35
+  m_EndAngleFade: 65
+  m_UVScale: {x: 1, y: 1}
+  m_UVBias: {x: 0, y: 0}
+  m_RenderingLayerMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ScaleMode: 0
+  m_Offset: {x: 0, y: 0, z: 3}
+  m_Size: {x: 12, y: 14, z: 6}
+  m_FadeFactor: 0.62
+  m_VisibleInScene: 1
+  version: 1
+  m_DecalLayerMask: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
